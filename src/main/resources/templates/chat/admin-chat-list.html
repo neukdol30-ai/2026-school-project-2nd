@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>관리자 채팅 목록</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f5f6f7;
+        }
+
+        .wrap {
+            width: 900px;
+            margin: 50px auto;
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .header {
+            padding: 20px;
+            background: #03c75a;
+            color: white;
+            font-size: 22px;
+            font-weight: bold;
+        }
+
+        .room-list {
+            padding: 20px;
+        }
+
+        .room-item {
+            display: block;
+            padding: 16px;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            margin-bottom: 12px;
+            text-decoration: none;
+            color: #333;
+        }
+
+        .room-item:hover {
+            background: #f1f3f5;
+        }
+
+        .room-title {
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+
+        .last-message {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .status {
+            float: right;
+            color: #03c75a;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+<div class="wrap">
+    <div class="header">
+        관리자 1:1 상담 목록
+    </div>
+
+    <div class="room-list">
+        <div th:if="${#lists.isEmpty(roomList)}">
+            아직 생성된 채팅방이 없습니다.
+        </div>
+
+        <a class="room-item"
+           th:each="room : ${roomList}"
+           th:href="@{/chat/admin/{roomNo}(roomNo=${room.roomNo})}">
+
+            <div class="room-title">
+                채팅방 번호:
+                <span th:text="${room.roomNo}"></span>
+
+                <span class="status" th:text="${room.status}"></span>
+            </div>
+
+            <div>
+                사용자 번호:
+                <span th:text="${room.userNo}"></span>
+            </div>
+
+            <div class="last-message">
+                마지막 메시지:
+                <span th:text="${room.lastMessage != null ? room.lastMessage : '아직 메시지가 없습니다.'}"></span>
+            </div>
+        </a>
+    </div>
+</div>
+
+</body>
+</html>
