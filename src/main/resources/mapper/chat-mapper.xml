@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.siyan1234.itproject2nd.chat.dao.ChatDao">
+
+    <insert id="createRoom"
+            parameterType="com.siyan1234.itproject2nd.chat.dto.ChatRoomDto"
+            useGeneratedKeys="true"
+            keyProperty="roomNo"
+            keyColumn="ROOM_NO">
+        INSERT INTO CHAT_ROOM (
+        USER_NO,
+        ADMIN_NO,
+        STATUS,
+        CREATED_DATE
+        ) VALUES (
+        #{userNo},
+        #{adminNo},
+        'OPEN',
+        SYSDATE
+        )
+    </insert>
+
+    <select id="findRoomByUserNo"
+            parameterType="int"
+            resultType="com.siyan1234.itproject2nd.chat.dto.ChatRoomDto">
+        SELECT
+        ROOM_NO,
+        USER_NO,
+        ADMIN_NO,
+        STATUS,
+        LAST_MESSAGE,
+        LAST_MESSAGE_DATE,
+        CREATED_DATE,
+        CLOSED_DATE
+        FROM CHAT_ROOM
+        WHERE USER_NO = #{userNo}
+        AND STATUS = 'OPEN'
+        ORDER BY CREATED_DATE DESC
+        FETCH FIRST 1 ROWS ONLY
+    </select>
+
+    <select id="findRoomByRoomNo"
+            parameterType="int"
+            resultType="com.siyan1234.itproject2nd.chat.dto.ChatRoomDto">
+        SELECT
+        ROOM_NO,
+        USER_NO,
+        ADMIN_NO,
+        STATUS,
+        LAST_MESSAGE,
+        LAST_MESSAGE_DATE,
+        CREATED_DATE,
+        CLOSED_DATE
+        FROM CHAT_ROOM
+        WHERE ROOM_NO = #{roomNo}
+    </select>
+
+    <select id="findAllRooms"
+            resultType="com.siyan1234.itproject2nd.chat.dto.ChatRoomDto">
+        SELECT
+        ROOM_NO,
+        USER_NO,
+        ADMIN_NO,
+        STATUS,
+        LAST_MESSAGE,
+        LAST_MESSAGE_DATE,
+        CREATED_DATE,
+        CLOSED_DATE
+        FROM CHAT_ROOM
+        ORDER BY LAST_MESSAGE_DATE DESC NULLS LAST, CREATED_DATE DESC
+    </select>
+
+    <update id="updateLastMessage"
+            parameterType="com.siyan1234.itproject2nd.chat.dto.ChatRoomDto">
+        UPDATE CHAT_ROOM
+        SET
+        LAST_MESSAGE = #{lastMessage},
+        LAST_MESSAGE_DATE = SYSDATE
+        WHERE ROOM_NO = #{roomNo}
+    </update>
+
+    <update id="closeRoom" parameterType="int">
+        UPDATE CHAT_ROOM
+        SET
+        STATUS = 'CLOSED',
+        CLOSED_DATE = SYSDATE
+        WHERE ROOM_NO = #{roomNo}
+    </update>
+
+    <insert id="saveMessage"
+            parameterType="com.siyan1234.itproject2nd.chat.dto.ChatMessageDto">
+        INSERT INTO CHAT_MESSAGE (
+        ROOM_NO,
+        SENDER_NO,
+        MESSAGE_CONTENT,
+        READ_YN,
+        CREATED_DATE
+        ) VALUES (
+        #{roomNo},
+        #{senderNo},
+        #{messageContent},
+        'N',
+        SYSDATE
+        )
+    </insert>
+
+    <select id="findMessagesByRoomNo"
+            parameterType="int"
+            resultType="com.siyan1234.itproject2nd.chat.dto.ChatMessageDto">
+        SELECT
+        MESSAGE_NO,
+        ROOM_NO,
+        SENDER_NO,
+        MESSAGE_CONTENT,
+        READ_YN,
+        CREATED_DATE
+        FROM CHAT_MESSAGE
+        WHERE ROOM_NO = #{roomNo}
+        ORDER BY CREATED_DATE ASC, MESSAGE_NO ASC
+    </select>
+
+    <update id="updateReadYn" parameterType="int">
+        UPDATE CHAT_MESSAGE
+        SET READ_YN = 'Y'
+        WHERE ROOM_NO = #{roomNo}
+        AND READ_YN = 'N'
+    </update>
+
+</mapper>
