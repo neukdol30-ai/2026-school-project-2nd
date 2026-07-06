@@ -75,6 +75,7 @@
               <button class="danger" @click="toggleWidget(widget.id)">숨김</button>
             </template>
           </div>
+        </div>
 
         <div class="widget-content" v-show="!widget.collapsed">
 
@@ -198,10 +199,11 @@
 
             <template v-if="isEditMode">
               <button @click="moveUp(widget.id)" :disabled="index === 0">↑</button>
-              <button @click="moveDown(widget.id)" :disabled="index === mainWidgets.length - 1">↓</button>
+              <button @click="moveDown(widget.id)" :disabled="index === sideWidgets.length - 1">↓</button>
               <button class="danger" @click="toggleWidget(widget.id)">숨김</button>
             </template>
           </div>
+        </div>
 
         <div class="widget-content" v-show="!widget.collapsed">
 
