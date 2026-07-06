@@ -13,13 +13,8 @@
 <body>
 
 <div id="app" class="container">
-  <h1>위젯 대시보드</h1>
-  <p class="description">
-    메인 위젯과 보조 위젯을 2:1 비율로 나눈 Vue 대시보드입니다.
-  </p>
 
-<!--  환경설정 버튼 추가-->
-
+  <!--  환경설정 버튼 추가-->
   <div class="page-actions">
     <button @click="toggleEditMode">
       {{ isEditMode ? "설정 완료" : "환경설정" }}
@@ -27,7 +22,7 @@
   </div>
 
   <!-- 위젯 표시/숨김 관리 영역 -->
-  <section class="control-box">
+  <section class="control-box" v-if="isEditMode">
     <h2>위젯 관리</h2>
 
     <div class="control-buttons">
@@ -41,6 +36,8 @@
       </button>
     </div>
   </section>
+
+
 
   <!-- 2:1 대시보드 레이아웃 -->
   <main class="dashboard-layout">
@@ -115,7 +112,6 @@
               증권 차트 영역
             </div>
             <p class="widget-desc">
-              실제 구현 시 주식 API와 차트 라이브러리를 연결할 수 있습니다.
             </p>
           </div>
 
@@ -215,7 +211,6 @@
             <div class="weather-temp">24℃</div>
             <p>서울 · 구름 조금</p>
             <p class="widget-desc">
-              실제 구현 시 날씨 API와 연결할 수 있습니다.
             </p>
           </div>
 
