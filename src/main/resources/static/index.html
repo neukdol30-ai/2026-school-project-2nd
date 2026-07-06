@@ -49,6 +49,7 @@
     <section class="widget-column main-column">
       <h2 class="column-title">메인 위젯</h2>
 
+      <transition-group name="widget-slide" tag="div" class="widget-list">
       <article
               v-for="(widget, index) in mainWidgets"
               :key="widget.id"
@@ -120,6 +121,7 @@
 
         </div>
       </article>
+      </transition-group>
     </section>
 
     <!-- 오른쪽 좁은 보조 위젯 영역 -->
@@ -177,6 +179,7 @@
         </div>
       </article>
 
+      <transition-group name="widget-slide" tag="div" class="widget-list">
       <article
               v-for="(widget, index) in sideWidgets"
               :key="widget.id"
@@ -283,6 +286,7 @@
 
         </div>
       </article>
+      </transition-group>
     </aside>
 
   </main>
