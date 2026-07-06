@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.siyan1234.itproject2nd.member.member_dao.PortalMemberDao">
+
+    <!-- 일반 회원가입 -->
+    <!-- NO는 IDENTITY라서 INSERT에 넣지 않음 -->
+    <!-- REGDATE는 DB 기본값 SYSTIMESTAMP 사용 -->
+    <insert id="signup"
+            parameterType="com.siyan1234.itproject2nd.member.member_dto.PortalMemberDto">
+
+        INSERT INTO MEMBER
+        (
+        MEMBER_ID,
+        PASSWORD,
+        NAME,
+        NICKNAME,
+        EMAIL,
+        PHONE,
+        BIRTH_DATE,
+        GENDER,
+        POSTCODE,
+        ADDRESS,
+        DETAIL_ADDRESS,
+        ROLE,
+        AGREE_TERMS_YN,
+        AGREE_PRIVACY_YN
+        )
+        VALUES
+        (
+        #{memberId},
+        #{password},
+        #{name},
+        #{nickname},
+        #{email, jdbcType=VARCHAR},
+        #{phone, jdbcType=VARCHAR},
+        #{birthDate, jdbcType=DATE},
+        #{gender, jdbcType=VARCHAR},
+        #{postcode, jdbcType=VARCHAR},
+        #{address, jdbcType=VARCHAR},
+        #{detailAddress, jdbcType=VARCHAR},
+        'USER',
+        #{agreeTermsYn},
+        #{agreePrivacyYn}
+        )
+
+    </insert>
+
+    <!-- 아이디 중복 체크 -->
+    <select id="countByMemberId"
+            resultType="int">
+
+        SELECT COUNT(*)
+        FROM MEMBER
+        WHERE MEMBER_ID = #{memberId}
+
+    </select>
+
+    <!-- 이메일 중복 체크 -->
+    <select id="countByEmail"
+            resultType="int">
+
+        SELECT COUNT(*)
+        FROM MEMBER
+        WHERE EMAIL = #{email}
+
+    </select>
+
+</mapper>

@@ -1,3 +1,37 @@
 spring:
   application:
+    # 프로젝트 이름
     name: it-project-2nd
+
+  datasource:
+    # Oracle DB 드라이버
+    driver-class-name: oracle.jdbc.OracleDriver
+
+    # Oracle XE 접속 주소
+    url: jdbc:oracle:thin:@localhost:1521:XE
+
+    # DBeaver에서 쓰는 DB 계정
+    username: secondpro
+
+    # DBeaver에서 쓰는 DB 비밀번호
+    password: 1234
+
+  thymeleaf:
+    # HTML 수정 후 새로고침 반영
+    cache: false
+
+server:
+  # 서버 포트
+  port: 8080
+
+mybatis:
+  # mapper.xml 위치
+  mapper-locations: classpath:mybatis/mapper/**/*.xml
+
+  # DTO 패키지 위치
+  type-aliases-package: com.siyan1234.itproject2nd.member.member_dto
+
+  configuration:
+    # MEMBER_ID -> memberId 자동 매칭
+    # AGREE_TERMS_YN -> agreeTermsYn 자동 매칭
+    map-underscore-to-camel-case: true
