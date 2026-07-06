@@ -3,6 +3,7 @@ const { createApp } = Vue;
 createApp({
     data() {
         return {
+            isEditMode: false,
             memoText: "",
             calculatorText: "",
             dayNames: ["월", "화", "수", "목", "금", "토", "일"],
