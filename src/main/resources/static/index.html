@@ -19,16 +19,11 @@
   </p>
 
 <!--  환경설정 버튼 추가-->
-  <div class="widget-actions">
-    <button @click="toggleCollapse(widget.id)">
-      {{ widget.collapsed ? "펼치기" : "접기" }}
-    </button>
 
-    <template v-if="isEditMode">
-      <button @click="moveUp(widget.id)" :disabled="index === 0">↑</button>
-      <button @click="moveDown(widget.id)" :disabled="index === mainWidgets.length - 1">↓</button>
-      <button class="danger" @click="toggleWidget(widget.id)">숨김</button>
-    </template>
+  <div class="page-actions">
+    <button @click="toggleEditMode">
+      {{ isEditMode ? "설정 완료" : "환경설정" }}
+    </button>
   </div>
 
   <!-- 위젯 표시/숨김 관리 영역 -->
@@ -70,34 +65,16 @@
           </div>
 
           <div class="widget-actions">
-            <button
-                    @click="moveUp(widget.id)"
-                    :disabled="index === 0"
-            >
-              ↑
-            </button>
-
-            <button
-                    @click="moveDown(widget.id)"
-                    :disabled="index === mainWidgets.length - 1"
-            >
-              ↓
-            </button>
-
-            <button
-                    class="danger"
-                    @click="toggleWidget(widget.id)"
-            >
-              숨김
-            </button>
-
-            <button
-                    @click="toggleCollapse(widget.id)"
-            >
+            <button @click="toggleCollapse(widget.id)">
               {{ widget.collapsed ? "펼치기" : "접기" }}
             </button>
+
+            <template v-if="isEditMode">
+              <button @click="moveUp(widget.id)" :disabled="index === 0">↑</button>
+              <button @click="moveDown(widget.id)" :disabled="index === mainWidgets.length - 1">↓</button>
+              <button class="danger" @click="toggleWidget(widget.id)">숨김</button>
+            </template>
           </div>
-        </div>
 
         <div class="widget-content" v-show="!widget.collapsed">
 
@@ -215,34 +192,16 @@
           </div>
 
           <div class="widget-actions">
-            <button
-                    @click="moveUp(widget.id)"
-                    :disabled="index === 0"
-            >
-              ↑
-            </button>
-
-            <button
-                    @click="moveDown(widget.id)"
-                    :disabled="index === sideWidgets.length - 1"
-            >
-              ↓
-            </button>
-
-            <button
-                    class="danger"
-                    @click="toggleWidget(widget.id)"
-            >
-              숨김
-            </button>
-
-            <button
-                    @click="toggleCollapse(widget.id)"
-            >
+            <button @click="toggleCollapse(widget.id)">
               {{ widget.collapsed ? "펼치기" : "접기" }}
             </button>
+
+            <template v-if="isEditMode">
+              <button @click="moveUp(widget.id)" :disabled="index === 0">↑</button>
+              <button @click="moveDown(widget.id)" :disabled="index === mainWidgets.length - 1">↓</button>
+              <button class="danger" @click="toggleWidget(widget.id)">숨김</button>
+            </template>
           </div>
-        </div>
 
         <div class="widget-content" v-show="!widget.collapsed">
 
