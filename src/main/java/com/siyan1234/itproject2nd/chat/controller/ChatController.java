@@ -24,7 +24,7 @@ public class ChatController {
         MemberDto loginUser = (MemberDto) session.getAttribute("loginUser");
 
         if (loginUser == null) {
-            return "redirect:/member/login";
+            return "redirect:/temp/user-login";
         }
 
         ChatRoomDto chatRoom = chatService.getOrCreateRoom(loginUser.getNo());

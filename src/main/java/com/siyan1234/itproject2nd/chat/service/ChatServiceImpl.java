@@ -20,17 +20,19 @@ public class ChatServiceImpl implements ChatService {
     public ChatRoomDto getOrCreateRoom(Integer userNo) {
         ChatRoomDto findRoom = chatDao.findRoomByUserNo(userNo);
 
-        if (findRoom == null) {
+        if (findRoom != null) {
             return findRoom;
         }
+
         ChatRoomDto newRoom = new ChatRoomDto();
         newRoom.setUserNo(userNo);
         newRoom.setAdminNo(null);
 
         chatDao.createRoom(newRoom);
 
-        return newRoom;
+        return chatDao.findRoomByUserNo(userNo);
     }
+
     @Override
     @Transactional(readOnly = true)
     public ChatRoomDto findRoomByRoomNo(Integer roomNo) {

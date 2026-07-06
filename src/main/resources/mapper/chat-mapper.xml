@@ -6,20 +6,17 @@
 <mapper namespace="com.siyan1234.itproject2nd.chat.dao.ChatDao">
 
     <insert id="createRoom"
-            parameterType="com.siyan1234.itproject2nd.chat.dto.ChatRoomDto"
-            useGeneratedKeys="true"
-            keyProperty="roomNo"
-            keyColumn="ROOM_NO">
-        INSERT INTO CHAT_ROOM (
-        USER_NO,
-        ADMIN_NO,
-        STATUS,
-        CREATED_DATE
+            parameterType="com.siyan1234.itproject2nd.chat.dto.ChatRoomDto">
+        INSERT INTO chat_room (
+        user_no,
+        admin_no,
+        status,
+        created_date
         ) VALUES (
-        #{userNo},
-        #{adminNo},
+        #{userNo, jdbcType=NUMERIC},
+        #{adminNo, jdbcType=NUMERIC},
         'OPEN',
-        SYSDATE
+        SYSTIMESTAMP
         )
     </insert>
 
@@ -75,11 +72,11 @@
 
     <update id="updateLastMessage"
             parameterType="com.siyan1234.itproject2nd.chat.dto.ChatRoomDto">
-        UPDATE CHAT_ROOM
+        UPDATE chat_room
         SET
-        LAST_MESSAGE = #{lastMessage},
-        LAST_MESSAGE_DATE = SYSDATE
-        WHERE ROOM_NO = #{roomNo}
+        last_message = #{lastMessage},
+        last_message_date = SYSTIMESTAMP
+        WHERE room_no = #{roomNo}
     </update>
 
     <update id="closeRoom" parameterType="int">
@@ -92,18 +89,18 @@
 
     <insert id="saveMessage"
             parameterType="com.siyan1234.itproject2nd.chat.dto.ChatMessageDto">
-        INSERT INTO CHAT_MESSAGE (
-        ROOM_NO,
-        SENDER_NO,
-        MESSAGE_CONTENT,
-        READ_YN,
-        CREATED_DATE
+        INSERT INTO chat_message (
+        room_no,
+        sender_no,
+        message_content,
+        read_yn,
+        created_date
         ) VALUES (
-        #{roomNo},
-        #{senderNo},
-        #{messageContent},
+        #{roomNo, jdbcType=NUMERIC},
+        #{senderNo, jdbcType=NUMERIC},
+        #{messageContent, jdbcType=VARCHAR},
         'N',
-        SYSDATE
+        SYSTIMESTAMP
         )
     </insert>
 
