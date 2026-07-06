@@ -142,16 +142,14 @@ button:disabled {
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
 }
 
-
-
 /* 넓은 영역 위젯 */
 .widget.main-widget {
-    min-height: 100px;
+    min-height: 240px;
 }
 
 /* 좁은 영역 위젯 */
 .widget.side-widget {
-    min-height: 100px;
+    min-height: 150px;
 }
 
 /* 위젯 상단 제목/버튼 영역 */
@@ -178,7 +176,6 @@ button:disabled {
 /* 위젯 이동/숨김/접기 버튼 묶음 */
 .widget-actions {
     display: flex;
-    align-items: flex-start;
     gap: 4px;
     white-space: nowrap;
 }
