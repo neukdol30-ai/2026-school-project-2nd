@@ -121,6 +121,7 @@ function getSideWidgets() {
 //rander 함수 생성
 function render() {
     const app = document.querySelector("#app");
+    const prevPositions = captureWidgetPositions();
 
     app.innerHTML = `
         <div class="container">
@@ -156,6 +157,47 @@ function render() {
     `;
 
     bindEvents();
+    animateWidgetChanges(prevPositions);
+}
+
+//애니메이션 함수 추가
+function captureWidgetPositions() {
+    const positions = new Map();
+
+    document.querySelectorAll("[data-widget-id]").forEach((element) => {
+        positions.set(element.dataset.widgetId, element.getBoundingClientRect());
+    });
+
+    return positions;
+}
+
+function animateWidgetChanges(prevPositions) {
+    document.querySelectorAll("[data-widget-id]").forEach((element) => {
+        const prevRect = prevPositions.get(element.dataset.widgetId);
+
+        if (!prevRect) {
+            return;
+        }
+
+        const nextRect = element.getBoundingClientRect();
+        const deltaX = prevRect.left - nextRect.left;
+        const deltaY = prevRect.top - nextRect.top;
+
+        if (deltaX === 0 && deltaY === 0) {
+            return;
+        }
+
+        element.animate(
+            [
+                { transform: `translate(${deltaX}px, ${deltaY}px)` },
+                { transform: "translate(0, 0)" }
+            ],
+            {
+                duration: 250,
+                easing: "ease"
+            }
+        );
+    });
 }
 
 //위젯 관리 박스
@@ -182,7 +224,8 @@ function renderControlBox() {
 //위젯 카드
 function renderWidget(widget, index, widgetCount) {
     return `
-        <article class="widget ${widget.zone === "main" ? "main-widget" : "side-widget"}">
+        <article class="widget ${widget.zone === "main" ? "main-widget" : "side-widget"}"
+        data-widget-id="${widget.id}">
             <div class="widget-header">
                 <div>
                     <div class="widget-title">
