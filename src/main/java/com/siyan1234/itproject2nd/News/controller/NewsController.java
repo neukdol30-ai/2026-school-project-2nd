@@ -20,7 +20,6 @@ public class NewsController {
 
     private final NewsService newsService;
 
-    @ResponseBody
     @GetMapping
     public List<NewsDto> getMainNews(){
         return newsService.getMainNews();

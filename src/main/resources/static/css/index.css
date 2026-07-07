@@ -329,3 +329,29 @@ textarea {
     opacity: 0;
     transform: translateY(12px);
 }
+
+/*뉴스 타이틀*/
+.news-title {
+    display: block;
+    color: #111827;
+    font-size: 15px;
+    font-weight: 700;
+    text-decoration: none;
+    margin-bottom: 6px;
+}
+
+.news-title:hover {
+    text-decoration: underline;
+}
+
+.news-summary {
+    margin: 0 0 6px;
+    color: #4b5563;
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+.news-meta {
+    color: #9ca3af;
+    font-size: 12px;
+}

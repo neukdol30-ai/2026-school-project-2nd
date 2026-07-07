@@ -6,6 +6,9 @@ createApp({
             isEditMode: false,
             memoText: "",
             calculatorText: "",
+            newsItems: [],
+            newsLoading: false,
+            newsError: "",
             dayNames: ["월", "화", "수", "목", "금", "토", "일"],
 
             currentUser: null,
@@ -132,6 +135,10 @@ createApp({
         }
     },
 
+    mounted() {
+        this.fetchNews();
+    },
+
     methods: {
 
         toggleEditMode(){
@@ -146,6 +153,25 @@ createApp({
             }
 
             widget.visible = !widget.visible;
+        },
+
+        async fetchNews() {
+            this.newsLoading = true;
+            this.newsError = "";
+
+            try{
+                const response = await fetch("/api/news");
+
+                if (!response.ok) {
+                    throw new Error("뉴스를 불러오지 못했습니다.");
+                }
+
+                this.newsItems = await response.json();
+            } catch (error) {
+                this.newsError = error.message;
+            } finally {
+                this.newsLoading = false;
+            }
         },
 
         mockLogin() {

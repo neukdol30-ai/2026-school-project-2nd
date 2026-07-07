@@ -79,10 +79,28 @@
 
           <!-- 뉴스 위젯 -->
           <div v-if="widget.type === 'news'">
-            <ul class="news-list">
-              <li class="news-item">AI 산업 관련 주요 뉴스</li>
-              <li class="news-item">오늘의 경제 뉴스 요약</li>
-              <li class="news-item">개발자 채용 시장 동향</li>
+            <p v-if="newsLoading" class="widget-desc">
+              뉴스를 불러오는 중입니다.
+            </p>
+
+            <p v-else-if="newsError" class="widget-desc">
+              {{ newsError }}
+            </p>
+
+            <ul v-else class="news-list">
+              <li v-for="news in newsItems" :key="news.id" class="news-item">
+                <a class="news-title" :href="news.link" target="_blank" rel="noopener noreferrer">
+                  {{ news.title }}
+                </a>
+
+                <p class="news-summary">
+                  {{ news.summary }}
+                </p>
+
+                <div class="news-meta">
+                  {{ news.source }} · {{ news.publishedAt }}
+                </div>
+              </li>
             </ul>
           </div>
 
