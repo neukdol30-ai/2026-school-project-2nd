@@ -153,18 +153,66 @@
             align-items: flex-start;
         }
 
+        .message-label {
+            font-size: 12px;
+            color: #777;
+            margin-bottom: 4px;
+            font-weight: 700;
+        }
+
+        .message-row.me .message-label {
+            display: none;
+        }
+
         .message-meta {
             margin-top: 4px;
             font-size: 11px;
-            color: #aaa;
+            color: #999;
+            display: flex;
+            gap: 6px;
+            align-items: center;
         }
 
         .message-row.me .message-meta {
-            text-align: right;
+            justify-content: flex-end;
         }
 
         .message-row.other .message-meta {
-            text-align: left;
+            justify-content: flex-start;
+        }
+
+        /*.message-row.me .message-meta {*/
+        /*    text-align: right;*/
+        /*}*/
+
+        /*.message-row.other .message-meta {*/
+        /*    text-align: left;*/
+        /*}*/
+
+        .read-status {
+            color: #0b24d9;
+            font-weight: 700;
+        }
+
+        .system-row {
+            display: flex;
+            justify-content: center;
+            margin: 16px 0;
+        }
+
+        .system-message {
+            background: #f1f3f5;
+            color: #666;
+            font-size: 13px;
+            padding: 9px 13px;
+            border-radius: 999px;
+            text-align: center;
+        }
+
+        .system-time {
+            font-size: 11px;
+            color: #aaa;
+            margin-top: 3px;
         }
 
 
@@ -221,6 +269,10 @@
 <script th:inline="javascript">
     const roomNo = /*[[${chatRoom.roomNo}]]*/ 0;
     const senderNo = /*[[${loginUser.no}]]*/ 0;
+    const loginRole = /*[[${loginUser.role}]]*/ "USER";
+    const roomUserNo = /*[[${chatRoom.userNo}]]*/ 0;
+    const roomAdminNo = /*[[${chatRoom.adminNo != null ? chatRoom.adminNo : 2}]]*/ 2;
+    const roomStatus = /*[[${chatRoom.status}]]*/ "OPEN";
 </script>
 
 <script src="/js/chat.js"></script>

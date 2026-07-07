@@ -6,7 +6,7 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import tools.jackson.databind.ObjectMapper;
 
-
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -21,6 +21,14 @@ public class ChatRedisService {
 
     public void saveMessage(ChatMessageDto messageDto) {
         try {
+            if (messageDto.getCreatedDate() == null) {
+                messageDto.setCreatedDate(LocalDateTime.now());
+            }
+
+            if (messageDto.getReadYn() == null) {
+                messageDto.setReadYn("N");
+            }
+
             String key = CHAT_KEY_PREFIX + messageDto.getRoomNo();
             String json = objectMapper.writeValueAsString(messageDto);
 
@@ -41,18 +49,46 @@ public class ChatRedisService {
         }
         for (String json : jsonList){
             try {
-                messages.add(objectMapper.readValue(json, ChatMessageDto.class));
+                ChatMessageDto messageDto =
+                        objectMapper.readValue(json, ChatMessageDto.class);
+                messages.add(messageDto);
             } catch (Exception e){
                 throw new RuntimeException("Redis 메시지 조회 실패", e);
             }
         }
         return messages;
     }
-    public List<ChatMessageDto> popAllMessages(Integer roomNo){
+    public void deleteMessages(Integer roomNo){
         String key = CHAT_KEY_PREFIX + roomNo;
-        List<ChatMessageDto> messages = findMessages(roomNo);
         redisTemplate.delete(key);
-        return messages;
+    }
+
+    //메시지 수신 상태 표시
+    public void updateReadYn(Integer roomNo, Integer viewerNo) {
+        String key = CHAT_KEY_PREFIX + roomNo;
+
+        List<String> jsonList = redisTemplate.opsForList().range(key, 0, -1);
+
+        if (jsonList == null || jsonList.isEmpty()) {
+            return;
+        }
+        redisTemplate.delete(key);
+
+        for (String json : jsonList) {
+            try {
+                ChatMessageDto messageDto =
+                        objectMapper.readValue(json, ChatMessageDto.class);
+                if (messageDto.getSenderNo() != null
+                        && !messageDto.getSenderNo().equals(viewerNo)) {
+                    messageDto.setReadYn("Y");
+                }
+                String updateJson = objectMapper.writeValueAsString(messageDto);
+                redisTemplate.opsForList().rightPush(key, updateJson);
+
+            } catch (Exception e) {
+                throw new RuntimeException("Redis 읽음 처리 실패", e);
+            }
+        }
     }
 }
 

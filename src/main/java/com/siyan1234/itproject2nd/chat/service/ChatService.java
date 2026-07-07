@@ -26,5 +26,5 @@ public interface ChatService {
 
     void closeRoom(Integer roomNo);
 
-    void updateReadYn(Integer roomNo);
+    void updateReadYn(Integer roomNo, Integer viewerNo);
 }

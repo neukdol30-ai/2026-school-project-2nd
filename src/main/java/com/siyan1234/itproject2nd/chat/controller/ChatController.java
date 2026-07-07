@@ -4,6 +4,7 @@ import com.siyan1234.itproject2nd.chat.dto.ChatMessageDto;
 import com.siyan1234.itproject2nd.chat.dto.ChatRoomDto;
 import com.siyan1234.itproject2nd.chat.service.ChatRedisService;
 import com.siyan1234.itproject2nd.chat.service.ChatService;
+import com.siyan1234.itproject2nd.chat.websocket.ChatHandler;
 import com.siyan1234.itproject2nd.member.dto.MemberDto;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
@@ -20,6 +21,7 @@ public class ChatController {
 
     private final ChatService chatService;
     private final ChatRedisService chatRedisService;
+    private final ChatHandler chatHandler;
 
     @GetMapping
     public String chatHome(HttpSession session, Model model) {
@@ -115,7 +117,17 @@ public class ChatController {
 
     @ResponseBody
     @GetMapping("/{roomNo}/messages")
-    public List<ChatMessageDto> messages(@PathVariable Integer roomNo) {
+    public List<ChatMessageDto> messages
+            (@PathVariable Integer roomNo,
+             HttpSession session
+    ) {
+        MemberDto loginUser = (MemberDto) session.getAttribute("loginUser");
+
+        if (loginUser != null){
+            chatService.updateReadYn(roomNo, loginUser.getNo());
+            chatRedisService.updateReadYn(roomNo, loginUser.getNo());
+        }
+
         List<ChatMessageDto> dbMessages = chatService.findMessagesByRoomNo(roomNo);
         List<ChatMessageDto> redisMessages = chatRedisService.findMessages(roomNo);
 
@@ -132,8 +144,29 @@ public class ChatController {
     }
 
     @PostMapping("/{roomNo}/close")
-    public String closeRoom(@PathVariable Integer roomNo) {
+    public String closeRoom
+            (@PathVariable Integer roomNo,
+             HttpSession session
+    ) {
+        MemberDto loginUser = (MemberDto) session.getAttribute("loginUser");
+
+        if (loginUser == null) {
+            return "redirect:/temp/admin-login";
+        }
+
         chatService.closeRoom(roomNo);
+
+        ChatMessageDto closeMessage = new ChatMessageDto();
+        closeMessage.setRoomNo(roomNo);
+        closeMessage.setSenderNo(loginUser.getNo());
+        closeMessage.setMessageContent("상담이 종료되었습니다.");
+        closeMessage.setReadYn("N");
+        closeMessage.setCreatedDate(java.time.LocalDateTime.now());
+
+        chatRedisService.saveMessage(closeMessage);
+
+        chatHandler.broadcastClose(roomNo, closeMessage);
+
         return "redirect:/chat/admin";
     }
 }

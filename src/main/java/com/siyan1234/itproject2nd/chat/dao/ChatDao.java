@@ -32,5 +32,8 @@ public interface ChatDao {
 
     List<ChatMessageDto> findMessagesByRoomNo(Integer roomNo);
 
-    int updateReadYn(Integer roomNo);
+    int updateReadYn(
+            @Param("roomNo") Integer roomNo,
+            @Param("viewerNo") Integer viewerNo
+    );
 }

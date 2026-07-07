@@ -67,6 +67,10 @@ public class ChatServiceImpl implements ChatService {
         if (chatMessageDto.getCreatedDate() == null) {
             chatMessageDto.setCreatedDate(java.time.LocalDateTime.now());
         }
+        if (chatMessageDto.getReadYn() == null) {
+            chatMessageDto.setReadYn("N");
+        }
+
         chatDao.saveMessage(chatMessageDto);
 
         ChatRoomDto chatRoomDto = new ChatRoomDto();
@@ -88,7 +92,7 @@ public class ChatServiceImpl implements ChatService {
     }
 
     @Override
-    public void updateReadYn(Integer roomNo) {
-        chatDao.updateReadYn(roomNo);
+    public void updateReadYn(Integer roomNo, Integer viewerNo) {
+        chatDao.updateReadYn(roomNo, viewerNo);
     }
 }

@@ -6,7 +6,10 @@
 <mapper namespace="com.siyan1234.itproject2nd.chat.dao.ChatDao">
 
     <insert id="createRoom"
-            parameterType="com.siyan1234.itproject2nd.chat.dto.ChatRoomDto">
+            parameterType="com.siyan1234.itproject2nd.chat.dto.ChatRoomDto"
+            useGeneratedKeys="true"
+            keyProperty="roomNo"
+            keyColumn="room_no">
         INSERT INTO chat_room (
         user_no,
         admin_no,
@@ -117,8 +120,8 @@
             #{roomNo, jdbcType=NUMERIC},
             #{senderNo, jdbcType=NUMERIC},
             #{messageContent, jdbcType=VARCHAR},
-            'N',
-            #{createDate, jdbcType=TIMESTAMP}
+            #{readYn, jdbcType=CHAR},
+            #{createdDate, jdbcType=TIMESTAMP}
         )
     </insert>
 
@@ -137,10 +140,12 @@
         ORDER BY created_date ASC, message_no ASC
     </select>
 
-    <update id="updateReadYn" parameterType="int">
+    <update id="updateReadYn">
         UPDATE chat_message
         SET read_yn = 'Y'
-        WHERE room_no = #{roomNo}
+        WHERE room_no = #{roomNo, jdbcType=NUMERIC}
+        AND sender_no IS NOT NULL
+        AND sender_no != #{viewerNo, jdbcType=NUMERIC}
         AND read_yn = 'N'
     </update>
 

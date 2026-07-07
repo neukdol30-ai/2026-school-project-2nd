@@ -191,6 +191,17 @@
             align-items: flex-start;
         }
 
+        .message-label {
+            font-size: 12px;
+            color: #777;
+            margin-bottom: 4px;
+            font-weight: 700;
+        }
+
+        .message-row.me .message-label {
+            display: none;
+        }
+
         .message-bubble {
             max-width: 360px;
             padding: 11px 14px;
@@ -216,6 +227,22 @@
             margin-top: 4px;
             font-size: 11px;
             color: #aaa;
+            display: flex;
+            gap: 6px;
+            align-items: center;
+        }
+
+        .message-row.me .message-meta {
+            justify-content: flex-end;
+        }
+
+        .message-row.other .message-meta {
+            justify-content: flex-start;
+        }
+
+        .read-status {
+            color: #0b24d9;
+            font-weight: 700;
         }
 
         .chat-input-box {
@@ -340,6 +367,10 @@
 <script th:inline="javascript">
     const roomNo = /*[[${chatRoom.roomNo}]]*/ 0;
     const senderNo = /*[[${loginUser.no}]]*/ 0;
+    const loginRole = /*[[${loginUser.role}]]*/ "ADMIN";
+    const roomUserNo = /*[[${chatRoom.userNo}]]*/ 0;
+    const roomAdminNo = /*[[${chatRoom.adminNo != null ? chatRoom.adminNo : 2}]]*/ 2;
+    const roomStatus = /*[[${chatRoom.status}]]*/ "OPEN";
 </script>
 
 <script src="/js/chat.js"></script>
