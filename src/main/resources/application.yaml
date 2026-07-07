@@ -26,7 +26,7 @@ server:
   port: 8080
 mybatis:
   # mapper.xml 위치
-  mapper-locations: classpath:mybatis/mapper/**/*.xml
+  mapper-locations: classpath:mapper/**/*.xml
   # DTO 패키지 위치
   type-aliases-package: com.siyan1234.itproject2nd.member.member_dto
   configuration:
