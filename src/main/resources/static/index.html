@@ -5,14 +5,13 @@
   <title>위젯 대시보드 - 2:1 레이아웃</title>
 
   <!-- Vue 3 CDN: Vue를 브라우저에서 바로 사용하기 위한 CDN -->
-  <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
   <link rel="stylesheet" href="./css/index.css">
 
 </head>
 
 <body>
 
-<div id="app" class="container">
+<div id="app">
 
   <!--  환경설정 버튼 추가-->
   <div class="page-actions">
@@ -47,94 +46,76 @@
       <h2 class="column-title">메인 위젯</h2>
 
       <transition-group name="widget-slide" tag="div" class="widget-list">
-      <article
-              v-for="(widget, index) in mainWidgets"
-              :key="widget.id"
-              class="widget main-widget"
-      >
-        <div class="widget-header">
-          <div>
-            <div class="widget-title">
-              {{ widget.icon }} {{ widget.title }}
+        <article
+                v-for="(widget, index) in mainWidgets"
+                :key="widget.id"
+                class="widget main-widget"
+        >
+          <div class="widget-header">
+            <div>
+              <div class="widget-title">
+                {{ widget.icon }} {{ widget.title }}
+              </div>
+              <div class="widget-desc">
+                {{ widget.description }}
+              </div>
             </div>
-            <div class="widget-desc">
-              {{ widget.description }}
-            </div>
-          </div>
 
-          <div class="widget-actions">
-            <button @click="toggleCollapse(widget.id)">
-              {{ widget.collapsed ? "펼치기" : "접기" }}
-            </button>
+            <div class="widget-actions">
+              <button @click="toggleCollapse(widget.id)">
+                {{ widget.collapsed ? "펼치기" : "접기" }}
+              </button>
 
-            <template v-if="isEditMode">
-              <button @click="moveUp(widget.id)" :disabled="index === 0">↑</button>
-              <button @click="moveDown(widget.id)" :disabled="index === mainWidgets.length - 1">↓</button>
-              <button class="danger" @click="toggleWidget(widget.id)">숨김</button>
-            </template>
-          </div>
-        </div>
-
-        <div class="widget-content" v-show="!widget.collapsed">
-
-          <!-- 뉴스 위젯 -->
-          <div v-if="widget.type === 'news'">
-            <p v-if="newsLoading" class="widget-desc">
-              뉴스를 불러오는 중입니다.
-            </p>
-
-            <p v-else-if="newsError" class="widget-desc">
-              {{ newsError }}
-            </p>
-
-            <ul v-else class="news-list">
-              <li v-for="news in newsItems" :key="news.id" class="news-item">
-                <a class="news-title" :href="news.link" target="_blank" rel="noopener noreferrer">
-                  {{ news.title }}
-                </a>
-
-                <p class="news-summary">
-                  {{ news.summary }}
-                </p>
-
-                <div class="news-meta">
-                  {{ news.source }} · {{ news.publishedAt }}
-                </div>
-              </li>
-            </ul>
-          </div>
-
-          <!-- 이슈 위젯 -->
-          <div v-else-if="widget.type === 'issue'">
-            <div class="issue-tags">
-              <span class="issue-tag">#AI</span>
-              <span class="issue-tag">#경제</span>
-              <span class="issue-tag">#증권</span>
-              <span class="issue-tag">#개발</span>
-              <span class="issue-tag">#날씨</span>
+              <template v-if="isEditMode">
+                <button @click="moveUp(widget.id)" :disabled="index === 0">↑</button>
+                <button @click="moveDown(widget.id)" :disabled="index === mainWidgets.length - 1">↓</button>
+                <button class="danger" @click="toggleWidget(widget.id)">숨김</button>
+              </template>
             </div>
           </div>
 
-          <!-- 일정 위젯 -->
-          <div v-else-if="widget.type === 'schedule'">
-            <ul class="schedule-list">
-              <li>09:00 프로젝트 정리</li>
-              <li>13:00 API 연동 테스트</li>
-              <li>18:00 개인 학습 기록</li>
-            </ul>
-          </div>
+          <div class="widget-content" v-show="!widget.collapsed">
 
-          <!-- 증권 위젯 -->
-          <div v-else-if="widget.type === 'stock'">
-            <div class="stock-box">
-              증권 차트 영역
+            <!-- 뉴스 위젯 -->
+            <div v-if="widget.type === 'news'">
+              <ul class="news-list">
+                <li class="news-item">AI 산업 관련 주요 뉴스</li>
+                <li class="news-item">오늘의 경제 뉴스 요약</li>
+                <li class="news-item">개발자 채용 시장 동향</li>
+              </ul>
             </div>
-            <p class="widget-desc">
-            </p>
-          </div>
 
-        </div>
-      </article>
+            <!-- 이슈 위젯 -->
+            <div v-else-if="widget.type === 'issue'">
+              <div class="issue-tags">
+                <span class="issue-tag">#AI</span>
+                <span class="issue-tag">#경제</span>
+                <span class="issue-tag">#증권</span>
+                <span class="issue-tag">#개발</span>
+                <span class="issue-tag">#날씨</span>
+              </div>
+            </div>
+
+            <!-- 일정 위젯 -->
+            <div v-else-if="widget.type === 'schedule'">
+              <ul class="schedule-list">
+                <li>09:00 프로젝트 정리</li>
+                <li>13:00 API 연동 테스트</li>
+                <li>18:00 개인 학습 기록</li>
+              </ul>
+            </div>
+
+            <!-- 증권 위젯 -->
+            <div v-else-if="widget.type === 'stock'">
+              <div class="stock-box">
+                증권 차트 영역
+              </div>
+              <p class="widget-desc">
+              </p>
+            </div>
+
+          </div>
+        </article>
       </transition-group>
     </section>
 
@@ -194,111 +175,111 @@
       </article>
 
       <transition-group name="widget-slide" tag="div" class="widget-list">
-      <article
-              v-for="(widget, index) in sideWidgets"
-              :key="widget.id"
-              class="widget side-widget"
-      >
-        <div class="widget-header">
-          <div>
-            <div class="widget-title">
-              {{ widget.icon }} {{ widget.title }}
-            </div>
-            <div class="widget-desc">
-              {{ widget.description }}
-            </div>
-          </div>
-
-          <div class="widget-actions">
-            <button @click="toggleCollapse(widget.id)">
-              {{ widget.collapsed ? "펼치기" : "접기" }}
-            </button>
-
-            <template v-if="isEditMode">
-              <button @click="moveUp(widget.id)" :disabled="index === 0">↑</button>
-              <button @click="moveDown(widget.id)" :disabled="index === sideWidgets.length - 1">↓</button>
-              <button class="danger" @click="toggleWidget(widget.id)">숨김</button>
-            </template>
-          </div>
-        </div>
-
-        <div class="widget-content" v-show="!widget.collapsed">
-
-          <!-- 날씨 위젯 -->
-          <div v-if="widget.type === 'weather'">
-            <div class="weather-temp">24℃</div>
-            <p>서울 · 구름 조금</p>
-            <p class="widget-desc">
-            </p>
-          </div>
-
-          <!-- 계산기 위젯 -->
-          <div v-else-if="widget.type === 'calculator'">
-            <input
-                    class="calculator-display"
-                    type="text"
-                    v-model="calculatorText"
-                    readonly
-            >
-
-            <div class="calculator-buttons">
-              <button @click="appendCalc('7')">7</button>
-              <button @click="appendCalc('8')">8</button>
-              <button @click="appendCalc('9')">9</button>
-              <button @click="appendCalc('/')">÷</button>
-
-              <button @click="appendCalc('4')">4</button>
-              <button @click="appendCalc('5')">5</button>
-              <button @click="appendCalc('6')">6</button>
-              <button @click="appendCalc('*')">×</button>
-
-              <button @click="appendCalc('1')">1</button>
-              <button @click="appendCalc('2')">2</button>
-              <button @click="appendCalc('3')">3</button>
-              <button @click="appendCalc('-')">-</button>
-
-              <button @click="appendCalc('0')">0</button>
-              <button @click="clearCalc()">C</button>
-              <button @click="calculate()">=</button>
-              <button @click="appendCalc('+')">+</button>
-            </div>
-          </div>
-
-          <!-- 미니 캘린더 위젯 -->
-          <div v-else-if="widget.type === 'miniCalendar'">
-            <div class="calendar-grid">
-              <div
-                      v-for="dayName in dayNames"
-                      :key="dayName"
-                      class="calendar-cell"
-              >
-                <strong>{{ dayName }}</strong>
+        <article
+                v-for="(widget, index) in sideWidgets"
+                :key="widget.id"
+                class="widget side-widget"
+        >
+          <div class="widget-header">
+            <div>
+              <div class="widget-title">
+                {{ widget.icon }} {{ widget.title }}
               </div>
-
-              <div
-                      v-for="day in 31"
-                      :key="day"
-                      class="calendar-cell"
-              >
-                {{ day }}
+              <div class="widget-desc">
+                {{ widget.description }}
               </div>
             </div>
+
+            <div class="widget-actions">
+              <button @click="toggleCollapse(widget.id)">
+                {{ widget.collapsed ? "펼치기" : "접기" }}
+              </button>
+
+              <template v-if="isEditMode">
+                <button @click="moveUp(widget.id)" :disabled="index === 0">↑</button>
+                <button @click="moveDown(widget.id)" :disabled="index === sideWidgets.length - 1">↓</button>
+                <button class="danger" @click="toggleWidget(widget.id)">숨김</button>
+              </template>
+            </div>
           </div>
 
-          <!-- 메모 위젯 -->
-          <div v-else-if="widget.type === 'memo'">
+          <div class="widget-content" v-show="!widget.collapsed">
+
+            <!-- 날씨 위젯 -->
+            <div v-if="widget.type === 'weather'">
+              <div class="weather-temp">24℃</div>
+              <p>서울 · 구름 조금</p>
+              <p class="widget-desc">
+              </p>
+            </div>
+
+            <!-- 계산기 위젯 -->
+            <div v-else-if="widget.type === 'calculator'">
+              <input
+                      class="calculator-display"
+                      type="text"
+                      v-model="calculatorText"
+                      readonly
+              >
+
+              <div class="calculator-buttons">
+                <button @click="appendCalc('7')">7</button>
+                <button @click="appendCalc('8')">8</button>
+                <button @click="appendCalc('9')">9</button>
+                <button @click="appendCalc('/')">÷</button>
+
+                <button @click="appendCalc('4')">4</button>
+                <button @click="appendCalc('5')">5</button>
+                <button @click="appendCalc('6')">6</button>
+                <button @click="appendCalc('*')">×</button>
+
+                <button @click="appendCalc('1')">1</button>
+                <button @click="appendCalc('2')">2</button>
+                <button @click="appendCalc('3')">3</button>
+                <button @click="appendCalc('-')">-</button>
+
+                <button @click="appendCalc('0')">0</button>
+                <button @click="clearCalc()">C</button>
+                <button @click="calculate()">=</button>
+                <button @click="appendCalc('+')">+</button>
+              </div>
+            </div>
+
+            <!-- 미니 캘린더 위젯 -->
+            <div v-else-if="widget.type === 'miniCalendar'">
+              <div class="calendar-grid">
+                <div
+                        v-for="dayName in dayNames"
+                        :key="dayName"
+                        class="calendar-cell"
+                >
+                  <strong>{{ dayName }}</strong>
+                </div>
+
+                <div
+                        v-for="day in 31"
+                        :key="day"
+                        class="calendar-cell"
+                >
+                  {{ day }}
+                </div>
+              </div>
+            </div>
+
+            <!-- 메모 위젯 -->
+            <div v-else-if="widget.type === 'memo'">
             <textarea
                     v-model="memoText"
                     placeholder="메모를 입력하세요">
             </textarea>
 
-            <div class="memo-count">
-              글자 수: {{ memoText.length }}
+              <div class="memo-count">
+                글자 수: {{ memoText.length }}
+              </div>
             </div>
-          </div>
 
-        </div>
-      </article>
+          </div>
+        </article>
       </transition-group>
     </aside>
 
