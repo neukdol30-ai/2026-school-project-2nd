@@ -7,7 +7,7 @@
 body {
     margin: 0;
     font-family: Arial, "Noto Sans KR", sans-serif;
-    background: #f3f4f6;
+    background: #ffffff;
     color: #222;
 }
 
@@ -33,9 +33,10 @@ h1 {
 .control-box {
     background: #fff;
     padding: 20px;
-    border-radius: 16px;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
     margin-bottom: 24px;
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+    box-shadow: none;
 }
 
 /* 위젯 관리 버튼 묶음 */
@@ -137,9 +138,10 @@ button:disabled {
 /* 위젯 박스 공통 스타일 */
 .widget {
     background: white;
-    border-radius: 16px;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
     padding: 20px;
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+    box-shadow: none;
 }
 
 
@@ -310,20 +312,28 @@ textarea {
     gap: 20px;
 }
 
-/* 위젯 순서가 바뀔 때 위치 이동을 부드럽게 처리 */
-.widget-slide-move {
-    transition: transform 0.25s ease;
+/*뉴스 타이틀*/
+.news-title {
+    display: block;
+    color: #111827;
+    font-size: 15px;
+    font-weight: 700;
+    text-decoration: none;
+    margin-bottom: 6px;
 }
 
-/* 위젯이 나타나거나 사라질 때 애니메이션 적용 시간과 속도 */
-.widget-slide-enter-active,
-.widget-slide-leave-active {
-    transition: opacity 0.2s ease, transform 0.2s ease;
+.news-title:hover {
+    text-decoration: underline;
 }
 
-/* 위젯이 처음 나타날 때와 사라질 때의 시작/끝 상태 */
-.widget-slide-enter-from,
-.widget-slide-leave-to {
-    opacity: 0;
-    transform: translateY(12px);
+.news-summary {
+    margin: 0 0 6px;
+    color: #4b5563;
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+.news-meta {
+    color: #9ca3af;
+    font-size: 12px;
 }
