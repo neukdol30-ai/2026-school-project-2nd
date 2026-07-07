@@ -27,4 +27,19 @@ public interface ChatService {
     void closeRoom(Integer roomNo);
 
     void updateReadYn(Integer roomNo, Integer viewerNo);
+
+    List<ChatRoomDto> findAdminRooms(
+            String status,
+            String category,
+            String keyword,
+            Integer viewerNo,
+            int page,
+            int size
+    );
+
+    int countAdminRooms(
+            String status,
+            String category,
+            String keyword
+    );
 }

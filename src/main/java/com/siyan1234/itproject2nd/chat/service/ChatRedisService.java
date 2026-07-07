@@ -10,6 +10,8 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
+import static io.lettuce.core.pubsub.PubSubOutput.Type.message;
+
 @Service
 @RequiredArgsConstructor
 public class ChatRedisService {
@@ -89,6 +91,28 @@ public class ChatRedisService {
                 throw new RuntimeException("Redis 읽음 처리 실패", e);
             }
         }
+    }
+
+    public int countUnreadMessages(Integer roomNo, Integer viewerNo) {
+        List<ChatMessageDto> messages = findMessages(roomNo);
+
+        int count = 0;
+
+        for (ChatMessageDto message : messages) {
+            if (message.getSenderNo() == null) {
+                continue;
+            }
+
+            if (message.getSenderNo().equals(viewerNo)) {
+                continue;
+            }
+
+            if ("N".equals(message.getReadYn())) {
+                count++;
+            }
+        }
+
+        return count;
     }
 }
 

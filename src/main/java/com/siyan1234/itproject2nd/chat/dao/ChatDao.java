@@ -18,6 +18,21 @@ public interface ChatDao {
 
     List<ChatRoomDto> findAllRooms();
 
+    List<ChatRoomDto> findAdminRooms(
+            @Param("status") String status,
+            @Param("category") String category,
+            @Param("keyword") String keyword,
+            @Param("viewerNo") Integer viewerNo,
+            @Param("offset") int offset,
+            @Param("size") int size
+    );
+
+    int countAdminRooms(
+            @Param("status") String status,
+            @Param("category") String category,
+            @Param("keyword") String keyword
+    );
+
     //1:1채팅 문의 기능
     int updateRoomCategory(
             @Param("roomNo") Integer roomNo,

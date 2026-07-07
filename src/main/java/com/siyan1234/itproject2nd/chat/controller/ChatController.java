@@ -72,7 +72,15 @@ public class ChatController {
     }
 
     @GetMapping("/admin")
-    public String adminChatList(HttpSession session, Model model) {
+    public String adminChatList(
+            @RequestParam(required = false) String status,
+            @RequestParam(required = false) String category,
+            @RequestParam(required = false) String keyword,
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "10") int size,
+            HttpSession session,
+            Model model
+    ) {
         MemberDto loginUser = (MemberDto) session.getAttribute("loginUser");
 
         if (loginUser == null) {
@@ -83,10 +91,53 @@ public class ChatController {
             return "redirect:/";
         }
 
-        List<ChatRoomDto> roomList = chatService.findAllRooms();
+        if (page < 1) {
+            page = 1;
+        }
+
+        if (size < 1) {
+            size = 10;
+        }
+
+        int totalCount = chatService.countAdminRooms(status, category, keyword);
+        int totalPage = (int) Math.ceil((double) totalCount / size);
+
+        if (totalPage < 1) {
+            totalPage = 1;
+        }
+
+        if (page > totalPage) {
+            page = totalPage;
+        }
+
+        List<ChatRoomDto> roomList = chatService.findAdminRooms(
+                status,
+                category,
+                keyword,
+                loginUser.getNo(),
+                page,
+                size
+        );
+
+        int pageBlockSize = 5;
+
+        int startPageNo = ((page - 1) / pageBlockSize) * pageBlockSize + 1;
+        int endPageNo = Math.min(startPageNo + pageBlockSize - 1, totalPage);
 
         model.addAttribute("roomList", roomList);
         model.addAttribute("loginUser", loginUser);
+
+        model.addAttribute("status", status);
+        model.addAttribute("category", category);
+        model.addAttribute("keyword", keyword);
+
+        model.addAttribute("page", page);
+        model.addAttribute("size", size);
+        model.addAttribute("totalCount", totalCount);
+        model.addAttribute("totalPage", totalPage);
+
+        model.addAttribute("startPageNo", startPageNo);
+        model.addAttribute("endPageNo", endPageNo);
 
         return "chat/admin-chat-list";
     }

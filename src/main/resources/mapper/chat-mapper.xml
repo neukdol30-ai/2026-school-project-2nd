@@ -85,6 +85,83 @@
         created_date DESC
     </select>
 
+    <select id="findAdminRooms"
+            resultType="com.siyan1234.itproject2nd.chat.dto.ChatRoomDto">
+        SELECT
+        r.room_no,
+        r.user_no,
+        r.admin_no,
+        r.status,
+        r.category,
+        r.last_message,
+        r.last_message_date,
+        r.created_date,
+        r.closed_date,
+        (
+        SELECT COUNT(*)
+        FROM chat_message m
+        WHERE m.room_no = r.room_no
+        AND m.sender_no IS NOT NULL
+        AND m.sender_no != #{viewerNo, jdbcType=NUMERIC}
+        AND m.read_yn = 'N'
+        ) AS unread_count
+        FROM chat_room r
+        WHERE 1 = 1
+
+        <if test="status != null and status != ''">
+            AND r.status = #{status, jdbcType=VARCHAR}
+        </if>
+
+        <if test="category != null and category != ''">
+            AND r.category = #{category, jdbcType=VARCHAR}
+        </if>
+
+        <if test="keyword != null and keyword != ''">
+            AND (
+            TO_CHAR(r.room_no) LIKE '%' || #{keyword, jdbcType=VARCHAR} || '%'
+            OR TO_CHAR(r.user_no) LIKE '%' || #{keyword, jdbcType=VARCHAR} || '%'
+            OR TO_CHAR(r.admin_no) LIKE '%' || #{keyword, jdbcType=VARCHAR} || '%'
+            OR LOWER(r.last_message) LIKE '%' || LOWER(#{keyword, jdbcType=VARCHAR}) || '%'
+            )
+        </if>
+
+        ORDER BY
+        CASE r.status
+        WHEN 'OPEN' THEN 1
+        WHEN 'CLOSED' THEN 2
+        ELSE 3
+        END,
+        unread_count DESC,
+        r.last_message_date DESC NULLS LAST,
+        r.created_date DESC
+
+        OFFSET #{offset, jdbcType=NUMERIC} ROWS
+        FETCH NEXT #{size, jdbcType=NUMERIC} ROWS ONLY
+    </select>
+
+    <select id="countAdminRooms" resultType="int">
+        SELECT COUNT(*)
+        FROM chat_room r
+        WHERE 1 = 1
+
+        <if test="status != null and status != ''">
+            AND r.status = #{status, jdbcType=VARCHAR}
+        </if>
+
+        <if test="category != null and category != ''">
+            AND r.category = #{category, jdbcType=VARCHAR}
+        </if>
+
+        <if test="keyword != null and keyword != ''">
+            AND (
+            TO_CHAR(r.room_no) LIKE '%' || #{keyword, jdbcType=VARCHAR} || '%'
+            OR TO_CHAR(r.user_no) LIKE '%' || #{keyword, jdbcType=VARCHAR} || '%'
+            OR TO_CHAR(r.admin_no) LIKE '%' || #{keyword, jdbcType=VARCHAR} || '%'
+            OR LOWER(r.last_message) LIKE '%' || LOWER(#{keyword, jdbcType=VARCHAR}) || '%'
+            )
+        </if>
+    </select>
+
     <update id="updateRoomCategory">
         UPDATE chat_room
         SET category = #{category, jdbcType=VARCHAR}

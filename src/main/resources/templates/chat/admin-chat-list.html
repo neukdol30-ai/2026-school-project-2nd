@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>관리자 채팅 목록</title>
+
     <style>
         body {
             margin: 0;
@@ -11,7 +12,7 @@
         }
 
         .wrap {
-            width: 960px;
+            width: 1000px;
             margin: 50px auto;
             background: white;
             border: 1px solid #ddd;
@@ -27,8 +28,70 @@
             font-weight: bold;
         }
 
+        .search-area {
+            padding: 20px 22px;
+            border-bottom: 1px solid #eee;
+            background: #fafbfc;
+        }
+
+        .search-form {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .search-form select,
+        .search-form input {
+            height: 40px;
+            border: 1px solid #d8dbe2;
+            border-radius: 8px;
+            padding: 0 10px;
+            font-size: 14px;
+            outline: none;
+        }
+
+        .search-form input {
+            flex: 1;
+        }
+
+        .search-btn {
+            height: 40px;
+            padding: 0 18px;
+            border: none;
+            border-radius: 8px;
+            background: #0b24d9;
+            color: white;
+            font-weight: 800;
+            cursor: pointer;
+        }
+
+        .reset-btn {
+            height: 40px;
+            padding: 0 14px;
+            border-radius: 8px;
+            background: #f1f3f5;
+            color: #333;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            font-weight: 700;
+            font-size: 14px;
+        }
+
+        .summary {
+            margin-top: 12px;
+            color: #666;
+            font-size: 14px;
+        }
+
         .room-list {
             padding: 22px;
+        }
+
+        .empty {
+            padding: 40px 0;
+            text-align: center;
+            color: #999;
         }
 
         .room-item {
@@ -40,11 +103,17 @@
             text-decoration: none;
             color: #333;
             transition: 0.15s;
+            position: relative;
         }
 
         .room-item:hover {
             background: #f8f9ff;
             border-color: #0b24d9;
+        }
+
+        .room-item.closed {
+            background: #fafafa;
+            opacity: 0.72;
         }
 
         .top-line {
@@ -66,6 +135,20 @@
         .room-title {
             font-weight: bold;
             font-size: 16px;
+        }
+
+        .unread-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 22px;
+            height: 22px;
+            padding: 0 7px;
+            border-radius: 999px;
+            background: #ff3b30;
+            color: white;
+            font-size: 12px;
+            font-weight: 900;
         }
 
         .status {
@@ -96,6 +179,41 @@
             border-radius: 8px;
             margin-top: 8px;
         }
+
+        .pagination {
+            display: flex;
+            justify-content: center;
+            gap: 6px;
+            padding: 0 22px 24px;
+        }
+
+        .page-link {
+            min-width: 34px;
+            height: 34px;
+            padding: 0 9px;
+            border: 1px solid #d8dbe2;
+            border-radius: 8px;
+            text-decoration: none;
+            color: #333;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            box-sizing: border-box;
+        }
+
+        .page-link.active {
+            background: #0b24d9;
+            color: white;
+            border-color: #0b24d9;
+            font-weight: 800;
+        }
+
+        .page-link.disabled {
+            color: #bbb;
+            background: #f5f5f5;
+            pointer-events: none;
+        }
     </style>
 </head>
 <body>
@@ -105,13 +223,51 @@
         관리자 1:1 상담 목록
     </div>
 
+    <div class="search-area">
+        <form class="search-form" method="get" action="/chat/admin">
+            <input type="hidden" name="page" value="1">
+            <input type="hidden" name="size" th:value="${size}">
+
+            <select name="status">
+                <option value="" th:selected="${status == null or status == ''}">전체 상태</option>
+                <option value="OPEN" th:selected="${status == 'OPEN'}">진행중</option>
+                <option value="CLOSED" th:selected="${status == 'CLOSED'}">종료</option>
+            </select>
+
+            <select name="category">
+                <option value="" th:selected="${category == null or category == ''}">전체 문의유형</option>
+                <option value="MAIL" th:selected="${category == 'MAIL'}">메일 문의</option>
+                <option value="MAP" th:selected="${category == 'MAP'}">지도 문의</option>
+                <option value="STOCK" th:selected="${category == 'STOCK'}">증권 문의</option>
+                <option value="NEWS" th:selected="${category == 'NEWS'}">뉴스 문의</option>
+                <option value="WEATHER" th:selected="${category == 'WEATHER'}">날씨 문의</option>
+                <option value="CALENDAR" th:selected="${category == 'CALENDAR'}">캘린더 문의</option>
+                <option value="ETC" th:selected="${category == 'ETC'}">기타 문의</option>
+            </select>
+
+            <input type="text"
+                   name="keyword"
+                   th:value="${keyword}"
+                   placeholder="방번호, 사용자번호, 관리자번호, 마지막 메시지 검색">
+
+            <button type="submit" class="search-btn">검색</button>
+            <a href="/chat/admin" class="reset-btn">초기화</a>
+        </form>
+
+        <div class="summary">
+            총 <b th:text="${totalCount}">0</b>개의 상담방 /
+            현재 <b th:text="${page}">1</b> 페이지
+        </div>
+    </div>
+
     <div class="room-list">
-        <div th:if="${#lists.isEmpty(roomList)}">
-            아직 생성된 채팅방이 없습니다.
+        <div class="empty" th:if="${#lists.isEmpty(roomList)}">
+            조건에 맞는 채팅방이 없습니다.
         </div>
 
         <a class="room-item"
            th:each="room : ${roomList}"
+           th:classappend="${room.status == 'CLOSED'} ? ' closed' : ''"
            th:href="@{/chat/admin/{roomNo}(roomNo=${room.roomNo})}">
 
             <div class="top-line">
@@ -124,9 +280,15 @@
                     채팅방 #<span th:text="${room.roomNo}"></span>
                 </span>
 
+                <span class="unread-badge"
+                      th:if="${room.unreadCount != null and room.unreadCount > 0}"
+                      th:text="${room.unreadCount}">
+                    1
+                </span>
+
                 <span class="status"
                       th:classappend="${room.status == 'OPEN'} ? ' open' : ' closed'"
-                      th:text="${room.status}">
+                      th:text="${room.status == 'OPEN'} ? '진행중' : '종료'">
                     OPEN
                 </span>
             </div>
@@ -144,6 +306,48 @@
                 <span th:text="${room.lastMessage != null ? room.lastMessage : '아직 메시지가 없습니다.'}"></span>
             </div>
         </a>
+    </div>
+
+    <div class="pagination" th:if="${totalPage > 1}">
+
+        <a class="page-link"
+           th:classappend="${page <= 1} ? ' disabled' : ''"
+           th:href="@{/chat/admin(
+            page=${page - 1},
+            size=${size},
+            status=${status},
+            category=${category},
+            keyword=${keyword}
+       )}">
+            이전
+        </a>
+
+        <a class="page-link"
+           th:each="pageNum : ${#numbers.sequence(startPageNo, endPageNo)}"
+           th:classappend="${pageNum == page} ? ' active' : ''"
+           th:href="@{/chat/admin(
+            page=${pageNum},
+            size=${size},
+            status=${status},
+            category=${category},
+            keyword=${keyword}
+       )}"
+           th:text="${pageNum}">
+            1
+        </a>
+
+        <a class="page-link"
+           th:classappend="${page >= totalPage} ? ' disabled' : ''"
+           th:href="@{/chat/admin(
+            page=${page + 1},
+            size=${size},
+            status=${status},
+            category=${category},
+            keyword=${keyword}
+       )}">
+            다음
+        </a>
+
     </div>
 </div>
 

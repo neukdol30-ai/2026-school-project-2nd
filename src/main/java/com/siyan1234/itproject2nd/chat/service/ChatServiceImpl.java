@@ -15,6 +15,7 @@ import java.util.List;
 public class ChatServiceImpl implements ChatService {
 
     private final ChatDao chatDao;
+    private final ChatRedisService chatRedisService;
 
     @Override
     public ChatRoomDto getOrCreateRoom(Integer userNo) {
@@ -94,5 +95,43 @@ public class ChatServiceImpl implements ChatService {
     @Override
     public void updateReadYn(Integer roomNo, Integer viewerNo) {
         chatDao.updateReadYn(roomNo, viewerNo);
+    }
+
+    @Override
+    public List<ChatRoomDto> findAdminRooms(
+            String status,
+            String category,
+            String keyword,
+            Integer viewerNo,
+            int page,
+            int size
+    ){
+        if (page < 1){
+            page = 1;
+        }
+        if (size < 1){
+            size = 10;
+        }
+        int offset = (page - 1) * size;
+
+        List<ChatRoomDto> roomList = chatDao.findAdminRooms(
+                status,
+                category,
+                keyword,
+                viewerNo,
+                offset,
+                size
+        );
+        for (ChatRoomDto room : roomList) {
+            int dbUnreadCount = room.getUnreadCount() == null ? 0 : room.getUnreadCount();
+            int redisUnreadCount = chatRedisService.countUnreadMessages(room.getRoomNo(),viewerNo);
+
+            room.setUnreadCount(dbUnreadCount + redisUnreadCount);
+        }
+        return roomList;
+    }
+    @Override
+    public int countAdminRooms(String status, String category, String keyword) {
+        return chatDao.countAdminRooms(status, category, keyword);
     }
 }

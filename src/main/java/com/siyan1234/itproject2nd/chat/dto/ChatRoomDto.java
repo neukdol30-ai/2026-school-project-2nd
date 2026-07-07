@@ -20,6 +20,9 @@ public class ChatRoomDto {
     private LocalDateTime createdDate;
     private LocalDateTime closedDate;
 
+    //관리자 목록 안읽은 메시지 개수
+    private Integer unreadCount;
+
     public String getCategoryName(){
         if (category==null){
             return "일반 문의";
