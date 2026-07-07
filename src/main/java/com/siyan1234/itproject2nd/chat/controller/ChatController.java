@@ -2,6 +2,7 @@ package com.siyan1234.itproject2nd.chat.controller;
 
 import com.siyan1234.itproject2nd.chat.dto.ChatMessageDto;
 import com.siyan1234.itproject2nd.chat.dto.ChatRoomDto;
+import com.siyan1234.itproject2nd.chat.service.ChatRedisService;
 import com.siyan1234.itproject2nd.chat.service.ChatService;
 import com.siyan1234.itproject2nd.member.dto.MemberDto;
 import jakarta.servlet.http.HttpSession;
@@ -17,6 +18,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class ChatController {
 
+    private final ChatRedisService chatRedisService;
     private final ChatService chatService;
 
     @GetMapping
@@ -82,7 +84,12 @@ public class ChatController {
     @ResponseBody
     @GetMapping("/{roomNo}/messages")
     public List<ChatMessageDto> messages(@PathVariable Integer roomNo) {
-        return chatService.findMessagesByRoomNo(roomNo);
+        List<ChatMessageDto> dbMessages = chatService.findMessagesByRoomNo(roomNo);
+        List<ChatMessageDto> redisMessages = chatRedisService.findMessages(roomNo);
+
+        dbMessages.addAll(redisMessages);
+
+        return dbMessages;
     }
 
     @ResponseBody

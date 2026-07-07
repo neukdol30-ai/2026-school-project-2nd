@@ -1,6 +1,7 @@
 package com.siyan1234.itproject2nd.chat.websocket;
 
 import com.siyan1234.itproject2nd.chat.dto.ChatMessageDto;
+import com.siyan1234.itproject2nd.chat.service.ChatRedisService;
 import com.siyan1234.itproject2nd.chat.service.ChatService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -19,7 +20,7 @@ import java.util.concurrent.ConcurrentHashMap;
 @RequiredArgsConstructor
 public class ChatHandler extends TextWebSocketHandler {
 
-    private final ChatService chatService;
+    private final ChatRedisService chatRedisService;
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     //roomNo별 접속자 목록
@@ -44,7 +45,7 @@ public class ChatHandler extends TextWebSocketHandler {
                 .computeIfAbsent(roomNo, key -> ConcurrentHashMap.newKeySet())
                 .add(session);
         // DB에 메시지 저장
-        chatService.saveMessage(chatMessageDto);
+        chatRedisService.saveMessage(chatMessageDto);
 
         // 같은 채팅방 접속자들에게 메시지 전송
         String sendMessage = objectMapper.writeValueAsString(chatMessageDto);
