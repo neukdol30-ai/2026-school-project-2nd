@@ -41,7 +41,7 @@ public class SecurityConfig {
                         .logoutUrl("/member/logout") // 이 주소로 POST 요청 시 로그아웃
                         .logoutSuccessUrl("/") // 로그아웃 후 메인으로
                 );
-        // csrk는 켠 채로 둔다(기본값).
+        // csrf는 켠 채로 둔다(기본값).
         return http.build();
     }
 }

@@ -29,6 +29,6 @@ public class MemberDto {
     private String profileImage; // 프로필 이미지 경로
     private LocalDateTime lastLoginDate; // 마지막 로그인 시각(시각까지 담음)
     private String agreeTermsYn; // 이용약관 동의 여부('Y'/'N')
-    private String aggreePrivacyYn; // 개인정보 동의 여부('Y'/'N')
+    private String agreePrivacyYn; // 개인정보 동의 여부('Y'/'N')
     private LocalDateTime regdate; // 가입 시각(DB 기본값 SYSTIMESTAMP)
 }
