@@ -12,6 +12,7 @@ import org.springframework.web.socket.handler.TextWebSocketHandler;
 import tools.jackson.databind.ObjectMapper;
 
 import java.net.http.WebSocket;
+import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -21,7 +22,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class ChatHandler extends TextWebSocketHandler {
 
     private final ChatRedisService chatRedisService;
-    private final ObjectMapper objectMapper = new ObjectMapper();
+    private final ObjectMapper objectMapper;
 
     //roomNo별 접속자 목록
     private final Map<Integer, Set<WebSocketSession>> roomSessionMap = new ConcurrentHashMap<>();
@@ -37,6 +38,9 @@ public class ChatHandler extends TextWebSocketHandler {
 
         ChatMessageDto chatMessageDto =
                 objectMapper.readValue(payload, ChatMessageDto.class);
+
+        //1:1문의 채팅 시간표시
+        chatMessageDto.setCreatedDate(LocalDateTime.now());
 
         Integer roomNo = chatMessageDto.getRoomNo();
 

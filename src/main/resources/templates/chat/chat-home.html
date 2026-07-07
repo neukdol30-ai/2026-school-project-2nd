@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>상담 홈</title>
+
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #eef3f8;
+        }
+
+        .talk-wrap {
+            width: 430px;
+            min-height: 720px;
+            margin: 30px auto;
+            background: #f7f7f8;
+            border-radius: 28px;
+            overflow: hidden;
+            box-shadow: 0 10px 35px rgba(0, 0, 0, 0.18);
+            position: relative;
+        }
+
+        .hero {
+            height: 185px;
+            background: linear-gradient(135deg, #1d75ff, #00b894);
+            color: white;
+            padding: 28px 24px;
+            box-sizing: border-box;
+        }
+
+        .hero-title {
+            font-size: 26px;
+            font-weight: 800;
+            margin-bottom: 10px;
+        }
+
+        .hero-sub {
+            font-size: 14px;
+            opacity: 0.95;
+            line-height: 1.5;
+        }
+
+        .card {
+            width: calc(100% - 40px);
+            margin: -42px auto 0;
+            background: white;
+            border-radius: 20px;
+            padding: 22px 18px;
+            box-sizing: border-box;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+        }
+
+        .brand-row {
+            display: flex;
+            align-items: center;
+            margin-bottom: 14px;
+        }
+
+        .brand-icon {
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            background: #eef3ff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 22px;
+            margin-right: 10px;
+        }
+
+        .brand-name {
+            font-weight: 800;
+            font-size: 16px;
+        }
+
+        .brand-status {
+            font-size: 12px;
+            color: #8c8c8c;
+            margin-top: 3px;
+        }
+
+        .welcome {
+            font-size: 15px;
+            line-height: 1.6;
+            color: #222;
+            margin-bottom: 18px;
+        }
+
+        .quick-title {
+            font-weight: 700;
+            margin-bottom: 12px;
+        }
+
+        .quick-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .quick-form {
+            margin: 0;
+        }
+
+        .quick-btn {
+            width: 100%;
+            height: 46px;
+            border: 1px solid #e1e3e8;
+            background: white;
+            border-radius: 999px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: 0.15s;
+        }
+
+        .quick-btn:hover {
+            border-color: #0b39e5;
+            color: #0b39e5;
+            box-shadow: 0 4px 12px rgba(11, 57, 229, 0.12);
+        }
+
+        .main-action {
+            margin-top: 20px;
+        }
+
+        .main-action a {
+            display: block;
+            text-align: center;
+            background: #0b24d9;
+            color: white;
+            padding: 15px;
+            border-radius: 15px;
+            text-decoration: none;
+            font-weight: 800;
+        }
+
+        .main-action.disabled a {
+            background: #b8bec9;
+            pointer-events: none;
+        }
+
+        .bottom-nav {
+            position: absolute;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            height: 76px;
+            background: rgba(255, 255, 255, 0.94);
+            border-top: 1px solid #eee;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+        }
+
+        .nav-item {
+            text-align: center;
+            color: #999;
+            font-size: 12px;
+            text-decoration: none;
+        }
+
+        .nav-item.active {
+            color: #0b24d9;
+            font-weight: 800;
+        }
+
+        .nav-icon {
+            display: block;
+            font-size: 22px;
+            margin-bottom: 4px;
+        }
+
+        .notice {
+            margin: 18px 20px 90px;
+            color: #999;
+            font-size: 13px;
+            text-align: center;
+            line-height: 1.5;
+        }
+    </style>
+</head>
+<body>
+
+<div class="talk-wrap">
+    <div class="hero">
+        <div class="hero-title">SecondPro 상담센터</div>
+        <div class="hero-sub">
+            메일, 지도, 증권, 뉴스, 날씨, 캘린더 사용 중<br>
+            궁금한 점을 실시간으로 문의해보세요.
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="brand-row">
+            <div class="brand-icon">💬</div>
+            <div>
+                <div class="brand-name">SecondPro Help</div>
+                <div class="brand-status">⚡ 빠르게 답변 받을 수 있어요</div>
+            </div>
+        </div>
+
+        <div class="welcome">
+            안녕하세요.
+            <b th:text="${loginUser.nickname}">사용자</b>님 😊<br>
+            무엇을 도와드릴까요?
+        </div>
+
+        <div class="quick-title">문의 유형을 선택해주세요</div>
+
+        <div class="quick-grid">
+            <form class="quick-form" action="/chat/start" method="post">
+                <input type="hidden" name="category" value="MAIL">
+                <button class="quick-btn" type="submit">📧 메일 문의</button>
+            </form>
+
+            <form class="quick-form" action="/chat/start" method="post">
+                <input type="hidden" name="category" value="MAP">
+                <button class="quick-btn" type="submit">🗺 지도 문의</button>
+            </form>
+
+            <form class="quick-form" action="/chat/start" method="post">
+                <input type="hidden" name="category" value="STOCK">
+                <button class="quick-btn" type="submit">📈 증권 문의</button>
+            </form>
+
+            <form class="quick-form" action="/chat/start" method="post">
+                <input type="hidden" name="category" value="NEWS">
+                <button class="quick-btn" type="submit">📰 뉴스 문의</button>
+            </form>
+
+            <form class="quick-form" action="/chat/start" method="post">
+                <input type="hidden" name="category" value="WEATHER">
+                <button class="quick-btn" type="submit">🌤 날씨 문의</button>
+            </form>
+
+            <form class="quick-form" action="/chat/start" method="post">
+                <input type="hidden" name="category" value="CALENDAR">
+                <button class="quick-btn" type="submit">📅 캘린더 문의</button>
+            </form>
+
+            <form class="quick-form" action="/chat/start" method="post">
+                <input type="hidden" name="category" value="ETC">
+                <button class="quick-btn" type="submit">💬 기타 문의</button>
+            </form>
+        </div>
+
+        <div class="main-action" th:if="${openRoom != null}">
+            <a th:href="@{/chat/room/{roomNo}(roomNo=${openRoom.roomNo})}">
+                기존 대화 이어가기
+            </a>
+        </div>
+    </div>
+
+    <div class="notice">
+        상담 내용은 서비스 품질 향상과 문의 이력 확인을 위해 저장될 수 있습니다.
+    </div>
+
+    <div class="bottom-nav">
+        <a href="/chat" class="nav-item active">
+            <span class="nav-icon">🏠</span>
+            홈
+        </a>
+        <a th:href="${openRoom != null} ? @{/chat/room/{roomNo}(roomNo=${openRoom.roomNo})} : '#'"
+           class="nav-item">
+            <span class="nav-icon">💬</span>
+            대화
+        </a>
+        <a href="#" class="nav-item">
+            <span class="nav-icon">⚙️</span>
+            설정
+        </a>
+    </div>
+</div>
+
+</body>
+</html>

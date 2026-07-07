@@ -18,18 +18,50 @@ import java.util.List;
 @RequiredArgsConstructor
 public class ChatController {
 
-    private final ChatRedisService chatRedisService;
     private final ChatService chatService;
+    private final ChatRedisService chatRedisService;
 
     @GetMapping
-    public String chatPage(HttpSession session, Model model) {
+    public String chatHome(HttpSession session, Model model) {
         MemberDto loginUser = (MemberDto) session.getAttribute("loginUser");
 
         if (loginUser == null) {
             return "redirect:/temp/user-login";
         }
+        ChatRoomDto openRoom = chatService.findOpenRoomByUserNo(loginUser.getNo());
 
-        ChatRoomDto chatRoom = chatService.getOrCreateRoom(loginUser.getNo());
+        model.addAttribute("loginUser", loginUser);
+        model.addAttribute("openRoom", openRoom);
+
+        return "chat/chat-home";
+    }
+
+    @PostMapping("/start")
+    public String startChat(
+            @RequestParam String category,
+            HttpSession session
+    ){
+        MemberDto loginUser = (MemberDto) session.getAttribute("loginUser");
+
+        if (loginUser == null) {
+            return "redirect:/temp/user-login";
+        }
+        ChatRoomDto chatRoom = chatService.getOrCreateRoom(loginUser.getNo(),  category);
+        return "redirect:/chat/room/" + chatRoom.getRoomNo();
+    }
+
+    @GetMapping("/room/{roomNo}")
+    public String chatRoom(
+            @PathVariable Integer roomNo,
+            HttpSession session,
+            Model model
+    ) {
+        MemberDto loginUser = (MemberDto) session.getAttribute("loginUser");
+
+        if (loginUser == null) {
+            return "redirect:/temp/user-login";
+        }
+        ChatRoomDto chatRoom = chatService.findRoomByRoomNo(roomNo);
 
         model.addAttribute("chatRoom", chatRoom);
         model.addAttribute("loginUser", loginUser);
@@ -42,7 +74,7 @@ public class ChatController {
         MemberDto loginUser = (MemberDto) session.getAttribute("loginUser");
 
         if (loginUser == null) {
-            return "redirect:/member/login";
+            return "redirect:/temp/admin-login";
         }
 
         if (!"ADMIN".equals(loginUser.getRole())) {
@@ -66,7 +98,7 @@ public class ChatController {
         MemberDto loginUser = (MemberDto) session.getAttribute("loginUser");
 
         if (loginUser == null) {
-            return "redirect:/member/login";
+            return "redirect:/temp/admin-login";
         }
 
         if (!"ADMIN".equals(loginUser.getRole())) {

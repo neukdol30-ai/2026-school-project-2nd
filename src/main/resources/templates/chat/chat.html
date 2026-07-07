@@ -8,34 +8,87 @@
         body {
             margin: 0;
             font-family: Arial, sans-serif;
-            background: #f5f6f7;
+            background: #eef3f8;
         }
 
         .chat-wrap {
-            width: 420px;
-            height: 620px;
-            margin: 50px auto;
+            width: 430px;
+            height: 720px;
+            margin: 30px auto;
             background: #fff;
-            border: 1px solid #ddd;
-            border-radius: 12px;
+            border-radius: 28px;
             display: flex;
             flex-direction: column;
             overflow: hidden;
+            box-shadow: 0 10px 35px rgba(0, 0, 0, 0.18);
         }
 
         .chat-header {
-            padding: 16px;
-            background: #03c75a;
-            color: white;
-            font-weight: bold;
-            font-size: 18px;
+            padding: 18px 20px;
+            background: white;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .back-link {
+            text-decoration: none;
+            color: #0b24d9;
+            font-size: 24px;
+            line-height: 1;
+        }
+
+        .header-icon {
+            width: 38px;
+            height: 38px;
+            background: #eef3ff;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .header-info {
+            flex: 1;
+        }
+
+        .header-title {
+            font-weight: 800;
+            font-size: 16px;
+        }
+
+        .header-sub {
+            font-size: 12px;
+            color: #999;
+            margin-top: 3px;
+        }
+
+        .category-badge {
+            font-size: 12px;
+            background: #f1f3ff;
+            color: #0b24d9;
+            padding: 6px 10px;
+            border-radius: 999px;
+            font-weight: 700;
+        }
+
+        .chat-notice {
+            margin: 14px 16px 0;
+            padding: 12px;
+            background: #f8f9fb;
+            border: 1px solid #e8ebf0;
+            border-radius: 12px;
+            color: #555;
+            font-size: 13px;
+            line-height: 1.4;
         }
 
         .chat-body {
             flex: 1;
             padding: 16px;
             overflow-y: auto;
-            background: #f1f3f5;
+            background: white;
         }
 
         .message-row {
@@ -52,55 +105,82 @@
         }
 
         .message-bubble {
-            max-width: 70%;
-            padding: 10px 12px;
-            border-radius: 14px;
+            max-width: 72%;
+            padding: 11px 13px;
+            border-radius: 17px;
             font-size: 14px;
-            line-height: 1.4;
+            line-height: 1.45;
             word-break: break-word;
         }
 
         .message-row.me .message-bubble {
-            background: #03c75a;
+            background: #0b24d9;
             color: white;
-            border-bottom-right-radius: 4px;
+            border-bottom-right-radius: 5px;
         }
 
         .message-row.other .message-bubble {
-            background: white;
-            color: #333;
-            border-bottom-left-radius: 4px;
+            background: #f1f3f5;
+            color: #222;
+            border-bottom-left-radius: 5px;
         }
 
         .chat-input-box {
             display: flex;
             padding: 12px;
-            border-top: 1px solid #ddd;
+            border-top: 1px solid #eee;
             background: white;
         }
 
         #messageInput {
             flex: 1;
-            height: 42px;
-            padding: 0 12px;
-            border: 1px solid #ccc;
-            border-radius: 20px;
+            height: 44px;
+            padding: 0 14px;
+            border: 1px solid #ddd;
+            border-radius: 22px;
             outline: none;
+            font-size: 14px;
         }
+        .message-box{
+            display: flex;
+            flex-direction: column;
+        }
+        .message-row.me .message-box {
+            align-items: flex-end;
+        }
+
+        .message-row.other .message-box {
+            align-items: flex-start;
+        }
+
+        .message-meta {
+            margin-top: 4px;
+            font-size: 11px;
+            color: #aaa;
+        }
+
+        .message-row.me .message-meta {
+            text-align: right;
+        }
+
+        .message-row.other .message-meta {
+            text-align: left;
+        }
+
 
         #sendBtn {
             margin-left: 8px;
-            padding: 0 18px;
+            padding: 0 17px;
             border: none;
-            border-radius: 20px;
-            background: #03c75a;
+            border-radius: 22px;
+            background: #0b24d9;
             color: white;
             font-weight: bold;
             cursor: pointer;
         }
 
         #sendBtn:hover {
-            background: #02b350;
+            background: #071bb0;
         }
     </style>
 </head>
@@ -108,7 +188,26 @@
 
 <div class="chat-wrap">
     <div class="chat-header">
-        1:1 실시간 상담
+        <a href="/chat" class="back-link">‹</a>
+
+        <div class="header-icon">
+            <span th:text="${chatRoom.categoryIcon}">💬</span>
+        </div>
+
+        <div class="header-info">
+            <div class="header-title">SecondPro 상담센터</div>
+            <div class="header-sub">빠르게 답변 받을 수 있어요</div>
+        </div>
+
+        <div class="category-badge" th:text="${chatRoom.categoryName}">
+            일반 문의
+        </div>
+    </div>
+
+    <div class="chat-notice">
+        선택한 문의 유형:
+        <b th:text="${chatRoom.categoryName}">일반 문의</b><br>
+        문의 내용을 남겨주시면 관리자가 확인 후 답변드립니다.
     </div>
 
     <div id="chatBody" class="chat-body"></div>

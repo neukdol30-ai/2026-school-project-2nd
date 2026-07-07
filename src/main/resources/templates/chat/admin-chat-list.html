@@ -11,54 +11,90 @@
         }
 
         .wrap {
-            width: 900px;
+            width: 960px;
             margin: 50px auto;
             background: white;
             border: 1px solid #ddd;
-            border-radius: 12px;
+            border-radius: 14px;
             overflow: hidden;
         }
 
         .header {
-            padding: 20px;
-            background: #03c75a;
+            padding: 22px;
+            background: #0b24d9;
             color: white;
             font-size: 22px;
             font-weight: bold;
         }
 
         .room-list {
-            padding: 20px;
+            padding: 22px;
         }
 
         .room-item {
             display: block;
-            padding: 16px;
-            border: 1px solid #ddd;
-            border-radius: 10px;
+            padding: 18px;
+            border: 1px solid #e1e3e8;
+            border-radius: 12px;
             margin-bottom: 12px;
             text-decoration: none;
             color: #333;
+            transition: 0.15s;
         }
 
         .room-item:hover {
-            background: #f1f3f5;
+            background: #f8f9ff;
+            border-color: #0b24d9;
+        }
+
+        .top-line {
+            display: flex;
+            align-items: center;
+            margin-bottom: 9px;
+            gap: 8px;
+        }
+
+        .category {
+            background: #f1f3ff;
+            color: #0b24d9;
+            border-radius: 999px;
+            padding: 5px 10px;
+            font-size: 13px;
+            font-weight: 800;
         }
 
         .room-title {
             font-weight: bold;
-            margin-bottom: 8px;
-        }
-
-        .last-message {
-            color: #666;
-            font-size: 14px;
+            font-size: 16px;
         }
 
         .status {
-            float: right;
-            color: #03c75a;
+            margin-left: auto;
             font-weight: bold;
+            font-size: 13px;
+        }
+
+        .status.open {
+            color: #03c75a;
+        }
+
+        .status.closed {
+            color: #999;
+        }
+
+        .meta {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 5px;
+        }
+
+        .last-message {
+            color: #333;
+            font-size: 14px;
+            background: #f7f7f8;
+            padding: 10px;
+            border-radius: 8px;
+            margin-top: 8px;
         }
     </style>
 </head>
@@ -78,16 +114,29 @@
            th:each="room : ${roomList}"
            th:href="@{/chat/admin/{roomNo}(roomNo=${room.roomNo})}">
 
-            <div class="room-title">
-                채팅방 번호:
-                <span th:text="${room.roomNo}"></span>
+            <div class="top-line">
+                <span class="category">
+                    <span th:text="${room.categoryIcon}">💬</span>
+                    <span th:text="${room.categoryName}">일반 문의</span>
+                </span>
 
-                <span class="status" th:text="${room.status}"></span>
+                <span class="room-title">
+                    채팅방 #<span th:text="${room.roomNo}"></span>
+                </span>
+
+                <span class="status"
+                      th:classappend="${room.status == 'OPEN'} ? ' open' : ' closed'"
+                      th:text="${room.status}">
+                    OPEN
+                </span>
             </div>
 
-            <div>
+            <div class="meta">
                 사용자 번호:
-                <span th:text="${room.userNo}"></span>
+                <span th:text="${room.userNo != null ? room.userNo : '탈퇴 회원'}"></span>
+                /
+                관리자 번호:
+                <span th:text="${room.adminNo != null ? room.adminNo : '미배정'}"></span>
             </div>
 
             <div class="last-message">

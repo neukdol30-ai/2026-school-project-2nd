@@ -2,16 +2,29 @@ package com.siyan1234.itproject2nd.chat.service;
 
 import com.siyan1234.itproject2nd.chat.dto.ChatMessageDto;
 import com.siyan1234.itproject2nd.chat.dto.ChatRoomDto;
+import org.springframework.scheduling.support.SimpleTriggerContext;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 public interface ChatService {
+
     ChatRoomDto getOrCreateRoom(Integer userNo);
+
+    //1:1채팅 문의기능
+    ChatRoomDto getOrCreateRoom(Integer userNo, String category);
+
+    ChatRoomDto findOpenRoomByUserNo(Integer userNo);
+
     ChatRoomDto findRoomByRoomNo(Integer roomNo);
+
     List<ChatRoomDto> findAllRooms();
+
     void saveMessage(ChatMessageDto chatMessageDto);
+
     List<ChatMessageDto> findMessagesByRoomNo(Integer roomNo);
+
     void closeRoom(Integer roomNo);
+
     void updateReadYn(Integer roomNo);
 }

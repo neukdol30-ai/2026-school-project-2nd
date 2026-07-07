@@ -11,11 +11,13 @@
         user_no,
         admin_no,
         status,
+        category,
         created_date
         ) VALUES (
         #{userNo, jdbcType=NUMERIC},
         #{adminNo, jdbcType=NUMERIC},
         'OPEN',
+        #{category, jdbcType=VARCHAR},
         SYSTIMESTAMP
         )
     </insert>
@@ -24,18 +26,19 @@
             parameterType="int"
             resultType="com.siyan1234.itproject2nd.chat.dto.ChatRoomDto">
         SELECT
-        ROOM_NO,
-        USER_NO,
-        ADMIN_NO,
-        STATUS,
-        LAST_MESSAGE,
-        LAST_MESSAGE_DATE,
-        CREATED_DATE,
-        CLOSED_DATE
-        FROM CHAT_ROOM
-        WHERE USER_NO = #{userNo}
-        AND STATUS = 'OPEN'
-        ORDER BY CREATED_DATE DESC
+        room_no,
+        user_no,
+        admin_no,
+        status,
+        category,
+        last_message,
+        last_message_date,
+        created_date,
+        closed_date
+        FROM chat_room
+        WHERE user_no = #{userNo}
+        AND status = 'OPEN'
+        ORDER BY created_date DESC
         FETCH FIRST 1 ROWS ONLY
     </select>
 
@@ -43,64 +46,79 @@
             parameterType="int"
             resultType="com.siyan1234.itproject2nd.chat.dto.ChatRoomDto">
         SELECT
-        ROOM_NO,
-        USER_NO,
-        ADMIN_NO,
-        STATUS,
-        LAST_MESSAGE,
-        LAST_MESSAGE_DATE,
-        CREATED_DATE,
-        CLOSED_DATE
-        FROM CHAT_ROOM
-        WHERE ROOM_NO = #{roomNo}
+        room_no,
+        user_no,
+        admin_no,
+        status,
+        category,
+        last_message,
+        last_message_date,
+        created_date,
+        closed_date
+        FROM chat_room
+        WHERE room_no = #{roomNo}
     </select>
 
     <select id="findAllRooms"
             resultType="com.siyan1234.itproject2nd.chat.dto.ChatRoomDto">
         SELECT
-        ROOM_NO,
-        USER_NO,
-        ADMIN_NO,
-        STATUS,
-        LAST_MESSAGE,
-        LAST_MESSAGE_DATE,
-        CREATED_DATE,
-        CLOSED_DATE
-        FROM CHAT_ROOM
-        ORDER BY LAST_MESSAGE_DATE DESC NULLS LAST, CREATED_DATE DESC
+        room_no,
+        user_no,
+        admin_no,
+        status,
+        category,
+        last_message,
+        last_message_date,
+        created_date,
+        closed_date
+        FROM chat_room
+        ORDER BY
+        CASE status
+        WHEN 'OPEN' THEN 1
+        WHEN 'CLOSED' THEN 2
+        ELSE 3
+        END,
+        last_message_date DESC NULLS LAST,
+        created_date DESC
     </select>
+
+    <update id="updateRoomCategory">
+        UPDATE chat_room
+        SET category = #{category, jdbcType=VARCHAR}
+        WHERE room_no = #{roomNo, jdbcType=NUMERIC}
+    </update>
 
     <update id="updateLastMessage"
             parameterType="com.siyan1234.itproject2nd.chat.dto.ChatRoomDto">
         UPDATE chat_room
         SET
-        last_message = #{lastMessage},
+        last_message = #{lastMessage, jdbcType=VARCHAR},
         last_message_date = SYSTIMESTAMP
-        WHERE room_no = #{roomNo}
+        WHERE room_no = #{roomNo, jdbcType=NUMERIC}
     </update>
 
     <update id="closeRoom" parameterType="int">
-        UPDATE CHAT_ROOM
+        UPDATE chat_room
         SET
-        STATUS = 'CLOSED',
-        CLOSED_DATE = SYSDATE
-        WHERE ROOM_NO = #{roomNo}
+        status = 'CLOSED',
+        closed_date = SYSTIMESTAMP
+        WHERE room_no = #{roomNo}
     </update>
 
     <insert id="saveMessage"
             parameterType="com.siyan1234.itproject2nd.chat.dto.ChatMessageDto">
         INSERT INTO chat_message (
-        room_no,
-        sender_no,
-        message_content,
-        read_yn,
-        created_date
+            room_no,
+            sender_no,
+            message_content,
+            read_yn,
+            created_date
         ) VALUES (
-        #{roomNo, jdbcType=NUMERIC},
-        #{senderNo, jdbcType=NUMERIC},
-        #{messageContent, jdbcType=VARCHAR},
-        'N',
-        SYSTIMESTAMP
+            #{roomNo, jdbcType=NUMERIC},
+            #{senderNo, jdbcType=NUMERIC},
+            #{messageContent, jdbcType=VARCHAR},
+            'N',
+            #{createDate, jdbcType=TIMESTAMP}
         )
     </insert>
 
@@ -108,22 +126,22 @@
             parameterType="int"
             resultType="com.siyan1234.itproject2nd.chat.dto.ChatMessageDto">
         SELECT
-        MESSAGE_NO,
-        ROOM_NO,
-        SENDER_NO,
-        MESSAGE_CONTENT,
-        READ_YN,
-        CREATED_DATE
-        FROM CHAT_MESSAGE
-        WHERE ROOM_NO = #{roomNo}
-        ORDER BY CREATED_DATE ASC, MESSAGE_NO ASC
+        message_no,
+        room_no,
+        sender_no,
+        message_content,
+        read_yn,
+        created_date
+        FROM chat_message
+        WHERE room_no = #{roomNo}
+        ORDER BY created_date ASC, message_no ASC
     </select>
 
     <update id="updateReadYn" parameterType="int">
-        UPDATE CHAT_MESSAGE
-        SET READ_YN = 'Y'
-        WHERE ROOM_NO = #{roomNo}
-        AND READ_YN = 'N'
+        UPDATE chat_message
+        SET read_yn = 'Y'
+        WHERE room_no = #{roomNo}
+        AND read_yn = 'N'
     </update>
 
 </mapper>

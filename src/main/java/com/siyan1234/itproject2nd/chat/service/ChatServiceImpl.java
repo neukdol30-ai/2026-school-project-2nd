@@ -18,18 +18,35 @@ public class ChatServiceImpl implements ChatService {
 
     @Override
     public ChatRoomDto getOrCreateRoom(Integer userNo) {
+        return getOrCreateRoom(userNo, "ETC");
+    }
+
+    @Override
+    public ChatRoomDto getOrCreateRoom(Integer userNo, String category) {
         ChatRoomDto findRoom = chatDao.findRoomByUserNo(userNo);
 
         if (findRoom != null) {
+            if (category != null && !category.equals(findRoom.getCategory())) {
+                chatDao.updateRoomCategory(findRoom.getRoomNo(), category);
+                findRoom.setCategory(category);
+            }
+
             return findRoom;
         }
 
         ChatRoomDto newRoom = new ChatRoomDto();
         newRoom.setUserNo(userNo);
         newRoom.setAdminNo(null);
+        newRoom.setCategory(category);
 
         chatDao.createRoom(newRoom);
 
+        return chatDao.findRoomByUserNo(userNo);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public ChatRoomDto findOpenRoomByUserNo(Integer userNo) {
         return chatDao.findRoomByUserNo(userNo);
     }
 
@@ -47,6 +64,9 @@ public class ChatServiceImpl implements ChatService {
 
     @Override
     public void saveMessage(ChatMessageDto chatMessageDto) {
+        if (chatMessageDto.getCreatedDate() == null) {
+            chatMessageDto.setCreatedDate(java.time.LocalDateTime.now());
+        }
         chatDao.saveMessage(chatMessageDto);
 
         ChatRoomDto chatRoomDto = new ChatRoomDto();
@@ -71,6 +91,4 @@ public class ChatServiceImpl implements ChatService {
     public void updateReadYn(Integer roomNo) {
         chatDao.updateReadYn(roomNo);
     }
-
-
 }

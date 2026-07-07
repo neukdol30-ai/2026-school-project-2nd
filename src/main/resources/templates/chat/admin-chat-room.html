@@ -8,45 +8,165 @@
         body {
             margin: 0;
             font-family: Arial, sans-serif;
-            background: #f5f6f7;
+            background: #eef3f8;
+        }
+
+        .admin-chat-layout {
+            width: 1000px;
+            height: 720px;
+            margin: 30px auto;
+            display: flex;
+            gap: 20px;
+        }
+
+        .side-panel {
+            width: 260px;
+            background: white;
+            border-radius: 24px;
+            box-shadow: 0 10px 35px rgba(0, 0, 0, 0.12);
+            padding: 24px;
+            box-sizing: border-box;
+        }
+
+        .side-title {
+            font-size: 22px;
+            font-weight: 800;
+            margin-bottom: 18px;
+        }
+
+        .info-card {
+            border: 1px solid #e8ebf0;
+            border-radius: 16px;
+            padding: 16px;
+            margin-bottom: 14px;
+            background: #fafbfc;
+        }
+
+        .info-label {
+            font-size: 12px;
+            color: #999;
+            margin-bottom: 6px;
+        }
+
+        .info-value {
+            font-size: 15px;
+            font-weight: 700;
+            color: #222;
+        }
+
+        .category-badge {
+            display: inline-block;
+            background: #f1f3ff;
+            color: #0b24d9;
+            padding: 7px 11px;
+            border-radius: 999px;
+            font-size: 13px;
+            font-weight: 800;
+        }
+
+        .status-open {
+            color: #03c75a;
+        }
+
+        .status-closed {
+            color: #999;
+        }
+
+        .side-actions {
+            margin-top: 20px;
+        }
+
+        .side-actions a,
+        .side-actions button {
+            width: 100%;
+            display: block;
+            box-sizing: border-box;
+            text-align: center;
+            border: none;
+            border-radius: 12px;
+            padding: 13px;
+            font-weight: 800;
+            cursor: pointer;
+            text-decoration: none;
+            margin-bottom: 10px;
+        }
+
+        .list-btn {
+            background: #f1f3f5;
+            color: #333;
+        }
+
+        .close-btn {
+            background: #222;
+            color: white;
         }
 
         .chat-wrap {
-            width: 420px;
-            height: 620px;
-            margin: 50px auto;
-            background: #fff;
-            border: 1px solid #ddd;
-            border-radius: 12px;
+            flex: 1;
+            height: 720px;
+            background: white;
+            border-radius: 24px;
             display: flex;
             flex-direction: column;
             overflow: hidden;
+            box-shadow: 0 10px 35px rgba(0, 0, 0, 0.12);
         }
 
         .chat-header {
-            padding: 16px;
-            background: #03c75a;
-            color: white;
-            font-weight: bold;
-            font-size: 18px;
+            padding: 20px 24px;
+            background: white;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            align-items: center;
+            gap: 14px;
         }
 
-        .chat-header a {
-            color: white;
-            text-decoration: none;
+        .header-icon {
+            width: 46px;
+            height: 46px;
+            background: #eef3ff;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 22px;
+        }
+
+        .header-info {
+            flex: 1;
+        }
+
+        .header-title {
+            font-size: 18px;
+            font-weight: 800;
+        }
+
+        .header-sub {
+            margin-top: 4px;
+            color: #999;
             font-size: 13px;
-            float: right;
+        }
+
+        .admin-notice {
+            margin: 16px 20px 0;
+            padding: 13px 15px;
+            background: #f8f9ff;
+            border: 1px solid #e0e5ff;
+            border-radius: 14px;
+            color: #444;
+            font-size: 13px;
+            line-height: 1.45;
         }
 
         .chat-body {
             flex: 1;
-            padding: 16px;
+            padding: 20px;
             overflow-y: auto;
-            background: #f1f3f5;
+            background: #ffffff;
         }
 
         .message-row {
-            margin-bottom: 12px;
+            margin-bottom: 13px;
             display: flex;
         }
 
@@ -58,90 +178,163 @@
             justify-content: flex-start;
         }
 
+        .message-box {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .message-row.me .message-box {
+            align-items: flex-end;
+        }
+
+        .message-row.other .message-box {
+            align-items: flex-start;
+        }
+
         .message-bubble {
-            max-width: 70%;
-            padding: 10px 12px;
-            border-radius: 14px;
+            max-width: 360px;
+            padding: 11px 14px;
+            border-radius: 17px;
             font-size: 14px;
-            line-height: 1.4;
+            line-height: 1.45;
             word-break: break-word;
         }
 
         .message-row.me .message-bubble {
-            background: #03c75a;
+            background: #0b24d9;
             color: white;
-            border-bottom-right-radius: 4px;
+            border-bottom-right-radius: 5px;
         }
 
         .message-row.other .message-bubble {
-            background: white;
-            color: #333;
-            border-bottom-left-radius: 4px;
+            background: #f1f3f5;
+            color: #222;
+            border-bottom-left-radius: 5px;
+        }
+
+        .message-meta {
+            margin-top: 4px;
+            font-size: 11px;
+            color: #aaa;
         }
 
         .chat-input-box {
             display: flex;
-            padding: 12px;
-            border-top: 1px solid #ddd;
+            padding: 14px;
+            border-top: 1px solid #eee;
             background: white;
         }
 
         #messageInput {
             flex: 1;
-            height: 42px;
-            padding: 0 12px;
-            border: 1px solid #ccc;
-            border-radius: 20px;
+            height: 46px;
+            padding: 0 16px;
+            border: 1px solid #ddd;
+            border-radius: 23px;
             outline: none;
+            font-size: 14px;
         }
 
         #sendBtn {
-            margin-left: 8px;
-            padding: 0 18px;
+            margin-left: 10px;
+            padding: 0 22px;
             border: none;
-            border-radius: 20px;
-            background: #03c75a;
+            border-radius: 23px;
+            background: #0b24d9;
             color: white;
-            font-weight: bold;
+            font-weight: 800;
             cursor: pointer;
         }
 
-        .close-form {
-            padding: 10px;
-            border-top: 1px solid #ddd;
-            text-align: center;
-        }
-
-        .close-form button {
-            border: none;
-            background: #555;
-            color: white;
-            padding: 8px 14px;
-            border-radius: 6px;
-            cursor: pointer;
+        #sendBtn:hover {
+            background: #071bb0;
         }
     </style>
 </head>
 <body>
 
-<div class="chat-wrap">
-    <div class="chat-header">
-        관리자 상담방
-        <a href="/chat/admin">목록</a>
-    </div>
+<div class="admin-chat-layout">
 
-    <div id="chatBody" class="chat-body"></div>
+    <aside class="side-panel">
+        <div class="side-title">상담 정보</div>
 
-    <div class="chat-input-box">
-        <input type="text" id="messageInput" placeholder="답변을 입력하세요">
-        <button type="button" id="sendBtn">전송</button>
-    </div>
+        <div class="info-card">
+            <div class="info-label">채팅방 번호</div>
+            <div class="info-value">
+                #<span th:text="${chatRoom.roomNo}"></span>
+            </div>
+        </div>
 
-    <form class="close-form"
-          th:action="@{/chat/{roomNo}/close(roomNo=${chatRoom.roomNo})}"
-          method="post">
-        <button type="submit">상담 종료</button>
-    </form>
+        <div class="info-card">
+            <div class="info-label">문의 유형</div>
+            <div class="info-value">
+                <span class="category-badge">
+                    <span th:text="${chatRoom.categoryIcon}">💬</span>
+                    <span th:text="${chatRoom.categoryName}">일반 문의</span>
+                </span>
+            </div>
+        </div>
+
+        <div class="info-card">
+            <div class="info-label">사용자 번호</div>
+            <div class="info-value" th:text="${chatRoom.userNo != null ? chatRoom.userNo : '탈퇴 회원'}">
+                1
+            </div>
+        </div>
+
+        <div class="info-card">
+            <div class="info-label">상담 상태</div>
+            <div class="info-value"
+                 th:classappend="${chatRoom.status == 'OPEN'} ? ' status-open' : ' status-closed'"
+                 th:text="${chatRoom.status}">
+                OPEN
+            </div>
+        </div>
+
+        <div class="side-actions">
+            <a href="/chat/admin" class="list-btn">목록으로 돌아가기</a>
+
+            <form th:action="@{/chat/{roomNo}/close(roomNo=${chatRoom.roomNo})}"
+                  method="post">
+                <button type="submit" class="close-btn">상담 종료</button>
+            </form>
+        </div>
+    </aside>
+
+    <section class="chat-wrap">
+        <div class="chat-header">
+            <div class="header-icon">
+                <span th:text="${chatRoom.categoryIcon}">💬</span>
+            </div>
+
+            <div class="header-info">
+                <div class="header-title">
+                    사용자 상담방
+                    #<span th:text="${chatRoom.roomNo}"></span>
+                </div>
+                <div class="header-sub">
+                    사용자의 문의 내용을 확인하고 실시간으로 답변하세요.
+                </div>
+            </div>
+
+            <span class="category-badge">
+                <span th:text="${chatRoom.categoryName}">일반 문의</span>
+            </span>
+        </div>
+
+        <div class="admin-notice">
+            관리자 계정으로 접속 중입니다.
+            사용자가 보낸 메시지는 왼쪽, 관리자가 보낸 답변은 오른쪽에 표시됩니다.
+        </div>
+
+        <div id="chatBody" class="chat-body"></div>
+
+        <div class="chat-input-box">
+            <input type="text" id="messageInput" placeholder="답변을 입력하세요">
+            <button type="button" id="sendBtn">전송</button>
+        </div>
+    </section>
+
 </div>
 
 <script th:inline="javascript">
