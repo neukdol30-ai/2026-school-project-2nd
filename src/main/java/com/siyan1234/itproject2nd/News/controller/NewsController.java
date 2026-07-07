@@ -1,4 +1,4 @@
-package com.siyan1234.itproject2nd.News.contorller;
+package com.siyan1234.itproject2nd.News.controller;
 
 
 import com.siyan1234.itproject2nd.News.dto.NewsDto;
@@ -8,18 +8,20 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 import java.util.List;
 
 @Controller
-@RequestMapping("/board")
+@RequestMapping("/api/news")
 @RequiredArgsConstructor
 @Slf4j
 public class NewsController {
 
     private final NewsService newsService;
 
-    @GetMapping("/api/news")
+    @ResponseBody
+    @GetMapping
     public List<NewsDto> getMainNews(){
         return newsService.getMainNews();
     }

@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.siyan1234.itproject2nd.News.dao.NewsDao">
+    <select id="findMainNews" resultType="com.siyan1234.itproject2nd.News.dao.NewsDao">
+        select
+        news_id as id,
+        title as title,
+        summary as summary,
+        source as source,
+        published_at as publishedat,
+        link as link from news order by news_id desc
+    </select>
+</mapper>
