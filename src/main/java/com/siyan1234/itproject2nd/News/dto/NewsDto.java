@@ -1,4 +1,4 @@
-package com.siyan1234.itproject2nd.dto;
+package com.siyan1234.itproject2nd.News.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

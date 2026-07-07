@@ -1,7 +1,7 @@
-package com.siyan1234.itproject2nd.service;
+package com.siyan1234.itproject2nd.News.service;
 
-import com.siyan1234.itproject2nd.dao.NewsDao;
-import com.siyan1234.itproject2nd.dto.NewsDto;
+import com.siyan1234.itproject2nd.News.dao.NewsDao;
+import com.siyan1234.itproject2nd.News.dto.NewsDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 

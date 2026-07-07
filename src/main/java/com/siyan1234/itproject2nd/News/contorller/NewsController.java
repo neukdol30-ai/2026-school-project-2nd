@@ -1,8 +1,8 @@
-package com.siyan1234.itproject2nd.contorller;
+package com.siyan1234.itproject2nd.News.contorller;
 
 
-import com.siyan1234.itproject2nd.dto.NewsDto;
-import com.siyan1234.itproject2nd.service.NewsService;
+import com.siyan1234.itproject2nd.News.dto.NewsDto;
+import com.siyan1234.itproject2nd.News.service.NewsService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Controller;
