@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>회원가입</title>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            font-family: Arial, "NotoSans KR", sans-serif;
+            background-color: #f4f6f8;
+            color: #222;
+        }
+    </style>
+</head>
+
+<body>
+<div class="page-wrap">
+    <div class="signup-box">
+        <h1 class="page-title">회원가입</h1>
+        <form th:action="@{/member/signup}" th:object="${signupDto}" method="post">
+
+        </form>
+    </div>
+</div>
+</body>
+</html>
