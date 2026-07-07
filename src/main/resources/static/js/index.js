@@ -15,6 +15,16 @@ createApp({
                 password: ""
             },
 
+            newsItems: [
+                {
+                    title: "주요 뉴스",
+                    description: "뉴스 요약 내용",
+                    link: "https://example.com",
+                    source: "언론사",
+                    pubDate: "2020-00-00"
+                }
+            ],
+
             widgets: [
                 {
                     id: 1,
