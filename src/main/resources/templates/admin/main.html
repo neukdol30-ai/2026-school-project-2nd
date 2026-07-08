@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <title>관리자 메인</title>
+    <link rel="stylesheet" th:href="@{/css/main.css}">
+
+</head>
+<body>
+<div class="page-wrap">
+    <div class="admin-box">
+
+        <h1 class="page-title">관리자 페이지</h1>
+
+        <p class="info-text">
+            현재 로그인 아이디: <strong sec:authentication="name">memberId</strong>
+        </p>
+
+        <p class="info-text">
+            현재 권한: <strong sec:authentication="principal.memberDto.role">role</strong>
+        </p>
+
+        <p class="info-text">ADMIN 권한이 있는 사용자만 이 화면에 도달할 수 있습니다.</p>
+
+        <a th:href="@{/}" class="bottom-link">메인으로</a>
+    </div>
+</div>
+
+</body>
+</html>
