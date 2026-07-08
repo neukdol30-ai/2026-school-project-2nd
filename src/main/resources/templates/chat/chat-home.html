@@ -4,10 +4,17 @@
     <meta charset="UTF-8">
     <title>상담 홈</title>
     <link rel="stylesheet" th:href="@{/css/chat/chat-home.css}">
-
 </head>
 <body>
 
+<!--
+    사용자 상담 홈 화면
+
+    역할:
+    - 문의 유형 선택
+    - 기존 OPEN 상담방이 있을 경우 기존 대화 이어가기
+    - chat-home.css와 연결
+-->
 <div class="talk-wrap">
     <div class="hero">
         <div class="hero-title">SecondPro 상담센터</div>
@@ -34,43 +41,50 @@
 
         <div class="quick-title">문의 유형을 선택해주세요</div>
 
+        <!--
+            문의 유형 선택 영역
+
+            각 버튼은 /chat/start 로 POST 요청을 보내고,
+            category 값을 기준으로 상담방을 생성하거나 기존 상담방 유형을 변경한다.
+        -->
         <div class="quick-grid">
-            <form class="quick-form" action="/chat/start" method="post">
+            <form class="quick-form" th:action="@{/chat/start}" method="post">
                 <input type="hidden" name="category" value="MAIL">
                 <button class="quick-btn" type="submit">📧 메일 문의</button>
             </form>
 
-            <form class="quick-form" action="/chat/start" method="post">
+            <form class="quick-form" th:action="@{/chat/start}" method="post">
                 <input type="hidden" name="category" value="MAP">
                 <button class="quick-btn" type="submit">🗺 지도 문의</button>
             </form>
 
-            <form class="quick-form" action="/chat/start" method="post">
+            <form class="quick-form" th:action="@{/chat/start}" method="post">
                 <input type="hidden" name="category" value="STOCK">
                 <button class="quick-btn" type="submit">📈 증권 문의</button>
             </form>
 
-            <form class="quick-form" action="/chat/start" method="post">
+            <form class="quick-form" th:action="@{/chat/start}" method="post">
                 <input type="hidden" name="category" value="NEWS">
                 <button class="quick-btn" type="submit">📰 뉴스 문의</button>
             </form>
 
-            <form class="quick-form" action="/chat/start" method="post">
+            <form class="quick-form" th:action="@{/chat/start}" method="post">
                 <input type="hidden" name="category" value="WEATHER">
                 <button class="quick-btn" type="submit">🌤 날씨 문의</button>
             </form>
 
-            <form class="quick-form" action="/chat/start" method="post">
+            <form class="quick-form" th:action="@{/chat/start}" method="post">
                 <input type="hidden" name="category" value="CALENDAR">
                 <button class="quick-btn" type="submit">📅 캘린더 문의</button>
             </form>
 
-            <form class="quick-form" action="/chat/start" method="post">
+            <form class="quick-form" th:action="@{/chat/start}" method="post">
                 <input type="hidden" name="category" value="ETC">
                 <button class="quick-btn" type="submit">💬 기타 문의</button>
             </form>
         </div>
 
+        <!-- 진행 중인 상담방이 있을 때만 기존 대화 이어가기 버튼 표시 -->
         <div class="main-action" th:if="${openRoom != null}">
             <a th:href="@{/chat/room/{roomNo}(roomNo=${openRoom.roomNo})}">
                 기존 대화 이어가기
@@ -87,11 +101,13 @@
             <span class="nav-icon">🏠</span>
             홈
         </a>
+
         <a th:href="${openRoom != null} ? @{/chat/room/{roomNo}(roomNo=${openRoom.roomNo})} : '#'"
            class="nav-item">
             <span class="nav-icon">💬</span>
             대화
         </a>
+
         <a href="#" class="nav-item">
             <span class="nav-icon">⚙️</span>
             설정

@@ -7,6 +7,19 @@
 </head>
 <body>
 
+<!--
+    관리자 상담방 상세 화면
+
+    연결 파일:
+    - CSS: /css/chat/admin-chat-room.css
+    - JS: /js/chat.js
+
+    역할:
+    - 관리자 실시간 답변
+    - 상담방 정보 확인
+    - 상담 종료
+    - 종료 상담방 삭제
+-->
 <div class="admin-chat-layout">
 
     <aside class="side-panel">
@@ -48,12 +61,15 @@
         <div class="side-actions">
             <a href="/chat/admin" class="list-btn">목록으로 돌아가기</a>
 
+            <!-- OPEN 상태일 때만 상담 종료 버튼 표시 -->
             <form th:if="${chatRoom.status == 'OPEN'}"
                   th:action="@{/chat/{roomNo}/close(roomNo=${chatRoom.roomNo})}"
-                  method="post">
+                  method="post"
+                  onsubmit="return confirm('상담을 종료하시겠습니까? 종료 후에는 메시지를 보낼 수 없습니다.');">
                 <button type="submit" class="close-btn">상담 종료</button>
             </form>
 
+            <!-- CLOSED 상태일 때만 상담방 삭제 버튼 표시 -->
             <form th:if="${chatRoom.status == 'CLOSED'}"
                   th:action="@{/chat/admin/{roomNo}/delete(roomNo=${chatRoom.roomNo})}"
                   method="post"
@@ -89,11 +105,20 @@
             사용자가 보낸 메시지는 왼쪽, 관리자가 보낸 답변은 오른쪽에 표시됩니다.
         </div>
 
+        <!-- 메시지 목록은 chat.js에서 렌더링 -->
         <div id="chatBody" class="chat-body"></div>
 
         <div class="chat-input-box">
-            <input type="text" id="messageInput" placeholder="답변을 입력하세요">
-            <button type="button" id="sendBtn">전송</button>
+            <input type="text"
+                   id="messageInput"
+                   th:placeholder="${chatRoom.status == 'CLOSED'} ? '상담이 종료되었습니다.' : '답변을 입력하세요'"
+                   th:disabled="${chatRoom.status == 'CLOSED'}">
+
+            <button type="button"
+                    id="sendBtn"
+                    th:disabled="${chatRoom.status == 'CLOSED'}">
+                전송
+            </button>
         </div>
     </section>
 

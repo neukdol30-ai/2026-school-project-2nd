@@ -1,15 +1,52 @@
+/*
+    chat.js
+
+    사용 위치:
+    - chat.html
+    - admin-chat-room.html
+
+    역할:
+    - WebSocket 연결
+    - 채팅방 JOIN 이벤트 전송
+    - 메시지 전송
+    - 메시지 실시간 수신
+    - 읽음/안읽음 처리
+    - 상담 종료 시 입력창 비활성화
+
+    HTML에서 필요한 전역 변수:
+    - roomNo
+    - senderNo
+    - loginRole
+    - roomUserNo
+    - roomStatus
+*/
+
 let socket = null;
+let isChatClosed = typeof roomStatus !== "undefined" && roomStatus === "CLOSED";
 
 const chatBody = document.getElementById("chatBody");
 const messageInput = document.getElementById("messageInput");
 const sendBtn = document.getElementById("sendBtn");
 
+/*
+    중복 렌더링 방지용 Set
+
+    Redis 메시지와 DB 메시지를 함께 가져오거나,
+    WebSocket 수신과 fetch 결과가 겹칠 때 같은 메시지가 두 번 출력되는 것을 방지한다.
+*/
 const renderedMessageKeys = new Set();
 
 connectWebSocket();
 
+/**
+ * WebSocket 연결
+ *
+ * localhost 고정 대신 현재 접속한 host 기준으로 WebSocket 주소를 만든다.
+ * 배포 환경이나 포트 변경 시에도 그대로 동작하게 하기 위함이다.
+ */
 function connectWebSocket() {
-    socket = new WebSocket("ws://localhost:8080/ws/chat");
+    const protocol = window.location.protocol === "https:" ? "wss" : "ws";
+    socket = new WebSocket(`${protocol}://${window.location.host}/ws/chat`);
 
     socket.onopen = function () {
         console.log("WebSocket 연결 성공");
@@ -29,6 +66,7 @@ function connectWebSocket() {
         if (data.type === "MESSAGE") {
             appendMessage(data.message);
 
+            // 상대방 메시지를 받으면 읽음 이벤트 전송
             if (Number(data.message.senderNo) !== Number(senderNo)) {
                 sendReadEvent();
             }
@@ -37,6 +75,7 @@ function connectWebSocket() {
         }
 
         if (data.type === "READ") {
+            // 상대방이 읽었을 때 내가 보낸 메시지를 읽음으로 변경
             if (Number(data.viewerNo) !== Number(senderNo)) {
                 markMyMessagesAsRead();
             }
@@ -45,6 +84,8 @@ function connectWebSocket() {
         }
 
         if (data.type === "CLOSE") {
+            isChatClosed = true;
+
             if (data.message) {
                 appendSystemMessage(data.message.messageContent, data.message.createdDate);
             } else {
@@ -52,7 +93,6 @@ function connectWebSocket() {
             }
 
             disableChatInput();
-            return;
         }
     };
 
@@ -65,6 +105,11 @@ function connectWebSocket() {
     };
 }
 
+/**
+ * 메시지 목록 조회
+ *
+ * /chat/{roomNo}/messages API는 Oracle DB 메시지와 Redis 메시지를 합쳐서 반환한다.
+ */
 function loadMessages() {
     fetch(`/chat/${roomNo}/messages`)
         .then(response => response.json())
@@ -82,13 +127,26 @@ function loadMessages() {
 
             sendReadEvent();
 
-            if (typeof roomStatus !== "undefined" && roomStatus === "CLOSED") {
+            if (isChatClosed) {
                 disableChatInput();
             }
+        })
+        .catch(error => {
+            console.log("메시지 목록 조회 실패", error);
         });
 }
 
+/**
+ * 메시지 전송
+ *
+ * 실제 저장은 WebSocket 서버의 ChatHandler에서 Redis에 저장한다.
+ */
 function sendMessage() {
+    if (isChatClosed) {
+        alert("상담이 종료되어 메시지를 보낼 수 없습니다.");
+        return;
+    }
+
     const content = messageInput.value.trim();
 
     if (content === "") {
@@ -116,6 +174,9 @@ function sendMessage() {
     messageInput.focus();
 }
 
+/**
+ * 읽음 이벤트 전송
+ */
 function sendReadEvent() {
     if (socket === null || socket.readyState !== WebSocket.OPEN) {
         return;
@@ -128,7 +189,14 @@ function sendReadEvent() {
     }));
 }
 
+/**
+ * 일반 메시지 화면 출력
+ */
 function appendMessage(message) {
+    if (!message) {
+        return;
+    }
+
     const messageKey = makeMessageKey(message);
 
     if (renderedMessageKeys.has(messageKey)) {
@@ -182,9 +250,12 @@ function appendMessage(message) {
     row.appendChild(messageBox);
     chatBody.appendChild(row);
 
-    chatBody.scrollTop = chatBody.scrollHeight;
+    scrollToBottom();
 }
 
+/**
+ * 상담 종료 등 시스템 메시지 출력
+ */
 function appendSystemMessage(content, createdDate) {
     const row = document.createElement("div");
     row.classList.add("system-row");
@@ -208,9 +279,15 @@ function appendSystemMessage(content, createdDate) {
     row.appendChild(box);
     chatBody.appendChild(row);
 
-    chatBody.scrollTop = chatBody.scrollHeight;
+    scrollToBottom();
 }
 
+/**
+ * 메시지 작성자 라벨
+ *
+ * 내가 보낸 메시지는 라벨을 표시하지 않고,
+ * 상대방 메시지는 사용자/관리자를 구분해서 표시한다.
+ */
 function getSenderLabel(message, isMine) {
     if (isMine) {
         return "";
@@ -226,6 +303,9 @@ function getSenderLabel(message, isMine) {
     return "관리자";
 }
 
+/**
+ * 내가 보낸 메시지의 안읽음 표시를 읽음으로 변경
+ */
 function markMyMessagesAsRead() {
     const readStatusList = document.querySelectorAll(".message-row.me .read-status");
 
@@ -234,6 +314,9 @@ function markMyMessagesAsRead() {
     });
 }
 
+/**
+ * 상담 종료 시 입력창과 전송 버튼 비활성화
+ */
 function disableChatInput() {
     if (messageInput) {
         messageInput.disabled = true;
@@ -247,6 +330,9 @@ function disableChatInput() {
     }
 }
 
+/**
+ * 메시지 시간을 HH:mm 형식으로 변환
+ */
 function formatMessageTime(createdDate) {
     if (!createdDate) {
         return "";
@@ -264,6 +350,9 @@ function formatMessageTime(createdDate) {
     return `${hours}:${minutes}`;
 }
 
+/**
+ * Java LocalDateTime이 배열 또는 문자열로 올 수 있어 둘 다 처리한다.
+ */
 function parseCreatedDate(createdDate) {
     if (Array.isArray(createdDate)) {
         const year = createdDate[0];
@@ -293,6 +382,9 @@ function getTimeValue(createdDate) {
     return date.getTime();
 }
 
+/**
+ * 메시지 중복 출력 방지용 key 생성
+ */
 function makeMessageKey(message) {
     const timeValue = getTimeValue(message.createdDate);
 
@@ -304,10 +396,22 @@ function makeMessageKey(message) {
     ].join("|");
 }
 
-sendBtn.addEventListener("click", sendMessage);
+function scrollToBottom() {
+    chatBody.scrollTop = chatBody.scrollHeight;
+}
 
-messageInput.addEventListener("keyup", function (event) {
-    if (event.key === "Enter") {
-        sendMessage();
-    }
-});
+if (sendBtn) {
+    sendBtn.addEventListener("click", sendMessage);
+}
+
+if (messageInput) {
+    messageInput.addEventListener("keyup", function (event) {
+        if (event.key === "Enter") {
+            sendMessage();
+        }
+    });
+}
+
+if (isChatClosed) {
+    disableChatInput();
+}

@@ -1,9 +1,23 @@
+/*
+    chat-home.css
+
+    사용 위치:
+    - chat-home.html
+
+    역할:
+    - 사용자 상담 홈 화면 디자인
+    - 문의 유형 선택 버튼
+    - 기존 대화 이어가기 버튼
+    - 하단 네비게이션 디자인
+*/
+
 body {
     margin: 0;
     font-family: Arial, sans-serif;
     background: #eef3f8;
 }
 
+/* 전체 모바일 상담 홈 컨테이너 */
 .talk-wrap {
     width: 430px;
     min-height: 720px;
@@ -15,6 +29,7 @@ body {
     position: relative;
 }
 
+/* 상단 브랜드 영역 */
 .hero {
     height: 185px;
     background: linear-gradient(135deg, #1d75ff, #00b894);
@@ -35,6 +50,7 @@ body {
     line-height: 1.5;
 }
 
+/* 문의 유형 선택 카드 */
 .card {
     width: calc(100% - 40px);
     margin: -42px auto 0;
@@ -86,6 +102,7 @@ body {
     margin-bottom: 12px;
 }
 
+/* 문의 유형 버튼 2열 배치 */
 .quick-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -113,6 +130,7 @@ body {
     box-shadow: 0 4px 12px rgba(11, 57, 229, 0.12);
 }
 
+/* 기존 OPEN 상담방이 있을 때 표시되는 버튼 */
 .main-action {
     margin-top: 20px;
 }
@@ -133,6 +151,7 @@ body {
     pointer-events: none;
 }
 
+/* 하단 네비게이션 */
 .bottom-nav {
     position: absolute;
     left: 0;

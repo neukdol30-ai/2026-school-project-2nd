@@ -1,3 +1,18 @@
+/*
+    admin-chat-list.js
+
+    사용 위치:
+    - admin-chat-list.html
+
+    역할:
+    - 관리자 상담 목록 WebSocket 연결
+    - 새 메시지/상태 변경 시 목록 실시간 갱신
+    - /chat/admin/rooms JSON API 호출
+    - 상담방 목록 HTML 재렌더링
+    - 페이징 재렌더링
+    - 종료 상담방 다중 선택 삭제 처리
+*/
+
 let adminListSocket = null;
 let refreshTimer = null;
 let lastRefreshRoomNo = null;
@@ -9,8 +24,14 @@ const batchDeleteBtn = document.getElementById("batchDeleteBtn");
 
 connectAdminListWebSocket();
 
+/**
+ * 관리자 상담 목록 WebSocket 연결
+ *
+ * localhost 고정 대신 현재 접속 host 기준으로 WebSocket 주소를 생성한다.
+ */
 function connectAdminListWebSocket() {
-    adminListSocket = new WebSocket("ws://localhost:8080/ws/chat");
+    const protocol = window.location.protocol === "https:" ? "wss" : "ws";
+    adminListSocket = new WebSocket(`${protocol}://${window.location.host}/ws/chat`);
 
     adminListSocket.onopen = function () {
         console.log("관리자 상담 목록 WebSocket 연결 성공");
@@ -41,6 +62,10 @@ function connectAdminListWebSocket() {
     };
 }
 
+/**
+ * 짧은 시간 안에 여러 WebSocket 이벤트가 올 수 있으므로
+ * 300ms debounce를 걸어서 목록 fetch가 너무 자주 실행되지 않게 한다.
+ */
 function requestAdminListRefresh() {
     if (refreshTimer !== null) {
         clearTimeout(refreshTimer);
@@ -51,6 +76,9 @@ function requestAdminListRefresh() {
     }, 300);
 }
 
+/**
+ * 현재 URL의 검색 조건을 유지한 채 관리자 상담 목록 JSON API 호출
+ */
 function loadAdminRoomList() {
     const queryString = window.location.search;
     const url = "/chat/admin/rooms" + queryString;
@@ -71,6 +99,9 @@ function loadAdminRoomList() {
         });
 }
 
+/**
+ * 상담방 목록 영역 재렌더링
+ */
 function renderRoomList(roomList) {
     if (!roomListEl) {
         return;
@@ -84,6 +115,7 @@ function renderRoomList(roomList) {
         `;
 
         updateBatchDeleteButton();
+        syncCheckAllState();
         return;
     }
 
@@ -122,7 +154,7 @@ function renderRoomList(roomList) {
                     <div class="top-line">
                         <span class="category">
                             <span>${categoryIcon}</span>
-                            <span>${categoryName}</span>
+                            <span>${escapeHtml(categoryName)}</span>
                         </span>
 
                         <span class="room-title">
@@ -174,8 +206,12 @@ function renderRoomList(roomList) {
     roomListEl.innerHTML = html;
 
     updateBatchDeleteButton();
+    syncCheckAllState();
 }
 
+/**
+ * 페이징 영역 재렌더링
+ */
 function renderPagination(data) {
     if (!paginationEl) {
         return;
@@ -220,6 +256,9 @@ function renderPagination(data) {
     paginationEl.innerHTML = html;
 }
 
+/**
+ * 현재 검색 조건을 유지하면서 page와 size만 변경한 URL 생성
+ */
 function makePageUrl(page, size) {
     const params = new URLSearchParams(window.location.search);
 
@@ -229,6 +268,9 @@ function makePageUrl(page, size) {
     return "/chat/admin?" + params.toString();
 }
 
+/**
+ * 실시간 갱신된 상담방 카드 강조 표시
+ */
 function highlightRoom(roomNo) {
     const target = document.querySelector(`.room-item[data-room-no="${roomNo}"]`);
 
@@ -243,6 +285,9 @@ function highlightRoom(roomNo) {
     }, 1300);
 }
 
+/**
+ * 상담 목록 갱신 알림 토스트 표시
+ */
 function showRealtimeToast(message) {
     let toast = document.querySelector(".realtime-toast");
 
@@ -260,6 +305,9 @@ function showRealtimeToast(message) {
     }, 1800);
 }
 
+/**
+ * category 코드 → 한글 이름
+ */
 function getCategoryName(category) {
     if (category === "MAIL") {
         return "메일 문의";
@@ -292,6 +340,9 @@ function getCategoryName(category) {
     return "일반 문의";
 }
 
+/**
+ * category 코드 → 아이콘
+ */
 function getCategoryIcon(category) {
     if (category === "MAIL") {
         return "📧";
@@ -324,6 +375,9 @@ function getCategoryIcon(category) {
     return "💬";
 }
 
+/**
+ * 동적 HTML 생성 시 XSS 방지를 위한 문자열 이스케이프
+ */
 function escapeHtml(value) {
     if (value === null || value === undefined) {
         return "";
@@ -337,6 +391,9 @@ function escapeHtml(value) {
         .replaceAll("'", "&#039;");
 }
 
+/**
+ * 종료 상담 전체 선택 체크박스
+ */
 if (checkAllClosed) {
     checkAllClosed.addEventListener("change", function () {
         const roomChecks = document.querySelectorAll(".room-check");
@@ -349,6 +406,9 @@ if (checkAllClosed) {
     });
 }
 
+/**
+ * 개별 체크박스 변경 시 선택 삭제 버튼 상태 갱신
+ */
 document.addEventListener("change", function (event) {
     if (event.target.classList.contains("room-check")) {
         updateBatchDeleteButton();
@@ -356,6 +416,9 @@ document.addEventListener("change", function (event) {
     }
 });
 
+/**
+ * 선택 삭제 버튼 활성화/비활성화
+ */
 function updateBatchDeleteButton() {
     if (!batchDeleteBtn) {
         return;
@@ -366,6 +429,9 @@ function updateBatchDeleteButton() {
     batchDeleteBtn.disabled = checkedList.length === 0;
 }
 
+/**
+ * 개별 체크박스 상태에 따라 전체 선택 체크박스 동기화
+ */
 function syncCheckAllState() {
     if (!checkAllClosed) {
         return;
@@ -383,6 +449,9 @@ function syncCheckAllState() {
     checkAllClosed.checked = roomChecks.length === checkedList.length;
 }
 
+/**
+ * 다중 삭제 전 확인
+ */
 function confirmBatchDelete() {
     const checkedList = document.querySelectorAll(".room-check:checked");
 

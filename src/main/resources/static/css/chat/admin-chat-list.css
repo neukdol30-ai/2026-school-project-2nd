@@ -1,3 +1,17 @@
+/*
+    admin-chat-list.css
+
+    사용 위치:
+    - admin-chat-list.html
+
+    역할:
+    - 관리자 상담 목록 화면 디자인
+    - 검색/페이징 UI
+    - 안읽음 배지
+    - 실시간 갱신 하이라이트
+    - 종료 상담방 단건/다중 삭제 UI
+*/
+
 body {
     margin: 0;
     font-family: Arial, sans-serif;
@@ -21,6 +35,7 @@ body {
     font-weight: bold;
 }
 
+/* 검색 영역 */
 .search-area {
     padding: 20px 22px;
     border-bottom: 1px solid #eee;
@@ -77,6 +92,42 @@ body {
     font-size: 14px;
 }
 
+/* 다중 삭제 툴바 */
+.list-toolbar {
+    padding: 14px 22px;
+    border-bottom: 1px solid #eee;
+    background: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.check-all-label {
+    font-size: 14px;
+    color: #333;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 7px;
+}
+
+.batch-delete-btn {
+    height: 36px;
+    padding: 0 16px;
+    border: none;
+    border-radius: 8px;
+    background: #ff3b30;
+    color: white;
+    font-weight: 800;
+    cursor: pointer;
+}
+
+.batch-delete-btn:disabled {
+    background: #c9c9c9;
+    cursor: not-allowed;
+}
+
+/* 상담방 목록 */
 .room-list {
     padding: 22px;
 }
@@ -87,12 +138,37 @@ body {
     color: #999;
 }
 
+.room-card {
+    display: flex;
+    align-items: stretch;
+    gap: 10px;
+    margin-bottom: 12px;
+}
+
+.room-card.closed {
+    opacity: 0.78;
+}
+
+.room-select {
+    width: 34px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.room-check {
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
+}
+
 .room-item {
     display: block;
+    flex: 1;
     padding: 18px;
     border: 1px solid #e1e3e8;
     border-radius: 12px;
-    margin-bottom: 12px;
+    margin-bottom: 0;
     text-decoration: none;
     color: #333;
     transition: 0.15s;
@@ -130,6 +206,7 @@ body {
     font-size: 16px;
 }
 
+/* 안읽음 메시지 배지 */
 .unread-badge {
     display: inline-flex;
     align-items: center;
@@ -172,6 +249,31 @@ body {
     margin-top: 8px;
 }
 
+/* 종료 상담방 단건 삭제 버튼 */
+.room-actions {
+    width: 74px;
+    display: flex;
+    align-items: center;
+}
+
+.inline-delete-btn {
+    width: 100%;
+    height: 38px;
+    border: none;
+    border-radius: 8px;
+    background: #ff3b30;
+    color: white;
+    font-size: 13px;
+    font-weight: 800;
+    cursor: pointer;
+}
+
+.inline-delete-btn:hover,
+.batch-delete-btn:hover:not(:disabled) {
+    background: #d93025;
+}
+
+/* 페이징 */
 .pagination {
     display: flex;
     justify-content: center;
@@ -207,6 +309,7 @@ body {
     pointer-events: none;
 }
 
+/* WebSocket 실시간 갱신 시 상담방 카드 하이라이트 */
 .room-item.realtime-highlight {
     animation: realtimeFlash 1.2s ease;
 }
@@ -221,6 +324,7 @@ body {
     }
 }
 
+/* 실시간 갱신 알림 토스트 */
 .realtime-toast {
     position: fixed;
     right: 30px;
@@ -241,90 +345,4 @@ body {
 .realtime-toast.show {
     opacity: 1;
     transform: translateY(0);
-}
-
-.list-toolbar {
-    padding: 14px 22px;
-    border-bottom: 1px solid #eee;
-    background: #fff;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-}
-
-.check-all-label {
-    font-size: 14px;
-    color: #333;
-    font-weight: 700;
-    display: flex;
-    align-items: center;
-    gap: 7px;
-}
-
-.batch-delete-btn {
-    height: 36px;
-    padding: 0 16px;
-    border: none;
-    border-radius: 8px;
-    background: #ff3b30;
-    color: white;
-    font-weight: 800;
-    cursor: pointer;
-}
-
-.batch-delete-btn:disabled {
-    background: #c9c9c9;
-    cursor: not-allowed;
-}
-
-.room-card {
-    display: flex;
-    align-items: stretch;
-    gap: 10px;
-    margin-bottom: 12px;
-}
-
-.room-card.closed {
-    opacity: 0.78;
-}
-
-.room-select {
-    width: 34px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.room-check {
-    width: 16px;
-    height: 16px;
-    cursor: pointer;
-}
-
-.room-card .room-item {
-    flex: 1;
-    margin-bottom: 0;
-}
-
-.room-actions {
-    width: 74px;
-    display: flex;
-    align-items: center;
-}
-
-.inline-delete-btn {
-    width: 100%;
-    height: 38px;
-    border: none;
-    border-radius: 8px;
-    background: #ff3b30;
-    color: white;
-    font-size: 13px;
-    font-weight: 800;
-    cursor: pointer;
-}
-
-.inline-delete-btn:hover,
-.batch-delete-btn:hover:not(:disabled) {
-    background: #d93025;
 }

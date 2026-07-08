@@ -1,9 +1,24 @@
+/*
+    chat.css
+
+    사용 위치:
+    - chat.html
+
+    역할:
+    - 사용자 채팅방 화면 디자인
+    - 메시지 말풍선
+    - 문의 유형 변경 UI
+    - 읽음/안읽음 표시
+    - 상담 종료 시스템 메시지 디자인
+*/
+
 body {
     margin: 0;
     font-family: Arial, sans-serif;
     background: #eef3f8;
 }
 
+/* 전체 채팅창 컨테이너 */
 .chat-wrap {
     width: 430px;
     height: 720px;
@@ -16,6 +31,7 @@ body {
     box-shadow: 0 10px 35px rgba(0, 0, 0, 0.18);
 }
 
+/* 상단 헤더 */
 .chat-header {
     padding: 18px 20px;
     background: white;
@@ -66,6 +82,7 @@ body {
     font-weight: 700;
 }
 
+/* 문의 유형 변경 영역 */
 .category-change-box {
     margin-top: 10px;
 }
@@ -105,6 +122,7 @@ body {
     margin-top: 8px;
 }
 
+/* 안내 박스 */
 .chat-notice {
     margin: 14px 16px 0;
     padding: 12px;
@@ -116,6 +134,7 @@ body {
     line-height: 1.4;
 }
 
+/* 메시지 목록 영역 */
 .chat-body {
     flex: 1;
     padding: 16px;
@@ -123,6 +142,7 @@ body {
     background: white;
 }
 
+/* 메시지 한 줄 */
 .message-row {
     margin-bottom: 12px;
     display: flex;
@@ -136,6 +156,32 @@ body {
     justify-content: flex-start;
 }
 
+.message-box {
+    display: flex;
+    flex-direction: column;
+}
+
+.message-row.me .message-box {
+    align-items: flex-end;
+}
+
+.message-row.other .message-box {
+    align-items: flex-start;
+}
+
+/* 상대방 표시 라벨 */
+.message-label {
+    font-size: 12px;
+    color: #777;
+    margin-bottom: 4px;
+    font-weight: 700;
+}
+
+.message-row.me .message-label {
+    display: none;
+}
+
+/* 메시지 말풍선 */
 .message-bubble {
     max-width: 72%;
     padding: 11px 13px;
@@ -157,45 +203,7 @@ body {
     border-bottom-left-radius: 5px;
 }
 
-.chat-input-box {
-    display: flex;
-    padding: 12px;
-    border-top: 1px solid #eee;
-    background: white;
-}
-
-#messageInput {
-    flex: 1;
-    height: 44px;
-    padding: 0 14px;
-    border: 1px solid #ddd;
-    border-radius: 22px;
-    outline: none;
-    font-size: 14px;
-}
-.message-box{
-    display: flex;
-    flex-direction: column;
-}
-.message-row.me .message-box {
-    align-items: flex-end;
-}
-
-.message-row.other .message-box {
-    align-items: flex-start;
-}
-
-.message-label {
-    font-size: 12px;
-    color: #777;
-    margin-bottom: 4px;
-    font-weight: 700;
-}
-
-.message-row.me .message-label {
-    display: none;
-}
-
+/* 메시지 시간/읽음 표시 */
 .message-meta {
     margin-top: 4px;
     font-size: 11px;
@@ -212,11 +220,13 @@ body {
 .message-row.other .message-meta {
     justify-content: flex-start;
 }
+
 .read-status {
     color: #0b24d9;
     font-weight: 700;
 }
 
+/* 상담 종료 같은 시스템 메시지 */
 .system-row {
     display: flex;
     justify-content: center;
@@ -238,6 +248,28 @@ body {
     margin-top: 3px;
 }
 
+/* 메시지 입력 영역 */
+.chat-input-box {
+    display: flex;
+    padding: 12px;
+    border-top: 1px solid #eee;
+    background: white;
+}
+
+#messageInput {
+    flex: 1;
+    height: 44px;
+    padding: 0 14px;
+    border: 1px solid #ddd;
+    border-radius: 22px;
+    outline: none;
+    font-size: 14px;
+}
+
+#messageInput:disabled {
+    background: #f1f3f5;
+    color: #888;
+}
 
 #sendBtn {
     margin-left: 8px;
@@ -252,4 +284,9 @@ body {
 
 #sendBtn:hover {
     background: #071bb0;
+}
+
+#sendBtn:disabled {
+    background: #999;
+    cursor: not-allowed;
 }

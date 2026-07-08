@@ -4,10 +4,23 @@
     <meta charset="UTF-8">
     <title>1:1 상담 채팅</title>
     <link rel="stylesheet" th:href="@{/css/chat/chat.css}">
-
 </head>
 <body>
 
+<!--
+    사용자 채팅방 화면
+
+    연결 파일:
+    - CSS: /css/chat/chat.css
+    - JS: /js/chat.js
+
+    역할:
+    - 사용자 메시지 전송
+    - 관리자 답변 실시간 수신
+    - 문의 유형 변경
+    - 읽음/안읽음 표시
+    - 상담 종료 시 입력창 비활성화
+-->
 <div class="chat-wrap">
     <div class="chat-header">
         <a href="/chat" class="back-link">‹</a>
@@ -32,6 +45,7 @@
             <b th:text="${chatRoom.categoryName}">일반 문의</b>
         </div>
 
+        <!-- OPEN 상태인 사용자 상담방에서만 문의 유형 변경 가능 -->
         <div class="category-change-box"
              th:if="${chatRoom.status == 'OPEN' and loginUser.role == 'USER'}">
             <form th:action="@{/chat/{roomNo}/category(roomNo=${chatRoom.roomNo})}"
@@ -56,14 +70,32 @@
         </div>
     </div>
 
+    <!-- 메시지 목록은 chat.js에서 동적으로 렌더링 -->
     <div id="chatBody" class="chat-body"></div>
 
     <div class="chat-input-box">
-        <input type="text" id="messageInput" placeholder="메시지를 입력하세요">
-        <button type="button" id="sendBtn">전송</button>
+        <input type="text"
+               id="messageInput"
+               th:placeholder="${chatRoom.status == 'CLOSED'} ? '상담이 종료되었습니다.' : '메시지를 입력하세요'"
+               th:disabled="${chatRoom.status == 'CLOSED'}">
+
+        <button type="button"
+                id="sendBtn"
+                th:disabled="${chatRoom.status == 'CLOSED'}">
+            전송
+        </button>
     </div>
 </div>
 
+<!--
+    chat.js에서 사용하는 서버 데이터
+
+    roomNo: 현재 채팅방 번호
+    senderNo: 현재 로그인 사용자 번호
+    loginRole: USER 또는 ADMIN
+    roomUserNo: 이 상담방의 실제 사용자 번호
+    roomStatus: OPEN 또는 CLOSED
+-->
 <script th:inline="javascript">
     const roomNo = /*[[${chatRoom.roomNo}]]*/ 0;
     const senderNo = /*[[${loginUser.no}]]*/ 0;
