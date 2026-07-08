@@ -1,6 +1,7 @@
 package com.siyan1234.itproject2nd.member.controller;
 
 import com.siyan1234.itproject2nd.member.dto.MemberDto;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -9,7 +10,15 @@ import org.springframework.web.bind.annotation.GetMapping;
 public class TempLoginController {
 
     @GetMapping("/temp/user-login")
-    public String tempUserLogin(HttpSession session) {
+    public String tempUserLogin(HttpServletRequest request) {
+        HttpSession oldSession = request.getSession(false);
+
+        if (oldSession != null) {
+            oldSession.invalidate();
+        }
+
+        HttpSession session = request.getSession(true);
+
         MemberDto memberDto = new MemberDto();
         memberDto.setNo(1);
         memberDto.setMemberId("user01");
@@ -23,7 +32,15 @@ public class TempLoginController {
     }
 
     @GetMapping("/temp/admin-login")
-    public String tempAdminLogin(HttpSession session) {
+    public String tempAdminLogin(HttpServletRequest request) {
+        HttpSession oldSession = request.getSession(false);
+
+        if (oldSession != null) {
+            oldSession.invalidate();
+        }
+
+        HttpSession session = request.getSession(true);
+
         MemberDto memberDto = new MemberDto();
         memberDto.setNo(2);
         memberDto.setMemberId("admin01");

@@ -26,6 +26,8 @@ public interface ChatService {
 
     void closeRoom(Integer roomNo);
 
+    void updateLastMessage(Integer roomNo, String lastMessage);
+
     void updateReadYn(Integer roomNo, Integer viewerNo);
 
     List<ChatRoomDto> findAdminRooms(

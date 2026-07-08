@@ -42,13 +42,18 @@ public class ChatController {
     public String startChat(
             @RequestParam String category,
             HttpSession session
-    ){
+    ) {
         MemberDto loginUser = (MemberDto) session.getAttribute("loginUser");
 
         if (loginUser == null) {
             return "redirect:/temp/user-login";
         }
-        ChatRoomDto chatRoom = chatService.getOrCreateRoom(loginUser.getNo(),  category);
+
+        ChatRoomDto chatRoom = chatService.getOrCreateRoom(loginUser.getNo(), category);
+
+        // 새 문의 생성 또는 기존 문의 유형 변경 시 관리자 목록 갱신
+        chatHandler.broadcastAdminListRefresh(chatRoom.getRoomNo());
+
         return "redirect:/chat/room/" + chatRoom.getRoomNo();
     }
 
@@ -141,6 +146,76 @@ public class ChatController {
 
         return "chat/admin-chat-list";
     }
+    @ResponseBody
+    @GetMapping("/admin/rooms")
+    public java.util.Map<String, Object> adminRooms(
+            @RequestParam(required = false) String status,
+            @RequestParam(required = false) String category,
+            @RequestParam(required = false) String keyword,
+            @RequestParam(defaultValue = "1") int page,
+            @RequestParam(defaultValue = "10") int size,
+            HttpSession session
+    ) {
+        MemberDto loginUser = (MemberDto) session.getAttribute("loginUser");
+
+        java.util.Map<String, Object> result = new java.util.HashMap<>();
+
+        if (loginUser == null || !"ADMIN".equals(loginUser.getRole())) {
+            result.put("roomList", java.util.List.of());
+            result.put("totalCount", 0);
+            result.put("totalPage", 1);
+            result.put("page", 1);
+            result.put("size", size);
+            result.put("startPageNo", 1);
+            result.put("endPageNo", 1);
+            return result;
+        }
+
+        if (page < 1) {
+            page = 1;
+        }
+
+        if (size < 1) {
+            size = 10;
+        }
+
+        int totalCount = chatService.countAdminRooms(status, category, keyword);
+        int totalPage = (int) Math.ceil((double) totalCount / size);
+
+        if (totalPage < 1) {
+            totalPage = 1;
+        }
+
+        if (page > totalPage) {
+            page = totalPage;
+        }
+
+        List<ChatRoomDto> roomList = chatService.findAdminRooms(
+                status,
+                category,
+                keyword,
+                loginUser.getNo(),
+                page,
+                size
+        );
+
+        int pageBlockSize = 5;
+        int startPageNo = ((page - 1) / pageBlockSize) * pageBlockSize + 1;
+        int endPageNo = Math.min(startPageNo + pageBlockSize - 1, totalPage);
+
+        result.put("roomList", roomList);
+        result.put("status", status);
+        result.put("category", category);
+        result.put("keyword", keyword);
+        result.put("page", page);
+        result.put("size", size);
+        result.put("totalCount", totalCount);
+        result.put("totalPage", totalPage);
+        result.put("startPageNo", startPageNo);
+        result.put("endPageNo", endPageNo);
+
+        return result;
+    }
 
     @GetMapping("/admin/{roomNo}")
     public String adminChatRoom(
@@ -195,9 +270,9 @@ public class ChatController {
     }
 
     @PostMapping("/{roomNo}/close")
-    public String closeRoom
-            (@PathVariable Integer roomNo,
-             HttpSession session
+    public String closeRoom(
+            @PathVariable Integer roomNo,
+            HttpSession session
     ) {
         MemberDto loginUser = (MemberDto) session.getAttribute("loginUser");
 
@@ -216,7 +291,13 @@ public class ChatController {
 
         chatRedisService.saveMessage(closeMessage);
 
+        // 관리자 목록의 마지막 메시지도 즉시 갱신
+        chatService.updateLastMessage(roomNo, "상담이 종료되었습니다.");
+
         chatHandler.broadcastClose(roomNo, closeMessage);
+
+        // 관리자 상담 목록 실시간 갱신
+        chatHandler.broadcastAdminListRefresh(roomNo);
 
         return "redirect:/chat/admin";
     }

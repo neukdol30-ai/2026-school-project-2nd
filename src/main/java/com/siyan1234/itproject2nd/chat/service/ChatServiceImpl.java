@@ -134,4 +134,13 @@ public class ChatServiceImpl implements ChatService {
     public int countAdminRooms(String status, String category, String keyword) {
         return chatDao.countAdminRooms(status, category, keyword);
     }
+    //Redis에 저장하면서 동시에 chat_room.last_message 갱신
+    @Override
+    public void updateLastMessage(Integer roomNo, String lastMessage) {
+        ChatRoomDto chatRoomDto = new ChatRoomDto();
+        chatRoomDto.setRoomNo(roomNo);
+        chatRoomDto.setLastMessage(lastMessage);
+
+        chatDao.updateLastMessage(chatRoomDto);
+    }
 }
