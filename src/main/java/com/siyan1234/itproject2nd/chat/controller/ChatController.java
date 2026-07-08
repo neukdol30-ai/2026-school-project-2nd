@@ -26,10 +26,14 @@ public class ChatController {
     @GetMapping
     public String chatHome(HttpSession session, Model model) {
         MemberDto loginUser = (MemberDto) session.getAttribute("loginUser");
-
+        //임시 테스트용 아무나 로그인가능
         if (loginUser == null) {
             return "redirect:/temp/user-login";
         }
+        //회원만 접속가능
+//        if (loginUser == null) {
+//            return "redirect:/member/login";
+//        }
         ChatRoomDto openRoom = chatService.findOpenRoomByUserNo(loginUser.getNo());
 
         model.addAttribute("loginUser", loginUser);
@@ -44,10 +48,14 @@ public class ChatController {
             HttpSession session
     ) {
         MemberDto loginUser = (MemberDto) session.getAttribute("loginUser");
-
+        //임시 테스트용 아무나 로그인가능
         if (loginUser == null) {
             return "redirect:/temp/user-login";
         }
+        //회원만 접속가능
+//        if (loginUser == null) {
+//            return "redirect:/member/login";
+//        }
 
         ChatRoomDto chatRoom = chatService.getOrCreateRoom(loginUser.getNo(), category);
 
@@ -64,10 +72,14 @@ public class ChatController {
             Model model
     ) {
         MemberDto loginUser = (MemberDto) session.getAttribute("loginUser");
-
+        //임시 테스트용 아무나 로그인가능
         if (loginUser == null) {
             return "redirect:/temp/user-login";
         }
+        //회원만 접속가능
+//        if (loginUser == null) {
+//            return "redirect:/member/login";
+//        }
         ChatRoomDto chatRoom = chatService.findRoomByRoomNo(roomNo);
 
         model.addAttribute("chatRoom", chatRoom);
@@ -87,11 +99,14 @@ public class ChatController {
             Model model
     ) {
         MemberDto loginUser = (MemberDto) session.getAttribute("loginUser");
-
+        //테스트용 아무나 접속가능
         if (loginUser == null) {
             return "redirect:/temp/admin-login";
         }
-
+        //회원만 접속가능
+//        if (loginUser == null) {
+//            return "redirect:/member/login";
+//        }
         if (!"ADMIN".equals(loginUser.getRole())) {
             return "redirect:/chat";
         }
@@ -224,10 +239,14 @@ public class ChatController {
             Model model
     ) {
         MemberDto loginUser = (MemberDto) session.getAttribute("loginUser");
-
+        //테스트용 아무나 접속가능
         if (loginUser == null) {
             return "redirect:/temp/admin-login";
         }
+        //회원만 접속가능
+//        if (loginUser == null) {
+//            return "redirect:/member/login";
+//        }
 
         if (!"ADMIN".equals(loginUser.getRole())) {
             return "redirect:/chat";
@@ -286,10 +305,14 @@ public class ChatController {
             HttpSession session
     ) {
         MemberDto loginUser = (MemberDto) session.getAttribute("loginUser");
-
+        //테스트용 아무나 접속 가능
         if (loginUser == null) {
             return "redirect:/temp/admin-login";
         }
+        //회원만 접속가능
+//        if (loginUser == null) {
+//            return "redirect:/member/login";
+//        }
 
         chatService.closeRoom(roomNo);
 
@@ -319,10 +342,14 @@ public class ChatController {
             HttpSession session
     ){
         MemberDto loginUser = (MemberDto) session.getAttribute("loginUser");
-
+        //테스트용 아무나 접속가능
         if (loginUser == null) {
             return "redirect:/temp/admin-login";
         }
+        //회원만 접속가능
+//        if (loginUser == null) {
+//            return "redirect:/member/login";
+//        }
         if (!"ADMIN".equals(loginUser.getRole())) {
             return "redirect:/chat";
         }
@@ -356,10 +383,14 @@ public class ChatController {
             HttpSession session
     ) {
         MemberDto loginUser = (MemberDto) session.getAttribute("loginUser");
-
+        //테스트용 아무나 접속가능
         if (loginUser == null) {
             return "redirect:/temp/admin-login";
         }
+        //회원만 접속가능
+//        if (loginUser == null) {
+//            return "redirect:/member/login";
+//        }
 
         if (!"ADMIN".equals(loginUser.getRole())) {
             return "redirect:/chat";
@@ -407,10 +438,14 @@ public class ChatController {
             HttpSession session
     ) {
         MemberDto loginUser = (MemberDto) session.getAttribute("loginUser");
-
+        //임시 테스트용 아무나 로그인가능
         if (loginUser == null) {
             return "redirect:/temp/user-login";
         }
+        //회원만 접속가능
+//        if (loginUser == null) {
+//            return "redirect:/member/login";
+//        }
 
         chatService.changeCategory(roomNo, loginUser.getNo(), category);
 
