@@ -41,7 +41,16 @@ public interface ChatDao {
 
     int updateLastMessage(ChatRoomDto chatRoomDto);
 
+    int assignAdmin(
+            @Param("roomNo") Integer roomNo,
+            @Param("adminNo") Integer adminNo
+    );
+
     int closeRoom(Integer roomNo);
+
+    int deleteRoom(Integer roomNo);
+
+    int deleteClosedRooms(@Param("roomNoList") List<Integer> roomNoList);
 
     int saveMessage(ChatMessageDto chatMessageDto);
 

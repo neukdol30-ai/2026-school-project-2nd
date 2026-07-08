@@ -3,253 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <title>관리자 채팅 목록</title>
+    <link rel="stylesheet" th:href="@{/css/chat/admin-chat-list.css}">
 
-    <style>
-        body {
-            margin: 0;
-            font-family: Arial, sans-serif;
-            background: #f5f6f7;
-        }
-
-        .wrap {
-            width: 1000px;
-            margin: 50px auto;
-            background: white;
-            border: 1px solid #ddd;
-            border-radius: 14px;
-            overflow: hidden;
-        }
-
-        .header {
-            padding: 22px;
-            background: #0b24d9;
-            color: white;
-            font-size: 22px;
-            font-weight: bold;
-        }
-
-        .search-area {
-            padding: 20px 22px;
-            border-bottom: 1px solid #eee;
-            background: #fafbfc;
-        }
-
-        .search-form {
-            display: flex;
-            gap: 8px;
-            align-items: center;
-        }
-
-        .search-form select,
-        .search-form input {
-            height: 40px;
-            border: 1px solid #d8dbe2;
-            border-radius: 8px;
-            padding: 0 10px;
-            font-size: 14px;
-            outline: none;
-        }
-
-        .search-form input {
-            flex: 1;
-        }
-
-        .search-btn {
-            height: 40px;
-            padding: 0 18px;
-            border: none;
-            border-radius: 8px;
-            background: #0b24d9;
-            color: white;
-            font-weight: 800;
-            cursor: pointer;
-        }
-
-        .reset-btn {
-            height: 40px;
-            padding: 0 14px;
-            border-radius: 8px;
-            background: #f1f3f5;
-            color: #333;
-            text-decoration: none;
-            display: flex;
-            align-items: center;
-            font-weight: 700;
-            font-size: 14px;
-        }
-
-        .summary {
-            margin-top: 12px;
-            color: #666;
-            font-size: 14px;
-        }
-
-        .room-list {
-            padding: 22px;
-        }
-
-        .empty {
-            padding: 40px 0;
-            text-align: center;
-            color: #999;
-        }
-
-        .room-item {
-            display: block;
-            padding: 18px;
-            border: 1px solid #e1e3e8;
-            border-radius: 12px;
-            margin-bottom: 12px;
-            text-decoration: none;
-            color: #333;
-            transition: 0.15s;
-            position: relative;
-        }
-
-        .room-item:hover {
-            background: #f8f9ff;
-            border-color: #0b24d9;
-        }
-
-        .room-item.closed {
-            background: #fafafa;
-            opacity: 0.72;
-        }
-
-        .top-line {
-            display: flex;
-            align-items: center;
-            margin-bottom: 9px;
-            gap: 8px;
-        }
-
-        .category {
-            background: #f1f3ff;
-            color: #0b24d9;
-            border-radius: 999px;
-            padding: 5px 10px;
-            font-size: 13px;
-            font-weight: 800;
-        }
-
-        .room-title {
-            font-weight: bold;
-            font-size: 16px;
-        }
-
-        .unread-badge {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            height: 24px;
-            padding: 0 9px;
-            border-radius: 999px;
-            background: #ff3b30;
-            color: white;
-            font-size: 12px;
-            font-weight: 900;
-        }
-
-        .status {
-            margin-left: auto;
-            font-weight: bold;
-            font-size: 13px;
-        }
-
-        .status.open {
-            color: #03c75a;
-        }
-
-        .status.closed {
-            color: #999;
-        }
-
-        .meta {
-            font-size: 14px;
-            color: #666;
-            margin-bottom: 5px;
-        }
-
-        .last-message {
-            color: #333;
-            font-size: 14px;
-            background: #f7f7f8;
-            padding: 10px;
-            border-radius: 8px;
-            margin-top: 8px;
-        }
-
-        .pagination {
-            display: flex;
-            justify-content: center;
-            gap: 6px;
-            padding: 0 22px 24px;
-        }
-
-        .page-link {
-            min-width: 34px;
-            height: 34px;
-            padding: 0 9px;
-            border: 1px solid #d8dbe2;
-            border-radius: 8px;
-            text-decoration: none;
-            color: #333;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 14px;
-            box-sizing: border-box;
-        }
-
-        .page-link.active {
-            background: #0b24d9;
-            color: white;
-            border-color: #0b24d9;
-            font-weight: 800;
-        }
-
-        .page-link.disabled {
-            color: #bbb;
-            background: #f5f5f5;
-            pointer-events: none;
-        }
-
-        .room-item.realtime-highlight {
-            animation: realtimeFlash 1.2s ease;
-        }
-
-        @keyframes realtimeFlash {
-            0% {
-                background: #fff8d8;
-                border-color: #ffcc00;
-            }
-            100% {
-                background: white;
-            }
-        }
-
-        .realtime-toast {
-            position: fixed;
-            right: 30px;
-            bottom: 30px;
-            background: #222;
-            color: white;
-            padding: 14px 18px;
-            border-radius: 12px;
-            font-size: 14px;
-            font-weight: 800;
-            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
-            z-index: 9999;
-            opacity: 0;
-            transform: translateY(12px);
-            transition: 0.25s;
-        }
-
-        .realtime-toast.show {
-            opacity: 1;
-            transform: translateY(0);
-        }
-    </style>
 </head>
 <body>
 
@@ -295,51 +50,93 @@
         </div>
     </div>
 
+    <form id="batchDeleteForm"
+          action="/chat/admin/rooms/delete"
+          method="post"
+          onsubmit="return confirmBatchDelete();">
+    </form>
+
+    <div class="list-toolbar">
+        <label class="check-all-label">
+            <input type="checkbox" id="checkAllClosed">
+            종료 상담 전체선택
+        </label>
+
+        <button type="submit"
+                form="batchDeleteForm"
+                id="batchDeleteBtn"
+                class="batch-delete-btn"
+                disabled>
+            선택 삭제
+        </button>
+    </div>
+
     <div class="room-list" id="roomList">
         <div class="empty" th:if="${#lists.isEmpty(roomList)}">
             조건에 맞는 채팅방이 없습니다.
         </div>
 
-        <a class="room-item"
-           th:each="room : ${roomList}"
-           th:classappend="${room.status == 'CLOSED'} ? ' closed' : ''"
-           th:href="@{/chat/admin/{roomNo}(roomNo=${room.roomNo})}">
+        <div class="room-card"
+             th:each="room : ${roomList}"
+             th:classappend="${room.status == 'CLOSED'} ? ' closed' : ''">
 
-            <div class="top-line">
+            <div class="room-select">
+                <input type="checkbox"
+                       class="room-check"
+                       name="roomNoList"
+                       th:value="${room.roomNo}"
+                       form="batchDeleteForm"
+                       th:if="${room.status == 'CLOSED'}">
+            </div>
+
+            <a class="room-item"
+               th:href="@{/chat/admin/{roomNo}(roomNo=${room.roomNo})}"
+               th:attr="data-room-no=${room.roomNo}">
+
+                <div class="top-line">
                 <span class="category">
                     <span th:text="${room.categoryIcon}">💬</span>
                     <span th:text="${room.categoryName}">일반 문의</span>
                 </span>
 
-                <span class="room-title">
+                    <span class="room-title">
                     채팅방 #<span th:text="${room.roomNo}"></span>
                 </span>
 
-                <span class="unread-badge"
-                      th:if="${room.unreadCount != null and room.unreadCount > 0}">
-                        안읽음 <span th:text="${room.unreadCount}">1</span>
+                    <span class="unread-badge"
+                          th:if="${room.unreadCount != null and room.unreadCount > 0}">
+                    안읽음 <span th:text="${room.unreadCount}">1</span>
                 </span>
 
-                <span class="status"
-                      th:classappend="${room.status == 'OPEN'} ? ' open' : ' closed'"
-                      th:text="${room.status == 'OPEN'} ? '진행중' : '종료'">
+                    <span class="status"
+                          th:classappend="${room.status == 'OPEN'} ? ' open' : ' closed'"
+                          th:text="${room.status == 'OPEN'} ? '진행중' : '종료'">
                     OPEN
                 </span>
-            </div>
+                </div>
 
-            <div class="meta">
-                사용자 번호:
-                <span th:text="${room.userNo != null ? room.userNo : '탈퇴 회원'}"></span>
-                /
-                관리자 번호:
-                <span th:text="${room.adminNo != null ? room.adminNo : '미배정'}"></span>
-            </div>
+                <div class="meta">
+                    사용자 번호:
+                    <span th:text="${room.userNo != null ? room.userNo : '탈퇴 회원'}"></span>
+                    /
+                    관리자 번호:
+                    <span th:text="${room.adminNo != null ? room.adminNo : '미배정'}"></span>
+                </div>
 
-            <div class="last-message">
-                마지막 메시지:
-                <span th:text="${room.lastMessage != null ? room.lastMessage : '아직 메시지가 없습니다.'}"></span>
+                <div class="last-message">
+                    마지막 메시지:
+                    <span th:text="${room.lastMessage != null ? room.lastMessage : '아직 메시지가 없습니다.'}"></span>
+                </div>
+            </a>
+
+            <div class="room-actions" th:if="${room.status == 'CLOSED'}">
+                <form th:action="@{/chat/admin/{roomNo}/delete(roomNo=${room.roomNo})}"
+                      method="post"
+                      onsubmit="return confirm('상담방과 메시지가 모두 삭제됩니다. 정말 삭제하시겠습니까?');">
+                    <button type="submit" class="inline-delete-btn">삭제</button>
+                </form>
             </div>
-        </a>
+        </div>
     </div>
 
     <div class="pagination" id="pagination" th:if="${totalPage > 1}">

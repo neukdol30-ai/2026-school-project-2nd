@@ -184,6 +184,32 @@
         WHERE room_no = #{roomNo}
     </update>
 
+    <delete id="deleteRoom" parameterType="int">
+        DELETE FROM chat_room
+        WHERE room_no = #{roomNo, jdbcType=NUMERIC}
+        AND status = 'CLOSED'
+    </delete>
+
+    <delete id="deleteClosedRooms">
+        DELETE FROM chat_room
+        WHERE status = 'CLOSED'
+        AND room_no IN
+        <foreach collection="roomNoList"
+                 item="roomNo"
+                 open="("
+                 separator=","
+                 close=")">
+            #{roomNo, jdbcType=NUMERIC}
+        </foreach>
+    </delete>
+
+    <update id="assignAdmin">
+        UPDATE chat_room
+        SET admin_no = #{adminNo, jdbcType=NUMERIC}
+        WHERE room_no = #{roomNo, jdbcType=NUMERIC}
+        AND admin_no IS NULL
+    </update>
+
     <insert id="saveMessage"
             parameterType="com.siyan1234.itproject2nd.chat.dto.ChatMessageDto">
         INSERT INTO chat_message (

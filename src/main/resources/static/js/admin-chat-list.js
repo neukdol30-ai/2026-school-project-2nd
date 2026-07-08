@@ -4,6 +4,8 @@ let lastRefreshRoomNo = null;
 
 const roomListEl = document.getElementById("roomList");
 const paginationEl = document.getElementById("pagination");
+const checkAllClosed = document.getElementById("checkAllClosed");
+const batchDeleteBtn = document.getElementById("batchDeleteBtn");
 
 connectAdminListWebSocket();
 
@@ -80,6 +82,8 @@ function renderRoomList(roomList) {
                 조건에 맞는 채팅방이 없습니다.
             </div>
         `;
+
+        updateBatchDeleteButton();
         return;
     }
 
@@ -98,48 +102,78 @@ function renderRoomList(roomList) {
         const unreadCount = room.unreadCount || 0;
 
         html += `
-            <a class="room-item ${closedClass}"
-               data-room-no="${escapeHtml(roomNo)}"
-               href="/chat/admin/${escapeHtml(roomNo)}">
-
-                <div class="top-line">
-                    <span class="category">
-                        <span>${categoryIcon}</span>
-                        <span>${categoryName}</span>
-                    </span>
-
-                    <span class="room-title">
-                        채팅방 #<span>${escapeHtml(roomNo)}</span>
-                    </span>
-
+            <div class="room-card ${closedClass}">
+                <div class="room-select">
                     ${
-                        unreadCount > 0
-                        ? `<span class="unread-badge">안읽음 ${escapeHtml(unreadCount)}</span>`
-                        : ""
-                    }
-
-                    <span class="status ${statusClass}">
-                        ${statusText}
-                    </span>
+            room.status === "CLOSED"
+                ? `<input type="checkbox"
+                                      class="room-check"
+                                      name="roomNoList"
+                                      value="${escapeHtml(roomNo)}"
+                                      form="batchDeleteForm">`
+                : ""
+        }
                 </div>
 
-                <div class="meta">
-                    사용자 번호:
-                    <span>${escapeHtml(userText)}</span>
-                    /
-                    관리자 번호:
-                    <span>${escapeHtml(adminText)}</span>
-                </div>
+                <a class="room-item ${closedClass}"
+                   data-room-no="${escapeHtml(roomNo)}"
+                   href="/chat/admin/${escapeHtml(roomNo)}">
 
-                <div class="last-message">
-                    마지막 메시지:
-                    <span>${escapeHtml(lastMessage)}</span>
+                    <div class="top-line">
+                        <span class="category">
+                            <span>${categoryIcon}</span>
+                            <span>${categoryName}</span>
+                        </span>
+
+                        <span class="room-title">
+                            채팅방 #<span>${escapeHtml(roomNo)}</span>
+                        </span>
+
+                        ${
+            unreadCount > 0
+                ? `<span class="unread-badge">안읽음 ${escapeHtml(unreadCount)}</span>`
+                : ""
+        }
+
+                        <span class="status ${statusClass}">
+                            ${statusText}
+                        </span>
+                    </div>
+
+                    <div class="meta">
+                        사용자 번호:
+                        <span>${escapeHtml(userText)}</span>
+                        /
+                        관리자 번호:
+                        <span>${escapeHtml(adminText)}</span>
+                    </div>
+
+                    <div class="last-message">
+                        마지막 메시지:
+                        <span>${escapeHtml(lastMessage)}</span>
+                    </div>
+                </a>
+
+                <div class="room-actions">
+                    ${
+            room.status === "CLOSED"
+                ? `
+                                <form action="/chat/admin/${escapeHtml(roomNo)}/delete"
+                                      method="post"
+                                      onsubmit="return confirm('상담방과 메시지가 모두 삭제됩니다. 정말 삭제하시겠습니까?');">
+                                    <button type="submit" class="inline-delete-btn">삭제</button>
+                                </form>
+                              `
+                : ""
+        }
                 </div>
-            </a>
+            </div>
         `;
     });
 
     roomListEl.innerHTML = html;
+
+    updateBatchDeleteButton();
 }
 
 function renderPagination(data) {
@@ -301,4 +335,61 @@ function escapeHtml(value) {
         .replaceAll(">", "&gt;")
         .replaceAll('"', "&quot;")
         .replaceAll("'", "&#039;");
+}
+
+if (checkAllClosed) {
+    checkAllClosed.addEventListener("change", function () {
+        const roomChecks = document.querySelectorAll(".room-check");
+
+        roomChecks.forEach(check => {
+            check.checked = checkAllClosed.checked;
+        });
+
+        updateBatchDeleteButton();
+    });
+}
+
+document.addEventListener("change", function (event) {
+    if (event.target.classList.contains("room-check")) {
+        updateBatchDeleteButton();
+        syncCheckAllState();
+    }
+});
+
+function updateBatchDeleteButton() {
+    if (!batchDeleteBtn) {
+        return;
+    }
+
+    const checkedList = document.querySelectorAll(".room-check:checked");
+
+    batchDeleteBtn.disabled = checkedList.length === 0;
+}
+
+function syncCheckAllState() {
+    if (!checkAllClosed) {
+        return;
+    }
+
+    const roomChecks = document.querySelectorAll(".room-check");
+
+    if (roomChecks.length === 0) {
+        checkAllClosed.checked = false;
+        return;
+    }
+
+    const checkedList = document.querySelectorAll(".room-check:checked");
+
+    checkAllClosed.checked = roomChecks.length === checkedList.length;
+}
+
+function confirmBatchDelete() {
+    const checkedList = document.querySelectorAll(".room-check:checked");
+
+    if (checkedList.length === 0) {
+        alert("삭제할 종료 상담방을 선택해주세요.");
+        return false;
+    }
+
+    return confirm(`선택한 종료 상담방 ${checkedList.length}개를 삭제하시겠습니까?\n삭제된 상담방과 메시지는 복구할 수 없습니다.`);
 }

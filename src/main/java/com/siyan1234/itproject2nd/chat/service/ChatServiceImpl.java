@@ -93,6 +93,20 @@ public class ChatServiceImpl implements ChatService {
     }
 
     @Override
+    public void deleteRoom(Integer roomNo) {
+        chatDao.deleteRoom(roomNo);
+    }
+
+    @Override
+    public int deleteClosedRooms(List<Integer> roomNoList) {
+        if (roomNoList == null || roomNoList.isEmpty()) {
+            return 0;
+        }
+
+        return chatDao.deleteClosedRooms(roomNoList);
+    }
+
+    @Override
     public void updateReadYn(Integer roomNo, Integer viewerNo) {
         chatDao.updateReadYn(roomNo, viewerNo);
     }
@@ -142,5 +156,29 @@ public class ChatServiceImpl implements ChatService {
         chatRoomDto.setLastMessage(lastMessage);
 
         chatDao.updateLastMessage(chatRoomDto);
+    }
+
+    @Override
+    public void assignAdmin(Integer roomNo, Integer adminNo) {
+        chatDao.assignAdmin(roomNo, adminNo);
+    }
+
+    @Override
+    public void changeCategory(Integer roomNo, Integer userNo, String category) {
+        ChatRoomDto chatRoom = chatDao.findRoomByRoomNo(roomNo);
+
+        if (chatRoom == null) {
+            return;
+        }
+
+        if (!"OPEN".equals(chatRoom.getStatus())) {
+            return;
+        }
+
+        if (chatRoom.getUserNo() == null || !chatRoom.getUserNo().equals(userNo)) {
+            return;
+        }
+
+        chatDao.updateRoomCategory(roomNo, category);
     }
 }

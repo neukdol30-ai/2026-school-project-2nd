@@ -218,17 +218,12 @@ function getSenderLabel(message, isMine) {
 
     const messageSenderNo = Number(message.senderNo);
     const userNo = Number(roomUserNo);
-    const adminNo = Number(roomAdminNo);
-
-    if (messageSenderNo === adminNo || messageSenderNo === 2) {
-        return "관리자";
-    }
 
     if (messageSenderNo === userNo) {
         return "사용자";
     }
 
-    return "상대방";
+    return "관리자";
 }
 
 function markMyMessagesAsRead() {

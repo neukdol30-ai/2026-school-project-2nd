@@ -93,7 +93,7 @@ public class ChatController {
         }
 
         if (!"ADMIN".equals(loginUser.getRole())) {
-            return "redirect:/";
+            return "redirect:/chat";
         }
 
         if (page < 1) {
@@ -230,10 +230,21 @@ public class ChatController {
         }
 
         if (!"ADMIN".equals(loginUser.getRole())) {
-            return "redirect:/";
+            return "redirect:/chat";
         }
 
         ChatRoomDto chatRoom = chatService.findRoomByRoomNo(roomNo);
+
+        if (chatRoom == null) {
+            return "redirect:/chat/admin";
+        }
+
+        if (chatRoom.getAdminNo() == null) {
+            chatService.assignAdmin(roomNo, loginUser.getNo());
+            chatRoom = chatService.findRoomByRoomNo(roomNo);
+
+            chatHandler.broadcastAdminListRefresh(roomNo);
+        }
 
         model.addAttribute("chatRoom", chatRoom);
         model.addAttribute("loginUser", loginUser);
@@ -301,4 +312,113 @@ public class ChatController {
 
         return "redirect:/chat/admin";
     }
+
+    @PostMapping("/admin/{roomNo}/delete")
+    public String deleteRoomByAdmin(
+            @PathVariable Integer roomNo,
+            HttpSession session
+    ){
+        MemberDto loginUser = (MemberDto) session.getAttribute("loginUser");
+
+        if (loginUser == null) {
+            return "redirect:/temp/admin-login";
+        }
+        if (!"ADMIN".equals(loginUser.getRole())) {
+            return "redirect:/chat";
+        }
+
+        ChatRoomDto chatRoom = chatService.findRoomByRoomNo(roomNo);
+
+        if (chatRoom == null) {
+            return "redirect:/chat/admin";
+        }
+
+        if (!"CLOSED".equals(chatRoom.getStatus())) {
+            return "redirect:/chat/admin" + roomNo;
+        }
+
+        //Redis에 남아있는 해당 방 메시지 삭제
+        chatRedisService.deleteMessages(roomNo);
+
+        //Orcale chat_room 하드 삭제
+        //chat_message는 FK ON DELETE CASCADE로 같이 삭제됨
+        chatService.deleteRoom(roomNo);
+
+        //관리자 목록 실시간 갱신
+        chatHandler.broadcastAdminListRefresh(roomNo);
+
+        return "redirect:/chat/admin";
+    }
+
+    @PostMapping("/admin/rooms/delete")
+    public String deleteRoomsByAdmin(
+            @RequestParam(value = "roomNoList", required = false) List<Integer> roomNoList,
+            HttpSession session
+    ) {
+        MemberDto loginUser = (MemberDto) session.getAttribute("loginUser");
+
+        if (loginUser == null) {
+            return "redirect:/temp/admin-login";
+        }
+
+        if (!"ADMIN".equals(loginUser.getRole())) {
+            return "redirect:/chat";
+        }
+
+        if (roomNoList == null || roomNoList.isEmpty()) {
+            return "redirect:/chat/admin";
+        }
+
+        List<Integer> closedRoomNoList = new java.util.ArrayList<>();
+
+        for (Integer roomNo : roomNoList) {
+            ChatRoomDto chatRoom = chatService.findRoomByRoomNo(roomNo);
+
+            if (chatRoom == null) {
+                continue;
+            }
+
+            if (!"CLOSED".equals(chatRoom.getStatus())) {
+                continue;
+            }
+
+            closedRoomNoList.add(roomNo);
+        }
+
+        if (closedRoomNoList.isEmpty()) {
+            return "redirect:/chat/admin";
+        }
+
+        for (Integer roomNo : closedRoomNoList) {
+            chatRedisService.deleteMessages(roomNo);
+        }
+
+        chatService.deleteClosedRooms(closedRoomNoList);
+
+        chatHandler.broadcastAdminListRefresh(0);
+
+        return "redirect:/chat/admin";
+    }
+
+    @PostMapping("/{roomNo}/category")
+    public String changeCategory(
+            @PathVariable Integer roomNo,
+            @RequestParam String category,
+            HttpSession session
+    ) {
+        MemberDto loginUser = (MemberDto) session.getAttribute("loginUser");
+
+        if (loginUser == null) {
+            return "redirect:/temp/user-login";
+        }
+
+        chatService.changeCategory(roomNo, loginUser.getNo(), category);
+
+        //관리자 목록 실시간 갱신
+        chatHandler.broadcastAdminListRefresh(roomNo);
+
+        return "redirect:/chat/room/"+roomNo;
+    }
+
+
 }

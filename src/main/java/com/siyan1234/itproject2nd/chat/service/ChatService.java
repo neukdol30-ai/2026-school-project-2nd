@@ -24,11 +24,19 @@ public interface ChatService {
 
     List<ChatMessageDto> findMessagesByRoomNo(Integer roomNo);
 
-    void closeRoom(Integer roomNo);
-
     void updateLastMessage(Integer roomNo, String lastMessage);
 
+    void assignAdmin(Integer roomNo, Integer adminNo);
+
+    void closeRoom(Integer roomNo);
+
+    void deleteRoom(Integer roomNo);
+
+    int deleteClosedRooms(List<Integer> roomNoList);
+
     void updateReadYn(Integer roomNo, Integer viewerNo);
+
+    void changeCategory(Integer roomNo, Integer userNo, String category);
 
     List<ChatRoomDto> findAdminRooms(
             String status,
