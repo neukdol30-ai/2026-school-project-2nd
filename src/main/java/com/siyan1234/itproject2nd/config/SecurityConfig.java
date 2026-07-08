@@ -26,6 +26,7 @@ public class SecurityConfig {
                         .requestMatchers("/admin/**").hasRole("ADMIN") // /admin으로 시작하는 주소는 ROLE_ADMIN 권한자만 접근
                         .anyRequest().authenticated() // 위에서 안 걸린 나머지 주소는 로그인한 사람만 접근
                 )
+                .csrf(csrf -> csrf.disable())
                 // 2 로그인 폼 설정
                 .formLogin(form -> form
                         .loginPage("/member/login") // 로그인 화면 주소(GET)
@@ -41,7 +42,7 @@ public class SecurityConfig {
                         .logoutUrl("/member/logout") // 이 주소로 POST 요청 시 로그아웃
                         .logoutSuccessUrl("/") // 로그아웃 후 메인으로
                 );
-        // csrf는 켠 채로 둔다(기본값).
+
         return http.build();
     }
 }

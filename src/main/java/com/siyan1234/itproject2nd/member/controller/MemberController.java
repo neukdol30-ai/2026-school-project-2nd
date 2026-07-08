@@ -61,14 +61,6 @@ public class MemberController {
 
         return "redirect:/member/login?signup=success"; // 가입 성공 후 로그인 화면으로 이동
     }
-//        if (memberService.hasSignupErrors(signupDto,bindingResult)) { // 검증 오류 있는지 Service에서 확인
-//            return "member/signup"; // 오류 있다면 -> 다시 회원가입 화면으로
-//        }
-//
-//        memberService.signup(signupDto); // 오류 없다면 -> 회원가입을 DB에 저장
-//
-//        return "redirect:/member/login?signup=success"; // 가입 성공 후 로그인 화면으로 이동
-//    }
 
     @GetMapping("/login")
     public String loginForm(@AuthenticationPrincipal CustomUserDetails loginUser) { // 로그인 화면 보여줌
