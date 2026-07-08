@@ -33,8 +33,10 @@ public class MemberService {
         }
 
         if (signupDto.getEmail() != null && !signupDto.getEmail().isBlank()) {
-            bindingResult.rejectValue("email", "duplicateEmail", "이미 사용 중인 이메일입니다.");
-            return true;
+            if (memberDao.findByEmail(signupDto.getEmail()) != null) {
+                bindingResult.rejectValue("email", "duplicateEmail", "이미 사용 중인 이메일입니다.");
+                return true;
+            }
         }
 
         if (!"Y".equals(signupDto.getAgreeTermsYn())) { // 이용약관의 동의값이 Y인지 확인

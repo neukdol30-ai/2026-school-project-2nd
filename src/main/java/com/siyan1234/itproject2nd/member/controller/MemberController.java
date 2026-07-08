@@ -5,14 +5,17 @@ import com.siyan1234.itproject2nd.member.dto.SignupDto;
 import com.siyan1234.itproject2nd.member.service.MemberService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
+@Slf4j
 @Controller
 @RequiredArgsConstructor
 @RequestMapping("/member")
@@ -33,16 +36,39 @@ public class MemberController {
     }
 
     @PostMapping("/signup") // POST /member/signup 요청 처리
-    public String signup(@Valid SignupDto signupDto, BindingResult bindingResult) { // 회원가입 폼 제출 처리
+    public String signup(@Valid @ModelAttribute("signupDto") SignupDto signupDto,
+                         BindingResult bindingResult) { // 회원가입 폼 제출 처리
 
-        if (memberService.hasSignupErrors(signupDto,bindingResult)) { // 검증 오류 있는지 Service에서 확인
-            return "member/signup"; // 오류 있다면 -> 다시 회원가입 화면으로
+        log.info("회원가입 요청 아이디 = {}", signupDto.getMemberId()); // 폼에서 아이디 넘어왔는지 확인
+        log.info("회원가입 요청 이메일 = {}", signupDto.getEmail()); // 폼에서 이메일 넘어왔는지 확인
+        log.info("약관 동의 값 = {}", signupDto.getAgreeTermsYn()); // 약관 체크박스 값 Y로 넘어왔는지 확인
+        log.info("개인정보 동의 값 = {}", signupDto.getAgreePrivacyYn()); // 개인정보 체크박스 값 Y로 넘어왔는지 확인
+
+        boolean hasErrors = memberService.hasSignupErrors(signupDto, bindingResult); // Service에서 회원가입 검증 실행
+
+        if (hasErrors) {
+            bindingResult.getFieldErrors().forEach(error -> { // 필드별 오류 목록 하나식 꺼내기
+                log.warn("회원가입 필드 오류 field={}, rejectedValue={}, message={}",
+                        error.getField(),
+                        error.getRejectedValue(),
+                        error.getDefaultMessage()); // 어떤 필드 문제인지 콘솔 출력
+            });
+
+            return "member/signup"; // 오류 있으면 다시 회원가입으로
         }
 
-        memberService.signup(signupDto); // 오류 없다면 -> 회원가입을 DB에 저장
+        memberService.signup(signupDto); // 오류 없었으면 회원가입 정보 DB에 저장
 
         return "redirect:/member/login?signup=success"; // 가입 성공 후 로그인 화면으로 이동
     }
+//        if (memberService.hasSignupErrors(signupDto,bindingResult)) { // 검증 오류 있는지 Service에서 확인
+//            return "member/signup"; // 오류 있다면 -> 다시 회원가입 화면으로
+//        }
+//
+//        memberService.signup(signupDto); // 오류 없다면 -> 회원가입을 DB에 저장
+//
+//        return "redirect:/member/login?signup=success"; // 가입 성공 후 로그인 화면으로 이동
+//    }
 
     @GetMapping("/login")
     public String loginForm(@AuthenticationPrincipal CustomUserDetails loginUser) { // 로그인 화면 보여줌
@@ -53,5 +79,4 @@ public class MemberController {
 
         return "member/login";
     }
-
 }

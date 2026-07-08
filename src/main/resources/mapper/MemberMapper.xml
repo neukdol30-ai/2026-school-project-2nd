@@ -76,6 +76,7 @@
         #{name},
         #{nickname},
         #{email},
+        #{phone},
         #{birthDate},
         #{gender},
         #{postcode},
