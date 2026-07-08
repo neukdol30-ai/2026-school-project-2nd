@@ -1,11 +1,14 @@
 package com.siyan1234.itproject2nd.member.service;
 
 import com.siyan1234.itproject2nd.member.dao.MemberDao;
+import com.siyan1234.itproject2nd.member.dto.MemberDto;
 import com.siyan1234.itproject2nd.member.dto.SignupDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.BindingResult;
+
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor // final 필드 생성자 주입 방식으로 자동 처리.
@@ -59,5 +62,9 @@ public class MemberService {
         signupDto.setPassword(encodedPassword); // DTO의 password 값을 암호화된 비밀번호로 교체
 
         memberDao.signup(signupDto); // 암호화된 비밀번호가 들어 있는 DTO를 DB에 INSERTㅊ
+    }
+
+    public List<MemberDto> findAllMembers() {
+        return memberDao.findAllMembers();
     }
 }
