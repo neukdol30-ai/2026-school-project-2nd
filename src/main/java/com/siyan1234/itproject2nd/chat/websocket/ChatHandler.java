@@ -4,8 +4,12 @@ import com.siyan1234.itproject2nd.chat.dto.ChatMessageDto;
 import com.siyan1234.itproject2nd.chat.dto.ChatRoomDto;
 import com.siyan1234.itproject2nd.chat.service.ChatRedisService;
 import com.siyan1234.itproject2nd.chat.service.ChatService;
+import com.siyan1234.itproject2nd.member.dto.CustomUserDetails;
+import com.siyan1234.itproject2nd.member.dto.MemberDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.TextMessage;
@@ -14,6 +18,7 @@ import org.springframework.web.socket.handler.TextWebSocketHandler;
 import tools.jackson.databind.JsonNode;
 import tools.jackson.databind.ObjectMapper;
 
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.Set;
@@ -28,8 +33,10 @@ import java.util.concurrent.ConcurrentHashMap;
  * - READ: 메시지 읽음 처리
  * - MESSAGE: 실시간 메시지 전송
  *
- * 메시지는 Redis에 먼저 저장하고,
- * 관리자 목록 표시용 last_message는 Oracle chat_room에 즉시 반영한다.
+ * 보안 보완:
+ * - 클라이언트가 보낸 senderNo, viewerNo를 신뢰하지 않는다.
+ * - WebSocketSession의 로그인 사용자 정보를 기준으로 senderNo/viewerNo를 결정한다.
+ * - JOIN, READ, MESSAGE 처리 시 상담방 접근 권한을 검사한다.
  */
 @Slf4j
 @Component
@@ -65,35 +72,49 @@ public class ChatHandler extends TextWebSocketHandler {
      */
     @Override
     protected void handleTextMessage(WebSocketSession session, TextMessage message) throws Exception {
+        MemberDto loginUser = getLoginUser(session);
+
+        if (loginUser == null) {
+            closeUnauthorizedSession(session);
+            return;
+        }
+
         String payload = message.getPayload();
         JsonNode root = objectMapper.readTree(payload);
 
         String type = root.has("type") ? root.get("type").asText() : "MESSAGE";
 
         if ("ADMIN_LIST_JOIN".equals(type)) {
-            handleAdminListJoin(session);
+            handleAdminListJoin(session, loginUser);
             return;
         }
 
         if ("JOIN".equals(type)) {
-            handleJoin(session, root);
+            handleJoin(session, root, loginUser);
             return;
         }
 
         if ("READ".equals(type)) {
-            handleRead(root);
+            handleRead(session, root, loginUser);
             return;
         }
 
         if ("MESSAGE".equals(type)) {
-            handleMessage(session, root);
+            handleMessage(session, root, loginUser);
         }
     }
 
     /**
      * 관리자 상담 목록 페이지 접속 등록
+     *
+     * 관리자 목록 실시간 갱신은 ADMIN만 받을 수 있도록 검사한다.
      */
-    private void handleAdminListJoin(WebSocketSession session) {
+    private void handleAdminListJoin(WebSocketSession session, MemberDto loginUser) throws IOException {
+        if (!isAdmin(loginUser)) {
+            closeUnauthorizedSession(session);
+            return;
+        }
+
         adminListSessions.add(session);
         log.info("관리자 상담 목록 WebSocket 등록 sessionId={}", session.getId());
     }
@@ -101,32 +122,62 @@ public class ChatHandler extends TextWebSocketHandler {
     /**
      * 채팅방 입장 처리
      *
-     * 사용자가 방에 들어오면 해당 세션을 roomSessionMap에 등록하고
-     * 상대방 메시지를 읽음 처리한다.
+     * 중요:
+     * - 클라이언트가 보낸 viewerNo를 사용하지 않는다.
+     * - 서버가 확인한 loginUser.getNo()를 viewerNo로 사용한다.
      */
-    private void handleJoin(WebSocketSession session, JsonNode root) {
+    private void handleJoin(
+            WebSocketSession session,
+            JsonNode root,
+            MemberDto loginUser
+    ) throws IOException {
         Integer roomNo = getInteger(root, "roomNo");
-        Integer viewerNo = getInteger(root, "viewerNo");
 
-        if (roomNo == null || viewerNo == null) {
+        if (roomNo == null) {
+            return;
+        }
+
+        ChatRoomDto chatRoom = chatService.findRoomByRoomNo(roomNo);
+
+        if (!canAccessRoom(loginUser, chatRoom)) {
+            closeUnauthorizedSession(session);
             return;
         }
 
         joinRoom(roomNo, session);
+
+        Integer viewerNo = loginUser.getNo();
+
         updateReadAndBroadcast(roomNo, viewerNo);
         broadcastAdminListRefresh(roomNo);
     }
 
     /**
      * 읽음 처리 이벤트
+     *
+     * 중요:
+     * - 클라이언트가 보낸 viewerNo를 사용하지 않는다.
+     * - 서버가 확인한 loginUser.getNo()를 viewerNo로 사용한다.
      */
-    private void handleRead(JsonNode root) {
+    private void handleRead(
+            WebSocketSession session,
+            JsonNode root,
+            MemberDto loginUser
+    ) throws IOException {
         Integer roomNo = getInteger(root, "roomNo");
-        Integer viewerNo = getInteger(root, "viewerNo");
 
-        if (roomNo == null || viewerNo == null) {
+        if (roomNo == null) {
             return;
         }
+
+        ChatRoomDto chatRoom = chatService.findRoomByRoomNo(roomNo);
+
+        if (!canAccessRoom(loginUser, chatRoom)) {
+            closeUnauthorizedSession(session);
+            return;
+        }
+
+        Integer viewerNo = loginUser.getNo();
 
         updateReadAndBroadcast(roomNo, viewerNo);
         broadcastAdminListRefresh(roomNo);
@@ -135,9 +186,17 @@ public class ChatHandler extends TextWebSocketHandler {
     /**
      * 메시지 전송 이벤트
      *
-     * 종료된 상담방에는 메시지를 저장하지 않는다.
+     * 보안 핵심:
+     * - 클라이언트가 보낸 senderNo를 사용하지 않는다.
+     * - 서버가 확인한 loginUser.getNo()를 senderNo로 강제 설정한다.
+     * - 본인 상담방이 아니면 WebSocket 연결을 종료한다.
+     * - 종료된 상담방에는 메시지를 저장하지 않는다.
      */
-    private void handleMessage(WebSocketSession session, JsonNode root) throws Exception {
+    private void handleMessage(
+            WebSocketSession session,
+            JsonNode root,
+            MemberDto loginUser
+    ) throws Exception {
         ChatMessageDto chatMessageDto;
 
         if (root.has("message")) {
@@ -152,15 +211,32 @@ public class ChatHandler extends TextWebSocketHandler {
             return;
         }
 
-        if (!isOpenRoom(roomNo)) {
+        ChatRoomDto chatRoom = chatService.findRoomByRoomNo(roomNo);
+
+        if (!canAccessRoom(loginUser, chatRoom)) {
+            closeUnauthorizedSession(session);
             return;
         }
 
-        chatMessageDto.setCreatedDate(LocalDateTime.now());
-
-        if (!"Y".equals(chatMessageDto.getReadYn()) && !"N".equals(chatMessageDto.getReadYn())) {
-            chatMessageDto.setReadYn("N");
+        if (!"OPEN".equals(chatRoom.getStatus())) {
+            return;
         }
+
+        String messageContent = chatMessageDto.getMessageContent();
+
+        if (messageContent == null || messageContent.trim().isEmpty()) {
+            return;
+        }
+
+        /*
+            중요:
+            클라이언트가 보낸 senderNo는 조작될 수 있으므로 사용하지 않는다.
+            반드시 서버의 로그인 사용자 번호로 설정한다.
+         */
+        chatMessageDto.setSenderNo(loginUser.getNo());
+        chatMessageDto.setMessageContent(messageContent.trim());
+        chatMessageDto.setReadYn("N");
+        chatMessageDto.setCreatedDate(LocalDateTime.now());
 
         joinRoom(roomNo, session);
 
@@ -178,6 +254,86 @@ public class ChatHandler extends TextWebSocketHandler {
 
         // 관리자 상담 목록 실시간 갱신
         broadcastAdminListRefresh(roomNo);
+    }
+
+    /**
+     * WebSocketSession에서 로그인 사용자 정보를 가져온다.
+     *
+     * Spring Security 로그인 상태라면
+     * session.getPrincipal() 안에 Authentication 정보가 들어온다.
+     */
+    private MemberDto getLoginUser(WebSocketSession session) {
+        if (session == null) {
+            return null;
+        }
+
+        Object principal = session.getPrincipal();
+
+        if (principal == null) {
+            return null;
+        }
+
+        if (principal instanceof Authentication authentication) {
+            if (!authentication.isAuthenticated()) {
+                return null;
+            }
+
+            if (authentication instanceof AnonymousAuthenticationToken) {
+                return null;
+            }
+
+            Object authenticationPrincipal = authentication.getPrincipal();
+
+            if (authenticationPrincipal instanceof CustomUserDetails customUserDetails) {
+                return customUserDetails.getMemberDto();
+            }
+
+            return null;
+        }
+
+        if (principal instanceof CustomUserDetails customUserDetails) {
+            return customUserDetails.getMemberDto();
+        }
+
+        return null;
+    }
+
+    /**
+     * 권한 없는 WebSocket 요청이면 연결을 종료한다.
+     */
+    private void closeUnauthorizedSession(WebSocketSession session) throws IOException {
+        if (session != null && session.isOpen()) {
+            session.close(CloseStatus.NOT_ACCEPTABLE.withReason("Unauthorized chat room access"));
+        }
+    }
+
+    /**
+     * 상담방 접근 권한 검사
+     *
+     * 관리자:
+     * - 모든 상담방 접근 가능
+     *
+     * 일반 사용자:
+     * - 본인이 생성한 상담방만 접근 가능
+     */
+    private boolean canAccessRoom(MemberDto loginUser, ChatRoomDto chatRoom) {
+        if (loginUser == null || chatRoom == null) {
+            return false;
+        }
+
+        if (isAdmin(loginUser)) {
+            return true;
+        }
+
+        return chatRoom.getUserNo() != null
+                && chatRoom.getUserNo().equals(loginUser.getNo());
+    }
+
+    /**
+     * 관리자 여부 확인
+     */
+    private boolean isAdmin(MemberDto loginUser) {
+        return loginUser != null && "ADMIN".equals(loginUser.getRole());
     }
 
     /**
@@ -270,15 +426,6 @@ public class ChatHandler extends TextWebSocketHandler {
         } catch (Exception e) {
             log.error("관리자 상담 목록 WebSocket 전송 실패", e);
         }
-    }
-
-    /**
-     * 상담방이 OPEN 상태인지 확인
-     */
-    private boolean isOpenRoom(Integer roomNo) {
-        ChatRoomDto chatRoom = chatService.findRoomByRoomNo(roomNo);
-
-        return chatRoom != null && "OPEN".equals(chatRoom.getStatus());
     }
 
     private Integer getInteger(JsonNode root, String fieldName) {
