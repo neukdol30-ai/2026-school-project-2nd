@@ -78,13 +78,13 @@
         #{password},
         #{name},
         #{nickname},
-        #{email, jdbcType=VARCHAR},
-        #{phone, jdbcType=VARCHAR},
-        #{birthDate, jdbcType=DATE},
-        #{gender, jdbcType=VARCHAR},
-        #{postcode, jdbcType=VARCHAR},
-        #{address, jdbcType=VARCHAR},
-        #{detailAddress, jdbcType=VARCHAR},
+        #{email},
+        #{phone},
+        #{birthDate},
+        #{gender},
+        #{postcode},
+        #{address},
+        #{detailAddress},
         'USER',
         #{agreeTermsYn},
         #{agreePrivacyYn}
@@ -92,82 +92,5 @@
 
     </insert>
 
-
-    <!-- ========================= -->
-    <!-- 로그인 -->
-    <!-- ========================= -->
-    <!--
-        MemberDao.login(LoginDto loginDto) 와 연결됨
-
-        입력한 아이디 / 비밀번호가 DB와 일치하고
-        탈퇴 처리되지 않은 회원만 조회함
-    -->
-    <select id="login"
-            parameterType="com.siyan1234.itproject2nd.member.dto.LoginDto"
-            resultType="com.siyan1234.itproject2nd.member.dto.MemberDto">
-
-        SELECT
-        NO,
-        MEMBER_ID,
-        PASSWORD,
-        NAME,
-        NICKNAME,
-        EMAIL,
-        PHONE,
-        BIRTH_DATE,
-        GENDER,
-        POSTCODE,
-        ADDRESS,
-        DETAIL_ADDRESS,
-        ROLE,
-        AGREE_TERMS_YN,
-        AGREE_PRIVACY_YN,
-        REGDATE
-        FROM MEMBER
-        WHERE MEMBER_ID = #{memberId}
-        AND PASSWORD = #{password}
-
-
-    </select>
-
-
-    <!-- ========================= -->
-    <!-- 아이디 중복확인 -->
-    <!-- ========================= -->
-    <!--
-        MemberDao.countByMemberId(String memberId) 와 연결됨
-
-        결과가 0이면 사용 가능
-        결과가 1 이상이면 이미 사용 중
-    -->
-    <select id="countByMemberId"
-            parameterType="string"
-            resultType="int">
-
-        SELECT COUNT(*)
-        FROM MEMBER
-        WHERE MEMBER_ID = #{memberId}
-
-    </select>
-
-
-    <!-- ========================= -->
-    <!-- 이메일 중복확인 -->
-    <!-- ========================= -->
-    <!--
-        MemberDao.countByEmail(String email) 와 연결됨
-
-        이메일은 선택값이지만,
-        입력했을 때 이미 존재하면 회원가입을 막기 위해 사용
-    -->
-    <select id="countByEmail"
-            parameterType="string"
-            resultType="int">
-
-        SELECT COUNT(*)
-        FROM MEMBER
-        WHERE EMAIL = #{email}
-
-    </select>
 
 </mapper>

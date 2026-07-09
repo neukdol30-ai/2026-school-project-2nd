@@ -1,7 +1,6 @@
 package com.siyan1234.itproject2nd.member.service;
 
 import com.siyan1234.itproject2nd.member.dao.MemberDao;
-import com.siyan1234.itproject2nd.member.dto.LoginDto;
 import com.siyan1234.itproject2nd.member.dto.MemberDto;
 import com.siyan1234.itproject2nd.member.dto.SignupDto;
 import lombok.RequiredArgsConstructor;
