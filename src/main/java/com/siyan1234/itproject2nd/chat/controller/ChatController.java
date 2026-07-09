@@ -57,11 +57,6 @@ public class ChatController {
     @GetMapping
     public String chatHome(HttpSession session, Model model) {
         MemberDto loginUser = getLoginUser(session);
-        System.out.println("========== /chat 요청 들어옴 ==========");
-        System.out.println("loginUser = " + session.getAttribute("loginUser"));
-        System.out.println("loginMember = " + session.getAttribute("loginMember"));
-        System.out.println("member = " + session.getAttribute("member"));
-
         // 현재는 채팅 단독 테스트를 위해 임시 로그인으로 이동
         // 팀 회원 기능과 병합 후에는 redirect:/member/login 으로 변경
         if (loginUser == null) {
