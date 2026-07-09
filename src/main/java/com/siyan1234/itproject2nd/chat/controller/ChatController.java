@@ -584,12 +584,12 @@ public class ChatController {
 
     private String redirectToUserLogin() {
         // 최종 병합 후 변경 권장: return "redirect:/member/login";
-        return "redirect:/temp/user-login";
+        return "redirect:/member/login";
     }
 
     private String redirectToAdminLogin() {
         // 최종 병합 후 변경 권장: return "redirect:/member/login";
-        return "redirect:/temp/admin-login";
+        return "redirect:/member/login";
     }
 
     private int normalizePage(int page) {

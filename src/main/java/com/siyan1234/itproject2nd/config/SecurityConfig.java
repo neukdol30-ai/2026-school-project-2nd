@@ -21,8 +21,7 @@ public class SecurityConfig {
                                 "/", // 메인
                                 "/member/login", // 로그인 화면
                                 "/member/signup", // 회원가입 화면
-                                "/css/**", "/js/**", "/images/**", "/ws/**", "/chat/**", // 정적 파일
-                                "/temp/**"
+                                "/css/**", "/js/**", "/images/**", "/ws/**", "/chat/**" // 정적 파일
                         ).permitAll()
                         .requestMatchers("/admin/**").hasRole("ADMIN") // /admin으로 시작하는 주소는 ROLE_ADMIN 권한자만 접근
                         .anyRequest().authenticated() // 위에서 안 걸린 나머지 주소는 로그인한 사람만 접근

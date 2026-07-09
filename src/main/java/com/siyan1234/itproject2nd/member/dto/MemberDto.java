@@ -13,7 +13,7 @@ import lombok.ToString;
 @ToString
 public class MemberDto {
 
-    private Long no;
+    private Integer no;
     private String memberId;
     private String password; // BCrypt
     private String name;
