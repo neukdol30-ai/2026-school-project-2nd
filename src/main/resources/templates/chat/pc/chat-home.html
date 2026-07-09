@@ -2,118 +2,121 @@
 <html lang="ko" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>상담 홈</title>
-    <link rel="stylesheet" th:href="@{/css/chat/chat-home.css}">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SecondPro 상담센터</title>
+    <link rel="stylesheet" th:href="@{/css/chat/pc/chat-home-pc.css}">
 </head>
 <body>
-
-<!--
-    사용자 상담 홈 화면
-
-    역할:
-    - 문의 유형 선택
-    - 기존 OPEN 상담방이 있을 경우 기존 대화 이어가기
-    - chat-home.css와 연결
--->
-<div class="talk-wrap">
-    <div class="hero">
-        <div class="hero-title">SecondPro 상담센터</div>
-        <div class="hero-sub">
-            메일, 지도, 증권, 뉴스, 날씨, 캘린더 사용 중<br>
-            궁금한 점을 실시간으로 문의해보세요.
+<div class="chat-home-page">
+    <header class="home-header">
+        <div>
+            <div class="eyebrow">SecondPro Help Center</div>
+            <h1>무엇을 도와드릴까요?</h1>
+            <p>
+                메일, 지도, 증권, 뉴스, 날씨, 캘린더 사용 중 궁금한 점을<br>
+                1:1 실시간 상담으로 빠르게 문의할 수 있습니다.
+            </p>
         </div>
-    </div>
 
-    <div class="card">
-        <div class="brand-row">
-            <div class="brand-icon">💬</div>
-            <div>
-                <div class="brand-name">SecondPro Help</div>
-                <div class="brand-status">⚡ 빠르게 답변 받을 수 있어요</div>
+        <div class="header-actions">
+            <a class="mode-link" th:href="@{/chat/mobile}">모바일 화면 보기</a>
+        </div>
+    </header>
+
+    <main class="home-grid">
+        <section class="profile-card">
+            <div class="profile-icon">💬</div>
+            <h2>안녕하세요, <span th:text="${loginUser.nickname}">사용자</span>님</h2>
+            <p>문의 유형을 선택하면 상담방으로 바로 이동합니다.</p>
+
+            <div class="current-room" th:if="${openRoom != null}">
+                <div>
+                    <strong>진행 중인 상담이 있습니다.</strong>
+                    <span>
+                        #<b th:text="${openRoom.roomNo}">0</b>
+                        · <b th:text="${openRoom.categoryName}">기타 문의</b>
+                    </span>
+                </div>
+                <a th:href="@{/chat/room/{roomNo}(roomNo=${openRoom.roomNo})}">기존 대화 이어가기</a>
             </div>
-        </div>
 
-        <div class="welcome">
-            안녕하세요.
-            <b th:text="${loginUser.nickname}">사용자</b>님 😊<br>
-            무엇을 도와드릴까요?
-        </div>
+            <div class="help-note">
+                상담 내용은 문의 이력 확인과 서비스 품질 개선을 위해 저장될 수 있습니다.
+            </div>
+        </section>
 
-        <div class="quick-title">문의 유형을 선택해주세요</div>
+        <section class="category-panel">
+            <div class="section-title">
+                <h2>문의 유형 선택</h2>
+                <p>가장 가까운 문의 유형을 선택해주세요. 잘못 선택해도 상담방에서 변경할 수 있습니다.</p>
+            </div>
 
-        <!--
-            문의 유형 선택 영역
+            <div class="category-grid">
+                <form th:action="@{/chat/start}" method="post" class="category-card mail">
+                    <input type="hidden" name="category" value="MAIL">
+                    <button type="submit">
+                        <span class="icon">📧</span>
+                        <strong>메일 문의</strong>
+                        <em>메일 수신, 발송, 계정 관련 문의</em>
+                    </button>
+                </form>
 
-            각 버튼은 /chat/start 로 POST 요청을 보내고,
-            category 값을 기준으로 상담방을 생성하거나 기존 상담방 유형을 변경한다.
-        -->
-        <div class="quick-grid">
-            <form class="quick-form" th:action="@{/chat/start}" method="post">
-                <input type="hidden" name="category" value="MAIL">
-                <button class="quick-btn" type="submit">📧 메일 문의</button>
-            </form>
+                <form th:action="@{/chat/start}" method="post" class="category-card map">
+                    <input type="hidden" name="category" value="MAP">
+                    <button type="submit">
+                        <span class="icon">🗺</span>
+                        <strong>지도 문의</strong>
+                        <em>장소 검색, 경로, 지도 기능 문의</em>
+                    </button>
+                </form>
 
-            <form class="quick-form" th:action="@{/chat/start}" method="post">
-                <input type="hidden" name="category" value="MAP">
-                <button class="quick-btn" type="submit">🗺 지도 문의</button>
-            </form>
+                <form th:action="@{/chat/start}" method="post" class="category-card stock">
+                    <input type="hidden" name="category" value="STOCK">
+                    <button type="submit">
+                        <span class="icon">📈</span>
+                        <strong>증권 문의</strong>
+                        <em>종목, 차트, 관심 목록 문의</em>
+                    </button>
+                </form>
 
-            <form class="quick-form" th:action="@{/chat/start}" method="post">
-                <input type="hidden" name="category" value="STOCK">
-                <button class="quick-btn" type="submit">📈 증권 문의</button>
-            </form>
+                <form th:action="@{/chat/start}" method="post" class="category-card news">
+                    <input type="hidden" name="category" value="NEWS">
+                    <button type="submit">
+                        <span class="icon">📰</span>
+                        <strong>뉴스 문의</strong>
+                        <em>뉴스 검색, 기사 표시 문의</em>
+                    </button>
+                </form>
 
-            <form class="quick-form" th:action="@{/chat/start}" method="post">
-                <input type="hidden" name="category" value="NEWS">
-                <button class="quick-btn" type="submit">📰 뉴스 문의</button>
-            </form>
+                <form th:action="@{/chat/start}" method="post" class="category-card weather">
+                    <input type="hidden" name="category" value="WEATHER">
+                    <button type="submit">
+                        <span class="icon">🌤</span>
+                        <strong>날씨 문의</strong>
+                        <em>날씨 조회, 지역 설정 문의</em>
+                    </button>
+                </form>
 
-            <form class="quick-form" th:action="@{/chat/start}" method="post">
-                <input type="hidden" name="category" value="WEATHER">
-                <button class="quick-btn" type="submit">🌤 날씨 문의</button>
-            </form>
+                <form th:action="@{/chat/start}" method="post" class="category-card calendar">
+                    <input type="hidden" name="category" value="CALENDAR">
+                    <button type="submit">
+                        <span class="icon">📅</span>
+                        <strong>캘린더 문의</strong>
+                        <em>일정, 알림, 캘린더 기능 문의</em>
+                    </button>
+                </form>
 
-            <form class="quick-form" th:action="@{/chat/start}" method="post">
-                <input type="hidden" name="category" value="CALENDAR">
-                <button class="quick-btn" type="submit">📅 캘린더 문의</button>
-            </form>
-
-            <form class="quick-form" th:action="@{/chat/start}" method="post">
-                <input type="hidden" name="category" value="ETC">
-                <button class="quick-btn" type="submit">💬 기타 문의</button>
-            </form>
-        </div>
-
-        <!-- 진행 중인 상담방이 있을 때만 기존 대화 이어가기 버튼 표시 -->
-        <div class="main-action" th:if="${openRoom != null}">
-            <a th:href="@{/chat/room/{roomNo}(roomNo=${openRoom.roomNo})}">
-                기존 대화 이어가기
-            </a>
-        </div>
-    </div>
-
-    <div class="notice">
-        상담 내용은 서비스 품질 향상과 문의 이력 확인을 위해 저장될 수 있습니다.
-    </div>
-
-    <div class="bottom-nav">
-        <a href="/chat" class="nav-item active">
-            <span class="nav-icon">🏠</span>
-            홈
-        </a>
-
-        <a th:href="${openRoom != null} ? @{/chat/room/{roomNo}(roomNo=${openRoom.roomNo})} : '#'"
-           class="nav-item">
-            <span class="nav-icon">💬</span>
-            대화
-        </a>
-
-        <a href="#" class="nav-item">
-            <span class="nav-icon">⚙️</span>
-            설정
-        </a>
-    </div>
+                <form th:action="@{/chat/start}" method="post" class="category-card etc">
+                    <input type="hidden" name="category" value="ETC">
+                    <button type="submit">
+                        <span class="icon">💬</span>
+                        <strong>기타 문의</strong>
+                        <em>위 유형에 없는 일반 문의</em>
+                    </button>
+                </form>
+            </div>
+        </section>
+    </main>
 </div>
-
 </body>
 </html>

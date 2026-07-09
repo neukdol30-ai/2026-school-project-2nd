@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+    <title>모바일 상담 채팅</title>
+    <link rel="stylesheet" th:href="@{/css/chat/mobile/chat-room-mobile.css}">
+</head>
+<body>
+<div class="mobile-chat">
+    <header class="mobile-chat-header">
+        <a th:href="@{/chat/mobile}" class="back-link">‹</a>
+        <div class="title-area">
+            <strong>SecondPro 상담센터</strong>
+            <span th:text="${chatRoom.categoryName}">기타 문의</span>
+        </div>
+        <a class="pc-link" th:href="@{/chat/room/{roomNo}(roomNo=${chatRoom.roomNo})}">PC</a>
+    </header>
+
+    <section class="mobile-room-info">
+        <div>
+            <span th:text="${chatRoom.categoryIcon}">💬</span>
+            <b>#<em th:text="${chatRoom.roomNo}">0</em></b>
+            <strong th:text="${chatRoom.status == 'OPEN'} ? '진행중' : '종료'">진행중</strong>
+        </div>
+
+        <form th:if="${chatRoom.status == 'OPEN' and loginUser.role == 'USER'}"
+              th:action="@{/chat/mobile/{roomNo}/category(roomNo=${chatRoom.roomNo})}"
+              method="post"
+              class="mobile-category-form">
+            <select name="category">
+                <option value="MAIL" th:selected="${chatRoom.category == 'MAIL'}">메일 문의</option>
+                <option value="MAP" th:selected="${chatRoom.category == 'MAP'}">지도 문의</option>
+                <option value="STOCK" th:selected="${chatRoom.category == 'STOCK'}">증권 문의</option>
+                <option value="NEWS" th:selected="${chatRoom.category == 'NEWS'}">뉴스 문의</option>
+                <option value="WEATHER" th:selected="${chatRoom.category == 'WEATHER'}">날씨 문의</option>
+                <option value="CALENDAR" th:selected="${chatRoom.category == 'CALENDAR'}">캘린더 문의</option>
+                <option value="ETC" th:selected="${chatRoom.category == 'ETC'}">기타 문의</option>
+            </select>
+            <button type="submit">변경</button>
+        </form>
+    </section>
+
+    <div id="chatBody" class="chat-body"></div>
+
+    <div class="chat-input-box">
+        <input type="text"
+               id="messageInput"
+               th:placeholder="${chatRoom.status == 'CLOSED'} ? '상담이 종료되었습니다.' : '메시지를 입력하세요'"
+               th:disabled="${chatRoom.status == 'CLOSED'}">
+        <button type="button" id="sendBtn" th:disabled="${chatRoom.status == 'CLOSED'}">전송</button>
+    </div>
+</div>
+
+<script th:inline="javascript">
+    const roomNo = /*[[${chatRoom.roomNo}]]*/ 0;
+    const senderNo = /*[[${loginUser.no}]]*/ 0;
+    const loginRole = /*[[${loginUser.role}]]*/ "USER";
+    const roomUserNo = /*[[${chatRoom.userNo}]]*/ 0;
+    const roomStatus = /*[[${chatRoom.status}]]*/ "OPEN";
+</script>
+<script th:src="@{/js/chat.js}"></script>
+</body>
+</html>
