@@ -1,4 +1,4 @@
-package com.siyan1234.itproject2nd.chat.service;
+package com.siyan1234.itproject2nd.chat.kakao.service;
 
 import com.siyan1234.itproject2nd.chat.dto.ChatRoomDto;
 import lombok.RequiredArgsConstructor;
@@ -11,19 +11,25 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestClient;
 
+import java.util.IllegalFormatCodePointException;
 import java.util.Map;
 
 /**
  * 카카오톡 나에게 보내기 알림 Service
  *
  * 역할:
- * - 새 1:1 상담방이 생성되었을 때 관리자 카카오톡 나와의 채팅방으로 알림 전송
+ * - 새 1:1 상담방이 생성되었을 때
+ * - 관리자 카카오 계정의 "나와의 채팅방"으로 알림 전송
+ *
+ * 구조:
+ * refresh_token으로 access_token 재발급
+ * → 카카오톡 나에게 보내기 API 호출
  *
  * 주의:
- * - 일반 카카오톡 API로 임의의 휴대폰 번호에 메시지를 보내는 것은 불가능하다.
- * - 이 방식은 관리자 본인의 카카오 계정 refresh_token을 이용해
- *   관리자 본인 "나와의 채팅방"으로 메시지를 보내는 방식이다.
+ * - 카카오톡 API로 임의의 휴대폰 번호에 메시지를 보내는 것은 불가능하다.
+ * - 이 방식은 관리자 본인의 카카오 계정으로 "나에게 보내기"를 하는 방식이다.
  */
+
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -51,6 +57,7 @@ public class KakaoNotifyService {
      */
     public void sendNewChatRoomAlert(ChatRoomDto chatRoom) {
         if (!enabled) {
+            log.info("카카오 알림 비활성화 상태입니다.");
             return;
         }
 
@@ -79,6 +86,13 @@ public class KakaoNotifyService {
      * 서버에서는 refresh_token으로 access_token을 재발급해서 사용한다.
      */
     private String refreshAccessToken() {
+        if (restApiKey == null || restApiKey.isEmpty()) {
+            throw new IllegalStateException("KAKAO_REST_API_KEY가 설정되지 않았습니다.");
+        }
+        if (adminRefreshToken == null || adminRefreshToken.isEmpty()) {
+            throw new IllegalStateException("KAKAO_ADMIN_REFRESH_TOKEN이 설정되지 않았습니다.");
+        }
+
         MultiValueMap<String, String> formData = new LinkedMultiValueMap<>();
 
         formData.add("grant_type", "refresh_token");
@@ -151,6 +165,14 @@ public class KakaoNotifyService {
                 .body(String.class);
 
         log.info("카카오톡 나에게 보내기 응답 = {}", response);
+    }
+    //관리자 상담방 상세 주소 생성
+
+    private String createAdminRoomUrl(Integer roomNo) {
+        if (adminRoomBaseUrl.endsWith("/")) {
+            return adminRoomBaseUrl + roomNo;
+        }
+        return adminRoomBaseUrl + "/" + roomNo;
     }
 
     /**

@@ -15,7 +15,7 @@ import com.siyan1234.itproject2nd.member.dto.CustomUserDetails;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import com.siyan1234.itproject2nd.chat.service.KakaoNotifyService;
+import com.siyan1234.itproject2nd.chat.kakao.service.KakaoNotifyService;
 
 import java.time.LocalDateTime;
 import java.util.*;

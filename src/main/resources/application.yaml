@@ -29,6 +29,9 @@ spring:
 server:
   # 서버 포트
   port: 8080
+  servlet:
+    session:
+      persistent: false
 mybatis:
   # mapper.xml 위치
   mapper-locations: classpath:mapper/**/*.xml
@@ -38,10 +41,11 @@ mybatis:
     # MEMBER_ID -> memberId 자동 매칭
     # AGREE_TERMS_YN -> agreeTermsYn 자동 매칭
     map-underscore-to-camel-case: true
-  kakao:
-    notify:
-      enabled: true
-      rest-api-key: "8c16edb9f9c9d73baec9f37a357d217d"
-      client-secret: "wNOfLo4E7v6zkXZXvcZ4fDLau7yeI5Qz"
-      admin-refresh-token: "https://kauth.kakao.com/oauth/token"
-      admin-room-base-url: "http://localhost:8080/chat/admin"
+kakao:
+  notify:
+    enabled: ${KAKAO_NOTIFY_ENABLED:false}
+    rest-api-key: ${KAKAO_REST_API_KEY:}
+    client-secret: ${KAKAO_CLIENT_SECRET:}
+    redirect-uri: ${KAKAO_REDIRECT_URI:http://localhost:8080/kakao/callback}
+    admin-refresh-token: ${KAKAO_ADMIN_REFRESH_TOKEN:}
+    admin-room-base-url: ${KAKAO_ADMIN_ROOM_BASE_URL:http://localhost:8080/chat/admin}
