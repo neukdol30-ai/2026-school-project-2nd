@@ -38,3 +38,10 @@ mybatis:
     # MEMBER_ID -> memberId 자동 매칭
     # AGREE_TERMS_YN -> agreeTermsYn 자동 매칭
     map-underscore-to-camel-case: true
+  kakao:
+    notify:
+      enabled: true
+      rest-api-key: "8c16edb9f9c9d73baec9f37a357d217d"
+      client-secret: "wNOfLo4E7v6zkXZXvcZ4fDLau7yeI5Qz"
+      admin-refresh-token: "https://kauth.kakao.com/oauth/token"
+      admin-room-base-url: "http://localhost:8080/chat/admin"

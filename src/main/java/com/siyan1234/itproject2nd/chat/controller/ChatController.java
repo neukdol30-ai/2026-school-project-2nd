@@ -15,6 +15,7 @@ import com.siyan1234.itproject2nd.member.dto.CustomUserDetails;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import com.siyan1234.itproject2nd.chat.service.KakaoNotifyService;
 
 import java.time.LocalDateTime;
 import java.util.*;
@@ -44,6 +45,7 @@ public class ChatController {
     private final ChatService chatService;
     private final ChatRedisService chatRedisService;
     private final ChatHandler chatHandler;
+    private final KakaoNotifyService kakaoNotifyService;
 
     /**
      * 사용자 상담 홈 화면
@@ -91,8 +93,13 @@ public class ChatController {
         if (loginUser == null) {
             return redirectToUserLogin();
         }
+        ChatRoomDto beforeRoom = chatService.findOpenRoomByUserNo(loginUser.getNo());
 
         ChatRoomDto chatRoom = chatService.getOrCreateRoom(loginUser.getNo(), category);
+        //새 상담방이 생선된 경우에만 카카오톡 알림
+        if (beforeRoom == null) {
+            kakaoNotifyService.sendNewChatRoomAlert(chatRoom);
+        }
 
         // 새 상담방 생성 또는 문의 유형 변경 시 관리자 목록 실시간 갱신
         chatHandler.broadcastAdminListRefresh(chatRoom.getRoomNo());
