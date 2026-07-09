@@ -11,6 +11,10 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import com.siyan1234.itproject2nd.member.dto.CustomUserDetails;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.time.LocalDateTime;
 import java.util.*;
@@ -51,10 +55,15 @@ public class ChatController {
     @GetMapping
     public String chatHome(HttpSession session, Model model) {
         MemberDto loginUser = getLoginUser(session);
+        System.out.println("========== /chat 요청 들어옴 ==========");
+        System.out.println("loginUser = " + session.getAttribute("loginUser"));
+        System.out.println("loginMember = " + session.getAttribute("loginMember"));
+        System.out.println("member = " + session.getAttribute("member"));
 
         // 현재는 채팅 단독 테스트를 위해 임시 로그인으로 이동
         // 팀 회원 기능과 병합 후에는 redirect:/member/login 으로 변경
         if (loginUser == null) {
+            System.out.println("채팅 진입 실패: loginUser 세션이 null입니다.");
             return redirectToUserLogin();
         }
 
@@ -65,7 +74,6 @@ public class ChatController {
 
         return "chat/chat-home";
     }
-
     /**
      * 상담 시작
      *
@@ -563,7 +571,35 @@ public class ChatController {
     }
 
     private MemberDto getLoginUser(HttpSession session) {
-        return (MemberDto) session.getAttribute("loginUser");
+        Object sessionLoginUser = session.getAttribute("loginUser");
+        if (sessionLoginUser instanceof MemberDto memberDto) {
+            return memberDto;
+        }
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+        if (authentication == null) {
+            return null;
+        }
+
+        if (!authentication.isAuthenticated()) {
+            return null;
+        }
+
+        if (authentication instanceof AnonymousAuthenticationToken) {
+            return null;
+        }
+
+        Object principal = authentication.getPrincipal();
+
+        if (principal instanceof CustomUserDetails customUserDetails) {
+            MemberDto loginUser = customUserDetails.getMemberDto();
+
+            session.setAttribute("loginUser", loginUser);
+
+            return loginUser;
+        }
+
+        return null;
     }
 
     private boolean isAdmin(MemberDto loginUser) {
@@ -623,4 +659,5 @@ public class ChatController {
 
         return result;
     }
+
 }
