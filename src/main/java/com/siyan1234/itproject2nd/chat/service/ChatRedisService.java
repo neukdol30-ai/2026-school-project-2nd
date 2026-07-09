@@ -103,11 +103,13 @@ public class ChatRedisService {
         String key = createKey(roomNo);
         Long currentSize = redisTemplate.opsForList().size(key);
 
-        if (currentSize == null || currentSize <= savedCount) {
+        if (currentSize == null || currentSize == 0) {
+            return;
+        }
+        if (currentSize < savedCount) {
             redisTemplate.delete(key);
             return;
         }
-
         redisTemplate.opsForList().trim(key, savedCount, -1);
     }
 
@@ -123,24 +125,32 @@ public class ChatRedisService {
         }
 
         String key = createKey(roomNo);
+
         List<String> jsonList = redisTemplate.opsForList().range(key, 0, -1);
 
         if (jsonList == null || jsonList.isEmpty()) {
             return;
         }
-
-        redisTemplate.delete(key);
-
-        for (String json : jsonList) {
+        for (int i = 0; i < jsonList.size(); i++) {
+            String json = jsonList.get(i);
             try {
                 ChatMessageDto messageDto = objectMapper.readValue(json, ChatMessageDto.class);
 
-                if (messageDto.getSenderNo() != null && !messageDto.getSenderNo().equals(viewerNo)) {
-                    messageDto.setReadYn("Y");
+                if (messageDto.getSenderNo() == null) {
+                    continue;
                 }
+                if (messageDto.getSenderNo().equals(viewerNo)) {
+                    continue;
+                }
+                if (!"N".equals(messageDto.getReadYn())) {
+                    continue;
+                }
+                messageDto.setReadYn("Y");
 
                 String updateJson = objectMapper.writeValueAsString(messageDto);
-                redisTemplate.opsForList().rightPush(key, updateJson);
+
+                //기존 Redis List 순서는 유지하고 해당 위치의 값만 수정
+                redisTemplate.opsForList().set(key, i, updateJson);
             } catch (Exception e) {
                 throw new RuntimeException("Redis 읽음 처리 실패", e);
             }
