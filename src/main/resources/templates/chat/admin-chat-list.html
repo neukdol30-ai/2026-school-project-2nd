@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>관리자 채팅 목록</title>
+    <link rel="stylesheet" th:href="@{/css/chat/admin-chat-list.css}">
+</head>
+<body>
+
+<!--
+    관리자 상담 목록 화면
+
+    연결 파일:
+    - CSS: /css/chat/admin-chat-list.css
+    - JS: /js/admin-chat-list.js
+
+    역할:
+    - 상담방 목록 조회
+    - 상태/문의유형/키워드 검색
+    - 페이징
+    - 안읽음 개수 표시
+    - 종료 상담방 단건 삭제
+    - 종료 상담방 다중 삭제
+    - WebSocket 기반 실시간 목록 갱신
+-->
+<div class="wrap">
+    <div class="header">
+        관리자 1:1 상담 목록
+    </div>
+
+    <div class="search-area">
+        <form class="search-form" method="get" th:action="@{/chat/admin}">
+            <input type="hidden" name="page" value="1">
+            <input type="hidden" name="size" th:value="${size}">
+
+            <select name="status">
+                <option value="" th:selected="${status == null or status == ''}">전체 상태</option>
+                <option value="OPEN" th:selected="${status == 'OPEN'}">진행중</option>
+                <option value="CLOSED" th:selected="${status == 'CLOSED'}">종료</option>
+            </select>
+
+            <select name="category">
+                <option value="" th:selected="${category == null or category == ''}">전체 문의유형</option>
+                <option value="MAIL" th:selected="${category == 'MAIL'}">메일 문의</option>
+                <option value="MAP" th:selected="${category == 'MAP'}">지도 문의</option>
+                <option value="STOCK" th:selected="${category == 'STOCK'}">증권 문의</option>
+                <option value="NEWS" th:selected="${category == 'NEWS'}">뉴스 문의</option>
+                <option value="WEATHER" th:selected="${category == 'WEATHER'}">날씨 문의</option>
+                <option value="CALENDAR" th:selected="${category == 'CALENDAR'}">캘린더 문의</option>
+                <option value="ETC" th:selected="${category == 'ETC'}">기타 문의</option>
+            </select>
+
+            <input type="text"
+                   name="keyword"
+                   th:value="${keyword}"
+                   placeholder="방번호, 사용자번호, 관리자번호, 마지막 메시지 검색">
+
+            <button type="submit" class="search-btn">검색</button>
+            <a href="/chat/admin" class="reset-btn">초기화</a>
+        </form>
+
+        <div class="summary">
+            총 <b th:text="${totalCount}">0</b>개의 상담방 /
+            현재 <b th:text="${page}">1</b> 페이지
+        </div>
+    </div>
+
+    <!-- 다중 삭제용 form: 체크박스는 각 room-card 내부에서 form 속성으로 연결 -->
+    <form id="batchDeleteForm"
+          th:action="@{/chat/admin/rooms/delete}"
+          method="post"
+          onsubmit="return confirmBatchDelete();">
+    </form>
+
+    <div class="list-toolbar">
+        <label class="check-all-label">
+            <input type="checkbox" id="checkAllClosed">
+            종료 상담 전체선택
+        </label>
+
+        <button type="submit"
+                form="batchDeleteForm"
+                id="batchDeleteBtn"
+                class="batch-delete-btn"
+                disabled>
+            선택 삭제
+        </button>
+    </div>
+
+    <!-- 상담방 목록: 최초 렌더링은 Thymeleaf, 이후 실시간 갱신은 admin-chat-list.js가 담당 -->
+    <div class="room-list" id="roomList">
+        <div class="empty" th:if="${#lists.isEmpty(roomList)}">
+            조건에 맞는 채팅방이 없습니다.
+        </div>
+
+        <div class="room-card"
+             th:each="room : ${roomList}"
+             th:classappend="${room.status == 'CLOSED'} ? ' closed' : ''">
+
+            <div class="room-select">
+                <input type="checkbox"
+                       class="room-check"
+                       name="roomNoList"
+                       th:value="${room.roomNo}"
+                       form="batchDeleteForm"
+                       th:if="${room.status == 'CLOSED'}">
+            </div>
+
+            <a class="room-item"
+               th:href="@{/chat/admin/{roomNo}(roomNo=${room.roomNo})}"
+               th:attr="data-room-no=${room.roomNo}"
+               th:classappend="${room.status == 'CLOSED'} ? ' closed' : ''">
+
+                <div class="top-line">
+                    <span class="category">
+                        <span th:text="${room.categoryIcon}">💬</span>
+                        <span th:text="${room.categoryName}">일반 문의</span>
+                    </span>
+
+                    <span class="room-title">
+                        채팅방 #<span th:text="${room.roomNo}"></span>
+                    </span>
+
+                    <span class="unread-badge"
+                          th:if="${room.unreadCount != null and room.unreadCount > 0}">
+                        안읽음 <span th:text="${room.unreadCount}">1</span>
+                    </span>
+
+                    <span class="status"
+                          th:classappend="${room.status == 'OPEN'} ? ' open' : ' closed'"
+                          th:text="${room.status == 'OPEN'} ? '진행중' : '종료'">
+                        OPEN
+                    </span>
+                </div>
+
+                <div class="meta">
+                    사용자 번호:
+                    <span th:text="${room.userNo != null ? room.userNo : '탈퇴 회원'}"></span>
+                    /
+                    관리자 번호:
+                    <span th:text="${room.adminNo != null ? room.adminNo : '미배정'}"></span>
+                </div>
+
+                <div class="last-message">
+                    마지막 메시지:
+                    <span th:text="${room.lastMessage != null ? room.lastMessage : '아직 메시지가 없습니다.'}"></span>
+                </div>
+            </a>
+
+            <div class="room-actions" th:if="${room.status == 'CLOSED'}">
+                <form th:action="@{/chat/admin/{roomNo}/delete(roomNo=${room.roomNo})}"
+                      method="post"
+                      onsubmit="return confirm('상담방과 메시지가 모두 삭제됩니다. 정말 삭제하시겠습니까?');">
+                    <button type="submit" class="inline-delete-btn">삭제</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="pagination" id="pagination" th:if="${totalPage > 1}">
+        <a class="page-link"
+           th:classappend="${page <= 1} ? ' disabled' : ''"
+           th:href="@{/chat/admin(
+                page=${page - 1},
+                size=${size},
+                status=${status},
+                category=${category},
+                keyword=${keyword}
+           )}">
+            이전
+        </a>
+
+        <a class="page-link"
+           th:each="pageNum : ${#numbers.sequence(startPageNo, endPageNo)}"
+           th:classappend="${pageNum == page} ? ' active' : ''"
+           th:href="@{/chat/admin(
+                page=${pageNum},
+                size=${size},
+                status=${status},
+                category=${category},
+                keyword=${keyword}
+           )}"
+           th:text="${pageNum}">
+            1
+        </a>
+
+        <a class="page-link"
+           th:classappend="${page >= totalPage} ? ' disabled' : ''"
+           th:href="@{/chat/admin(
+                page=${page + 1},
+                size=${size},
+                status=${status},
+                category=${category},
+                keyword=${keyword}
+           )}">
+            다음
+        </a>
+    </div>
+</div>
+
+<script th:inline="javascript">
+    const adminViewerNo = /*[[${loginUser.no}]]*/ 0;
+</script>
+
+<script src="/js/admin-chat-list.js"></script>
+
+</body>
+</html>

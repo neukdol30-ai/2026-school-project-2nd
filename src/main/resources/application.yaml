@@ -2,6 +2,11 @@ spring:
   application:
     # 프로젝트 이름
     name: it-project-2nd
+  devtools:
+    livereload:
+      enabled: true
+    restart:
+      enabled: true
   datasource:
     # Oracle DB 드라이버
     driver-class-name: oracle.jdbc.OracleDriver

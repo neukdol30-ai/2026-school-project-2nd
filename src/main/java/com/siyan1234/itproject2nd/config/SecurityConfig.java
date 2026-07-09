@@ -21,7 +21,8 @@ public class SecurityConfig {
                                 "/", // 메인
                                 "/member/login", // 로그인 화면
                                 "/member/signup", // 회원가입 화면
-                                "/css/**", "/js/**", "/images/**" // 정적 파일
+                                "/css/**", "/js/**", "/images/**", "/ws/**", "/chat/**", // 정적 파일
+                                "/temp/**"
                         ).permitAll()
                         .requestMatchers("/admin/**").hasRole("ADMIN") // /admin으로 시작하는 주소는 ROLE_ADMIN 권한자만 접근
                         .anyRequest().authenticated() // 위에서 안 걸린 나머지 주소는 로그인한 사람만 접근
@@ -46,3 +47,43 @@ public class SecurityConfig {
         return http.build();
     }
 }
+
+///멤버 연결후 코드변경 ///
+//@Configuration
+//public class SecurityConfig {
+//
+//    @Bean
+//    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+//
+//        http
+//                .csrf(csrf -> csrf.disable())
+//                .authorizeHttpRequests(auth -> auth
+//                        .requestMatchers(
+//                                "/",
+//                                "/member/login",
+//                                "/member/signup",
+//                                "/oauth2/**",
+//                                "/login/oauth2/**",
+//                                "/css/**",
+//                                "/js/**",
+//                                "/images/**"
+//                        ).permitAll()
+//
+//                        .requestMatchers("/chat/admin/**").hasRole("ADMIN")
+//                        .requestMatchers("/chat/**").authenticated()
+//                        .requestMatchers("/ws/**").authenticated()
+//
+//                        .anyRequest().authenticated()
+//                )
+//                .formLogin(form -> form
+//                        .loginPage("/member/login")
+//                        .permitAll()
+//                )
+//                .logout(logout -> logout
+//                        .logoutUrl("/member/logout")
+//                        .logoutSuccessUrl("/")
+//                );
+//
+//        return http.build();
+//    }
+//}

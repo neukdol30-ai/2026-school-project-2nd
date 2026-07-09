@@ -6,9 +6,11 @@ import org.springframework.format.annotation.DateTimeFormat;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import lombok.ToString;
 
 @Getter
 @Setter
+@ToString
 public class MemberDto {
 
     private Long no;
