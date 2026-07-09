@@ -19,9 +19,11 @@ public class SecurityConfig {
                         // 로그인 없이 누구나 접근 가능한 주소들
                         .requestMatchers(
                                 "/", // 메인
+                                "/index.html",
                                 "/member/login", // 로그인 화면
                                 "/member/signup", // 회원가입 화면
-                                "/css/**", "/js/**", "/images/**", "/ws/**", "/chat/**" // 정적 파일
+                                "/css/**", "/js/**", "/images/**", "/ws/**", "/chat/**", // 정적 파일
+                                "/api/**"
                         ).permitAll()
                         .requestMatchers("/admin/**").hasRole("ADMIN") // /admin으로 시작하는 주소는 ROLE_ADMIN 권한자만 접근
                         .anyRequest().authenticated() // 위에서 안 걸린 나머지 주소는 로그인한 사람만 접근

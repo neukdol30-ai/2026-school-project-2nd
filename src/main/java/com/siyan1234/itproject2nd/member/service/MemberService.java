@@ -67,4 +67,8 @@ public class MemberService {
     public List<MemberDto> findAllMembers() {
         return memberDao.findAllMembers();
     }
+
+    public MemberDto findByNo(Integer no) {
+        return memberDao.findByNo(no); // DAO에 no를 넘겨 한 명의 회원 정보를 받아서 그대로 돌려줌
+    }
 }

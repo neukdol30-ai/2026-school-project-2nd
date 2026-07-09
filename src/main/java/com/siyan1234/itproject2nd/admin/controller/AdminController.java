@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 import java.util.List;
@@ -31,4 +32,20 @@ public class AdminController {
 
         return "admin/member-list";
     }
+
+    // 관리자 회원 상세보기 화면 / GET /admin/members/{no}
+    @GetMapping("/members/{no}")
+    public String memberDetail(@PathVariable("no") Integer no, Model model) {
+
+        MemberDto member = memberService.findByNo(no); // no로 회원 한 명 조회.
+
+        if (member == null) {
+            return "redirect:/admin/members";
+        }
+
+        model.addAttribute("member", member); // 조회한 회원을 화면으로 전달(이름 "member")
+
+        return "admin/member-detail"; // templates/admin/member-detail.html
+    }
+
 }

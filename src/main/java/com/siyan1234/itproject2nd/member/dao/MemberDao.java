@@ -17,4 +17,6 @@ public interface MemberDao {
     int signup(SignupDto signupDto); // 회원가입 INSERT 실행 후 영향받은 행 수를 반환
 
     List<MemberDto> findAllMembers(); // 관리자 회원 목록 조회용 SELECT 연결
+
+    MemberDto findByNo(@Param("no") Integer no); // 관리자 회원 상세 조회용 SELECT 연결 (회원 고유번호 no 기준)
 }

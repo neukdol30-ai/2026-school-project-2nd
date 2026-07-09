@@ -88,4 +88,51 @@
         )
     </insert>
 
+    <!-- 관리자 회원 목록 조회용 / MemberDao의 findAllMembers()와 일치 -->
+    <select id="findAllMembers" resultType="MemberDto">
+        SELECT no,
+        member_id,
+        name,
+        nickname,
+        email,
+        phone,
+        birth_date,
+        gender,
+        postcode,
+        address,
+        detail_address,
+        role,
+        profile_image,
+        last_login_date,
+        agree_terms_yn,
+        agree_privacy_yn,
+        regdate
+        FROM member
+        ORDER BY no DESC
+    </select>
+
+<!--    관리자 회원 상세 조회용 / MemberDao - findByNo(Integer no)와 일치-->
+    <select id="findByNo" parameterType="int" resultType="MemberDto">
+        SELECT no,
+        member_id,
+        name,
+        nickname,
+        email,
+        phone,
+        birth_date,
+        gender,
+        postcode,
+        address,
+        detail_address,
+        role,
+        profile_image,
+        last_login_date,
+        agree_terms_yn,
+        agree_privacy_yn,
+        regdate
+        FROM member
+        WHERE no = #{no}
+        <!-- #{no}는 Dao에서 @Param("no")로 넘긴 회원 고유번호 값-->
+    </select>
+
 </mapper>
