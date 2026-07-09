@@ -12,7 +12,7 @@ public class BoardDto {
 
     private Long no;
 
-    private Long writerNo;
+    private Integer writerNo;
 
     private String category;
 
@@ -23,7 +23,7 @@ public class BoardDto {
     @NotBlank(message = "내용을 입력해주세요.")
     private String content;
 
-    private Integer viewCount;
+    private Long viewCount;
 
     private LocalDateTime createdDate;
 

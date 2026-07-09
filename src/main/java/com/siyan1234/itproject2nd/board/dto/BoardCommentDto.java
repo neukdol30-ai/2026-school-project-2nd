@@ -16,7 +16,7 @@ public class BoardCommentDto {
     private Long boardNo;
 
     // 댓글 작성자 번호
-    private Long writerNo;
+    private Integer writerNo;
 
     // 댓글 내용
     private String content;
