@@ -113,6 +113,51 @@
     </select>
 
 
+    <!-- 카테고리별 게시글 개수 조회 -->
+    <select id="countByCategory"
+            parameterType="string"
+            resultType="int">
+
+        SELECT COUNT(*)
+        FROM board
+        WHERE category = #{category}
+
+    </select>
+
+    <!-- 카테고리별 게시글 페이징 조회 -->
+    <select id="findPageByCategory"
+            resultType="BoardDto">
+
+        SELECT *
+        FROM (
+        SELECT
+        ROWNUM AS rn,
+        board_data.*
+        FROM (
+        SELECT
+        b.no,
+        b.writer_no,
+        b.category,
+        b.title,
+        b.content,
+        b.view_count,
+        b.created_date,
+        b.modified_date,
+        m.name AS writer_name,
+        m.nickname AS writer_nickname
+        FROM board b
+        LEFT JOIN member m
+        ON b.writer_no = m.no
+        WHERE b.category = #{category}
+        ORDER BY b.no DESC
+        ) board_data
+        WHERE ROWNUM &lt;= #{endRow}
+        )
+        WHERE rn &gt;= #{startRow}
+
+    </select>
+
+
     <!-- ========================= -->
     <!-- 게시글 전체 개수 조회 -->
     <!-- ========================= -->

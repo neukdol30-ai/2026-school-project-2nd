@@ -1,5 +1,7 @@
 <!DOCTYPE html>
-<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
     <meta charset="UTF-8">
     <title>게시글 상세</title>
@@ -7,6 +9,9 @@
     <script src="https://uicdn.toast.com/editor/latest/toastui-editor-viewer.min.js"></script>
 </head>
 <body>
+
+
+
 
 <h1 th:text="${board.title}"></h1>
 
@@ -32,8 +37,26 @@
 <hr>
 
 <a href="/board/list">목록</a>
-<a th:href="@{/board/update/{no}(no=${board.no})}">수정</a>
-<a th:href="@{/board/delete/{no}(no=${board.no})}">삭제</a>
+
+<div sec:authorize="isAuthenticated()"
+     th:if="${#authentication.principal.memberDto.no.equals(board.writerNo)}">
+
+    <a th:href="@{/board/update/{no}(no=${board.no})}">
+        수정
+    </a>
+
+    <form th:action="@{/board/delete/{no}(no=${board.no})}"
+          method="post"
+          style="display:inline;">
+
+        <button type="submit"
+                onclick="return confirm('게시글을 삭제하시겠습니까?');">
+            삭제
+        </button>
+
+    </form>
+
+</div>
 
 
 <div th:if="${board.category != 'NOTICE'}">
@@ -42,6 +65,12 @@
 
     <h2>댓글</h2>
 
+    <!-- 댓글 등록·수정 실패 메시지 -->
+    <p th:if="${commentError}"
+       th:text="${commentError}"
+       style="color:red;">
+    </p>
+
     <div th:if="${#lists.isEmpty(commentList)}">
         <p>아직 댓글이 없습니다.</p>
     </div>
@@ -49,32 +78,45 @@
     <div th:each="comment : ${commentList}">
 
         <p>
-            <strong th:text="${comment.writerNickname != null ? comment.writerNickname : '탈퇴회원'}"></strong>
+            <strong th:text="${comment.writerNickname != null
+                ? comment.writerNickname
+                : '탈퇴회원'}"></strong>
             :
             <span th:id="'comment-text-' + ${comment.no}"
                   th:text="${comment.content}"></span>
         </p>
 
-        <div th:if="${session.loginMember != null and session.loginMember.no == comment.writerNo}">
+        <!-- 로그인했고, 현재 회원이 댓글 작성자인 경우에만 표시 -->
+        <div sec:authorize="isAuthenticated()"
+             th:if="${#authentication.principal.memberDto.no.equals(comment.writerNo)}">
 
             <button type="button"
                     th:onclick="'showEditForm(' + ${comment.no} + ')'">
-                   수정
+                수정
             </button>
 
-            <a th:href="@{/board/comment/delete/{no}(no=${comment.no})}">
-                삭제
-            </a>
+            <form th:action="@{/board/comment/delete/{no}(no=${comment.no})}"
+                  method="post"
+                  style="display:inline;">
+
+                <button type="submit"
+                        onclick="return confirm('댓글을 삭제하시겠습니까?');">
+                    삭제
+                </button>
+
+            </form>
 
             <form th:id="'comment-edit-form-' + ${comment.no}"
-                th:action="@{/board/comment/update/{no}(no=${comment.no})}"
-                method="post"
-                style="display:none; margin-top:10px;">
+                  th:action="@{/board/comment/update/{no}(no=${comment.no})}"
+                  method="post"
+                  style="display:none; margin-top:10px;">
 
-                <textarea name="content"
-                        rows="3"
-                        cols="50"
-                        th:text="${comment.content}"></textarea>
+            <textarea name="content"
+                      rows="3"
+                      cols="50"
+                      maxlength="1000"
+                      required
+                      th:text="${comment.content}"></textarea>
 
                 <br>
 
@@ -86,15 +128,11 @@
                 </button>
             </form>
         </div>
-
     </div>
 
     <!-- ========================= -->
     <!-- 댓글 작성 -->
     <!-- ========================= -->
-
-
-
         <hr>
 
         <h3>댓글 작성</h3>
@@ -106,9 +144,11 @@
                     th:value="${board.no}">
 
             <textarea name="content"
-                        rows="3"
-                        cols="50"
-                        placeholder="댓글을 입력하세요"></textarea>
+                      rows="3"
+                      cols="50"
+                      maxlength="1000"
+                      required
+                      placeholder="댓글을 입력하세요"></textarea>
 
             <br>
 

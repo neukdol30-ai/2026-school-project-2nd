@@ -39,11 +39,18 @@
     <br><br>
 
     <div id="editor"></div>
-    <input type="hidden" name="content" id="content">
+    <input type="hidden" name="content" id="content" th:value="*{content}">
 
+    <!-- DTO Validation 오류 -->
     <p th:if="${#fields.hasErrors('content')}"
        th:errors="*{content}"
        style="color:red;"></p>
+
+    <!-- Service에서 검사한 오류 -->
+    <p th:if="${contentError}"
+       th:text="${contentError}"
+       style="color:red;">
+    </p>
 
     <br><br>
 
@@ -53,12 +60,16 @@
 <a href="/board/list">목록</a>
 
 <script>
+    const savedContent =
+        document.querySelector("#content").value || "";
+
     const editor = new toastui.Editor({
-        el: document.querySelector('#editor'),
-        height: '500px',
-        initialEditType: 'wysiwyg',
-        previewStyle: 'vertical',
-        language: 'ko-KR'
+        el: document.querySelector("#editor"),
+        height: "500px",
+        initialEditType: "wysiwyg",
+        previewStyle: "vertical",
+        language: "ko-KR",
+        initialValue: savedContent
     });
 
     document.querySelector('form').addEventListener('submit', function () {

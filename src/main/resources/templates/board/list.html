@@ -69,34 +69,37 @@
     </tr>
 </table>
 
+
+
+<!-- 게시판 페이징 -->
 <!-- ========================= -->
-<!-- 게시글 페이징 -->
-<!-- ========================= -->
 
-<!--
-    이전 / 다음 버튼과
+<div th:if="${totalPage > 0}">
 
-    페이지 번호를 출력
-
-    사용자가 원하는 페이지로 이동
--->
-
-<div>
-    <!-- 이전 -->
+    <!-- 이전 페이지 -->
     <a th:if="${currentPage > 1}"
-       th:href="@{/board/list(page=${currentPage - 1})}">
+       th:href="@{${pageUrl}(page=${currentPage - 1})}">
         이전
     </a>
+
     <!-- 페이지 번호 -->
     <span th:each="pageNum : ${#numbers.sequence(1, totalPage)}">
-        <a th:href="@{/board/list(page=${pageNum})}"
-           th:text="${pageNum}"></a>
+
+        <a th:href="@{${pageUrl}(page=${pageNum})}"
+           th:text="${pageNum}"
+           th:style="${pageNum == currentPage}
+               ? 'font-weight:bold; text-decoration:none;'
+               : ''">
+        </a>
+
     </span>
-    <!-- 다음 -->
+
+    <!-- 다음 페이지 -->
     <a th:if="${currentPage < totalPage}"
-       th:href="@{/board/list(page=${currentPage + 1})}">
+       th:href="@{${pageUrl}(page=${currentPage + 1})}">
         다음
     </a>
+
 </div>
 
 

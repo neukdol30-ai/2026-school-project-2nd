@@ -15,6 +15,16 @@ public interface BoardDao {
     // 카테고리별 게시글 목록
     List<BoardDto> findByCategory(String category);
 
+    // 카테고리별 게시글 개수 조회
+    int countByCategory(String category);
+
+    // 카테고리별 게시글 페이징 조회
+    List<BoardDto> findPageByCategory(
+            @Param("startRow") int startRow,
+            @Param("endRow") int endRow,
+            @Param("category") String category
+    );
+
     // 게시글 검색
     // 제목, 내용, 작성자 닉네임을 기준으로 검색
     List<BoardDto> search(String keyword);

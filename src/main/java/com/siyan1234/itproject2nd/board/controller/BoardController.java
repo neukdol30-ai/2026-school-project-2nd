@@ -50,6 +50,9 @@ public class BoardController {
         model.addAttribute("totalPage", totalPage);
         model.addAttribute("pageTitle", "전체 게시글");
 
+        // 페이지 번호 클릭 시 이동할 기본 주소
+        model.addAttribute("pageUrl", "/board/list");
+
         return "board/list";
     }
 
@@ -94,7 +97,8 @@ public class BoardController {
     public String writeProcess(
             @Valid BoardDto boardDto,
             BindingResult bindingResult,
-            @AuthenticationPrincipal CustomUserDetails loginUser
+            @AuthenticationPrincipal CustomUserDetails loginUser,
+            Model model
     ) {
 
         if (bindingResult.hasErrors()) {
@@ -119,29 +123,76 @@ public class BoardController {
         // 게시글 작성자 번호 저장
         boardDto.setWriterNo(loginMember.getNo());
 
-        boardService.insert(boardDto);
+        try {
+            boardService.insert(boardDto);
+        } catch (IllegalArgumentException e) {
+
+            model.addAttribute(
+                    "contentError",
+                    e.getMessage()
+            );
+
+            return "board/write";
+        }
 
         return "redirect:/board/list";
     }
 
+    // 공지사항 목록
     @GetMapping("/notice")
-    public String notice(Model model) {
-        model.addAttribute("boardList", boardService.findByCategory("NOTICE"));
-        model.addAttribute("pageTitle", "공지사항");
+    public String notice(
+            @RequestParam(defaultValue = "1") int page,
+            Model model
+    ) {
 
-        model.addAttribute("currentPage", 1);
-        model.addAttribute("totalPage", 1);
+        int pageSize = 10;
+
+        int totalCount =
+                boardService.countByCategory("NOTICE");
+
+        int totalPage =
+                (int) Math.ceil((double) totalCount / pageSize);
+
+        model.addAttribute(
+                "boardList",
+                boardService.findPageByCategory(page, "NOTICE")
+        );
+
+        model.addAttribute("pageTitle", "공지사항");
+        model.addAttribute("currentPage", page);
+        model.addAttribute("totalPage", totalPage);
+
+        // 공지사항 페이지 번호의 이동 주소
+        model.addAttribute("pageUrl", "/board/notice");
 
         return "board/list";
     }
 
     @GetMapping("/free")
-    public String free(Model model) {
-        model.addAttribute("boardList", boardService.findByCategory("FREE"));
-        model.addAttribute("pageTitle", "자유게시판");
+    public String free(
+            @RequestParam(defaultValue = "1") int page,
+            Model model
+    ) {
 
-        model.addAttribute("currentPage", 1);
-        model.addAttribute("totalPage", 1);
+        int pageSize = 10;
+
+        int totalCount =
+                boardService.countByCategory("FREE");
+
+        int totalPage =
+                (int) Math.ceil((double) totalCount / pageSize);
+
+        model.addAttribute(
+                "boardList",
+                boardService.findPageByCategory(page, "FREE")
+        );
+
+        model.addAttribute("pageTitle", "자유게시판");
+        model.addAttribute("currentPage", page);
+        model.addAttribute("totalPage", totalPage);
+
+        // 자유게시판 페이지 번호의 이동 주소
+        model.addAttribute("pageUrl", "/board/free");
 
         return "board/list";
     }
@@ -163,6 +214,8 @@ public class BoardController {
         // list.html의 페이징 부분에서 필요
         model.addAttribute("currentPage", 1);
         model.addAttribute("totalPage", 1);
+
+
 
         return "board/list";
     }
@@ -203,13 +256,15 @@ public class BoardController {
     @PostMapping("/update/{no}")
     public String updateProcess(
             @PathVariable Long no,
-            @Valid BoardDto boardDto,
+            @Valid @ModelAttribute("board") BoardDto boardDto,
             BindingResult bindingResult,
-            @AuthenticationPrincipal CustomUserDetails loginUser
+            @AuthenticationPrincipal CustomUserDetails loginUser,
+            Model model
     ) {
 
+        boardDto.setNo(no);
+
         if (bindingResult.hasErrors()) {
-            // 수정 페이지에서 필요한 게시글 번호 복원
             boardDto.setNo(no);
             return "board/update";
         }
@@ -238,17 +293,33 @@ public class BoardController {
             return "redirect:/board/detail/" + no;
         }
 
-        boardDto.setNo(no);
+
         boardDto.setWriterNo(loginMember.getNo());
 
-        boardService.update(boardDto);
+        try {
+            boardService.update(boardDto);
+        } catch (IllegalArgumentException e) {
+
+            model.addAttribute(
+                    "contentError",
+                    e.getMessage()
+            );
+
+            model.addAttribute("board", boardDto);
+
+            return "board/update";
+        }
 
         return "redirect:/board/detail/" + no;
     }
 
-    // 삭제
-    // 게시글 삭제
-    @GetMapping("/delete/{no}")
+    // =========================
+    // 게시글 삭제 처리
+    // =========================
+    // GET이 아니라 POST로 처리하여
+    // 주소 접속만으로 삭제되는 문제를 방지
+    //
+    @PostMapping("/delete/{no}")
     public String delete(
             @PathVariable Long no,
             @AuthenticationPrincipal CustomUserDetails loginUser

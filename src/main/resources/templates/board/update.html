@@ -1,5 +1,7 @@
 <!DOCTYPE html>
-<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
     <meta charset="UTF-8">
     <title>게시글 수정</title>
@@ -12,15 +14,34 @@
 
 <h1>게시글 수정</h1>
 
-<form th:action="@{/board/update/{no}(no=${board.no})}" method="post">
-    <select name="category">
-        <option value="FREE" th:selected="${board.category == 'FREE'}">자유게시판</option>
-        <option value="NOTICE" th:selected="${board.category == 'NOTICE'}">공지사항</option>
+<form th:action="@{/board/update/{no}(no=${board.no})}" method="post" th:object="${board}">
+
+    <!--일반 회원: 자유게시판만 표시-->
+    <!--관리자: 자유게시판 + 공지사항 표시-->
+    <!--<html> 태그에 sec 네임스페이스 추가함-->
+    <select th:field="*{category}">
+
+        <option value="FREE">
+            자유게시판
+        </option>
+
+        <option value="NOTICE"
+                sec:authorize="hasRole('ADMIN')">
+            공지사항
+        </option>
+
     </select>
 
     <br><br>
 
-    <input type="text" name="title" th:value="${board.title}" placeholder="제목">
+    <input type="text"
+           th:field="*{title}"
+           placeholder="제목">
+
+    <p th:if="${#fields.hasErrors('title')}"
+       th:errors="*{title}"
+       style="color:red;">
+    </p>
 
     <br><br>
 
@@ -29,9 +50,24 @@
 
     <!-- 실제 서버로 전송될 content 값 -->
     <input type="hidden"
-           name="content"
            id="content"
-           th:value="${board.content}">
+           th:field="*{content}">
+
+
+
+    <!-- 내용 입력 Validation 오류 -->
+    <!-- @NotBlank 등의 검증 실패 시 -->
+    <!-- 오류 메시지를 화면에 출력 -->
+    <p th:if="${#fields.hasErrors('content')}"
+       th:errors="*{content}"
+       style="color:red;">
+    </p>
+
+    <!-- TOAST UI 빈 본문 검사 오류 -->
+    <p th:if="${contentError}"
+       th:text="${contentError}"
+       style="color:red;">
+    </p>
 
     <br><br>
 
@@ -41,17 +77,22 @@
 <a href="/board/list">목록</a>
 
 <script>
+    // 수정 전 본문 또는 유효성 검사 실패 후 전달된 본문
+    const savedContent =
+        document.querySelector("#content").value || "";
+
     const editor = new toastui.Editor({
-        el: document.querySelector('#editor'),
-        height: '600px',
-        initialEditType: 'wysiwyg',
-        previewStyle: 'vertical',
-        language: 'ko-KR',
-        initialValue: document.querySelector('#content').value
+        el: document.querySelector("#editor"),
+        height: "600px",
+        initialEditType: "wysiwyg",
+        previewStyle: "vertical",
+        language: "ko-KR",
+        initialValue: savedContent
     });
 
-    document.querySelector('form').addEventListener('submit', function () {
-        document.querySelector('#content').value = editor.getHTML();
+    // 수정 버튼을 누르면 에디터 HTML을 hidden input에 저장
+    document.querySelector("form").addEventListener("submit", function () {
+        document.querySelector("#content").value = editor.getHTML();
     });
 </script>
 

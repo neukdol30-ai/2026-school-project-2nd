@@ -24,15 +24,30 @@ public class BoardCommentService {
         return boardCommentDao.findByNo(no);
     }
 
+    // =========================
     // 댓글 등록
+    // =========================
     @Transactional
     public int insert(BoardCommentDto commentDto) {
+
+        validateContent(commentDto.getContent());
+
+        // 앞뒤 공백을 제거한 값을 저장
+        commentDto.setContent(commentDto.getContent().trim());
+
         return boardCommentDao.insert(commentDto);
     }
 
+    // =========================
     // 댓글 수정
+    // =========================
     @Transactional
     public int update(BoardCommentDto commentDto) {
+
+        validateContent(commentDto.getContent());
+
+        commentDto.setContent(commentDto.getContent().trim());
+
         return boardCommentDao.update(commentDto);
     }
 
@@ -41,4 +56,21 @@ public class BoardCommentService {
     public int delete(Long no) {
         return boardCommentDao.delete(no);
     }
+
+    // =========================
+    // 댓글 내용 검사
+    // =========================
+    private void validateContent(String content) {
+
+        if (content == null || content.trim().isEmpty()) {
+            throw new IllegalArgumentException("댓글 내용을 입력해주세요.");
+        }
+
+        if (content.trim().length() > 1000) {
+            throw new IllegalArgumentException(
+                    "댓글은 1000자 이하로 입력해주세요."
+            );
+        }
+    }
+
 }

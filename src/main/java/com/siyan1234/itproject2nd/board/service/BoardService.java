@@ -81,6 +81,27 @@ public class BoardService {
         return boardDao.countAll();
     }
 
+    // 카테고리별 게시글 개수 조회
+    public int countByCategory(String category) {
+        return boardDao.countByCategory(category);
+    }
+
+    // 카테고리별 게시글 페이징 조회
+    public List<BoardDto> findPageByCategory(int page, String category) {
+
+        int pageSize = 10;
+
+        int startRow = (page - 1) * pageSize + 1;
+        int endRow = page * pageSize;
+
+        return boardDao.findPageByCategory(
+                startRow,
+                endRow,
+                category
+        );
+    }
+
+
 
     // =========================
     // 게시글 조회수 증가
@@ -103,12 +124,14 @@ public class BoardService {
     // 게시글 작성
     @Transactional
     public int insert(BoardDto boardDto) {
+        validateContent(boardDto.getContent());
         return boardDao.insert(boardDto);
     }
 
     // 게시글 수정
     @Transactional
     public int update(BoardDto boardDto) {
+        validateContent(boardDto.getContent());
         return boardDao.update(boardDto);
     }
 
@@ -117,4 +140,46 @@ public class BoardService {
     public int delete(Long no) {
         return boardDao.delete(no);
     }
+
+    // =========================
+    // TOAST UI 게시글 본문 검사
+    // =========================
+    //
+    // TOAST UI에서 아무것도 입력하지 않아도
+    // <p><br></p> 같은 HTML 문자열이 전송될 수 있음
+    //
+    // HTML 태그와 공백 문자를 제거한 후
+    // 실제 글자가 있는지 검사
+    //
+    private void validateContent(String content) {
+
+        if (content == null || content.trim().isEmpty()) {
+            throw new IllegalArgumentException(
+                    "게시글 내용을 입력해주세요."
+            );
+        }
+
+        String plainText = content
+                // script와 style 내용 제거
+                .replaceAll("(?is)<script.*?>.*?</script>", "")
+                .replaceAll("(?is)<style.*?>.*?</style>", "")
+
+                // 모든 HTML 태그 제거
+                .replaceAll("(?s)<[^>]*>", "")
+
+                // HTML 공백 문자 제거
+                .replace("&nbsp;", "")
+                .replace("&#160;", "")
+                .replace("\u00A0", "")
+
+                // 일반 공백 제거
+                .trim();
+
+        if (plainText.isEmpty()) {
+            throw new IllegalArgumentException(
+                    "게시글 내용을 입력해주세요."
+            );
+        }
+    }
+
 }
