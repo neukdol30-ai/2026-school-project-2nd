@@ -170,3 +170,37 @@ INSERT INTO NEWS (
              '2026-07-07',
              'https://example.com/news/2'
          );
+
+INSERT INTO NEWS (
+    NEWS_ID,
+    TITLE,
+    SUMMARY,
+    SOURCE,
+    PUBLISHED_AT,
+    LINK
+) VALUES (
+             NEWS_SEQ.NEXTVAL,
+             '개발자 채용 시장 동향',
+             '기업들의 개발자 채용 방식과 요구 역량이 변화하고 있다는 기사입니다.',
+             'IT데일리',
+             '2026-07-07',
+             'https://example.com/news/3'
+         );
+
+COMMIT;
+
+CREATE TABLE stock_info (
+                            stock_id NUMBER PRIMARY KEY,
+                            symbol VARCHAR2(20) NOT NULL,
+                            stock_name VARCHAR2(100) NOT NULL,
+                            price NUMBER DEFAULT 0,
+                            change_price NUMBER DEFAULT 0,
+                            change_rate NUMBER(10, 2) DEFAULT 0
+);
+
+INSERT INTO stock_info VALUES (1, '005930', '삼성전자', 78000, 500, 0.65);
+INSERT INTO stock_info VALUES (2, '035420', 'NAVER', 210000, -1500, -0.71);
+INSERT INTO stock_info VALUES (3, '035720', '카카오', 56000, 800, 1.45);
+INSERT INTO stock_info VALUES (4, '000660', 'SK하이닉스', 235000, 3000, 1.29);
+
+COMMIT;
