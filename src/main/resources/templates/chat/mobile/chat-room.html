@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
     <title>모바일 상담 채팅</title>
     <link rel="stylesheet" th:href="@{/css/chat/mobile/chat-room-mobile.css}">
+    <link rel="stylesheet" href="/css/cookie-consent.css">
 </head>
 <body>
 <div class="mobile-chat">
@@ -60,5 +61,6 @@
     const roomStatus = /*[[${chatRoom.status}]]*/ "OPEN";
 </script>
 <script th:src="@{/js/chat.js}"></script>
+    <script src="/js/cookie-consent.js"></script>
 </body>
 </html>

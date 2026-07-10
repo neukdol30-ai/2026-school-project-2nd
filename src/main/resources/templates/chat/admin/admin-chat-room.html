@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>관리자 상담방</title>
     <link rel="stylesheet" th:href="@{/css/chat/admin/admin-chat-room.css}">
+    <link rel="stylesheet" href="/css/cookie-consent.css">
 </head>
 <body>
 <div class="admin-room-page">
@@ -83,5 +84,6 @@
     const roomStatus = /*[[${chatRoom.status}]]*/ "OPEN";
 </script>
 <script th:src="@{/js/chat.js}"></script>
+    <script src="/js/cookie-consent.js"></script>
 </body>
 </html>
