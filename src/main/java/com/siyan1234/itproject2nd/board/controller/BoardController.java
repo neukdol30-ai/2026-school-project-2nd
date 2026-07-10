@@ -2,8 +2,12 @@ package com.siyan1234.itproject2nd.board.controller;
 
 import com.siyan1234.itproject2nd.board.dto.BoardDto;
 import com.siyan1234.itproject2nd.board.service.BoardService;
+
 import com.siyan1234.itproject2nd.member.dto.MemberDto;
 import jakarta.servlet.http.HttpSession;
+
+import com.siyan1234.itproject2nd.member.dto.CustomUserDetails;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -72,8 +76,11 @@ public class BoardController {
 
     // 글쓰기 화면
     @GetMapping("/write")
-    public String write(HttpSession session, Model model) {
-        if (session.getAttribute("loginMember") == null) {
+    public String write(
+            @AuthenticationPrincipal CustomUserDetails loginUser,
+            Model model
+    ) {
+        if (loginUser == null) {
             return "redirect:/member/login";
         }
 
@@ -84,29 +91,32 @@ public class BoardController {
 
     // 글쓰기 처리
     @PostMapping("/write")
-    public String writeProcess(@Valid BoardDto boardDto,
-                               BindingResult bindingResult,
-                               HttpSession session) {
+    public String writeProcess(
+            @Valid BoardDto boardDto,
+            BindingResult bindingResult,
+            @AuthenticationPrincipal CustomUserDetails loginUser
+    ) {
 
         if (bindingResult.hasErrors()) {
             return "board/write";
         }
 
-        MemberDto loginMember =
-                (MemberDto) session.getAttribute("loginMember");
+        // Spring Security 로그인 여부 확인
+        if (loginUser == null) {
+            return "redirect:/member/login";
+        }
 
-        // 일반회원은 공지사항 작성 불가
+        // CustomUserDetails 안에서 실제 회원 정보 꺼내기
+        MemberDto loginMember = loginUser.getMemberDto();
+
+        // 일반 회원은 공지사항 작성 불가
         if ("NOTICE".equals(boardDto.getCategory())
                 && !"ADMIN".equals(loginMember.getRole())) {
 
             return "redirect:/board/write";
-
         }
 
-        if (loginMember == null) {
-            return "redirect:/member/login";
-        }
-
+        // 게시글 작성자 번호 저장
         boardDto.setWriterNo(loginMember.getNo());
 
         boardService.insert(boardDto);
@@ -160,19 +170,26 @@ public class BoardController {
 
     // 수정 화면
     @GetMapping("/update/{no}")
-    public String update(@PathVariable Long no,
-                         Model model,
-                         HttpSession session) {
+    public String update(
+            @PathVariable Long no,
+            Model model,
+            @AuthenticationPrincipal CustomUserDetails loginUser
+    ) {
 
-        MemberDto loginMember =
-                (MemberDto) session.getAttribute("loginMember");
-
-        if (loginMember == null) {
+        if (loginUser == null) {
             return "redirect:/member/login";
         }
-        // 수정 화면은 조회수 증가 X
+
+        MemberDto loginMember = loginUser.getMemberDto();
+
+        // 수정 화면 조회는 조회수 증가 없음
         BoardDto board = boardService.findByNo(no);
 
+        if (board == null) {
+            return "redirect:/board/list";
+        }
+
+        // 작성자만 수정 가능
         if (!loginMember.getNo().equals(board.getWriterNo())) {
             return "redirect:/board/detail/" + no;
         }
@@ -184,33 +201,40 @@ public class BoardController {
 
     // 수정 처리
     @PostMapping("/update/{no}")
-    public String updateProcess(@PathVariable Long no,
-                                @Valid BoardDto boardDto,
-                                BindingResult bindingResult,
-                                HttpSession session) {
+    public String updateProcess(
+            @PathVariable Long no,
+            @Valid BoardDto boardDto,
+            BindingResult bindingResult,
+            @AuthenticationPrincipal CustomUserDetails loginUser
+    ) {
 
         if (bindingResult.hasErrors()) {
+            // 수정 페이지에서 필요한 게시글 번호 복원
+            boardDto.setNo(no);
             return "board/update";
         }
 
-        MemberDto loginMember =
-                (MemberDto) session.getAttribute("loginMember");
-
-        if (loginMember == null) {
+        if (loginUser == null) {
             return "redirect:/member/login";
         }
 
+        MemberDto loginMember = loginUser.getMemberDto();
+
         BoardDto originBoard = boardService.findByNo(no);
 
-        //url직접조작해서 공지사항적는것 막는용
+        if (originBoard == null) {
+            return "redirect:/board/list";
+        }
+
+        // 작성자만 수정 가능
+        if (!loginMember.getNo().equals(originBoard.getWriterNo())) {
+            return "redirect:/board/detail/" + no;
+        }
+
+        // 일반 회원은 공지사항으로 변경 불가
         if ("NOTICE".equals(boardDto.getCategory())
                 && !"ADMIN".equals(loginMember.getRole())) {
 
-            return "redirect:/board/detail/" + no;
-
-        }
-
-        if (!loginMember.getNo().equals(originBoard.getWriterNo())) {
             return "redirect:/board/detail/" + no;
         }
 
@@ -223,19 +247,26 @@ public class BoardController {
     }
 
     // 삭제
+    // 게시글 삭제
     @GetMapping("/delete/{no}")
-    public String delete(@PathVariable Long no,
-                         HttpSession session) {
+    public String delete(
+            @PathVariable Long no,
+            @AuthenticationPrincipal CustomUserDetails loginUser
+    ) {
 
-        MemberDto loginMember =
-                (MemberDto) session.getAttribute("loginMember");
-
-        if (loginMember == null) {
+        if (loginUser == null) {
             return "redirect:/member/login";
         }
 
+        MemberDto loginMember = loginUser.getMemberDto();
+
         BoardDto board = boardService.findByNo(no);
 
+        if (board == null) {
+            return "redirect:/board/list";
+        }
+
+        // 작성자만 삭제 가능
         if (!loginMember.getNo().equals(board.getWriterNo())) {
             return "redirect:/board/detail/" + no;
         }
