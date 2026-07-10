@@ -135,4 +135,18 @@
         <!-- #{no}는 Dao에서 @Param("no")로 넘긴 회원 고유번호 값-->
     </select>
 
+    <!--관리자 회원 정보 수정용. MemberDao - updateMember(MemberDto) id 일치-->
+    <update id="updateMember" parameterType="MemberDto">
+        UPDATE member
+        SET name = #{name},
+        nickname = #{nickname},
+        email = #{email},
+        phone = #{phone},
+        postcode = #{postcode},
+        address = #{address},
+        detail_address = #{detailAddress},
+        gender = #{gender}
+        WHERE no = #{no} <!--MemberDto의 no 필드값. 없으면 전체 회원 다 수정된다.-->
+    </update>
+
 </mapper>
