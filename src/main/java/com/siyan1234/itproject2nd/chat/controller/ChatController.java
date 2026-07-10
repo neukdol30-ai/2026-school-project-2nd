@@ -2,39 +2,51 @@ package com.siyan1234.itproject2nd.chat.controller;
 
 import com.siyan1234.itproject2nd.chat.dto.ChatMessageDto;
 import com.siyan1234.itproject2nd.chat.dto.ChatRoomDto;
+import com.siyan1234.itproject2nd.chat.kakao.service.KakaoNotifyService;
 import com.siyan1234.itproject2nd.chat.service.ChatRedisService;
 import com.siyan1234.itproject2nd.chat.service.ChatService;
 import com.siyan1234.itproject2nd.chat.websocket.ChatHandler;
+import com.siyan1234.itproject2nd.member.dto.CustomUserDetails;
 import com.siyan1234.itproject2nd.member.dto.MemberDto;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.*;
-import com.siyan1234.itproject2nd.member.dto.CustomUserDetails;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
- * 1:1 채팅 기능의 요청을 처리하는 Controller
+ * 1:1 채팅 기능 Controller
  *
- * 사용자 기능:
- * - 상담 홈 조회
- * - 상담방 생성 및 입장
- * - 메시지 목록 조회
- * - 문의 유형 변경
+ * 사용자 화면:
+ * - PC 상담 홈: /chat
+ * - 모바일 상담 홈: /chat/mobile
+ * - PC 상담방: /chat/room/{roomNo}
+ * - 모바일 상담방: /chat/mobile/room/{roomNo}
  *
- * 관리자 기능:
- * - 상담 목록 조회
- * - 상담 목록 실시간 갱신용 JSON 제공
- * - 상담방 상세 입장
- * - 상담 종료
- * - 종료 상담방 단건 삭제
- * - 종료 상담방 다중 삭제
+ * 관리자 화면:
+ * - 상담 목록: /chat/admin
+ * - 상담 상세: /chat/admin/{roomNo}
+ *
+ * 설계 기준:
+ * - 사용자 PC/모바일은 HTML/CSS를 분리한다.
+ * - 실시간 채팅 JS는 /js/chat.js 공통 사용한다.
+ * - 관리자 화면은 PC 운영 화면 기준으로 가독성을 개선한다.
  */
 @Controller
 @RequestMapping("/chat")
@@ -44,96 +56,104 @@ public class ChatController {
     private final ChatService chatService;
     private final ChatRedisService chatRedisService;
     private final ChatHandler chatHandler;
+    private final KakaoNotifyService kakaoNotifyService;
 
-    /**
-     * 사용자 상담 홈 화면
-     *
-     * 사용자가 /chat에 접속했을 때 상담 홈 화면을 보여준다.
-     * 진행 중인 OPEN 상담방이 있으면 openRoom으로 전달해서
-     * "기존 대화 이어가기" 버튼을 화면에 표시한다.
-     */
+    /** 사용자 PC 상담 홈 */
     @GetMapping
     public String chatHome(HttpSession session, Model model) {
-        MemberDto loginUser = getLoginUser(session);
-        System.out.println("========== /chat 요청 들어옴 ==========");
-        System.out.println("loginUser = " + session.getAttribute("loginUser"));
-        System.out.println("loginMember = " + session.getAttribute("loginMember"));
-        System.out.println("member = " + session.getAttribute("member"));
-
-        // 현재는 채팅 단독 테스트를 위해 임시 로그인으로 이동
-        // 팀 회원 기능과 병합 후에는 redirect:/member/login 으로 변경
-        if (loginUser == null) {
-            System.out.println("채팅 진입 실패: loginUser 세션이 null입니다.");
-            return redirectToUserLogin();
-        }
-
-        ChatRoomDto openRoom = chatService.findOpenRoomByUserNo(loginUser.getNo());
-
-        model.addAttribute("loginUser", loginUser);
-        model.addAttribute("openRoom", openRoom);
-
-        return "chat/chat-home";
+        return showChatHome(session, model, false);
     }
-    /**
-     * 상담 시작
-     *
-     * 사용자가 문의 유형을 선택하면 기존 OPEN 상담방이 있는지 확인한다.
-     * 기존 방이 있으면 재사용하고, 없으면 새 상담방을 생성한다.
-     * 상담방 생성/문의 유형 변경 후 관리자 상담 목록을 실시간 갱신한다.
-     */
+
+    /** 사용자 모바일 상담 홈 */
+    @GetMapping("/mobile")
+    public String mobileChatHome(HttpSession session, Model model) {
+        return showChatHome(session, model, true);
+    }
+
+    /** 사용자 PC 상담 시작 */
     @PostMapping("/start")
     public String startChat(
             @RequestParam(required = false) String category,
             HttpSession session
     ) {
-        MemberDto loginUser = getLoginUser(session);
-
-        if (loginUser == null) {
-            return redirectToUserLogin();
-        }
-
-        ChatRoomDto chatRoom = chatService.getOrCreateRoom(loginUser.getNo(), category);
-
-        // 새 상담방 생성 또는 문의 유형 변경 시 관리자 목록 실시간 갱신
-        chatHandler.broadcastAdminListRefresh(chatRoom.getRoomNo());
-
-        return "redirect:/chat/room/" + chatRoom.getRoomNo();
+        return startChatByView(category, session, false);
     }
 
-    /**
-     * 사용자 채팅방 화면
-     *
-     * 사용자가 실제 채팅방 화면에 들어갈 때 사용한다.
-     * roomNo를 직접 입력해서 다른 사용자의 상담방에 접근하지 못하도록
-     * 본인 상담방인지 검사한다.
-     */
+    /** 사용자 모바일 상담 시작 */
+    @PostMapping("/mobile/start")
+    public String startMobileChat(
+            @RequestParam(required = false) String category,
+            HttpSession session
+    ) {
+        return startChatByView(category, session, true);
+    }
+
+    /** 사용자 PC 상담방 */
     @GetMapping("/room/{roomNo}")
     public String chatRoom(
             @PathVariable Integer roomNo,
             HttpSession session,
             Model model
     ) {
+        return showChatRoom(roomNo, session, model, false);
+    }
+
+    /** 사용자 모바일 상담방 */
+    @GetMapping("/mobile/room/{roomNo}")
+    public String mobileChatRoom(
+            @PathVariable Integer roomNo,
+            HttpSession session,
+            Model model
+    ) {
+        return showChatRoom(roomNo, session, model, true);
+    }
+
+    //사용자 PC상담목록
+    @GetMapping("history")
+    public String userHistory(
+            @RequestParam(defaultValue = "1") int page,
+            HttpSession session, Model model) {
         MemberDto loginUser = getLoginUser(session);
 
         if (loginUser == null) {
             return redirectToUserLogin();
         }
+        int size = 10;
 
-        ChatRoomDto chatRoom = chatService.findRoomByRoomNo(roomNo);
+        List<ChatRoomDto> roomList = chatService.findUserRooms(loginUser.getNo(),page,size);
+        int totalCount = chatService.countUserRooms(loginUser.getNo());
 
-        if (chatRoom == null) {
-            return "redirect:/chat";
-        }
-
-        // 일반 사용자는 본인 상담방만 접근 가능
-        if (!canAccessRoom(loginUser, chatRoom)) {
-            return "redirect:/chat";
-        }
-
-        model.addAttribute("chatRoom", chatRoom);
         model.addAttribute("loginUser", loginUser);
+        model.addAttribute("roomList", roomList);
+        model.addAttribute("page", page);
+        model.addAttribute("size", size);
+        model.addAttribute("totalCount", totalCount);
 
-        return "chat/chat";
+        return "chat/pc/chat-history";
+    }
+
+    // 사용자 mobile 상담 목록
+    @GetMapping("/mobile/history")
+    public String userMobileHistory(
+            @RequestParam(defaultValue = "1") int page,
+            HttpSession session, Model model) {
+        MemberDto loginUser = getLoginUser(session);
+
+        if (loginUser == null) {
+            return redirectToUserLogin();
+        }
+        int size = 10;
+
+        List<ChatRoomDto> roomList = chatService.findUserRooms(loginUser.getNo(), page, size);
+        int totalCount = chatService.countUserRooms(loginUser.getNo());
+
+        model.addAttribute("loginUser", loginUser);
+        model.addAttribute("roomList", roomList);
+        model.addAttribute("page", page);
+        model.addAttribute("size", size);
+        model.addAttribute("totalCount", totalCount);
+
+        return "chat/mobile/chat-history";
     }
 
     /**
@@ -186,27 +206,23 @@ public class ChatController {
 
         model.addAttribute("roomList", roomList);
         model.addAttribute("loginUser", loginUser);
-
         model.addAttribute("status", status);
         model.addAttribute("category", category);
         model.addAttribute("keyword", keyword);
-
         model.addAttribute("page", page);
         model.addAttribute("size", size);
         model.addAttribute("totalCount", totalCount);
         model.addAttribute("totalPage", totalPage);
-
         model.addAttribute("startPageNo", startPageNo);
         model.addAttribute("endPageNo", endPageNo);
 
-        return "chat/admin-chat-list";
+        return "chat/admin/admin-chat-list";
     }
 
     /**
      * 관리자 상담 목록 실시간 갱신용 JSON API
      *
-     * admin-chat-list.js에서 WebSocket 알림을 받은 뒤 fetch로 호출한다.
-     * 이 API를 통해 현재 검색 조건과 페이지를 유지한 채 목록 영역만 다시 렌더링한다.
+     * admin-chat-list.js가 WebSocket 알림을 받은 뒤 현재 검색 조건을 유지해서 호출한다.
      */
     @ResponseBody
     @GetMapping("/admin/rooms")
@@ -266,7 +282,6 @@ public class ChatController {
      * 관리자 상담방 상세 화면
      *
      * 관리자가 특정 상담방에 처음 입장하면 담당 관리자(adminNo)로 자동 배정한다.
-     * 이미 담당 관리자가 있는 경우에는 덮어쓰지 않는다.
      */
     @GetMapping("/admin/{roomNo}")
     public String adminChatRoom(
@@ -290,24 +305,22 @@ public class ChatController {
             return "redirect:/chat/admin";
         }
 
-        // 담당 관리자가 없는 상담방은 처음 입장한 관리자를 담당자로 배정
         if (chatRoom.getAdminNo() == null) {
             chatService.assignAdmin(roomNo, loginUser.getNo());
             chatRoom = chatService.findRoomByRoomNo(roomNo);
-
             chatHandler.broadcastAdminListRefresh(roomNo);
         }
 
         model.addAttribute("chatRoom", chatRoom);
         model.addAttribute("loginUser", loginUser);
 
-        return "chat/admin-chat-room";
+        return "chat/admin/admin-chat-room";
     }
 
     /**
      * 채팅방 메시지 목록 조회 API
      *
-     * Oracle DB에 저장된 메시지와 Redis에 아직 남아있는 메시지를 합쳐서 반환한다.
+     * Oracle DB 메시지와 Redis 대기 메시지를 합쳐서 생성 시간 순서로 반환한다.
      * 메시지 조회 시 현재 접속자가 상대방 메시지를 읽은 것으로 처리한다.
      */
     @ResponseBody
@@ -328,7 +341,6 @@ public class ChatController {
             return List.of();
         }
 
-        // DB 메시지와 Redis 메시지 모두 읽음 처리
         chatService.updateReadYn(roomNo, loginUser.getNo());
         chatRedisService.updateReadYn(roomNo, loginUser.getNo());
 
@@ -336,7 +348,6 @@ public class ChatController {
         messages.addAll(chatService.findMessagesByRoomNo(roomNo));
         messages.addAll(chatRedisService.findMessages(roomNo));
 
-        // DB 메시지와 Redis 메시지를 합친 뒤 생성 시간 기준으로 정렬
         messages.sort(
                 Comparator.comparing(
                         ChatMessageDto::getCreatedDate,
@@ -351,7 +362,6 @@ public class ChatController {
      * 초기 테스트용 HTTP 메시지 저장 API
      *
      * 현재 실제 채팅 메시지는 WebSocket(ChatHandler)을 통해 처리한다.
-     * 최종 정리 시 사용하지 않으면 삭제해도 된다.
      */
     @ResponseBody
     @PostMapping("/message")
@@ -375,18 +385,13 @@ public class ChatController {
             return "closed";
         }
 
+        chatMessageDto.setSenderNo(loginUser.getNo());
         chatService.saveMessage(chatMessageDto);
 
         return "ok";
     }
 
-    /**
-     * 상담 종료
-     *
-     * 관리자만 실행할 수 있다.
-     * 상담방 상태를 CLOSED로 변경하고, 종료 안내 메시지를 Redis에 저장한 뒤
-     * WebSocket으로 현재 채팅방과 관리자 목록에 실시간 알림을 보낸다.
-     */
+    /** 상담 종료 */
     @PostMapping("/{roomNo}/close")
     public String closeRoom(
             @PathVariable Integer roomNo,
@@ -422,26 +427,14 @@ public class ChatController {
         closeMessage.setCreatedDate(LocalDateTime.now());
 
         chatRedisService.saveMessage(closeMessage);
-
-        // 관리자 목록의 마지막 메시지와 정렬 기준을 즉시 갱신
         chatService.updateLastMessage(roomNo, "상담이 종료되었습니다.");
-
-        // 채팅방 내부에 종료 이벤트 전송
         chatHandler.broadcastClose(roomNo, closeMessage);
-
-        // 관리자 상담 목록 실시간 갱신
         chatHandler.broadcastAdminListRefresh(roomNo);
 
         return "redirect:/chat/admin";
     }
 
-    /**
-     * 종료 상담방 단건 하드 DELETE
-     *
-     * 관리자만 실행할 수 있다.
-     * Redis에 남은 메시지를 삭제하고 Oracle의 chat_room을 삭제한다.
-     * chat_message는 FK ON DELETE CASCADE로 함께 삭제된다.
-     */
+    /** 종료 상담방 단건 삭제 */
     @PostMapping("/admin/{roomNo}/delete")
     public String deleteRoomByAdmin(
             @PathVariable Integer roomNo,
@@ -469,18 +462,12 @@ public class ChatController {
 
         chatRedisService.deleteMessages(roomNo);
         chatService.deleteRoom(roomNo);
-
         chatHandler.broadcastAdminListRefresh(roomNo);
 
         return "redirect:/chat/admin";
     }
 
-    /**
-     * 종료 상담방 다중 하드 DELETE
-     *
-     * 관리자 목록에서 체크박스로 선택한 종료 상담방을 여러 개 삭제한다.
-     * 화면에서 OPEN 상담방 체크박스를 숨기더라도 서버에서 CLOSED 상태를 다시 검증한다.
-     */
+    /** 종료 상담방 다중 삭제 */
     @PostMapping("/admin/rooms/delete")
     public String deleteRoomsByAdmin(
             @RequestParam(value = "roomNoList", required = false) List<Integer> roomNoList,
@@ -525,24 +512,75 @@ public class ChatController {
         }
 
         chatService.deleteClosedRooms(closedRoomNoList);
-
         chatHandler.broadcastAdminListRefresh(0);
 
         return "redirect:/chat/admin";
     }
 
-    /**
-     * 문의 유형 변경
-     *
-     * 사용자가 문의 유형을 잘못 선택했을 때 기존 상담방은 유지하고 category만 변경한다.
-     * 상담방이 OPEN 상태이고, 요청 사용자가 해당 상담방의 주인일 때만 변경된다.
-     */
+    /** 사용자 PC 문의 유형 변경 */
     @PostMapping("/{roomNo}/category")
     public String changeCategory(
             @PathVariable Integer roomNo,
             @RequestParam(required = false) String category,
             HttpSession session
     ) {
+        return changeCategoryByView(roomNo, category, session, false);
+    }
+
+    /** 사용자 모바일 문의 유형 변경 */
+    @PostMapping("/mobile/{roomNo}/category")
+    public String changeMobileCategory(
+            @PathVariable Integer roomNo,
+            @RequestParam(required = false) String category,
+            HttpSession session
+    ) {
+        return changeCategoryByView(roomNo, category, session, true);
+    }
+
+    private String showChatHome(HttpSession session, Model model, boolean mobile) {
+        MemberDto loginUser = getLoginUser(session);
+
+        if (loginUser == null) {
+            return redirectToUserLogin();
+        }
+
+        ChatRoomDto openRoom = chatService.findOpenRoomByUserNo(loginUser.getNo());
+
+        model.addAttribute("loginUser", loginUser);
+        model.addAttribute("openRoom", openRoom);
+        model.addAttribute("isMobile", mobile);
+
+        if (mobile) {
+            return "chat/mobile/chat-home";
+        }
+
+        return "chat/pc/chat-home";
+    }
+
+    private String startChatByView(String category, HttpSession session, boolean mobile) {
+        MemberDto loginUser = getLoginUser(session);
+
+        if (loginUser == null) {
+            return redirectToUserLogin();
+        }
+
+        ChatRoomDto beforeRoom = chatService.findOpenRoomByUserNo(loginUser.getNo());
+        ChatRoomDto chatRoom = chatService.getOrCreateRoom(loginUser.getNo(), category);
+
+        if (beforeRoom == null) {
+            kakaoNotifyService.sendNewChatRoomAlert(chatRoom);
+        }
+
+        chatHandler.broadcastAdminListRefresh(chatRoom.getRoomNo());
+
+        if (mobile) {
+            return "redirect:/chat/mobile/room/" + chatRoom.getRoomNo();
+        }
+
+        return "redirect:/chat/room/" + chatRoom.getRoomNo();
+    }
+
+    private String showChatRoom(Integer roomNo, HttpSession session, Model model, boolean mobile) {
         MemberDto loginUser = getLoginUser(session);
 
         if (loginUser == null) {
@@ -552,29 +590,62 @@ public class ChatController {
         ChatRoomDto chatRoom = chatService.findRoomByRoomNo(roomNo);
 
         if (chatRoom == null) {
-            return "redirect:/chat";
+            return mobile ? "redirect:/chat/mobile" : "redirect:/chat";
+        }
+
+        if (!canAccessRoom(loginUser, chatRoom)) {
+            return mobile ? "redirect:/chat/mobile" : "redirect:/chat";
+        }
+
+        model.addAttribute("chatRoom", chatRoom);
+        model.addAttribute("loginUser", loginUser);
+        model.addAttribute("isMobile", mobile);
+
+        if (mobile) {
+            return "chat/mobile/chat-room";
+        }
+
+        return "chat/pc/chat-room";
+    }
+
+    private String changeCategoryByView(Integer roomNo, String category, HttpSession session, boolean mobile) {
+        MemberDto loginUser = getLoginUser(session);
+
+        if (loginUser == null) {
+            return redirectToUserLogin();
+        }
+
+        ChatRoomDto chatRoom = chatService.findRoomByRoomNo(roomNo);
+
+        if (chatRoom == null) {
+            return mobile ? "redirect:/chat/mobile" : "redirect:/chat";
         }
 
         if (!"OPEN".equals(chatRoom.getStatus())) {
-            return "redirect:/chat/room/" + roomNo;
+            return mobile ? "redirect:/chat/mobile/room/" + roomNo : "redirect:/chat/room/" + roomNo;
         }
 
         if (chatRoom.getUserNo() == null || !chatRoom.getUserNo().equals(loginUser.getNo())) {
-            return "redirect:/chat";
+            return mobile ? "redirect:/chat/mobile" : "redirect:/chat";
         }
 
         chatService.changeCategory(roomNo, loginUser.getNo(), category);
-
         chatHandler.broadcastAdminListRefresh(roomNo);
+
+        if (mobile) {
+            return "redirect:/chat/mobile/room/" + roomNo;
+        }
 
         return "redirect:/chat/room/" + roomNo;
     }
 
     private MemberDto getLoginUser(HttpSession session) {
         Object sessionLoginUser = session.getAttribute("loginUser");
+
         if (sessionLoginUser instanceof MemberDto memberDto) {
             return memberDto;
         }
+
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
         if (authentication == null) {
@@ -593,7 +664,6 @@ public class ChatController {
 
         if (principal instanceof CustomUserDetails customUserDetails) {
             MemberDto loginUser = customUserDetails.getMemberDto();
-
             session.setAttribute("loginUser", loginUser);
 
             return loginUser;
@@ -619,12 +689,10 @@ public class ChatController {
     }
 
     private String redirectToUserLogin() {
-        // 최종 병합 후 변경 권장: return "redirect:/member/login";
         return "redirect:/member/login";
     }
 
     private String redirectToAdminLogin() {
-        // 최종 병합 후 변경 권장: return "redirect:/member/login";
         return "redirect:/member/login";
     }
 
@@ -642,7 +710,6 @@ public class ChatController {
 
     private int calculateTotalPage(int totalCount, int size) {
         int totalPage = (int) Math.ceil((double) totalCount / size);
-
         return Math.max(totalPage, 1);
     }
 
@@ -659,5 +726,4 @@ public class ChatController {
 
         return result;
     }
-
 }

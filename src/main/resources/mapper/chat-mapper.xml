@@ -87,6 +87,48 @@
         created_date DESC
     </select>
 
+    <!-- 사용자 상담내역 목록 조회: 로그인 사용자 본인의 상담방만 조회 -->
+    <select id="findUserRooms"
+            resultType="com.siyan1234.itproject2nd.chat.dto.ChatRoomDto">
+        SELECT
+        r.room_no,
+        r.user_no,
+        r.admin_no,
+        r.status,
+        r.category,
+        r.last_message,
+        r.last_message_date,
+        r.created_date,
+        r.closed_date,
+        (
+        SELECT COUNT(*)
+        FROM chat_message m
+        WHERE m.room_no = r.room_no
+        AND m.sender_no IS NOT NULL
+        AND m.sender_no != #{userNo, jdbcType=NUMERIC}
+        AND m.read_yn = 'N'
+        ) AS unread_count
+        FROM chat_room r
+        WHERE r.user_no = #{userNo, jdbcType=NUMERIC}
+        ORDER BY
+        CASE r.status
+        WHEN 'OPEN' THEN 1
+        WHEN 'CLOSED' THEN 2
+        ELSE 3
+        END,
+        r.last_message_date DESC NULLS LAST,
+        r.created_date DESC
+        OFFSET #{pageStart, jdbcType=NUMERIC} ROWS
+        FETCH NEXT #{pageEnd, jdbcType=NUMERIC} ROWS ONLY
+    </select>
+
+    <!-- 사용자 상담내역 페이징 계산용 전체 개수 조회 -->
+    <select id="countUserRooms" resultType="int">
+        SELECT COUNT(*)
+        FROM chat_room r
+        WHERE r.user_no = #{userNo, jdbcType=NUMERIC}
+    </select>
+
     <!-- 관리자 상담 목록 조회: 검색, 페이징, 안읽음 개수 포함 -->
     <select id="findAdminRooms"
             resultType="com.siyan1234.itproject2nd.chat.dto.ChatRoomDto">

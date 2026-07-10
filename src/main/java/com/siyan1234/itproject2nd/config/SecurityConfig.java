@@ -21,8 +21,11 @@ public class SecurityConfig {
                                 "/", // 메인
                                 "/member/login", // 로그인 화면
                                 "/member/signup", // 회원가입 화면
+                                "/kakao/authorize", //카카오 동의
+                                "/kakao/callback", //카카오 인가 코드 토큰발급
                                 "/css/**", "/js/**", "/images/**" // 정적 파일
                         ).permitAll()
+                        .requestMatchers("/kakao/test-message").hasRole("ADMIN")
                         .requestMatchers("/chat/admin/**").hasRole("ADMIN")
                         .requestMatchers("/chat/**").authenticated()
                         .requestMatchers("/ws/**").authenticated()

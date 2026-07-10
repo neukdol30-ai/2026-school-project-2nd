@@ -112,4 +112,13 @@ public interface ChatDao {
             @Param("roomNo") Integer roomNo,
             @Param("viewerNo") Integer viewerNo
     );
+
+    //상담내역 목록 조회용 메서드
+    List<ChatRoomDto> findUserRooms(
+            @Param("userNo") Integer userNo,
+            @Param("pageStart") int pageStart,
+            @Param("pageEnd") int  pageEnd
+    );
+
+    int countUserRooms(@Param("userNo") Integer userNo);
 }

@@ -40,6 +40,16 @@ public interface ChatService {
      */
     List<ChatRoomDto> findAllRooms();
 
+    //사용자 본인의 상담내역 목록 조회
+    List<ChatRoomDto> findUserRooms(
+            Integer userNo,
+            int page,
+            int size
+    );
+
+    //사용자 본인의 상담내역 페이징 계산을 위한 전체 개수 조회
+    int countUserRooms(Integer userNo);
+
     /**
      * 메시지를 Oracle DB에 저장한다.
      * Redis에 저장된 메시지를 Scheduler가 Oracle로 옮길 때 주로 사용한다.
