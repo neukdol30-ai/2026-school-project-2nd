@@ -66,3 +66,50 @@
 .detail-table {
     border-top: 1px solid #e5e5e5;
 }
+
+/*회원 목록 "관리" 버튼 공통 스타일*/
+.btn-action {
+    display: inline-block;
+    padding: 5px 12px;
+    font-size: 13px;
+    border-radius: 6px;
+    text-decoration: none;
+    border: 1px solid transparent;
+}
+
+/*상세 버튼 전용*/
+.btn-detail {
+    background: #2d6cdf;
+    color: #fff;
+}
+
+/*상세 버튼 마우스 올렸을 때(hover)*/
+.btn-detail:hover {
+    background: #1f57bd;
+}
+
+/*수정 버튼 전용("상세"의 파랑과 구분되게 초록 계열*/
+.btn-edit {
+    background: #2e9e5b;
+    color: #fff;
+}
+
+/*수정 버튼 마우스 올렸을 때(hover)*/
+.btn-edit:hover {
+    background: #24803f;
+}
+
+/*관리 열 버튼이 여러 개일 때 간격*/
+.btn-action + .btn-action {
+    margin-left: 6px;
+}
+
+.member-table th.col-center,
+.member-table td.col-center {
+    text-align: center;
+}
+
+/*.table-scroll : 화면이 좁으면 상자 안에서 가로 스크롤*/
+.table-scroll {overflow-x: auto;}
+.member-table {min-width: 800px;}
+.member-table th, .member-table td {white-space: nowrap;}
