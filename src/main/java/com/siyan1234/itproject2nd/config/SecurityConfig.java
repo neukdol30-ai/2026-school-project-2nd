@@ -22,6 +22,7 @@ public class SecurityConfig {
                                 "/index.html",
                                 "/member/login", // 로그인 화면
                                 "/member/signup", // 회원가입 화면
+                                "/member/exists", // 아이디 중복 확인
                                 "/css/**", "/js/**", "/images/**", "/ws/**", "/chat/**", // 정적 파일
                                 "/api/**"
                         ).permitAll()
@@ -43,6 +44,7 @@ public class SecurityConfig {
                 .logout(logout -> logout
                         .logoutUrl("/member/logout") // 이 주소로 POST 요청 시 로그아웃
                         .logoutSuccessUrl("/") // 로그아웃 후 메인으로
+                        .invalidateHttpSession(true) // 로그인 상태 세션 완전 삭제
                 );
 
         return http.build();

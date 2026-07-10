@@ -10,10 +10,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.*;
 
 @Slf4j
 @Controller
@@ -70,5 +67,12 @@ public class MemberController {
         }
 
         return "member/login";
+    }
+
+    // true/false(boolean) 그대로 브라우저 전달. JS가 이 값을 받아 메시지 띄움.
+    @GetMapping("/exists")
+    @ResponseBody
+    public boolean checkMemberIdDuplicate(@RequestParam("memberId") String memberId) {
+        return memberService.isMemberIdDuplicate(memberId); // true=중복, false=사용 가능
     }
 }

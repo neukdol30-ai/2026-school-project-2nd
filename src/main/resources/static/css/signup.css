@@ -127,3 +127,24 @@ body { /* body 태그 */
 .bottom-link a:hover { /* .bottom-link 안의 <a>에 마우스를 올렸을 때만 적용 */
     text-decoration: underline;
 }
+
+.required {
+    color: #e02424;
+    font-size: 13px;
+    margin-left: 2px;
+}
+
+/* .check-msg : JS가 띄우는 실시간 메시지(아이디 중복 & 비번 일치) */
+.check-msg {
+    display: block;
+    font-size: 13px;
+    margin-top: 4px;
+}
+
+.check-ok {
+    color: #2e9e5b;
+}
+
+.check-fail {
+    color: #e02424;
+}

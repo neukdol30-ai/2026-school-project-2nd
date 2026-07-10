@@ -10,9 +10,11 @@
 <div class="page-wrap">
     <div class="signup-box">
         <h1 class="page-title">회원가입</h1>
-        <form th:action="@{/member/signup}" th:object="${signupDto}" method="post">
-            <!-- csrf hidden input 넣지 않음. -->
 
+        <form th:action="@{/member/signup}" th:object="${signupDto}" method="post">
+            <!-- csrf hidden 없음 (SecurityConfig에서 csrf.disable() 상태라 불필요) -->
+
+            <!--서버 검증에서 걸린 오류 -> 폼 상단에 모아서 표시하기-->
             <div th:if="${#fields.hasErrors('*')}" class="error-summary">
                 <p>회원가입 입력값을 다시 확인하세요.</p>
                 <ul>
@@ -20,42 +22,58 @@
                 </ul>
             </div>
 
-            <div class="form-group"> <!-- 아이디 입력 영역 -->
-                <label class="form-label" for="memberId">아이디</label> <!-- label의 for와 input의 id 연결 -->
-                <input id="memberId" type="text" th:field="*{memberId}" class="form-input">
-                <p class="error-message" th:errors="*{memberId}"></p>
-            </div>
-
+            <!-- 필수 1 : 아이디 -->
             <div class="form-group">
-                <label class="form-label" for="password">비밀번호</label>
-                <input id="password" type="password" th:field="*{password}" class="form-input">
+                <label class="form-label" for="memberId">아이디 <span class="required">*</span></label>
+                <!-- label의 for와 input의 id 연결 -->
+                <input id="memberId" type="text" th:field="*{memberId}" class="form-input"
+                       required minlength="4" maxlength="20">
+                <p class="error-message" th:errors="*{memberId}"></p> <!-- 서버가 준 오류 표시 자리 -->
+                <span id="memberIdCheck" class="check-msg"></span> <!-- 아이디 중복 체크 결과 메시지 자리(JS가 채움) -->
+            </div>
+            <!-- 필수 2 : 비밀번호 -->
+            <div class="form-group">
+                <label class="form-label" for="password">비밀번호 <span class="required">*</span></label>
+                <!-- pattern : 대, 소문자 / 숫자 각 1개 이상 포함 + 8~12자여야 제출. / title : 안 맞을 때 안내 문구 -->
+                <input id="password" type="password" th:field="*{password}" class="form-input"
+                       required
+                       pattern="(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,12}"
+                       title="영문 대문자·소문자·숫자를 모두 포함해 8~12자로 입력하세요.">
                 <p class="error-message" th:errors="*{password}"></p>
+                <span id="pwCheck" class="check-msg"></span>
             </div>
 
+            <!-- 필수 3 : 비밀번호 확인 -->
             <div class="form-group">
-                <label class="form-label" for="passwordCheck">비밀번호 확인</label>
-                <input id="passwordCheck" type="password" th:field="*{passwordCheck}" class="form-input">
+                <label class="form-label" for="passwordCheck">비밀번호 확인 <span class="required">*</span></label>
+                <!-- 위의 비번과 같은지는 서버(hasSignupErrors)가 검사. -->
+                <input id="passwordCheck" type="password" th:field="*{passwordCheck}" class="form-input" required>
                 <p class="error-message" th:errors="*{passwordCheck}"></p>
             </div>
 
+            <!-- 필수 4 : 이름 -->
             <div class="form-group">
-                <label class="form-label" for="name">이름</label>
-                <input id="name" type="text" th:field="*{name}" class="form-input">
+                <label class="form-label" for="name">이름 <span class="required">*</span></label>
+                <input id="name" type="text" th:field="*{name}" class="form-input" required>
                 <p class="error-message" th:errors="*{name}"></p>
             </div>
 
+            <!-- 필수 5 : 닉네임 (DB NOT NULL이라 반드시 필수) -->
             <div class="form-group">
-                <label class="form-label" for="nickname">닉네임</label>
-                <input id="nickname" type="text" th:field="*{nickname}" class="form-input">
+                <label class="form-label" for="nickname">닉네임 <span class="required">*</span></label>
+                <input id="nickname" type="text" th:field="*{nickname}" class="form-input" required>
                 <p class="error-message" th:errors="*{nickname}"></p>
             </div>
 
+            <!-- 필수 6 : 이메일 -->
             <div class="form-group">
-                <label class="form-label" for="email">이메일</label>
-                <input id="email" type="email" th:field="*{email}" class="form-input">
+                <label class="form-label" for="email">이메일 <span class="required">*</span></label>
+                <!-- type="email" : @ 포함 형식인지 브라우저가 기본 검사 -->
+                <input id="email" type="email" th:field="*{email}" class="form-input" required>
                 <p class="error-message" th:errors="*{email}"></p>
             </div>
 
+            <!-- 선택 항목들 -->
             <div class="form-group">
                 <label class="form-label" for="phone">전화번호</label>
                 <input id="phone" type="text" th:field="*{phone}" class="form-input">
@@ -90,21 +108,24 @@
                 <input id="detailAddress" type="text" th:field="*{detailAddress}" class="form-input">
             </div>
 
+            <!-- 필수 7 : 이용약관 동의 (체크박스 required) -->
             <div class="check-group">
                 <label class="check-group">
-                    <input type="checkbox" th:field="*{agreeTermsYn}" value="Y" class="check-input">
-                    <span>이용약관에 동의합니다.</span>
+                    <input type="checkbox" th:field="*{agreeTermsYn}" value="Y" class="check-input" required>
+                    <span>이용약관에 동의합니다. <span class="required">*</span></span>
                 </label>
                 <p class="error-message" th:errors="*{agreeTermsYn}"></p>
             </div>
 
+            <!-- 필수 8 : 개인정보 처리방침 동의 -->
             <div class="check-group">
                 <label class="check-group">
-                    <input type="checkbox" th:field="*{agreePrivacyYn}" value="Y" class="check-input">
-                    <span>개인정보 처리방침에 동의합니다.</span>
+                    <input type="checkbox" th:field="*{agreePrivacyYn}" value="Y" class="check-input" required>
+                    <span>개인정보 처리방침에 동의합니다. <span class="required">*</span></span>
                 </label>
                 <p class="error-message" th:errors="*{agreePrivacyYn}"></p>
             </div>
+
             <button type="submit" class="submit-button">회원가입</button>
         </form>
 
@@ -113,5 +134,54 @@
         </div>
     </div>
 </div>
+<script>
+    // 아이디 실시간 중복 체크
+    const memberIdInput = document.getElementById('memberId'); // 아이디 입력칸
+    const memberIdCheck = document.getElementById('memberIdCheck'); // 결과 메시지 자리
+
+    // blur : 입력칸에서 포커스가 "빠져나가는 순간"(다른 칸으로 넘어갈 때) 실행
+    memberIdInput.addEventListener('blur', function () {
+        const value = memberIdInput.value.trim(); // 앞, 뒤 공백 제거한 입력값
+        if (value.length < 4) { // 4자 미만이면 아직 검사 X
+            memberIdCheck.textContent = ''; // 메시지 비움
+            return; // 여기서 멈춤(서버에 안 물어본다)
+        }
+
+        fetch('/member/exists?memberId=' + encodeURIComponent(value))
+            .then(res => res.json()) // 서버가 보낸 true/false를 값으로 변환
+            .then(isDuplicate => { // isDuplicate : true면 중복, false면 사용 가능
+                if (isDuplicate) {
+                    memberIdCheck.textContent = '이미 사용 중인 아이디입니다.';
+                    memberIdCheck.className = 'check-msg check-fail'; // 빨강
+                } else {
+                    memberIdCheck.textContent = '사용 가능한 아이디입니다.';
+                    memberIdCheck.className = 'check-msg check-ok'; // 초록
+                }
+            });
+    });
+
+    // 비밀번호 = 비밀번호 확인 실시간 일치 표시
+    const pw = document.getElementById('password');
+    const pwc = document.getElementById('passwordCheck');
+    const pwCheck = document.getElementById('pwCheck'); // 결과 메시지 자리
+
+    function checkPwMatch() { // 두 칸 비교하는 함수
+        if (pwc.value === '') { // 확인 칸이 비어 있으면 메시지 안 띄움
+            pwCheck.textContent = '';
+            return;
+        }
+        if (pw.value === pwc.value) {
+            pwCheck.textContent = '비밀번호가 일치합니다.';
+            pwCheck.className = 'check-msg check-ok';
+        } else {
+            pwCheck.textContent = '비밀번호가 일치하지 않습니다.';
+            pwCheck.className = 'check-msg check-fail';
+        }
+    }
+
+    // input : 글자를 칠 때마다 실시간으로 실행. 두 칸 아무 데나 입력할 때마다 비교
+    pw.addEventListener('input', checkPwMatch);
+    pwc.addEventListener('input', checkPwMatch);
+</script>
 </body>
 </html>
