@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>글쓰기</title>
+    <link rel="stylesheet" href="https://uicdn.toast.com/editor/latest/toastui-editor.min.css">
+    <script src="https://uicdn.toast.com/editor/latest/toastui-editor-all.min.js"></script>
+    <script src="https://uicdn.toast.com/editor/latest/i18n/ko-kr.js"></script>
+</head>
+<body>
+
+<h1>글쓰기</h1>
+
+<form action="/board/write" method="post" th:object="${boardDto}">
+    <select th:field="*{category}">
+
+        <option value="FREE">
+            자유게시판
+        </option>
+
+        <option
+                value="NOTICE"
+                th:if="${session.loginMember != null and session.loginMember.role == 'ADMIN'}">
+
+            공지사항
+
+        </option>
+
+    </select>
+
+    <br><br>
+
+    <input type="text" th:field="*{title}" placeholder="제목">
+
+    <p th:if="${#fields.hasErrors('title')}"
+       th:errors="*{title}"
+       style="color:red;"></p>
+
+    <br><br>
+
+    <div id="editor"></div>
+    <input type="hidden" name="content" id="content">
+
+    <p th:if="${#fields.hasErrors('content')}"
+       th:errors="*{content}"
+       style="color:red;"></p>
+
+    <br><br>
+
+    <button type="submit">등록</button>
+</form>
+
+<a href="/board/list">목록</a>
+
+<script>
+    const editor = new toastui.Editor({
+        el: document.querySelector('#editor'),
+        height: '500px',
+        initialEditType: 'wysiwyg',
+        previewStyle: 'vertical',
+        language: 'ko-KR'
+    });
+
+    document.querySelector('form').addEventListener('submit', function () {
+        document.querySelector('#content').value = editor.getHTML();
+    });
+</script>
+
+</body>
+</html>

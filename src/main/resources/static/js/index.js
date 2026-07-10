@@ -13,6 +13,70 @@ const state = {
     newsError: "",
     dayNames: ["월", "화", "수", "목", "금", "토", "일"],
 
+    stockItems: [
+        {
+            symbol: "005930",
+            name: "삼성전자",
+            price: 78400,
+            changePrice: 1200,
+            changeRate: 1.55,
+            points: [
+                { time: "09:00", price: 77000 },
+                { time: "10:00", price: 77500 },
+                { time: "11:00", price: 77900 },
+                { time: "12:00", price: 78100 },
+                { time: "13:00", price: 78400 }
+            ]
+        },
+        {
+            symbol: "035420",
+            name: "NAVER",
+            price: 186500,
+            changePrice: -1500,
+            changeRate: -0.80,
+            points: [
+                { time: "09:00", price: 188000 },
+                { time: "10:00", price: 187500 },
+                { time: "11:00", price: 187000 },
+                { time: "12:00", price: 186800 },
+                { time: "13:00", price: 186500 }
+            ]
+        },
+        {
+            symbol: "035720",
+            name: "카카오",
+            price: 42100,
+            changePrice: 600,
+            changeRate: 1.45,
+            points: [
+                { time: "09:00", price: 41400 },
+                { time: "10:00", price: 41700 },
+                { time: "11:00", price: 41900 },
+                { time: "12:00", price: 42000 },
+                { time: "13:00", price: 42100 }
+            ]
+        },
+        {
+            symbol: "000660",
+            name: "SK하이닉스",
+            price: 238000,
+            changePrice: -2500,
+            changeRate: -1.04,
+            points: [
+                { time: "09:00", price: 240500 },
+                { time: "10:00", price: 239800 },
+                { time: "11:00", price: 239000 },
+                { time: "12:00", price: 238600 },
+                { time: "13:00", price: 238000 }
+            ]
+        }
+    ],
+    stockLoading: false,
+    stockError: "",
+    stockSlideIndex: 0,
+    stockCharts: [],
+    stockSwiper: null,
+
     widgets: [
         {
             id: 1,
@@ -158,6 +222,7 @@ function render() {
 
     bindEvents();
     animateWidgetChanges(prevPositions);
+    initStockSwiper();
 }
 
 //애니메이션 함수 추가
@@ -197,6 +262,104 @@ function animateWidgetChanges(prevPositions) {
                 easing: "ease"
             }
         );
+    });
+}
+
+// 그래프 함수 추가
+function drawStockCharts() {
+    document.querySelectorAll("[data-stock-chart-index]").forEach((canvas) => {
+        const index = Number(canvas.dataset.stockChartIndex);
+        const stock = state.stockItems[index];
+        const slide = canvas.closest(".swiper-slide");
+        const isActive = slide && slide.classList.contains("swiper-slide-active");
+
+        if (!stock || !stock.points || stock.points.length === 0) {
+            return;
+        }
+
+        if (state.stockCharts[index]) {
+            state.stockCharts[index].destroy();
+        }
+
+        state.stockCharts[index] = new Chart(canvas, {
+            type: "line",
+            data: {
+                labels: stock.points.map((point) => point.time),
+                datasets: [
+                    {
+                        data: stock.points.map((point) => point.price),
+                        borderColor: stock.changeRate >= 0 ? "#dc2626" : "#2563eb",
+                        backgroundColor: "transparent",
+                        borderWidth: isActive ? 2.5 : 1.5,
+                        tension: 0,
+                        pointRadius: 0
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                animation: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    },
+                    tooltip: {
+                        enabled: isActive
+                    }
+                },
+                scales: {
+                    x: {
+                        display: false
+                    },
+                    y: {
+                        display: false
+                    }
+                }
+            }
+        });
+    });
+}
+
+function initStockSwiper() {
+    const swiperElement = document.querySelector(".stock-swiper");
+
+    if (!swiperElement) {
+        return;
+    }
+
+    if (state.stockSwiper) {
+        state.stockSwiper.destroy(true, true);
+        state.stockSwiper = null;
+    }
+
+    state.stockSwiper = new Swiper(swiperElement, {
+        slidesPerView: "auto",
+        spaceBetween: 12,
+        speed: 450,
+        loop: true,
+        observer: true,
+        observeParents: true,
+        autoplay: {
+            delay: 5000,
+            disableOnInteraction: false
+        },
+        navigation: {
+            nextEl: ".stock-nav-next",
+            prevEl: ".stock-nav-prev"
+        },
+        on: {
+            init: function () {
+                requestAnimationFrame(() => {
+                    drawStockCharts();
+                });
+            },
+            slideChangeTransitionEnd: function () {
+                requestAnimationFrame(() => {
+                    drawStockCharts();
+                });
+            }
+        }
     });
 }
 
@@ -307,11 +470,7 @@ function renderWidgetContent(widget) {
     }
 
     if (widget.type === "stock") {
-        return `
-            <div class="stock-box">
-                증권 차트 영역
-            </div>
-        `;
+        return renderStockWidget();
     }
 
     if (widget.type === "weather") {
@@ -352,7 +511,7 @@ function renderNewsWidget() {
     }
 
     if (state.newsError) {
-        return `<p class="widget-desc">${state.newsError}</p>`;
+        return `<p class="widget-desc">${escapeHtml(state.newsError)}</p>`;
     }
 
     return `
@@ -361,24 +520,86 @@ function renderNewsWidget() {
                 <li class="news-item">
                     <a
                         class="news-title"
-                        href="${news.link}"
+                        href="${escapeHtml(news.link)}"
                         target="_blank"
                         rel="noopener noreferrer"
                     >
-                        ${news.title}
+                        ${escapeHtml(news.title)}
                     </a>
 
                     <p class="news-summary">
-                        ${news.summary}
+                        ${escapeHtml(news.summary)}
                     </p>
 
                     <div class="news-meta">
-                        ${news.source} · ${news.publishedAt}
+                        ${escapeHtml(news.source)} · ${escapeHtml(news.publishedAt)}
                     </div>
                 </li>
             `).join("")}
         </ul>
     `;
+}
+
+//주식 관련 위젯
+function renderStockWidget() {
+    if (state.stockLoading) {
+        return `<p class="widget-desc">증권 정보를 불러오는 중입니다.</p>`;
+    }
+
+    if (state.stockError) {
+        return `<p class="widget-desc">${state.stockError}</p>`;
+    }
+
+    if (!state.stockItems || state.stockItems.length === 0) {
+        return `<p class="widget-desc">표시할 증권 정보가 없습니다.</p>`;
+    }
+
+    return `
+    <div class="stock-film-widget">
+        <div class="swiper stock-swiper">
+            <div class="swiper-wrapper">
+                ${state.stockItems.map((stock, index) => `
+                    <div class="swiper-slide stock-film-card">
+                        <div class="stock-card-top">
+                            <div>
+                                <strong>${escapeHtml(stock.name)}</strong>
+                                <span>${escapeHtml(stock.symbol)}</span>
+                            </div>
+
+                            <div class="${stock.changeRate >= 0 ? "stock-up" : "stock-down"}">
+                                <strong>${stock.price.toLocaleString()}원</strong>
+                                <span>${stock.changeRate}%</span>
+                            </div>
+                        </div>
+
+                        <div class="stock-chart-wrap">
+                            <canvas
+                                class="stock-chart"
+                                data-stock-chart-index="${index}"
+                            ></canvas>
+                        </div>
+
+                        <div class="stock-mini-price">
+                            ${stock.changePrice > 0 ? "+" : ""}${stock.changePrice.toLocaleString()}원
+                        </div>
+                    </div>
+                `).join("")}
+            </div>
+            
+            <button class="swiper-button-prev stock-nav-button stock-nav-prev" type="button">‹</button>
+            <button class="swiper-button-next stock-nav-button stock-nav-next" type="button">›</button>
+        </div>
+    </div>
+`;
+}
+//뉴스 관련 예외 처리
+function escapeHtml(value) {
+    return String(value ?? "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
 }
 
 //계산기 캘린더
@@ -407,6 +628,7 @@ function renderCalculator() {
     `;
 }
 
+//캘린더 영역
 function renderMiniCalendar() {
     return `
         <div class="calendar-grid">
@@ -687,5 +909,30 @@ async function fetchNews() {
     }
 }
 
+//증권 api 연결
+async function fetchStocks() {
+    state.stockLoading = true;
+    state.stockError = "";
+    render();
+
+    try {
+        const response = await fetch("/api/stocks");
+
+        if (!response.ok) {
+            throw new Error("증권 정보를 불러오지 못했습니다.");
+        }
+
+        const stocks = await response.json();
+
+        state.stockItems = stocks;
+    } catch (error) {
+        state.stockError = "증권 정보를 불러오지 못했습니다.";
+    } finally {
+        state.stockLoading = false;
+        render();
+    }
+}
+
 render();
 fetchNews();
+fetchStocks();

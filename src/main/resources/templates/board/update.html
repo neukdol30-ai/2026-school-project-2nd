@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>게시글 수정</title>
+    <!--TOAST UI CDN 추가-->
+    <link rel="stylesheet" href="https://uicdn.toast.com/editor/latest/toastui-editor.min.css">
+    <script src="https://uicdn.toast.com/editor/latest/toastui-editor-all.min.js"></script>
+    <script src="https://uicdn.toast.com/editor/latest/i18n/ko-kr.js"></script>
+</head>
+<body>
+
+<h1>게시글 수정</h1>
+
+<form th:action="@{/board/update/{no}(no=${board.no})}" method="post">
+    <select name="category">
+        <option value="FREE" th:selected="${board.category == 'FREE'}">자유게시판</option>
+        <option value="NOTICE" th:selected="${board.category == 'NOTICE'}">공지사항</option>
+    </select>
+
+    <br><br>
+
+    <input type="text" name="title" th:value="${board.title}" placeholder="제목">
+
+    <br><br>
+
+    <!-- TOAST UI Editor가 들어갈 영역 -->
+    <div id="editor"></div>
+
+    <!-- 실제 서버로 전송될 content 값 -->
+    <input type="hidden"
+           name="content"
+           id="content"
+           th:value="${board.content}">
+
+    <br><br>
+
+    <button type="submit">수정</button>
+</form>
+
+<a href="/board/list">목록</a>
+
+<script>
+    const editor = new toastui.Editor({
+        el: document.querySelector('#editor'),
+        height: '600px',
+        initialEditType: 'wysiwyg',
+        previewStyle: 'vertical',
+        language: 'ko-KR',
+        initialValue: document.querySelector('#content').value
+    });
+
+    document.querySelector('form').addEventListener('submit', function () {
+        document.querySelector('#content').value = editor.getHTML();
+    });
+</script>
+
+</body>
+</html>

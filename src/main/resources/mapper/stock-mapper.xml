@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.siyan1234.itproject2nd.stock.dao.StockDao">
+
+    <select id="findMainStocks" resultType="com.siyan1234.itproject2nd.stock.dto.StockDto">
+        SELECT
+        stock_id AS id,
+        symbol AS symbol,
+        stock_name AS name,
+        price AS price,
+        change_price AS changePrice,
+        change_rate AS changeRate
+        FROM stock_info
+        ORDER BY stock_id
+    </select>
+
+</mapper>

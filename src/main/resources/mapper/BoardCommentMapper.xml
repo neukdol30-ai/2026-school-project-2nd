@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.siyan1234.itproject2nd.board.dao.BoardCommentDao">
+
+    <!-- 댓글 목록 조회 -->
+    <select id="findByBoardNo"
+            parameterType="long"
+            resultType="BoardCommentDto">
+
+        SELECT
+        bc.no,
+        bc.board_no,
+        bc.writer_no,
+        bc.content,
+        bc.created_date,
+        bc.modified_date,
+        m.nickname AS writer_nickname
+        FROM board_comment bc
+        LEFT JOIN member m
+        ON bc.writer_no = m.no
+        WHERE bc.board_no = #{boardNo}
+        ORDER BY bc.no ASC
+
+    </select>
+
+    <!-- 댓글 1개 조회 -->
+    <select id="findByNo"
+            parameterType="long"
+            resultType="BoardCommentDto">
+
+        SELECT
+        no,
+        board_no,
+        writer_no,
+        content,
+        created_date,
+        modified_date
+        FROM board_comment
+        WHERE no = #{no}
+
+    </select>
+
+
+    <!-- 댓글 등록 -->
+    <insert id="insert"
+            parameterType="BoardCommentDto">
+
+        INSERT INTO board_comment (
+        board_no,
+        writer_no,
+        content
+        )
+        VALUES (
+        #{boardNo},
+        #{writerNo},
+        #{content}
+        )
+
+    </insert>
+
+    <!-- 댓글 수정 -->
+    <update id="update"
+            parameterType="BoardCommentDto">
+
+        UPDATE board_comment
+        SET
+        content = #{content},
+        modified_date = SYSTIMESTAMP
+        WHERE no = #{no}
+
+    </update>
+
+    <!-- 댓글 삭제 -->
+    <delete id="delete"
+            parameterType="long">
+
+        DELETE FROM board_comment
+        WHERE no = #{no}
+
+    </delete>
+
+</mapper>

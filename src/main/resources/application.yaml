@@ -16,6 +16,7 @@ spring:
     username: secondpro
     # DBeaver에서 쓰는 DB 비밀번호
     password: 1234
+
   # ──── Redis 추가 ────
   data:
     redis:
@@ -26,6 +27,14 @@ spring:
   thymeleaf:
     # HTML 수정 후 새로고침 반영
     cache: false
+
+naver:
+  client-id: NJCUDekz2OmI2rd2pYG9
+  client-secret: mctoRB8Xvz
+
+data-go:
+  service-key: 388f11902de0aa7de575bae95284d248e5323d5c86ef048cc5678acda55d9f3c
+
 server:
   # 서버 포트
   port: 8080

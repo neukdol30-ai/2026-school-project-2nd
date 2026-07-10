@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>게시글 목록</title>
+</head>
+<body>
+
+<h1 th:text="${pageTitle != null ? pageTitle : '게시글 목록'}">게시글 목록</h1>
+
+<a href="/board/list">전체</a>
+<a href="/board/notice">공지사항</a>
+<a href="/board/free">자유게시판</a>
+
+
+<br><br>
+
+<!-- ========================= -->
+<!-- 게시글 검색 -->
+<!-- ========================= -->
+
+<!--
+    검색어 입력 후
+    /board/search 로 GET 요청
+
+    Controller에서 검색 결과를 받아
+    같은 list.html 화면에 출력
+-->
+
+<form action="/board/search" method="get">
+
+    <input type="text"
+           name="keyword"
+           placeholder="검색어 입력"
+           th:value="${keyword}">
+
+    <button type="submit">
+        검색
+    </button>
+
+</form>
+
+<br>
+
+
+<a href="/">메인</a>
+<a href="/board/write">글쓰기</a>
+
+<table border="1">
+    <tr>
+        <th>번호</th>
+        <th>카테고리</th>
+        <th>제목</th>
+        <th>작성자</th>
+        <th>조회수</th>
+        <th>작성일</th>
+    </tr>
+
+    <tr th:each="board : ${boardList}">
+        <td th:text="${board.no}"></td>
+        <td th:text="${board.category}"></td>
+        <td>
+            <a th:href="@{/board/detail/{no}(no=${board.no})}"
+               th:text="${board.title}"></a>
+        </td>
+        <td th:text="${board.writerNickname != null ? board.writerNickname : '탈퇴회원'}"></td>
+        <td th:text="${board.viewCount}"></td>
+        <td th:text="${#temporals.format(board.createdDate, 'yyyy-MM-dd HH:mm')}"></td>
+    </tr>
+</table>
+
+<!-- ========================= -->
+<!-- 게시글 페이징 -->
+<!-- ========================= -->
+
+<!--
+    이전 / 다음 버튼과
+
+    페이지 번호를 출력
+
+    사용자가 원하는 페이지로 이동
+-->
+
+<div>
+    <!-- 이전 -->
+    <a th:if="${currentPage > 1}"
+       th:href="@{/board/list(page=${currentPage - 1})}">
+        이전
+    </a>
+    <!-- 페이지 번호 -->
+    <span th:each="pageNum : ${#numbers.sequence(1, totalPage)}">
+        <a th:href="@{/board/list(page=${pageNum})}"
+           th:text="${pageNum}"></a>
+    </span>
+    <!-- 다음 -->
+    <a th:if="${currentPage < totalPage}"
+       th:href="@{/board/list(page=${currentPage + 1})}">
+        다음
+    </a>
+</div>
+
+
+</body>
+</html>
