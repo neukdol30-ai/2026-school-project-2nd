@@ -252,3 +252,39 @@ body {
         flex-direction: column;
     }
 }
+
+/* 상담내역 바로가기 버튼 2개를 가로로 배치합니다. */
+.header-actions {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+}
+
+/* 좌측 프로필 카드 안의 상담내역 바로가기 영역입니다. */
+.history-shortcut {
+    margin-top: 18px;
+    padding: 16px;
+    border-radius: 18px;
+    background: #eef3ff;
+    border: 1px solid #dfe6ff;
+}
+
+.history-shortcut strong {
+    display: block;
+    margin-bottom: 10px;
+    color: #111827;
+}
+
+.history-shortcut a {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 40px;
+    border-radius: 14px;
+    background: white;
+    border: 1px solid #dbe3f0;
+    color: #0b24d9;
+    text-decoration: none;
+    font-weight: 900;
+}

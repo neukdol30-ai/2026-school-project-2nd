@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+    <title>모바일 상담내역</title>
+    <link rel="stylesheet" th:href="@{/css/chat/mobile/chat-history-mobile.css}">
+</head>
+<body>
+<div class="mobile-history">
+    <header class="mobile-history-header">
+        <div class="top-line">
+            <a th:href="@{/chat/mobile}">‹</a>
+            <strong>내 상담내역</strong>
+            <a th:href="@{/chat/history}">PC</a>
+        </div>
+
+        <h1>
+            <b th:text="${loginUser.nickname}">사용자</b>님의<br>
+            상담 기록입니다
+        </h1>
+        <p>진행 중인 상담과 종료된 상담을 한 번에 확인할 수 있습니다.</p>
+    </header>
+
+    <main class="history-card">
+        <section class="count-box">
+            <span>전체 상담</span>
+            <strong><b th:text="${totalCount}">0</b>개</strong>
+        </section>
+
+        <section class="empty-box" th:if="${#lists.isEmpty(roomList)}">
+            <strong>상담내역이 없습니다.</strong>
+            <p>문의 유형을 선택해서 상담을 시작해보세요.</p>
+            <a th:href="@{/chat/mobile}">상담 시작하기</a>
+        </section>
+
+        <section class="mobile-room-list" th:if="${!#lists.isEmpty(roomList)}">
+            <a class="mobile-room-item"
+               th:each="room : ${roomList}"
+               th:href="@{/chat/mobile/room/{roomNo}(roomNo=${room.roomNo})}">
+                <div class="room-main">
+                    <span class="room-icon" th:text="${room.categoryIcon}">💬</span>
+                    <div>
+                        <strong>
+                            #<b th:text="${room.roomNo}">0</b>
+                            · <b th:text="${room.categoryName}">기타 문의</b>
+                        </strong>
+                        <em th:text="${room.lastMessage != null and room.lastMessage != ''} ? ${room.lastMessage} : '아직 대화가 시작되지 않았습니다.'">
+                            마지막 메시지
+                        </em>
+                    </div>
+                </div>
+
+                <div class="room-bottom">
+                    <span class="status-badge"
+                          th:classappend="${room.status == 'OPEN'} ? ' open' : ' closed'"
+                          th:text="${room.status == 'OPEN'} ? '진행중' : '종료'">진행중</span>
+
+                    <span class="unread-badge" th:if="${room.unreadCount != null and room.unreadCount > 0}">
+                        안읽음 <b th:text="${room.unreadCount}">1</b>
+                    </span>
+
+                    <time th:if="${room.lastMessageDate != null}"
+                          th:text="${#temporals.format(room.lastMessageDate, 'MM.dd HH:mm')}">
+                        07.10 12:00
+                    </time>
+                    <time th:if="${room.lastMessageDate == null}"
+                          th:text="${#temporals.format(room.createdDate, 'MM.dd HH:mm')}">
+                        07.10 12:00
+                    </time>
+                </div>
+            </a>
+        </section>
+
+        <nav class="pagination" th:if="${totalCount > size}">
+            <a th:if="${page > 1}"
+               th:href="@{/chat/mobile/history(page=${page - 1})}">이전</a>
+            <span><b th:text="${page}">1</b> 페이지</span>
+            <a th:if="${page * size < totalCount}"
+               th:href="@{/chat/mobile/history(page=${page + 1})}">다음</a>
+        </nav>
+    </main>
+</div>
+</body>
+</html>

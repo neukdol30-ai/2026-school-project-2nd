@@ -36,7 +36,11 @@ mybatis:
   # mapper.xml 위치
   mapper-locations: classpath:mapper/**/*.xml
   # DTO 패키지 위치
-  type-aliases-package: com.siyan1234.itproject2nd.member.dto
+  type-aliases-package:
+    com.siyan1234.itproject2nd.member.dto,
+    com.siyan1234.itproject2nd.chat.dto,
+    com.siyan1234.itproject2nd.admin.dto,
+    com.siyan1234.itproject2nd.News.dto
   configuration:
     # MEMBER_ID -> memberId 자동 매칭
     # AGREE_TERMS_YN -> agreeTermsYn 자동 매칭

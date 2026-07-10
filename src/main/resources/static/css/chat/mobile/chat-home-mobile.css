@@ -174,3 +174,51 @@ body {
     font-style: normal;
     margin-top: 3px;
 }
+
+/* 모바일 상단의 내역/PC 전환 버튼 묶음입니다. */
+.top-actions {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+/* 모바일 홈에서 상담내역으로 이동하는 카드입니다. */
+.history-link-card {
+    display: grid;
+    grid-template-columns: 42px 1fr;
+    grid-template-rows: auto auto;
+    column-gap: 12px;
+    align-items: center;
+    padding: 16px;
+    border-radius: 22px;
+    background: white;
+    border: 1px solid #dfe7f5;
+    box-shadow: 0 14px 32px rgba(15, 23, 42, 0.08);
+    text-decoration: none;
+    color: #172033;
+    margin-bottom: 16px;
+}
+
+.history-link-card span {
+    grid-row: 1 / 3;
+    width: 42px;
+    height: 42px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 16px;
+    background: #f1f5ff;
+    font-size: 22px;
+}
+
+.history-link-card b {
+    color: #111827;
+    font-size: 15px;
+}
+
+.history-link-card em {
+    margin-top: 4px;
+    color: #64748b;
+    font-size: 12px;
+    font-style: normal;
+}

@@ -19,6 +19,7 @@
         </div>
 
         <div class="header-actions">
+            <a class="mode-link" th:href="@{/chat/history}">내 상담내역</a>
             <a class="mode-link" th:href="@{/chat/mobile}">모바일 화면 보기</a>
         </div>
     </header>
@@ -38,6 +39,11 @@
                     </span>
                 </div>
                 <a th:href="@{/chat/room/{roomNo}(roomNo=${openRoom.roomNo})}">기존 대화 이어가기</a>
+            </div>
+
+            <div class="history-shortcut">
+                <strong>지난 상담을 다시 확인하고 싶나요?</strong>
+                <a th:href="@{/chat/history}">내 상담내역 보기</a>
             </div>
 
             <div class="help-note">

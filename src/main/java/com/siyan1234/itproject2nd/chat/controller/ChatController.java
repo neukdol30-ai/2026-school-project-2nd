@@ -108,6 +108,54 @@ public class ChatController {
         return showChatRoom(roomNo, session, model, true);
     }
 
+    //사용자 PC상담목록
+    @GetMapping("history")
+    public String userHistory(
+            @RequestParam(defaultValue = "1") int page,
+            HttpSession session, Model model) {
+        MemberDto loginUser = getLoginUser(session);
+
+        if (loginUser == null) {
+            return redirectToUserLogin();
+        }
+        int size = 10;
+
+        List<ChatRoomDto> roomList = chatService.findUserRooms(loginUser.getNo(),page,size);
+        int totalCount = chatService.countUserRooms(loginUser.getNo());
+
+        model.addAttribute("loginUser", loginUser);
+        model.addAttribute("roomList", roomList);
+        model.addAttribute("page", page);
+        model.addAttribute("size", size);
+        model.addAttribute("totalCount", totalCount);
+
+        return "chat/pc/chat-history";
+    }
+
+    // 사용자 mobile 상담 목록
+    @GetMapping("/mobile/history")
+    public String userMobileHistory(
+            @RequestParam(defaultValue = "1") int page,
+            HttpSession session, Model model) {
+        MemberDto loginUser = getLoginUser(session);
+
+        if (loginUser == null) {
+            return redirectToUserLogin();
+        }
+        int size = 10;
+
+        List<ChatRoomDto> roomList = chatService.findUserRooms(loginUser.getNo(), page, size);
+        int totalCount = chatService.countUserRooms(loginUser.getNo());
+
+        model.addAttribute("loginUser", loginUser);
+        model.addAttribute("roomList", roomList);
+        model.addAttribute("page", page);
+        model.addAttribute("size", size);
+        model.addAttribute("totalCount", totalCount);
+
+        return "chat/mobile/chat-history";
+    }
+
     /**
      * 관리자 상담 목록 화면
      *
