@@ -49,7 +49,8 @@ mybatis:
     com.siyan1234.itproject2nd.member.dto,
     com.siyan1234.itproject2nd.chat.dto,
     com.siyan1234.itproject2nd.admin.dto,
-    com.siyan1234.itproject2nd.News.dto
+    com.siyan1234.itproject2nd.News.dto,
+    com.siyan1234.itproject2nd.board.dto
   configuration:
     # MEMBER_ID -> memberId 자동 매칭
     # AGREE_TERMS_YN -> agreeTermsYn 자동 매칭
