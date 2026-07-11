@@ -77,7 +77,7 @@
         #{nickname},
         #{email},
         #{phone},
-        #{birthDate},
+        #{birthDate, jdbcType=DATE},
         #{gender},
         #{postcode},
         #{address},
