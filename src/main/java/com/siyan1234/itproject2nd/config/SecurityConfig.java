@@ -23,8 +23,14 @@ public class SecurityConfig {
                                 "/member/login", // 로그인 화면
                                 "/member/signup", // 회원가입 화면
                                 "/member/exists", // 아이디 중복 확인
-                                "/css/**", "/js/**", "/images/**", "/ws/**", "/chat/**", // 정적 파일
-                                "/api/**"
+                                "/css/**",
+                                "/js/**",
+                                "/images/**",
+                                "/ws/**",
+                                "/chat/**",
+                                "/api/**",
+                                "/member/exists-nickname", // 닉네임 중복 확인(회원가입 중 = 로그인 전에도 호출) 없으면 403
+                                "/error" // 필수, 예외 발생 시 Spring Boot가 /error로 내부 포워딩. Security 6은 그 포워딩도 인가 재검사. 없으면 비로그인 상태 예외 -> 에러 화면 대신 로그인으로 302 (에러 은폐)
                         ).permitAll()
                         .requestMatchers("/admin/**").hasRole("ADMIN") // /admin으로 시작하는 주소는 ROLE_ADMIN 권한자만 접근
                         .anyRequest().authenticated() // 위에서 안 걸린 나머지 주소는 로그인한 사람만 접근
