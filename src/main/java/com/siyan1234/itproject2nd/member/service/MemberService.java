@@ -35,6 +35,11 @@ public class MemberService {
             return true;
         }
 
+        if (memberDao.findByNickname(signupDto.getNickname()) != null) { // 같은 닉네임 DB에 있는지 확인
+            bindingResult.rejectValue("nickname", "duplicateNickname", "이미 사용 중인 닉네임입니다."); // nickname 필드에 오류 추가
+            return true; // 중복이면 회원가입 중단
+        }
+
         if (signupDto.getEmail() != null && !signupDto.getEmail().isBlank()) {
             if (memberDao.findByEmail(signupDto.getEmail()) != null) {
                 bindingResult.rejectValue("email", "duplicateEmail", "이미 사용 중인 이메일입니다.");
@@ -80,5 +85,11 @@ public class MemberService {
     public boolean isMemberIdDuplicate(String memberId) {
         // findByMemberId는 이미 있는 메서드. 조회 결과 null 아니면 = 그 아이디 이미 존재 = 중복
         return memberDao.findByMemberId(memberId) != null;
+    }
+
+    // 닉네임 중복 여부 확인 (실시간 체크) / DB에 같은 닉네임이 있으면 true(중복), 없으면 false(사용 가능)
+    public boolean isNicknameDuplicate(String nickname) {
+        // 조회 결과 null 아니면 닉네임 이미 존재 -> 중복
+        return memberDao.findByNickname(nickname) != null;
     }
 }

@@ -75,4 +75,11 @@ public class MemberController {
     public boolean checkMemberIdDuplicate(@RequestParam("memberId") String memberId) {
         return memberService.isMemberIdDuplicate(memberId); // true=중복, false=사용 가능
     }
+
+    // true/false(boolean) 그대로 브라우저 전달. JS가 값을 받아 메시지 띄움
+    @GetMapping("/exists-nickname")
+    @ResponseBody
+    public boolean checkNicknameDuplicate(@RequestParam("nickname") String nickname) {
+        return memberService.isNicknameDuplicate(nickname); // true=중복, false=사용 가능
+    }
 }

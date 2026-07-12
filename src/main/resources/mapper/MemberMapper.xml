@@ -52,6 +52,31 @@
         <!-- 이메일이 이미 존재하는지 확인 -->
     </select>
 
+                                                                                                                                                        <!-- 닉네임 중복 확인용 findByEmail과 동일 구조 -->
+    <select id="findByNickname" parameterType="String" resultType="MemberDto">
+        SELECT no,
+        member_id,
+        password,
+        name,
+        nickname,
+        email,
+        phone,
+        birth_date,
+        gender,
+        postcode,
+        address,
+        detail_address,
+        role,
+        profile_image,
+        last_login_date,
+        agree_terms_yn,
+        agree_privacy_yn,
+        regdate
+        FROM member
+        WHERE nickname = #{nickname}
+        <!-- #{nickname} Dao에서 @Param("nickname")으로 넘긴 값 -->
+    </select>
+
     <insert id="signup" parameterType="SignupDto">
         <!-- id는 MemberDao의 signup 메서드명과 일치해야 함. / parameterType은 회원가입 폼 값을 담은 SignupDto -->
         INSERT INTO member (
