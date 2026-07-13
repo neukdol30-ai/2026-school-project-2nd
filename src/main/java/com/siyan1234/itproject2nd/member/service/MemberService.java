@@ -8,6 +8,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.validation.BindingResult;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @Service
@@ -43,6 +44,23 @@ public class MemberService {
         if (signupDto.getEmail() != null && !signupDto.getEmail().isBlank()) {
             if (memberDao.findByEmail(signupDto.getEmail()) != null) {
                 bindingResult.rejectValue("email", "duplicateEmail", "이미 사용 중인 이메일입니다.");
+                return true;
+            }
+        }
+
+        // 생년월일 검증(값 자체는 사용자가 만들었지만, 그 값이 유효한지 판단하는 건 이 코드)
+        if (signupDto.getBirthDate()!=null) {
+            LocalDate today = LocalDate.now();
+
+            if (signupDto.getBirthDate().isAfter(today)) { // (1) 미래 날짜 차단
+                bindingResult.rejectValue("birthDate", "futureBirthDate", "생년월일은 오늘 이전 날짜여야 합니다.");
+                return true;
+            }
+
+            LocalDate fourteenYearsAgo = today.minusYears(14);
+
+            if (signupDto.getBirthDate().isAfter(fourteenYearsAgo)) { // (2) 만 14세 미만 차단
+                bindingResult.rejectValue("birthDate", "underAge", "만 14세 미만은 가입할 수 없습니다.");
                 return true;
             }
         }
