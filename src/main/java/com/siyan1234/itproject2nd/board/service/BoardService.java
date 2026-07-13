@@ -159,23 +159,25 @@ public class BoardService {
             );
         }
 
+        // 본문에 이미지가 있는지 확인
+        boolean hasImage =
+                content.matches("(?is).*<img\\s+[^>]*src=.*?>.*");
+
         String plainText = content
                 // script와 style 내용 제거
                 .replaceAll("(?is)<script.*?>.*?</script>", "")
                 .replaceAll("(?is)<style.*?>.*?</style>", "")
-
                 // 모든 HTML 태그 제거
                 .replaceAll("(?s)<[^>]*>", "")
-
                 // HTML 공백 문자 제거
                 .replace("&nbsp;", "")
                 .replace("&#160;", "")
                 .replace("\u00A0", "")
-
                 // 일반 공백 제거
                 .trim();
 
-        if (plainText.isEmpty()) {
+        // 글자도 없고 이미지도 없을 때만 빈 본문으로 판단
+        if (plainText.isEmpty() && !hasImage) {
             throw new IllegalArgumentException(
                     "게시글 내용을 입력해주세요."
             );

@@ -35,7 +35,7 @@
             </h1>
 
             <p class="board-description">
-                공지사항과 자유게시판의 글을 확인할 수 있습니다.
+                공지사항과 문의 게시판의 글을 확인할 수 있습니다.
             </p>
         </div>
 
@@ -69,12 +69,10 @@
             공지사항
         </a>
 
-        <a th:href="@{/board/free}"
+        <a th:href="@{/board/question}"
            class="board-category-link"
-           th:classappend="${pageUrl == '/board/free'}
-                ? ' active'
-                : ''">
-            자유게시판
+           th:classappend="${pageUrl == '/board/question'} ? ' active' : ''">
+            문의 게시판
         </a>
 
     </nav>
@@ -109,87 +107,136 @@
     </section>
 
     <!-- ========================= -->
-    <!-- 게시글 목록 -->
+    <!-- 문의 게시글 카드 목록 -->
     <!-- ========================= -->
-    <section class="board-list-box">
+    <section class="question-list-box">
 
-        <table class="board-table">
+        <!-- 게시글이 없는 경우 -->
+        <div th:if="${#lists.isEmpty(boardList)}"
+             class="question-empty">
 
-            <thead>
-            <tr>
-                <th class="board-number-column">번호</th>
-                <th class="board-category-column">분류</th>
-                <th>제목</th>
-                <th class="board-writer-column">작성자</th>
-                <th class="board-view-column">조회수</th>
-                <th class="board-date-column">작성일</th>
-            </tr>
-            </thead>
+            <strong>
+                게시글이 없습니다.
+            </strong>
 
-            <tbody>
+            <span>
+            첫 번째 질문을 작성해보세요.
+        </span>
 
-            <!-- 게시글이 없는 경우 -->
-            <tr th:if="${#lists.isEmpty(boardList)}">
-                <td colspan="6"
-                    class="board-empty-message">
+        </div>
 
-                    <strong>게시글이 없습니다.</strong>
+        <!-- 게시글 카드 반복 -->
+        <article th:each="board : ${boardList}"
+                 class="question-card">
 
-                    <span>
-                        첫 번째 게시글을 작성해보세요.
-                    </span>
+            <!-- 왼쪽 상태 영역 -->
+            <div class="question-card-status">
 
-                </td>
-            </tr>
+                <!-- 공지사항 -->
+                <div th:if="${board.category == 'NOTICE'}"
+                     class="question-status-block">
 
-            <!-- 게시글 반복 -->
-            <tr th:each="board : ${boardList}">
+                <span class="board-badge board-badge-notice">
+                    공지
+                </span>
 
-                <td th:text="${board.no}">
-                </td>
+                </div>
 
-                <td>
+                <!-- 문의글 -->
+                <div th:if="${board.category == 'QUESTION'}"
+                     class="question-status-block">
 
-                    <span th:if="${board.category == 'NOTICE'}"
-                          class="board-badge board-badge-notice">
-                        공지
-                    </span>
+                <span th:if="${board.answerCount == null
+                              or board.answerCount == 0}"
+                      class="board-status-badge board-status-waiting">
+                    답변대기
+                </span>
 
-                    <span th:if="${board.category == 'FREE'}"
-                          class="board-badge board-badge-free">
-                        자유
-                    </span>
+                    <span th:if="${board.answerCount != null
+                              and board.answerCount > 0}"
+                          class="board-status-badge board-status-answered">
+                    답변완료
+                </span>
 
-                </td>
+                    <strong class="question-answer-count"
+                            th:text="${board.answerCount != null
+                            ? board.answerCount
+                            : 0}">
+                        0
+                    </strong>
 
-                <td class="board-title-cell">
+                    <span class="question-answer-label">
+                    답변
+                </span>
 
-                    <a th:href="@{/board/detail/{no}(no=${board.no})}"
-                       th:text="${board.title}"
-                       class="board-title-link">
-                    </a>
+                </div>
 
-                </td>
+            </div>
 
-                <td th:text="${board.writerNickname != null
+            <!-- 오른쪽 질문 정보 -->
+            <div class="question-card-content">
+
+                <!-- 카테고리 및 게시글 번호 -->
+                <div class="question-card-top">
+
+                <span th:if="${board.category == 'NOTICE'}"
+                      class="board-badge board-badge-notice">
+                    공지
+                </span>
+
+                    <span th:if="${board.category == 'QUESTION'}"
+                          class="board-badge board-badge-question">
+                    문의
+                </span>
+
+                    <span class="question-board-number"
+                          th:text="'#' + ${board.no}">
+                    #1
+                </span>
+
+                </div>
+
+                <!-- 게시글 제목 -->
+                <a th:href="@{/board/detail/{no}(no=${board.no})}"
+                   th:text="${board.title}"
+                   class="question-card-title">
+                    질문 제목
+                </a>
+
+                <!-- 게시글 보조 정보 -->
+                <div class="question-card-meta">
+
+                <span th:text="${board.writerNickname != null
                     ? board.writerNickname
                     : '탈퇴회원'}">
-                </td>
+                    작성자
+                </span>
 
-                <td th:text="${board.viewCount}">
-                </td>
+                    <span class="question-meta-divider">
+                    ·
+                </span>
 
-                <td th:text="${#temporals.format(
-                    board.createdDate,
-                    'yyyy-MM-dd HH:mm'
-                )}">
-                </td>
+                    <span th:text="'조회 ' + ${board.viewCount}">
+                    조회 0
+                </span>
 
-            </tr>
+                    <span class="question-meta-divider">
+                    ·
+                </span>
 
-            </tbody>
+                    <span th:if="${board.createdDate != null}"
+                          th:text="${#temporals.format(
+                        board.createdDate,
+                        'yyyy-MM-dd HH:mm'
+                      )}">
+                    2026-07-13 12:00
+                </span>
 
-        </table>
+                </div>
+
+            </div>
+
+        </article>
 
     </section>
 

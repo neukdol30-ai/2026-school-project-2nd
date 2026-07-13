@@ -27,6 +27,11 @@ public class BoardCommentDto {
     // 댓글 수정일
     private LocalDateTime modifiedDate;
 
+    // 문의 작성자가 채택한 답변인지 여부
+    // Y: 채택됨
+    // N: 채택되지 않음
+    private String acceptedYn;
+
     // 화면 출력용 작성자 닉네임
     private String writerNickname;
 }

@@ -16,6 +16,7 @@
         bc.board_no,
         bc.writer_no,
         bc.content,
+        bc.accepted_yn,
         bc.created_date,
         bc.modified_date,
         m.nickname AS writer_nickname

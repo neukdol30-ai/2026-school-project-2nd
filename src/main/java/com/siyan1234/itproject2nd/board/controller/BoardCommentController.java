@@ -72,7 +72,9 @@ public class BoardCommentController {
             return "redirect:/board/detail/" + commentDto.getBoardNo();
         }
 
-        return "redirect:/board/detail/" + commentDto.getBoardNo();
+        return "redirect:/board/detail/"
+                + commentDto.getBoardNo()
+                + "#comments-bottom";
     }
 
     // =========================
@@ -107,7 +109,9 @@ public class BoardCommentController {
 
         boardCommentService.delete(no);
 
-        return "redirect:/board/detail/" + comment.getBoardNo();
+        return "redirect:/board/detail/"
+                + comment.getBoardNo()
+                + "#comments";
     }
 
     // =========================
@@ -157,6 +161,8 @@ public class BoardCommentController {
             return "redirect:/board/detail/" + origin.getBoardNo();
         }
 
-        return "redirect:/board/detail/" + origin.getBoardNo();
+        return "redirect:/board/detail/"
+                + origin.getBoardNo()
+                + "#comments";
     }
 }

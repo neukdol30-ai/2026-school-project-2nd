@@ -14,6 +14,14 @@ public class BoardDto {
 
     private Integer writerNo;
 
+    // 문의글 답변 상태
+    // WAITING: 답변대기
+    // ANSWERED: 답변완료
+    private String answerStatus;
+
+    // 해당 문의글에 등록된 답변 개수
+    private Integer answerCount;
+
     private String category;
 
     @NotBlank(message = "제목을 입력해주세요.")

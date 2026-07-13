@@ -11,13 +11,19 @@
         b.no,
         b.writer_no,
         b.category,
+        b.answer_status,
         b.title,
         b.content,
         b.view_count,
         b.created_date,
         b.modified_date,
         m.name AS writer_name,
-        m.nickname AS writer_nickname
+        m.nickname AS writer_nickname,
+        (
+             SELECT COUNT(*)
+             FROM board_comment bc
+             WHERE bc.board_no = b.no
+            ) AS answer_count
         FROM board b
         LEFT JOIN member m
         ON b.writer_no = m.no
@@ -29,13 +35,19 @@
         b.no,
         b.writer_no,
         b.category,
+        b.answer_status,
         b.title,
         b.content,
         b.view_count,
         b.created_date,
         b.modified_date,
         m.name AS writer_name,
-        m.nickname AS writer_nickname
+        m.nickname AS writer_nickname,
+            (
+              SELECT COUNT(*)
+              FROM board_comment bc
+              WHERE bc.board_no = b.no
+            ) AS answer_count
         FROM board b
         LEFT JOIN member m
         ON b.writer_no = m.no
@@ -62,13 +74,19 @@
         b.no,
         b.writer_no,
         b.category,
+        b.answer_status,
         b.title,
         b.content,
         b.view_count,
         b.created_date,
         b.modified_date,
         m.name AS writer_name,
-        m.nickname AS writer_nickname
+        m.nickname AS writer_nickname,
+            (
+              SELECT COUNT(*)
+              FROM board_comment bc
+              WHERE bc.board_no = b.no
+            ) AS answer_count
         FROM board b
         LEFT JOIN member m
         ON b.writer_no = m.no
@@ -97,13 +115,19 @@
         b.no,
         b.writer_no,
         b.category,
+        b.answer_status,
         b.title,
         b.content,
         b.view_count,
         b.created_date,
         b.modified_date,
         m.name AS writer_name,
-        m.nickname AS writer_nickname
+        m.nickname AS writer_nickname,
+            (
+              SELECT COUNT(*)
+              FROM board_comment bc
+              WHERE bc.board_no = b.no
+            ) AS answer_count
         FROM board b
         LEFT JOIN member m
         ON b.writer_no = m.no
@@ -138,13 +162,19 @@
         b.no,
         b.writer_no,
         b.category,
+        b.answer_status,
         b.title,
         b.content,
         b.view_count,
         b.created_date,
         b.modified_date,
         m.name AS writer_name,
-        m.nickname AS writer_nickname
+        m.nickname AS writer_nickname,
+            (
+              SELECT COUNT(*)
+              FROM board_comment bc
+              WHERE bc.board_no = b.no
+            ) AS answer_count
         FROM board b
         LEFT JOIN member m
         ON b.writer_no = m.no
@@ -200,13 +230,19 @@
         b.no,
         b.writer_no,
         b.category,
+        b.answer_status,
         b.title,
         b.content,
         b.view_count,
         b.created_date,
         b.modified_date,
         m.name AS writer_name,
-        m.nickname AS writer_nickname
+        m.nickname AS writer_nickname,
+            (
+              SELECT COUNT(*)
+              FROM board_comment bc
+              WHERE bc.board_no = b.no
+            ) AS answer_count
         FROM board b
         LEFT JOIN member m
         ON b.writer_no = m.no

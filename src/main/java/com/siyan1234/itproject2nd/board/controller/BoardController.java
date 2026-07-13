@@ -168,31 +168,31 @@ public class BoardController {
         return "board/list";
     }
 
-    @GetMapping("/free")
-    public String free(
+    // =========================
+    // 문의 게시판 목록
+    // =========================
+    @GetMapping("/question")
+    public String question(
             @RequestParam(defaultValue = "1") int page,
             Model model
     ) {
-
         int pageSize = 10;
 
         int totalCount =
-                boardService.countByCategory("FREE");
+                boardService.countByCategory("QUESTION");
 
         int totalPage =
                 (int) Math.ceil((double) totalCount / pageSize);
 
         model.addAttribute(
                 "boardList",
-                boardService.findPageByCategory(page, "FREE")
+                boardService.findPageByCategory(page, "QUESTION")
         );
 
-        model.addAttribute("pageTitle", "자유게시판");
+        model.addAttribute("pageTitle", "문의 게시판");
         model.addAttribute("currentPage", page);
         model.addAttribute("totalPage", totalPage);
-
-        // 자유게시판 페이지 번호의 이동 주소
-        model.addAttribute("pageUrl", "/board/free");
+        model.addAttribute("pageUrl", "/board/question");
 
         return "board/list";
     }

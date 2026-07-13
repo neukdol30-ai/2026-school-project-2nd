@@ -39,15 +39,35 @@
                     공지
                 </span>
 
-                <span th:if="${board.category == 'FREE'}"
-                      class="board-badge board-badge-free">
-                    자유
+                <span th:if="${board.category == 'QUESTION'}"
+                      class="board-badge board-badge-question">
+                    문의
                 </span>
+
+                <!-- 문의글이며 답변이 없는 경우 -->
+                <span th:if="${board.category == 'QUESTION'
+                        and (board.answerCount == null or board.answerCount == 0)}"
+                      class="board-status-badge board-status-waiting">
+                    답변대기
+                </span>
+
+                <!-- 문의글이며 답변이 한 개 이상인 경우 -->
+                <span th:if="${board.category == 'QUESTION'
+                        and board.answerCount != null
+                        and board.answerCount > 0}"
+                      class="board-status-badge board-status-answered">
+                    답변완료
+                </span>
+
 
                 <span class="board-detail-number"
                       th:text="'게시글 #' + ${board.no}">
                 </span>
 
+            </div>
+
+            <div class="question-detail-label">
+                Q
             </div>
 
             <!-- 제목 -->
@@ -139,17 +159,29 @@
     <!-- 공지사항에서는 전체 영역 숨김 -->
     <!-- ========================= -->
     <section th:if="${board.category != 'NOTICE'}"
+             id="comments"
              class="board-comment-box">
 
         <header class="board-comment-header">
 
             <div>
                 <h2 class="board-comment-title">
-                    댓글
+
+                    답변
+
+                    <span class="board-answer-count">
+                        <strong th:text="${board.answerCount != null
+                            ? board.answerCount
+                            : 0}">
+                            0
+                        </strong>
+                        개
+                    </span>
+
                 </h2>
 
                 <p class="board-comment-description">
-                    게시글에 대한 의견을 남겨보세요.
+                    문의 내용에 대한 답변을 확인하거나 새 답변을 남겨보세요.
                 </p>
             </div>
 
@@ -165,7 +197,7 @@
         <div th:if="${#lists.isEmpty(commentList)}"
              class="board-comment-empty">
 
-            아직 작성된 댓글이 없습니다.
+            아직 작성된 답변이 없습니다.
 
         </div>
 
@@ -176,87 +208,97 @@
             <article th:each="comment : ${commentList}"
                      class="board-comment-item">
 
-                <!-- 댓글 상단 -->
-                <div class="board-comment-info">
-
-                    <strong th:text="${comment.writerNickname != null
-                        ? comment.writerNickname
-                        : '탈퇴회원'}">
-                    </strong>
-
-                    <span th:if="${comment.createdDate != null}"
-                          th:text="${#temporals.format(
-                            comment.createdDate,
-                            'yyyy-MM-dd HH:mm'
-                          )}">
-                    </span>
-
+                <!-- A 표시 -->
+                <div class="answer-label">
+                    A
                 </div>
 
-                <!-- 댓글 내용 -->
-                <p th:id="'comment-text-' + ${comment.no}"
-                   th:text="${comment.content}"
-                   class="board-comment-content">
-                </p>
+                <!-- 답변 내용 -->
+                <div class="answer-body">
+                    <div class="board-comment-info">
 
-                <!-- 본인 댓글 수정/삭제 -->
-                <div sec:authorize="isAuthenticated()"
-                     th:if="${#authentication.principal.memberDto.no.equals(comment.writerNo)}"
-                     class="board-comment-actions">
+                        <strong th:text="${comment.writerNickname != null
+                            ? comment.writerNickname
+                            : '탈퇴회원'}">
+                        </strong>
 
-                    <button type="button"
-                            class="board-comment-action-button"
-                            th:onclick="'showEditForm(' + ${comment.no} + ')'">
-                        수정
-                    </button>
+                        <span th:if="${comment.createdDate != null}"
+                              th:text="${#temporals.format(
+                                comment.createdDate,
+                                'yyyy-MM-dd HH:mm'
+                                )}">
+                        </span>
 
-                    <form th:action="@{/board/comment/delete/{no}(no=${comment.no})}"
-                          method="post"
-                          class="board-inline-form">
+                    </div>
 
-                        <button type="submit"
-                                class="board-comment-action-button board-comment-delete-button"
-                                onclick="return confirm('댓글을 삭제하시겠습니까?');">
-                            삭제
+                    <!-- 댓글 내용 -->
+                    <p th:id="'comment-text-' + ${comment.no}"
+                       th:text="${comment.content}"
+                        class="board-comment-content">
+                    </p>
+
+                    <!-- 본인 댓글 수정/삭제 -->
+                    <div sec:authorize="isAuthenticated()"
+                        th:if="${#authentication.principal.memberDto.no.equals(comment.writerNo)}"
+                        class="board-comment-actions">
+
+                        <button type="button"
+                                class="board-comment-action-button"
+                                th:onclick="'showEditForm(' + ${comment.no} + ')'">
+                            수정
                         </button>
 
-                    </form>
-
-                    <!-- 댓글 수정 폼 -->
-                    <form th:id="'comment-edit-form-' + ${comment.no}"
-                          th:action="@{/board/comment/update/{no}(no=${comment.no})}"
-                          method="post"
-                          class="board-comment-edit-form"
-                          style="display:none;">
-
-                        <textarea name="content"
-                                  maxlength="1000"
-                                  required
-                                  th:text="${comment.content}"
-                                  class="board-comment-textarea"></textarea>
-
-                        <div class="board-comment-edit-actions">
+                        <form th:action="@{/board/comment/delete/{no}(no=${comment.no})}"
+                            method="post"
+                            class="board-inline-form">
 
                             <button type="submit"
-                                    class="board-small-button board-small-save">
-                                저장
+                                    class="board-comment-action-button board-comment-delete-button"
+                                    onclick="return confirm('답변을 삭제하시겠습니까?');">
+                                삭제
                             </button>
 
-                            <button type="button"
-                                    class="board-small-button board-small-cancel"
-                                    th:onclick="'hideEditForm(' + ${comment.no} + ')'">
-                                취소
-                            </button>
+                        </form>
 
-                        </div>
+                        <!-- 댓글 수정 폼 -->
+                        <form th:id="'comment-edit-form-' + ${comment.no}"
+                            th:action="@{/board/comment/update/{no}(no=${comment.no})}"
+                            method="post"
+                            class="board-comment-edit-form"
+                            style="display:none;">
 
-                    </form>
+                            <textarea name="content"
+                                     maxlength="1000"
+                                     required
+                                      th:text="${comment.content}"
+                                     class="board-comment-textarea"></textarea>
+
+                            <div class="board-comment-edit-actions">
+
+                                <button type="submit"
+                                        class="board-small-button board-small-save">
+                                    저장
+                                </button>
+
+                                <button type="button"
+                                        class="board-small-button board-small-cancel"
+                                        th:onclick="'hideEditForm(' + ${comment.no} + ')'">
+                                    취소
+                                </button>
+
+                            </div>
+
+                        </form>
+
+                    </div>
 
                 </div>
 
             </article>
 
         </div>
+        <!-- 댓글 등록 후 이동할 댓글 목록 맨 아래 위치 -->
+        <div id="comments-bottom"></div>
 
         <!-- ========================= -->
         <!-- 댓글 작성 -->
@@ -264,7 +306,7 @@
         <section class="board-comment-write">
 
             <h3 class="board-comment-write-title">
-                댓글 작성
+                답변 작성
             </h3>
 
             <form th:action="@{/board/comment/write}"
@@ -277,15 +319,14 @@
                 <textarea name="content"
                           maxlength="1000"
                           required
-                          placeholder="댓글을 입력해주세요."
-                          class="board-comment-textarea">
-                </textarea>
+                          placeholder="답변을 입력해주세요."
+                          class="board-comment-textarea"></textarea>
 
                 <div class="board-comment-submit-area">
 
                     <button type="submit"
                             class="board-button board-button-primary">
-                        댓글 등록
+                        답변 등록
                     </button>
 
                 </div>
