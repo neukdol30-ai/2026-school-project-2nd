@@ -50,10 +50,45 @@ body {
     padding: 22px;
 }
 
+/* 좌측 패널 상단의 대시보드/상담 목록 이동 버튼 영역입니다. */
+.side-nav-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-bottom: 22px;
+}
+
+/* 관리자 대시보드로 돌아가는 버튼입니다. */
+.dashboard-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 42px;
+    padding: 0 12px;
+    border-radius: 14px;
+    background: #111827;
+    color: #ffffff;
+    text-decoration: none;
+    font-weight: 900;
+    box-shadow: 0 10px 24px rgba(17, 24, 39, 0.16);
+    transition: transform 0.15s ease, background 0.15s ease, box-shadow 0.15s ease;
+}
+
+.dashboard-btn:hover {
+    transform: translateY(-1px);
+    background: #0b24d9;
+    box-shadow: 0 14px 30px rgba(11, 36, 217, 0.2);
+}
+
 /* 관리자 상담 목록으로 돌아가는 링크입니다. */
 .list-btn {
     display: inline-flex;
-    margin-bottom: 22px;
+    align-items: center;
+    justify-content: center;
+    min-height: 42px;
+    padding: 0 12px;
+    border-radius: 14px;
+    background: #f1f5ff;
     color: #0b24d9;
     text-decoration: none;
     font-weight: 900;
@@ -377,5 +412,13 @@ body {
     .admin-room-page {
         grid-template-columns: 1fr;
         height: auto;
+    }
+}
+
+
+/* 좁은 화면에서는 좌측 상단 이동 버튼을 세로로 배치합니다. */
+@media (max-width: 860px) {
+    .side-nav-actions {
+        grid-template-columns: 1fr;
     }
 }

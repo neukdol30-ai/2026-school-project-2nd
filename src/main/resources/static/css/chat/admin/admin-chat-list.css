@@ -64,6 +64,38 @@ body {
     color: #64748b;
 }
 
+/* 상담 관리 화면에서 관리자 대시보드로 빠르게 돌아가기 위한 우측 액션 영역입니다. */
+.admin-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+}
+
+/* 관리자 대시보드로 이동하는 버튼입니다. 상담 관리에서 전체 운영 현황으로 돌아갈 때 사용합니다. */
+.admin-dashboard-btn {
+    min-height: 48px;
+    padding: 0 18px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    border-radius: 16px;
+    background: #111827;
+    color: #ffffff;
+    text-decoration: none;
+    font-weight: 900;
+    box-shadow: 0 12px 28px rgba(17, 24, 39, 0.18);
+    transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+}
+
+.admin-dashboard-btn:hover {
+    transform: translateY(-1px);
+    background: #0b24d9;
+    box-shadow: 0 16px 34px rgba(11, 36, 217, 0.22);
+}
+
 /* 우측 관리자 정보 카드입니다. */
 .admin-info {
     min-width: 160px;
@@ -499,5 +531,28 @@ body {
     .room-actions {
         grid-column: 2;
         justify-content: flex-start;
+    }
+}
+
+
+/* 작은 화면에서는 대시보드 버튼과 관리자 정보를 세로로 정렬합니다. */
+@media (max-width: 760px) {
+    .admin-header {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .admin-header-actions {
+        width: 100%;
+        justify-content: stretch;
+    }
+
+    .admin-dashboard-btn,
+    .admin-info {
+        width: 100%;
+    }
+
+    .admin-info {
+        text-align: left;
     }
 }

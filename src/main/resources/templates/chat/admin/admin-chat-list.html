@@ -15,9 +15,16 @@
             <h1>1:1 상담 목록</h1>
             <p>새 문의, 안읽음 메시지, 종료 상담방을 한 화면에서 관리합니다.</p>
         </div>
-        <div class="admin-info">
-            <span>관리자</span>
-            <strong th:text="${loginUser.nickname != null ? loginUser.nickname : loginUser.memberId}">ADMIN</strong>
+        <div class="admin-header-actions">
+            <a th:href="@{/admin}" class="admin-dashboard-btn">
+                <span>🏠</span>
+                관리자 대시보드
+            </a>
+
+            <div class="admin-info">
+                <span>관리자</span>
+                <strong th:text="${loginUser.nickname != null ? loginUser.nickname : loginUser.memberId}">ADMIN</strong>
+            </div>
         </div>
     </header>
 

@@ -10,7 +10,10 @@
 <body>
 <div class="admin-room-page">
     <aside class="side-panel">
-        <a th:href="@{/chat/admin}" class="list-btn">← 목록으로 돌아가기</a>
+        <div class="side-nav-actions">
+            <a th:href="@{/admin}" class="dashboard-btn">🏠 대시보드</a>
+            <a th:href="@{/chat/admin}" class="list-btn">← 상담 목록</a>
+        </div>
 
         <div class="side-title">
             <span th:text="${chatRoom.categoryIcon}">💬</span>
