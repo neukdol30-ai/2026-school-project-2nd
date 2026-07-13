@@ -1,5 +1,7 @@
 package com.siyan1234.itproject2nd.admin.controller;
 
+import com.siyan1234.itproject2nd.admin.dto.AdminDashboardDto;
+import com.siyan1234.itproject2nd.admin.service.AdminDashboardService;
 import com.siyan1234.itproject2nd.member.dto.MemberDto;
 import com.siyan1234.itproject2nd.member.service.MemberService;
 import lombok.RequiredArgsConstructor;
@@ -15,10 +17,36 @@ import java.util.List;
 public class AdminController {
 
     private final MemberService memberService;
+    private final AdminDashboardService adminDashboardService;
 
-    @GetMapping({"", "/"})
-    public String adminMain() {
-        return "admin/main";
+    /**
+     * 관리자 메인 대시보드
+     *
+     * 기존 admin/main.html 대신 운영 현황 요약이 먼저 보이는 dashboard.html을 사용합니다.
+     */
+    @GetMapping({"", "/", "/dashboard"})
+    public String adminDashboard(Model model) {
+        AdminDashboardDto dashboard = adminDashboardService.getDashboard();
+        model.addAttribute("dashboard", dashboard);
+        return "admin/dashboard";
+    }
+
+    /**
+     * 관리자 URL 기준 상담 관리 진입점입니다.
+     * 실제 상담 목록 기능은 기존 /chat/admin 화면을 재사용합니다.
+     */
+    @GetMapping("/chats")
+    public String adminChats() {
+        return "redirect:/chat/admin";
+    }
+
+    /**
+     * 관리자 URL 기준 상담 상세 진입점입니다.
+     * 실제 상담 상세 기능은 기존 /chat/admin/{roomNo} 화면을 재사용합니다.
+     */
+    @GetMapping("/chats/{roomNo}")
+    public String adminChatRoom(@PathVariable("roomNo") Integer roomNo) {
+        return "redirect:/chat/admin/" + roomNo;
     }
 
     @GetMapping("/members")
@@ -63,5 +91,4 @@ public class AdminController {
         memberService.updateMember(member);
         return "redirect:/admin/members/" + no;
     }
-
 }

@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SecondPro 관리자 대시보드</title>
+
+    <!-- Swiper는 운영 알림 롤링 영역에서만 사용합니다. -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css">
+    <link rel="stylesheet" th:href="@{/css/admin/admin-dashboard.css}">
+    <link rel="stylesheet" th:href="@{/css/cookie-consent.css}">
+</head>
+<body>
+<div class="admin-shell">
+    <aside class="admin-sidebar">
+        <div class="brand-box">
+            <a th:href="@{/admin}" class="brand-logo">S</a>
+            <div>
+                <strong>SecondPro</strong>
+                <span>관리자 콘솔</span>
+            </div>
+        </div>
+
+        <nav class="admin-menu">
+            <p class="menu-label">운영</p>
+            <a th:href="@{/admin}" class="menu-item active">
+                <span>🏠</span>
+                <em>대시보드</em>
+            </a>
+            <a th:href="@{/admin/chats}" class="menu-item">
+                <span>💬</span>
+                <em>상담 관리</em>
+            </a>
+            <a th:href="@{/admin/members}" class="menu-item">
+                <span>👥</span>
+                <em>회원 관리</em>
+            </a>
+
+            <p class="menu-label">DB 데이터 관리형</p>
+            <a href="#" class="menu-item disabled" title="다음 패치에서 관리자 URL로 연결 예정입니다.">
+                <span>📝</span>
+                <em>게시글 관리</em>
+                <small>예정</small>
+            </a>
+            <a href="#" class="menu-item disabled" title="다음 패치에서 관리자 URL로 연결 예정입니다.">
+                <span>💭</span>
+                <em>댓글 관리</em>
+                <small>예정</small>
+            </a>
+            <a href="#" class="menu-item disabled" title="상담 만족도 기능 추가 후 활성화 예정입니다.">
+                <span>⭐</span>
+                <em>만족도 관리</em>
+                <small>예정</small>
+            </a>
+            <a href="#" class="menu-item disabled" title="방문 기록 목록/통계는 다음 단계에서 연결 예정입니다.">
+                <span>📊</span>
+                <em>방문 기록</em>
+                <small>예정</small>
+            </a>
+
+            <p class="menu-label">외부 서비스 상태</p>
+            <a href="#service-status" class="menu-item">
+                <span>🔌</span>
+                <em>서비스 상태</em>
+            </a>
+        </nav>
+
+        <div class="sidebar-card">
+            <strong>운영 팁</strong>
+            <p>읽지 않은 상담과 진행 중 상담을 우선 확인하세요.</p>
+            <a th:href="@{/admin/chats}">상담 보러가기</a>
+        </div>
+    </aside>
+
+    <main class="admin-main">
+        <header class="admin-topbar">
+            <div>
+                <span class="eyebrow">Admin Dashboard</span>
+                <h1>운영 현황 요약</h1>
+            </div>
+            <div class="topbar-actions">
+                <span class="login-user">
+                    <strong sec:authentication="name">admin</strong>
+                    <small>ADMIN</small>
+                </span>
+                <a th:href="@{/}" class="top-link">서비스 홈</a>
+                <form th:action="@{/member/logout}" method="post">
+                    <button type="submit" class="logout-btn">로그아웃</button>
+                </form>
+            </div>
+        </header>
+
+        <section class="hero-swiper-card">
+            <div class="swiper adminNoticeSwiper">
+                <div class="swiper-wrapper">
+                    <div class="swiper-slide notice-slide blue">
+                        <div>
+                            <span class="notice-tag">상담 운영</span>
+                            <h2>오늘 접수된 상담 <strong th:text="${dashboard.todayChatRoomCount}">0</strong>건</h2>
+                            <p>신규 상담과 읽지 않은 상담을 먼저 확인해 주세요.</p>
+                        </div>
+                        <a th:href="@{/admin/chats}">상담 관리</a>
+                    </div>
+                    <div class="swiper-slide notice-slide green">
+                        <div>
+                            <span class="notice-tag">방문 분석</span>
+                            <h2>오늘 방문 기록 <strong th:text="${dashboard.todayVisitCount}">0</strong>건</h2>
+                            <p>분석 쿠키에 동의한 사용자의 방문 기록만 집계됩니다.</p>
+                        </div>
+                        <a href="#service-status">상태 보기</a>
+                    </div>
+                    <div class="swiper-slide notice-slide purple">
+                        <div>
+                            <span class="notice-tag">서비스 상태</span>
+                            <h2>외부 API 설정 상태를 확인하세요</h2>
+                            <p>뉴스, 공공데이터, 카카오 알림 설정 여부를 노출 없이 확인합니다.</p>
+                        </div>
+                        <a href="#service-status">확인하기</a>
+                    </div>
+                </div>
+                <div class="swiper-pagination"></div>
+            </div>
+        </section>
+
+        <section class="metric-grid">
+            <article class="metric-card primary">
+                <span>전체 회원</span>
+                <strong th:text="${#numbers.formatInteger(dashboard.totalMemberCount, 0, 'COMMA')}">0</strong>
+                <p>오늘 가입 <b th:text="${dashboard.todayMemberCount}">0</b>명</p>
+            </article>
+            <article class="metric-card">
+                <span>전체 게시글</span>
+                <strong th:text="${#numbers.formatInteger(dashboard.totalBoardCount, 0, 'COMMA')}">0</strong>
+                <p>오늘 작성 <b th:text="${dashboard.todayBoardCount}">0</b>건</p>
+            </article>
+            <article class="metric-card warning">
+                <span>진행 중 상담</span>
+                <strong th:text="${#numbers.formatInteger(dashboard.openChatRoomCount, 0, 'COMMA')}">0</strong>
+                <p>오늘 접수 <b th:text="${dashboard.todayChatRoomCount}">0</b>건</p>
+            </article>
+            <article class="metric-card danger">
+                <span>읽지 않은 상담</span>
+                <strong th:text="${#numbers.formatInteger(dashboard.unreadChatRoomCount, 0, 'COMMA')}">0</strong>
+                <p>사용자 메시지 기준</p>
+            </article>
+            <article class="metric-card success">
+                <span>종료된 상담</span>
+                <strong th:text="${#numbers.formatInteger(dashboard.closedChatRoomCount, 0, 'COMMA')}">0</strong>
+                <p>전체 상담 <b th:text="${dashboard.totalChatRoomCount}">0</b>건</p>
+            </article>
+            <article class="metric-card">
+                <span>오늘 방문</span>
+                <strong th:text="${#numbers.formatInteger(dashboard.todayVisitCount, 0, 'COMMA')}">0</strong>
+                <p>분석 쿠키 동의 기준</p>
+            </article>
+        </section>
+
+        <section class="dashboard-grid">
+            <article class="panel wide-panel">
+                <div class="panel-head">
+                    <div>
+                        <span class="eyebrow">Last 7 Days</span>
+                        <h2>최근 7일 상담 접수 추이</h2>
+                    </div>
+                    <span class="panel-badge">chat_room.created_date 기준</span>
+                </div>
+
+                <div class="trend-chart" id="dailyChatTrend">
+                    <div class="trend-item"
+                         th:each="stat : ${dashboard.dailyChatStatsList}">
+                        <div class="trend-bar"
+                             th:attr="data-count=${stat.chatCount}">
+                            <span th:text="${stat.chatCount}">0</span>
+                        </div>
+                        <em th:text="${stat.dateLabel}">07/10</em>
+                    </div>
+                </div>
+            </article>
+
+            <article class="panel">
+                <div class="panel-head">
+                    <div>
+                        <span class="eyebrow">Category</span>
+                        <h2>상담 카테고리별 통계</h2>
+                    </div>
+                </div>
+
+                <div class="category-list" id="categoryStats">
+                    <div class="category-row"
+                         th:each="categoryStat : ${dashboard.categoryStatsList}">
+                        <div class="category-title">
+                            <span th:text="${categoryStat.categoryIcon}">💬</span>
+                            <strong th:text="${categoryStat.categoryName}">기타 문의</strong>
+                            <em th:text="|${categoryStat.chatCount}건|">0건</em>
+                        </div>
+                        <div class="category-progress">
+                            <span th:attr="data-count=${categoryStat.chatCount}"></span>
+                        </div>
+                        <p>
+                            진행 <b th:text="${categoryStat.openCount}">0</b> ·
+                            종료 <b th:text="${categoryStat.closedCount}">0</b>
+                        </p>
+                    </div>
+                </div>
+            </article>
+        </section>
+
+        <section class="dashboard-grid lower-grid">
+            <article class="panel recent-panel">
+                <div class="panel-head">
+                    <div>
+                        <span class="eyebrow">Recent Chats</span>
+                        <h2>최근 상담 목록</h2>
+                    </div>
+                    <a th:href="@{/admin/chats}" class="panel-link">전체 보기</a>
+                </div>
+
+                <div class="recent-chat-list">
+                    <a class="recent-chat-card"
+                       th:each="chatRoom : ${dashboard.recentChatRoomList}"
+                       th:href="@{/admin/chats/{roomNo}(roomNo=${chatRoom.roomNo})}">
+                        <div class="recent-chat-icon" th:text="${chatRoom.categoryIcon}">💬</div>
+                        <div class="recent-chat-body">
+                            <div class="recent-chat-title">
+                                <strong th:text="|#${chatRoom.roomNo} ${chatRoom.categoryName}|">#1 기타 문의</strong>
+                                <span th:classappend="${chatRoom.status == 'OPEN'} ? ' open' : ' closed'"
+                                      th:text="${chatRoom.statusName}">진행 중</span>
+                            </div>
+                            <p th:text="${chatRoom.lastMessage != null ? chatRoom.lastMessage : '아직 메시지가 없습니다.'}">
+                                최근 메시지
+                            </p>
+                            <small>
+                                사용자
+                                <b th:text="${chatRoom.userNickname != null ? chatRoom.userNickname : '탈퇴/미확인'}">사용자</b>
+                                · 안읽음
+                                <b th:text="${chatRoom.unreadCount}">0</b>
+                            </small>
+                        </div>
+                    </a>
+
+                    <div class="empty-state" th:if="${#lists.isEmpty(dashboard.recentChatRoomList)}">
+                        <strong>아직 상담 데이터가 없습니다.</strong>
+                        <p>사용자가 상담을 시작하면 이곳에 최근 상담이 표시됩니다.</p>
+                    </div>
+                </div>
+            </article>
+
+            <article class="panel" id="service-status">
+                <div class="panel-head">
+                    <div>
+                        <span class="eyebrow">External Services</span>
+                        <h2>외부 서비스 상태</h2>
+                    </div>
+                </div>
+
+                <div class="service-list">
+                    <div class="service-card"
+                         th:each="service : ${dashboard.serviceStatusList}"
+                         th:classappend="${service.available} ? ' available' : ' pending'">
+                        <div>
+                            <strong th:text="${service.serviceName}">서비스명</strong>
+                            <p th:text="${service.description}">서비스 설명</p>
+                        </div>
+                        <span th:text="${service.status}">상태</span>
+                    </div>
+                </div>
+
+                <div class="admin-note">
+                    <strong>보안 메모</strong>
+                    <p>API 키와 토큰 값은 화면에 표시하지 않고, 설정 여부만 보여줍니다.</p>
+                </div>
+            </article>
+        </section>
+    </main>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+<script th:src="@{/js/admin-dashboard.js}"></script>
+<script th:src="@{/js/cookie-consent.js}"></script>
+</body>
+</html>
