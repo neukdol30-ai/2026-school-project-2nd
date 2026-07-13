@@ -54,6 +54,31 @@
         <!-- 이메일이 이미 존재하는지 확인 -->
     </select>
 
+                                                                                                                                                        <!-- 닉네임 중복 확인용 findByEmail과 동일 구조 -->
+    <select id="findByNickname" parameterType="String" resultType="MemberDto">
+        SELECT no,
+        member_id,
+        password,
+        name,
+        nickname,
+        email,
+        phone,
+        birth_date,
+        gender,
+        postcode,
+        address,
+        detail_address,
+        role,
+        profile_image,
+        last_login_date,
+        agree_terms_yn,
+        agree_privacy_yn,
+        regdate
+        FROM member
+        WHERE nickname = #{nickname}
+        <!-- #{nickname} Dao에서 @Param("nickname")으로 넘긴 값 -->
+    </select>
+
     <insert id="signup" parameterType="SignupDto">
         <!-- id는 MemberDao의 signup 메서드명과 일치해야 함. / parameterType은 회원가입 폼 값을 담은 SignupDto -->
         INSERT INTO member (
@@ -80,7 +105,7 @@
         #{nickname},
         #{email},
         #{phone},
-        #{birthDate},
+        #{birthDate, jdbcType=DATE},
         #{gender},
         #{postcode},
         #{address},
@@ -92,5 +117,65 @@
 
     </insert>
 
+    <!-- 관리자 회원 목록 조회용 / MemberDao의 findAllMembers()와 일치 -->
+    <select id="findAllMembers" resultType="MemberDto">
+        SELECT no,
+        member_id,
+        name,
+        nickname,
+        email,
+        phone,
+        birth_date,
+        gender,
+        postcode,
+        address,
+        detail_address,
+        role,
+        profile_image,
+        last_login_date,
+        agree_terms_yn,
+        agree_privacy_yn,
+        regdate
+        FROM member
+        ORDER BY no DESC
+    </select>
+
+<!--    관리자 회원 상세 조회용 / MemberDao - findByNo(Integer no)와 일치-->
+    <select id="findByNo" parameterType="int" resultType="MemberDto">
+        SELECT no,
+        member_id,
+        name,
+        nickname,
+        email,
+        phone,
+        birth_date,
+        gender,
+        postcode,
+        address,
+        detail_address,
+        role,
+        profile_image,
+        last_login_date,
+        agree_terms_yn,
+        agree_privacy_yn,
+        regdate
+        FROM member
+        WHERE no = #{no}
+        <!-- #{no}는 Dao에서 @Param("no")로 넘긴 회원 고유번호 값-->
+    </select>
+
+    <!--관리자 회원 정보 수정용. MemberDao - updateMember(MemberDto) id 일치-->
+    <update id="updateMember" parameterType="MemberDto">
+        UPDATE member
+        SET name = #{name},
+        nickname = #{nickname},
+        email = #{email},
+        phone = #{phone},
+        postcode = #{postcode},
+        address = #{address},
+        detail_address = #{detailAddress},
+        gender = #{gender}
+        WHERE no = #{no} <!--MemberDto의 no 필드값. 없으면 전체 회원 다 수정된다.-->
+    </update>
 
 </mapper>

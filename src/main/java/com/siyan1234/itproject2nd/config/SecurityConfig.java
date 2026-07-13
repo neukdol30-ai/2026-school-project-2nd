@@ -19,11 +19,18 @@ public class SecurityConfig {
                         // 로그인 없이 누구나 접근 가능한 주소들
                         .requestMatchers(
                                 "/", // 메인
+                                "/index.html",
                                 "/member/login", // 로그인 화면
                                 "/member/signup", // 회원가입 화면
+                                "/member/exists", // 아이디 중복 확인
                                 "/kakao/authorize", //카카오 동의
                                 "/kakao/callback", //카카오 인가 코드 토큰발급
-                                "/css/**", "/js/**", "/images/**" // 정적 파일
+                                "/css/**",
+                                "/js/**",
+                                "/images/**", // 정적 파일,
+                                "/api/**",
+                                "/member/exists-nickname", // 닉네임 중복 확인(회원가입 중 = 로그인 전에도 호출) 없으면 403
+                                "/error" // 필수, 예외 발생 시 Spring Boot가 /error로 내부 포워딩. Security 6은 그 포워딩도 인가 재검사. 없으면 비로그인 상태 예외 -> 에러 화면 대신 로그인으로 302 (에러 은폐)
                         ).permitAll()
                         .requestMatchers("/kakao/test-message").hasRole("ADMIN")
                         .requestMatchers("/chat/admin/**").hasRole("ADMIN")
@@ -47,6 +54,7 @@ public class SecurityConfig {
                 .logout(logout -> logout
                         .logoutUrl("/member/logout") // 이 주소로 POST 요청 시 로그아웃
                         .logoutSuccessUrl("/") // 로그아웃 후 메인으로
+                        .invalidateHttpSession(true) // 로그인 상태 세션 완전 삭제
                 );
 
         return http.build();

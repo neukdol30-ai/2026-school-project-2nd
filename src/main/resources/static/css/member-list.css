@@ -1,0 +1,115 @@
+/* main.css와 함께 로딩. -> 공통 스타일은 main.css에 이미 있으므로 여기서는 회원 목록 화면에 필요한 것만 정의.(중복 정의 금지) */
+.page-wrap {
+    align-items: flex-start;
+    padding: 40px 16px;
+}
+
+.list-box {
+    width: 100%;
+    max-width: 900px;
+    background-color: #fff;
+    border: 1px solid #ddd;
+    border-radius: 12px;
+    padding: 32px;
+    box-shadow: 0 4px 17px rgba(0, 0, 0, 0.08);
+}
+
+.member-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.member-table th,
+.member-table td {
+    padding: 10px 8px;
+    border-bottom: 1px solid #e5e5e5;
+    text-align: left;
+    font-size: 14px;
+}
+
+.member-table thead th {
+    background: #f5f6f8;
+    font-weight: 600;
+}
+
+/* 여기 아래는 회원 상세 화면(member-detail.html) 전용 세로 표 스타일 */
+/* 목록용 .member-table 규칙과 섞이지 않게 .detail-table 새 클래스로 분리. */
+
+.detail-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.detail-table th,
+.detail-table td {
+    padding: 12px 16px;
+    border-bottom: 1px solid #e5e5e5;
+    text-align: left;
+    font-size: 14px;
+    vertical-align: middle; /*셀 내용 세로 가운데 정렬*/
+}
+
+.detail-table th {
+    width: 160px;
+    background: #f5f6f8;
+    font-weight: 600;
+    color: #333;
+    border-right: 1px solid #e5e5e5;
+    white-space: nowrap; /*생년월일 같은 라벨 줄바꿈 안 되게 한 줄 유지*/
+}
+
+.detail-table td {
+    color: #111; /*값 글자색(라벨보다 진하게)*/
+}
+
+/*표 위쪽 테두리 한 줄, border-collapse라 위 테두리 없어서 추가*/
+.detail-table {
+    border-top: 1px solid #e5e5e5;
+}
+
+/*회원 목록 "관리" 버튼 공통 스타일*/
+.btn-action {
+    display: inline-block;
+    padding: 5px 12px;
+    font-size: 13px;
+    border-radius: 6px;
+    text-decoration: none;
+    border: 1px solid transparent;
+}
+
+/*상세 버튼 전용*/
+.btn-detail {
+    background: #2d6cdf;
+    color: #fff;
+}
+
+/*상세 버튼 마우스 올렸을 때(hover)*/
+.btn-detail:hover {
+    background: #1f57bd;
+}
+
+/*수정 버튼 전용("상세"의 파랑과 구분되게 초록 계열*/
+.btn-edit {
+    background: #2e9e5b;
+    color: #fff;
+}
+
+/*수정 버튼 마우스 올렸을 때(hover)*/
+.btn-edit:hover {
+    background: #24803f;
+}
+
+/*관리 열 버튼이 여러 개일 때 간격*/
+.btn-action + .btn-action {
+    margin-left: 6px;
+}
+
+.member-table th.col-center,
+.member-table td.col-center {
+    text-align: center;
+}
+
+/*.table-scroll : 화면이 좁으면 상자 안에서 가로 스크롤*/
+.table-scroll {overflow-x: auto;}
+.member-table {min-width: 800px;}
+.member-table th, .member-table td {white-space: nowrap;}

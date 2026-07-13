@@ -127,3 +127,99 @@ body { /* body 태그 */
 .bottom-link a:hover { /* .bottom-link 안의 <a>에 마우스를 올렸을 때만 적용 */
     text-decoration: underline;
 }
+
+.required {
+    color: #e02424;
+    font-size: 13px;
+    margin-left: 2px;
+}
+
+/* .check-msg : JS가 띄우는 실시간 메시지(아이디 중복 & 비번 일치) */
+.check-msg {
+    display: block;
+    font-size: 13px;
+    margin-top: 4px;
+}
+
+.check-ok {
+    color: #2e9e5b;
+}
+
+.check-fail {
+    color: #e02424;
+}
+
+/* 눈 아이콘(비밀번호 표시/숨김) */
+
+/* input과 눈 버튼을 겹쳐 놓기 위한 껍데기 */
+.input-wrap {
+    position: relative;
+}
+
+/* 비밀번호 input에만 적용, 오른쪽 안쪽에 버튼 만들 자리 padding */
+.form-input.has-eye {
+    padding-right: 44px;
+}
+
+.eye-btn {
+    position: absolute; /* .input-wrap을 기준으로 좌표를 잡는다 */
+    top: 50%; /* 껍데기 높이의 정중앙 */
+    right: 8px; /* 오른쪽 끝에서 8px 안쪽 */
+    transform: translateY(-50%); /* 자기 높이의 절반만큼 위로 밀어 진짜 수직 중앙 정렬 */
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    border: none;
+    background: transparent; /* 배경 없애서 input 위에 아이콘만 떠 있게 */
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #999;
+}
+
+.eye-btn:hover {
+    color: #444;
+}
+
+/* 비밀번호 조건 체크리스트용 */
+
+.rule-list {
+    list-style: none; /* <ul>의 기본 검은 점(•) 제거 => ○/✓를 직접 그릴 것이므로 */
+    margin: 8px 0 0;
+    padding: 0;
+}
+
+/* 조건 미충족 상태(기본값) : 회색 도움말 + ○ 표시 */
+.rule-item {
+    position: relative;
+    padding-left: 18px; /* ○ 기호가 들어갈 왼쪽 자리 확보 */
+    margin-top: 3px;
+    font-size: 13px;
+    color: #888; /* 회색 = "에러가 아니라 안내" */
+}
+
+/* ::before : 그 요소의 내용 "앞"에 가짜 글자를 하나 끼워 넣는 CSS 기능.
+   HTML에 실제로 존재하지 않는 장식용 글자라 JS로 지울 필요가 없다. */
+.rule-item::before {
+    content: "○";
+    position: absolute;
+    left: 0;
+}
+
+/* 조건 충족 상태 : JS가 rule-ok 클래스를 붙이면 초록 + ✓ 로 바뀐다 */
+.rule-item.rule-ok {
+    color: #2e9e5b;
+}
+
+.rule-item.rule-ok::before {
+    content: "✓";
+}
+
+/* 회색 안내 메시지용 (에러 아님) */
+
+/* JS의 setMsg(el, text, 'hint')로 쓸 수 있는 회색 상태.
+   지금 코드에선 안 쓰지만, 나중에 "안내" 톤이 필요할 때 쓰라고 미리 정의. */
+.check-hint {
+    color: #888;
+}

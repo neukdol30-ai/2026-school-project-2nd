@@ -663,6 +663,8 @@ function renderAuthWidget() {
                 </div>
 
                 <div class="auth-content">
+                
+                <!--
                     <input
                         id="loginUsername"
                         class="auth-input"
@@ -678,12 +680,15 @@ function renderAuthWidget() {
                         value="${state.loginForm.password}"
                         placeholder="비밀번호"
                     >
-
-                    <button class="auth-login-button" data-action="login">
+                     -->
+                     
+                    <!-- 로그인 버튼: 누르면 로그인 페이지로 이동 -->
+                    <button class="auth-login-button" data-action="go-login">
                         로그인
                     </button>
-
-                    <button class="auth-register-button">
+                    
+                    <!-- 회원가입 버튼: 누르면 회원가입 페이지로 이동 (원래 data-action 없어서 죽어있던 버튼) -->
+                    <button class="auth-register-button" data-action="go-signup">
                         회원가입
                     </button>
                 </div>
@@ -792,6 +797,20 @@ function handleAction(event) {
         calculate();
         return;
     }
+
+    // 로그인 버튼 클릭 -> 로그인 페이지로 브라우저 이동
+    if (action === "go-login") {
+        window.location.href = "/member/login";
+        return;
+    }
+
+    // 회원가입 버튼 클릭 -> 회원가입 페이지로 이동
+    if (action === "go-signup") {
+        window.location.href = "/member/signup";
+        return;
+    }
+
+    // 위의 2개 코드 추가로 안 쓰게 되는 코드 -> login()함수: 이제 부르는 곳 없음. / bindEvents()안의 #loginUsername, #loginPassword 연결 부분 / state.loginForm 칸
 
     if (action === "login") {
         login();
