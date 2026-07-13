@@ -23,6 +23,51 @@
             </div>
         </div>
 
+
+
+        <!-- 접속한 관리자 프로필 카드입니다.
+             예시 이미지처럼 관리자 계정/권한/가입일/최근 로그인 정보를 한눈에 확인할 수 있게 구성했습니다. -->
+        <section class="admin-profile-panel">
+            <div class="profile-main">
+                <div class="profile-avatar">
+                    <img th:if="${loginAdmin != null and loginAdmin.profileImage != null and !#strings.isEmpty(loginAdmin.profileImage)}"
+                         th:src="${loginAdmin.profileImage}"
+                         alt="관리자 프로필 이미지">
+                    <span th:unless="${loginAdmin != null and loginAdmin.profileImage != null and !#strings.isEmpty(loginAdmin.profileImage)}"
+                          th:text="${loginAdmin != null and loginAdmin.nickname != null and !#strings.isEmpty(loginAdmin.nickname) ? #strings.substring(loginAdmin.nickname, 0, 1) : 'A'}">A</span>
+                </div>
+                <div class="profile-name-box">
+                    <strong th:text="${loginAdmin != null ? loginAdmin.memberId : 'admin'}">admin01</strong>
+                    <span th:text="${loginAdmin != null and loginAdmin.email != null and !#strings.isEmpty(loginAdmin.email) ? loginAdmin.email : '이메일 미등록'}">admin@example.com</span>
+                </div>
+            </div>
+
+            <dl class="profile-meta">
+                <div>
+                    <dt>권한</dt>
+                    <dd class="role-badge" th:text="${loginAdmin != null ? loginAdmin.role : 'ADMIN'}">ADMIN</dd>
+                </div>
+                <div>
+                    <dt>회원번호</dt>
+                    <dd th:text="${loginAdmin != null ? '#' + loginAdmin.no : '#'}">#1</dd>
+                </div>
+                <div>
+                    <dt>가입일</dt>
+                    <dd th:text="${loginAdmin != null and loginAdmin.regdate != null ? #temporals.format(loginAdmin.regdate, 'yyyy-MM-dd') : '미기록'}">2026-07-13</dd>
+                </div>
+                <div>
+                    <dt>최근 로그인</dt>
+                    <dd th:text="${loginAdmin != null and loginAdmin.lastLoginDate != null ? #temporals.format(loginAdmin.lastLoginDate, 'yyyy-MM-dd HH:mm') : '미기록'}">미기록</dd>
+                </div>
+            </dl>
+
+            <div class="profile-actions">
+                <a th:if="${loginAdmin != null}"
+                   th:href="@{/admin/members/{no}(no=${loginAdmin.no})}">내 정보 보기</a>
+                <a th:unless="${loginAdmin != null}" th:href="@{/admin/members}">회원 관리</a>
+            </div>
+        </section>
+
         <nav class="admin-menu">
             <p class="menu-label">운영</p>
             <a th:href="@{/admin}" class="menu-item active">
@@ -81,10 +126,14 @@
                 <h1>운영 현황 요약</h1>
             </div>
             <div class="topbar-actions">
-                <span class="login-user">
-                    <strong sec:authentication="name">admin</strong>
-                    <small>ADMIN</small>
-                </span>
+                <button type="button" class="top-profile-chip">
+                    <span class="top-profile-avatar"
+                          th:text="${loginAdmin != null and loginAdmin.nickname != null and !#strings.isEmpty(loginAdmin.nickname) ? #strings.substring(loginAdmin.nickname, 0, 1) : 'A'}">A</span>
+                    <span class="login-user">
+                        <strong th:text="${loginAdmin != null ? loginAdmin.memberId : 'admin'}">admin01</strong>
+                        <small th:text="${loginAdmin != null ? loginAdmin.role : 'ADMIN'}">ADMIN</small>
+                    </span>
+                </button>
                 <a th:href="@{/}" class="top-link">서비스 홈</a>
                 <form th:action="@{/member/logout}" method="post">
                     <button type="submit" class="logout-btn">로그아웃</button>

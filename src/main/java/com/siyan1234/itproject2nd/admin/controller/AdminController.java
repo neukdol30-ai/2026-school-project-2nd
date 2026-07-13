@@ -2,9 +2,11 @@ package com.siyan1234.itproject2nd.admin.controller;
 
 import com.siyan1234.itproject2nd.admin.dto.AdminDashboardDto;
 import com.siyan1234.itproject2nd.admin.service.AdminDashboardService;
+import com.siyan1234.itproject2nd.member.dto.CustomUserDetails;
 import com.siyan1234.itproject2nd.member.dto.MemberDto;
 import com.siyan1234.itproject2nd.member.service.MemberService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -20,14 +22,41 @@ public class AdminController {
     private final AdminDashboardService adminDashboardService;
 
     /**
+     * 관리자 로그인 화면
+     *
+     * /admin 주소로 직접 접근했을 때 로그인하지 않은 사용자는
+     * SecurityConfig의 AuthenticationEntryPoint에 의해 /admin/login으로 이동합니다.
+     */
+    @GetMapping("/login")
+    public String adminLogin(@AuthenticationPrincipal CustomUserDetails customUserDetails, Model model) {
+        MemberDto loginUser = getLoginMember(customUserDetails);
+
+        if (isAdmin(loginUser)) {
+            return "redirect:/admin";
+        }
+
+        model.addAttribute("loginUser", loginUser);
+
+        return "admin/login";
+    }
+
+    /**
      * 관리자 메인 대시보드
      *
      * 기존 admin/main.html 대신 운영 현황 요약이 먼저 보이는 dashboard.html을 사용합니다.
+     * 로그인한 관리자 정보를 함께 전달하여 관리자 프로필 카드에 표시합니다.
      */
     @GetMapping({"", "/", "/dashboard"})
-    public String adminDashboard(Model model) {
+    public String adminDashboard(
+            Model model,
+            @AuthenticationPrincipal CustomUserDetails customUserDetails
+    ) {
         AdminDashboardDto dashboard = adminDashboardService.getDashboard();
+        MemberDto loginAdmin = getLoginMember(customUserDetails);
+
         model.addAttribute("dashboard", dashboard);
+        model.addAttribute("loginAdmin", loginAdmin);
+
         return "admin/dashboard";
     }
 
@@ -90,5 +119,23 @@ public class AdminController {
         member.setNo(no);
         memberService.updateMember(member);
         return "redirect:/admin/members/" + no;
+    }
+
+    /**
+     * Spring Security Principal에서 로그인 회원 정보를 꺼냅니다.
+     */
+    private MemberDto getLoginMember(CustomUserDetails customUserDetails) {
+        if (customUserDetails == null) {
+            return null;
+        }
+
+        return customUserDetails.getMemberDto();
+    }
+
+    /**
+     * 관리자 권한 여부를 확인합니다.
+     */
+    private boolean isAdmin(MemberDto memberDto) {
+        return memberDto != null && "ADMIN".equals(memberDto.getRole());
     }
 }

@@ -762,3 +762,148 @@ button {
         font-size: 22px;
     }
 }
+
+/* 관리자 프로필 카드입니다. 사이드바 안에서 현재 접속한 관리자 정보를 확인합니다. */
+.admin-profile-panel {
+    margin: -12px 0 28px;
+    padding: 18px;
+    border-radius: 24px;
+    color: #ffffff;
+    background:
+            radial-gradient(circle at 15% 0%, rgba(255, 255, 255, 0.2), transparent 32%),
+            linear-gradient(145deg, #1f2937, #111827);
+    box-shadow: 0 18px 42px rgba(15, 23, 42, 0.18);
+}
+
+.profile-main {
+    display: flex;
+    align-items: center;
+    gap: 13px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.profile-avatar {
+    flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 54px;
+    height: 54px;
+    border-radius: 50%;
+    overflow: hidden;
+    color: #ffffff;
+    font-size: 24px;
+    font-weight: 900;
+    background: linear-gradient(135deg, #4f63f6, #7c3aed);
+    box-shadow: 0 14px 28px rgba(79, 99, 246, 0.32);
+}
+
+.profile-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.profile-name-box {
+    min-width: 0;
+}
+
+.profile-name-box strong {
+    display: block;
+    color: #ffffff;
+    font-size: 16px;
+    font-weight: 900;
+    word-break: break-all;
+}
+
+.profile-name-box span {
+    display: block;
+    margin-top: 3px;
+    color: rgba(255, 255, 255, 0.62);
+    font-size: 12px;
+    word-break: break-all;
+}
+
+.profile-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin: 16px 0 0;
+}
+
+.profile-meta div {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.profile-meta dt {
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 12px;
+    font-weight: 800;
+}
+
+.profile-meta dd {
+    margin: 0;
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 12px;
+    font-weight: 800;
+    text-align: right;
+}
+
+.profile-meta .role-badge {
+    padding: 4px 8px;
+    border-radius: 999px;
+    color: #c7d2fe;
+    background: rgba(79, 99, 246, 0.18);
+}
+
+.profile-actions {
+    margin-top: 16px;
+}
+
+.profile-actions a {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 40px;
+    border-radius: 12px;
+    color: #111827;
+    font-size: 13px;
+    font-weight: 900;
+    background: #ffffff;
+}
+
+.top-profile-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    height: 46px;
+    padding: 5px 12px 5px 6px;
+    border: 1px solid var(--admin-line);
+    border-radius: 999px;
+    background: #ffffff;
+    box-shadow: 0 10px 24px rgba(15, 23, 42, 0.05);
+}
+
+.top-profile-avatar {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    color: #ffffff;
+    font-size: 15px;
+    font-weight: 900;
+    background: linear-gradient(135deg, #4f63f6, #7c3aed);
+}
+
+@media (max-width: 1180px) {
+    .admin-profile-panel {
+        margin-top: 0;
+    }
+}
