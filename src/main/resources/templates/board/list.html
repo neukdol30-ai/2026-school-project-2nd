@@ -1,107 +1,231 @@
 <!DOCTYPE html>
-<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
     <title>게시글 목록</title>
+
+    <!-- 공통 CSS -->
+    <link rel="stylesheet"
+          th:href="@{/css/main.css}">
+
+    <!-- 게시판 전용 CSS -->
+    <link rel="stylesheet"
+          th:href="@{/css/board.css}">
 </head>
+
 <body>
 
-<h1 th:text="${pageTitle != null ? pageTitle : '게시글 목록'}">게시글 목록</h1>
+<main class="board-page">
 
-<a href="/board/list">전체</a>
-<a href="/board/notice">공지사항</a>
-<a href="/board/free">자유게시판</a>
+    <!-- ========================= -->
+    <!-- 게시판 상단 제목 영역 -->
+    <!-- ========================= -->
+    <section class="board-header">
 
+        <div>
+            <h1 class="board-title"
+                th:text="${pageTitle != null ? pageTitle : '게시글 목록'}">
+                게시글 목록
+            </h1>
 
-<br><br>
+            <p class="board-description">
+                공지사항과 자유게시판의 글을 확인할 수 있습니다.
+            </p>
+        </div>
 
-<!-- ========================= -->
-<!-- 게시글 검색 -->
-<!-- ========================= -->
-
-<!--
-    검색어 입력 후
-    /board/search 로 GET 요청
-
-    Controller에서 검색 결과를 받아
-    같은 list.html 화면에 출력
--->
-
-<form action="/board/search" method="get">
-
-    <input type="text"
-           name="keyword"
-           placeholder="검색어 입력"
-           th:value="${keyword}">
-
-    <button type="submit">
-        검색
-    </button>
-
-</form>
-
-<br>
-
-
-<a href="/">메인</a>
-<a href="/board/write">글쓰기</a>
-
-<table border="1">
-    <tr>
-        <th>번호</th>
-        <th>카테고리</th>
-        <th>제목</th>
-        <th>작성자</th>
-        <th>조회수</th>
-        <th>작성일</th>
-    </tr>
-
-    <tr th:each="board : ${boardList}">
-        <td th:text="${board.no}"></td>
-        <td th:text="${board.category}"></td>
-        <td>
-            <a th:href="@{/board/detail/{no}(no=${board.no})}"
-               th:text="${board.title}"></a>
-        </td>
-        <td th:text="${board.writerNickname != null ? board.writerNickname : '탈퇴회원'}"></td>
-        <td th:text="${board.viewCount}"></td>
-        <td th:text="${#temporals.format(board.createdDate, 'yyyy-MM-dd HH:mm')}"></td>
-    </tr>
-</table>
-
-
-
-<!-- 게시판 페이징 -->
-<!-- ========================= -->
-
-<div th:if="${totalPage > 0}">
-
-    <!-- 이전 페이지 -->
-    <a th:if="${currentPage > 1}"
-       th:href="@{${pageUrl}(page=${currentPage - 1})}">
-        이전
-    </a>
-
-    <!-- 페이지 번호 -->
-    <span th:each="pageNum : ${#numbers.sequence(1, totalPage)}">
-
-        <a th:href="@{${pageUrl}(page=${pageNum})}"
-           th:text="${pageNum}"
-           th:style="${pageNum == currentPage}
-               ? 'font-weight:bold; text-decoration:none;'
-               : ''">
+        <!-- 로그인 사용자에게만 글쓰기 버튼 표시 -->
+        <a sec:authorize="isAuthenticated()"
+           th:href="@{/board/write}"
+           class="board-write-button">
+            글쓰기
         </a>
 
-    </span>
+    </section>
 
-    <!-- 다음 페이지 -->
-    <a th:if="${currentPage < totalPage}"
-       th:href="@{${pageUrl}(page=${currentPage + 1})}">
-        다음
-    </a>
+    <!-- ========================= -->
+    <!-- 게시판 카테고리 메뉴 -->
+    <!-- ========================= -->
+    <nav class="board-category-nav">
 
-</div>
+        <a th:href="@{/board/list}"
+           class="board-category-link"
+           th:classappend="${pageUrl == '/board/list'}
+                ? ' active'
+                : ''">
+            전체
+        </a>
 
+        <a th:href="@{/board/notice}"
+           class="board-category-link"
+           th:classappend="${pageUrl == '/board/notice'}
+                ? ' active'
+                : ''">
+            공지사항
+        </a>
+
+        <a th:href="@{/board/free}"
+           class="board-category-link"
+           th:classappend="${pageUrl == '/board/free'}
+                ? ' active'
+                : ''">
+            자유게시판
+        </a>
+
+    </nav>
+
+    <!-- ========================= -->
+    <!-- 검색 영역 -->
+    <!-- ========================= -->
+    <section class="board-toolbar">
+
+        <form th:action="@{/board/search}"
+              method="get"
+              class="board-search-form">
+
+            <input type="text"
+                   name="keyword"
+                   class="board-search-input"
+                   placeholder="제목 또는 작성자 검색"
+                   th:value="${keyword}">
+
+            <button type="submit"
+                    class="board-search-button">
+                검색
+            </button>
+
+        </form>
+
+        <a th:href="@{/}"
+           class="board-main-link">
+            메인으로
+        </a>
+
+    </section>
+
+    <!-- ========================= -->
+    <!-- 게시글 목록 -->
+    <!-- ========================= -->
+    <section class="board-list-box">
+
+        <table class="board-table">
+
+            <thead>
+            <tr>
+                <th class="board-number-column">번호</th>
+                <th class="board-category-column">분류</th>
+                <th>제목</th>
+                <th class="board-writer-column">작성자</th>
+                <th class="board-view-column">조회수</th>
+                <th class="board-date-column">작성일</th>
+            </tr>
+            </thead>
+
+            <tbody>
+
+            <!-- 게시글이 없는 경우 -->
+            <tr th:if="${#lists.isEmpty(boardList)}">
+                <td colspan="6"
+                    class="board-empty-message">
+
+                    <strong>게시글이 없습니다.</strong>
+
+                    <span>
+                        첫 번째 게시글을 작성해보세요.
+                    </span>
+
+                </td>
+            </tr>
+
+            <!-- 게시글 반복 -->
+            <tr th:each="board : ${boardList}">
+
+                <td th:text="${board.no}">
+                </td>
+
+                <td>
+
+                    <span th:if="${board.category == 'NOTICE'}"
+                          class="board-badge board-badge-notice">
+                        공지
+                    </span>
+
+                    <span th:if="${board.category == 'FREE'}"
+                          class="board-badge board-badge-free">
+                        자유
+                    </span>
+
+                </td>
+
+                <td class="board-title-cell">
+
+                    <a th:href="@{/board/detail/{no}(no=${board.no})}"
+                       th:text="${board.title}"
+                       class="board-title-link">
+                    </a>
+
+                </td>
+
+                <td th:text="${board.writerNickname != null
+                    ? board.writerNickname
+                    : '탈퇴회원'}">
+                </td>
+
+                <td th:text="${board.viewCount}">
+                </td>
+
+                <td th:text="${#temporals.format(
+                    board.createdDate,
+                    'yyyy-MM-dd HH:mm'
+                )}">
+                </td>
+
+            </tr>
+
+            </tbody>
+
+        </table>
+
+    </section>
+
+    <!-- ========================= -->
+    <!-- 게시판 페이징 -->
+    <!-- ========================= -->
+    <section th:if="${pageUrl != null and totalPage > 0}"
+             class="board-pagination">
+
+        <!-- 이전 페이지 -->
+        <a th:if="${currentPage > 1}"
+           th:href="@{${pageUrl}(page=${currentPage - 1})}"
+           class="board-page-link">
+            이전
+        </a>
+
+        <!-- 페이지 번호 -->
+        <a th:each="pageNum : ${#numbers.sequence(1, totalPage)}"
+           th:href="@{${pageUrl}(page=${pageNum})}"
+           th:text="${pageNum}"
+           class="board-page-link"
+           th:classappend="${pageNum == currentPage}
+                ? ' active'
+                : ''">
+        </a>
+
+        <!-- 다음 페이지 -->
+        <a th:if="${currentPage < totalPage}"
+           th:href="@{${pageUrl}(page=${currentPage + 1})}"
+           class="board-page-link">
+            다음
+        </a>
+
+    </section>
+
+</main>
 
 </body>
 </html>
