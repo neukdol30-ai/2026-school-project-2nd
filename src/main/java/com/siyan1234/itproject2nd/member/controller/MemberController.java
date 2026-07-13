@@ -12,6 +12,8 @@ import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
+
 @Slf4j
 @Controller
 @RequiredArgsConstructor
@@ -29,12 +31,16 @@ public class MemberController {
 
         model.addAttribute("signupDto", new SignupDto()); // 빈 회원가입 DTO를 화면에 전달
 
+        // 오늘 날짜 화면에 넘김. signup.html의 <input type="date" th:max="${today}">에서 사용
+        model.addAttribute("today", LocalDate.now());
+
         return "member/signup"; // templates/member/signup.html 보여줌
     }
 
     @PostMapping("/signup") // POST /member/signup 요청 처리
     public String signup(@Valid @ModelAttribute("signupDto") SignupDto signupDto,
-                         BindingResult bindingResult) { // 회원가입 폼 제출 처리
+                         BindingResult bindingResult,
+                         Model model) { // 회원가입 폼 제출 처리
 
         log.info("회원가입 요청 아이디 = {}", signupDto.getMemberId()); // 폼에서 아이디 넘어왔는지 확인
         log.info("회원가입 요청 이메일 = {}", signupDto.getEmail()); // 폼에서 이메일 넘어왔는지 확인
@@ -50,6 +56,9 @@ public class MemberController {
                         error.getRejectedValue(),
                         error.getDefaultMessage()); // 어떤 필드 문제인지 콘솔 출력
             });
+
+            // th:max="${today}"가 today 값을 필요로 함. => 여기서 안 채워주면 Thymeleaf가 today를 못 찾아서 렌더링 오류(500)
+            model.addAttribute("today", LocalDate.now());
 
             return "member/signup"; // 오류 있으면 다시 회원가입으로
         }

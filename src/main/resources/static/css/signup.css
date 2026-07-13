@@ -223,3 +223,42 @@ body { /* body 태그 */
 .check-hint {
     color: #888;
 }
+
+
+/* 우편번호 검색 버튼 영역 */
+
+/* 입력칸과 버튼을 한 줄에 나란히 배치 */
+.postcode-wrap {
+    display: flex;
+    gap: 8px;
+}
+
+.postcode-wrap .form-input {
+    flex: 1;
+}
+
+.postcode-btn {
+    flex-shrink: 0; /* 화면 좁아져도 버튼 크기 줄어들지 않음 */
+    height: 44px;
+    padding: 0 16px;
+    border: 1px solid #222;
+    border-radius: 6px;
+    background-color: #fff;
+    color: #222;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    white-space: nowrap; /* "주소 검색" 글자가 줄바꿈되지 않게 고정 */
+}
+
+.postcode-btn:hover {
+    background-color: #222;
+    color: #fff;
+}
+
+/* readonly 입력칸 (postcode, address) : 직접 타이핑 X => 팝업 결과로만 채워짐을 시각적으로 표시 */
+.form-input[readonly] {
+    background-color: #f4f4f4;
+    color: #555;
+    cursor: default;
+}
