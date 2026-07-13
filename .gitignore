@@ -35,3 +35,7 @@ out/
 
 ### VS Code ###
 .vscode/
+
+### 소셜 로그인 API 키 (절대 커밋 금지) ###
+# 실제 키가 들어 있는 파일만 제외. 템플릿(.example)은 팀 공유를 위해 올린다.
+src/main/resources/application-secret.yaml
