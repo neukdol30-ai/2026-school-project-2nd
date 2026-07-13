@@ -2,7 +2,9 @@ package com.siyan1234.itproject2nd.admin.service;
 
 import com.siyan1234.itproject2nd.admin.dao.AdminDashboardDao;
 import com.siyan1234.itproject2nd.admin.dto.AdminDashboardDto;
+import com.siyan1234.itproject2nd.admin.dto.RecentChatRoomDto;
 import com.siyan1234.itproject2nd.admin.dto.ServiceStatusDto;
+import com.siyan1234.itproject2nd.member.dto.MemberDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -61,6 +63,44 @@ public class AdminDashboardService {
         return dashboard;
     }
 
+    @Transactional(readOnly = true)
+    public List<MemberDto> findAdminMembers(String keyword, int page, int size) {
+        int offset = calculateOffset(page, size);
+        return adminDashboardDao.findAdminMembers(cleanText(keyword), offset, size);
+    }
+
+    @Transactional(readOnly = true)
+    public long countAdminMembers(String keyword) {
+        return nullToZero(adminDashboardDao.countAdminMembers(cleanText(keyword)));
+    }
+
+    @Transactional(readOnly = true)
+    public List<RecentChatRoomDto> findAdminChatRooms(
+            String status,
+            String category,
+            String keyword,
+            int page,
+            int size
+    ) {
+        int offset = calculateOffset(page, size);
+        return adminDashboardDao.findAdminChatRooms(
+                cleanText(status),
+                cleanText(category),
+                cleanText(keyword),
+                offset,
+                size
+        );
+    }
+
+    @Transactional(readOnly = true)
+    public long countAdminChatRooms(String status, String category, String keyword) {
+        return nullToZero(adminDashboardDao.countAdminChatRooms(
+                cleanText(status),
+                cleanText(category),
+                cleanText(keyword)
+        ));
+    }
+
     private List<ServiceStatusDto> createServiceStatusList() {
         boolean naverAvailable = hasText(naverClientId) && hasText(naverClientSecret);
         boolean dataGoAvailable = hasText(dataGoServiceKey);
@@ -88,8 +128,22 @@ public class AdminDashboardService {
         );
     }
 
+    private int calculateOffset(int page, int size) {
+        int safePage = Math.max(page, 1);
+        int safeSize = Math.max(size, 1);
+        return (safePage - 1) * safeSize;
+    }
+
     private Long nullToZero(Long value) {
         return value == null ? 0L : value;
+    }
+
+    private String cleanText(String value) {
+        if (value == null) {
+            return "";
+        }
+
+        return value.trim();
     }
 
     private boolean hasText(String value) {

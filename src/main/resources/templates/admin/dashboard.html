@@ -5,10 +5,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SecondPro 관리자 대시보드</title>
-
-    <!-- Swiper는 운영 알림 롤링 영역에서만 사용합니다. -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css">
+    <title>SecondPro 관리자 콘솔</title>
     <link rel="stylesheet" th:href="@{/css/admin/admin-dashboard.css}">
     <link rel="stylesheet" th:href="@{/css/cookie-consent.css}">
 </head>
@@ -23,10 +20,7 @@
             </div>
         </div>
 
-
-
-        <!-- 접속한 관리자 프로필 카드입니다.
-             예시 이미지처럼 관리자 계정/권한/가입일/최근 로그인 정보를 한눈에 확인할 수 있게 구성했습니다. -->
+        <!-- 접속한 관리자 프로필 카드입니다. 내 정보 보기는 페이지 이동이 아니라 모달로 표시합니다. -->
         <section class="admin-profile-panel">
             <div class="profile-main">
                 <div class="profile-avatar">
@@ -61,37 +55,36 @@
                 </div>
             </dl>
 
-            <div class="profile-actions">
-                <a th:if="${loginAdmin != null}"
-                   th:href="@{/admin/members/{no}(no=${loginAdmin.no})}">내 정보 보기</a>
-                <a th:unless="${loginAdmin != null}" th:href="@{/admin/members}">회원 관리</a>
-            </div>
+            <button type="button" class="profile-detail-button" data-modal-open="adminProfileModal">
+                내 정보 보기
+            </button>
         </section>
 
-        <nav class="admin-menu">
+        <nav class="admin-menu" aria-label="관리자 메뉴">
             <p class="menu-label">운영</p>
-            <a th:href="@{/admin}" class="menu-item active">
+            <a th:href="@{/admin(view='dashboard')}"
+               class="menu-item"
+               th:classappend="${activeView == 'dashboard'} ? ' active' : ''">
                 <span>🏠</span>
                 <em>대시보드</em>
             </a>
-            <a th:href="@{/admin/chats}" class="menu-item">
+            <a th:href="@{/admin(view='chats')}"
+               class="menu-item"
+               th:classappend="${activeView == 'chats'} ? ' active' : ''">
                 <span>💬</span>
                 <em>상담 관리</em>
             </a>
-            <a th:href="@{/admin/members}" class="menu-item">
+            <a th:href="@{/admin(view='members')}"
+               class="menu-item"
+               th:classappend="${activeView == 'members'} ? ' active' : ''">
                 <span>👥</span>
                 <em>회원 관리</em>
             </a>
 
             <p class="menu-label">DB 데이터 관리형</p>
-            <a href="#" class="menu-item disabled" title="다음 패치에서 관리자 URL로 연결 예정입니다.">
+            <a href="#" class="menu-item disabled" title="다음 단계에서 관리자 URL로 연결 예정입니다.">
                 <span>📝</span>
                 <em>게시글 관리</em>
-                <small>예정</small>
-            </a>
-            <a href="#" class="menu-item disabled" title="다음 패치에서 관리자 URL로 연결 예정입니다.">
-                <span>💭</span>
-                <em>댓글 관리</em>
                 <small>예정</small>
             </a>
             <a href="#" class="menu-item disabled" title="상담 만족도 기능 추가 후 활성화 예정입니다.">
@@ -106,7 +99,9 @@
             </a>
 
             <p class="menu-label">외부 서비스 상태</p>
-            <a href="#service-status" class="menu-item">
+            <a th:href="@{/admin(view='services')}"
+               class="menu-item"
+               th:classappend="${activeView == 'services'} ? ' active' : ''">
                 <span>🔌</span>
                 <em>서비스 상태</em>
             </a>
@@ -114,19 +109,19 @@
 
         <div class="sidebar-card">
             <strong>운영 팁</strong>
-            <p>읽지 않은 상담과 진행 중 상담을 우선 확인하세요.</p>
-            <a th:href="@{/admin/chats}">상담 보러가기</a>
+            <p>관리자 콘솔 안에서 대시보드, 상담관리, 회원관리를 한 번에 처리합니다.</p>
+            <a th:href="@{/admin(view='chats')}">상담 확인하기</a>
         </div>
     </aside>
 
     <main class="admin-main">
         <header class="admin-topbar">
             <div>
-                <span class="eyebrow">Admin Dashboard</span>
-                <h1>운영 현황 요약</h1>
+                <span class="eyebrow" th:text="${activeView == 'chats' ? 'Chat Management' : (activeView == 'members' ? 'Member Management' : (activeView == 'services' ? 'Service Status' : 'Admin Dashboard'))}">Admin Dashboard</span>
+                <h1 th:text="${activeView == 'chats' ? '상담 관리' : (activeView == 'members' ? '회원 관리' : (activeView == 'services' ? '외부 서비스 상태' : '운영 현황 요약'))}">운영 현황 요약</h1>
             </div>
             <div class="topbar-actions">
-                <button type="button" class="top-profile-chip">
+                <button type="button" class="top-profile-chip" data-modal-open="adminProfileModal">
                     <span class="top-profile-avatar"
                           th:text="${loginAdmin != null and loginAdmin.nickname != null and !#strings.isEmpty(loginAdmin.nickname) ? #strings.substring(loginAdmin.nickname, 0, 1) : 'A'}">A</span>
                     <span class="login-user">
@@ -141,169 +136,336 @@
             </div>
         </header>
 
-        <section class="hero-swiper-card">
-            <div class="swiper adminNoticeSwiper">
-                <div class="swiper-wrapper">
-                    <div class="swiper-slide notice-slide blue">
+        <!-- 대시보드 영역 -->
+        <section class="admin-view" th:classappend="${activeView == 'dashboard'} ? ' active' : ''" id="dashboardView">
+            <section class="hero-card">
+                <div>
+                    <span class="notice-tag">운영 현황</span>
+                    <h2>오늘 접수된 상담 <strong th:text="${dashboard.todayChatRoomCount}">0</strong>건</h2>
+                    <p>현황 요약을 먼저 확인하고, 필요한 관리 기능은 좌측 메뉴에서 바로 전환하세요.</p>
+                </div>
+                <a th:href="@{/admin(view='chats')}" class="hero-action">상담 관리</a>
+            </section>
+
+            <section class="metric-grid">
+                <article class="metric-card">
+                    <span>전체 회원</span>
+                    <strong th:text="${dashboard.totalMemberCount}">0</strong>
+                    <small th:text="'오늘 가입 ' + ${dashboard.todayMemberCount} + '명'">오늘 가입 0명</small>
+                </article>
+                <article class="metric-card">
+                    <span>전체 게시글</span>
+                    <strong th:text="${dashboard.totalBoardCount}">0</strong>
+                    <small th:text="'오늘 작성 ' + ${dashboard.todayBoardCount} + '건'">오늘 작성 0건</small>
+                </article>
+                <article class="metric-card">
+                    <span>진행 중 상담</span>
+                    <strong class="orange" th:text="${dashboard.openChatRoomCount}">0</strong>
+                    <small th:text="'오늘 접수 ' + ${dashboard.todayChatRoomCount} + '건'">오늘 접수 0건</small>
+                </article>
+                <article class="metric-card">
+                    <span>읽지 않은 상담</span>
+                    <strong class="red" th:text="${dashboard.unreadChatRoomCount}">0</strong>
+                    <small>사용자 메시지 기준</small>
+                </article>
+                <article class="metric-card">
+                    <span>종료된 상담</span>
+                    <strong class="green" th:text="${dashboard.closedChatRoomCount}">0</strong>
+                    <small th:text="'전체 상담 ' + ${dashboard.totalChatRoomCount} + '건'">전체 상담 0건</small>
+                </article>
+                <article class="metric-card">
+                    <span>오늘 방문</span>
+                    <strong th:text="${dashboard.todayVisitCount}">0</strong>
+                    <small>분석 쿠키 동의 기준</small>
+                </article>
+            </section>
+
+            <section class="dashboard-grid">
+                <article class="panel trend-panel">
+                    <div class="panel-head">
                         <div>
-                            <span class="notice-tag">상담 운영</span>
-                            <h2>오늘 접수된 상담 <strong th:text="${dashboard.todayChatRoomCount}">0</strong>건</h2>
-                            <p>신규 상담과 읽지 않은 상담을 먼저 확인해 주세요.</p>
+                            <span class="eyebrow">Last 7 Days</span>
+                            <h2>최근 7일 상담 접수 추이</h2>
                         </div>
-                        <a th:href="@{/admin/chats}">상담 관리</a>
+                        <span class="panel-badge">chat_room.created_date 기준</span>
                     </div>
-                    <div class="swiper-slide notice-slide green">
+                    <div class="trend-chart" id="dailyChatTrend">
+                        <div class="trend-item" th:each="day : ${dashboard.dailyChatStatsList}">
+                            <span class="trend-value" th:text="${day.chatCount}">0</span>
+                            <div class="trend-bar" th:attr="data-count=${day.chatCount}"></div>
+                            <strong th:text="${day.dateLabel}">07/10</strong>
+                        </div>
+                    </div>
+                </article>
+
+                <article class="panel category-panel">
+                    <div class="panel-head">
                         <div>
-                            <span class="notice-tag">방문 분석</span>
-                            <h2>오늘 방문 기록 <strong th:text="${dashboard.todayVisitCount}">0</strong>건</h2>
-                            <p>분석 쿠키에 동의한 사용자의 방문 기록만 집계됩니다.</p>
+                            <span class="eyebrow">Category</span>
+                            <h2>상담 카테고리별 통계</h2>
                         </div>
-                        <a href="#service-status">상태 보기</a>
                     </div>
-                    <div class="swiper-slide notice-slide purple">
-                        <div>
-                            <span class="notice-tag">서비스 상태</span>
-                            <h2>외부 API 설정 상태를 확인하세요</h2>
-                            <p>뉴스, 공공데이터, 카카오 알림 설정 여부를 노출 없이 확인합니다.</p>
-                        </div>
-                        <a href="#service-status">확인하기</a>
-                    </div>
-                </div>
-                <div class="swiper-pagination"></div>
-            </div>
-        </section>
-
-        <section class="metric-grid">
-            <article class="metric-card primary">
-                <span>전체 회원</span>
-                <strong th:text="${#numbers.formatInteger(dashboard.totalMemberCount, 0, 'COMMA')}">0</strong>
-                <p>오늘 가입 <b th:text="${dashboard.todayMemberCount}">0</b>명</p>
-            </article>
-            <article class="metric-card">
-                <span>전체 게시글</span>
-                <strong th:text="${#numbers.formatInteger(dashboard.totalBoardCount, 0, 'COMMA')}">0</strong>
-                <p>오늘 작성 <b th:text="${dashboard.todayBoardCount}">0</b>건</p>
-            </article>
-            <article class="metric-card warning">
-                <span>진행 중 상담</span>
-                <strong th:text="${#numbers.formatInteger(dashboard.openChatRoomCount, 0, 'COMMA')}">0</strong>
-                <p>오늘 접수 <b th:text="${dashboard.todayChatRoomCount}">0</b>건</p>
-            </article>
-            <article class="metric-card danger">
-                <span>읽지 않은 상담</span>
-                <strong th:text="${#numbers.formatInteger(dashboard.unreadChatRoomCount, 0, 'COMMA')}">0</strong>
-                <p>사용자 메시지 기준</p>
-            </article>
-            <article class="metric-card success">
-                <span>종료된 상담</span>
-                <strong th:text="${#numbers.formatInteger(dashboard.closedChatRoomCount, 0, 'COMMA')}">0</strong>
-                <p>전체 상담 <b th:text="${dashboard.totalChatRoomCount}">0</b>건</p>
-            </article>
-            <article class="metric-card">
-                <span>오늘 방문</span>
-                <strong th:text="${#numbers.formatInteger(dashboard.todayVisitCount, 0, 'COMMA')}">0</strong>
-                <p>분석 쿠키 동의 기준</p>
-            </article>
-        </section>
-
-        <section class="dashboard-grid">
-            <article class="panel wide-panel">
-                <div class="panel-head">
-                    <div>
-                        <span class="eyebrow">Last 7 Days</span>
-                        <h2>최근 7일 상담 접수 추이</h2>
-                    </div>
-                    <span class="panel-badge">chat_room.created_date 기준</span>
-                </div>
-
-                <div class="trend-chart" id="dailyChatTrend">
-                    <div class="trend-item"
-                         th:each="stat : ${dashboard.dailyChatStatsList}">
-                        <div class="trend-bar"
-                             th:attr="data-count=${stat.chatCount}">
-                            <span th:text="${stat.chatCount}">0</span>
-                        </div>
-                        <em th:text="${stat.dateLabel}">07/10</em>
-                    </div>
-                </div>
-            </article>
-
-            <article class="panel">
-                <div class="panel-head">
-                    <div>
-                        <span class="eyebrow">Category</span>
-                        <h2>상담 카테고리별 통계</h2>
-                    </div>
-                </div>
-
-                <div class="category-list" id="categoryStats">
-                    <div class="category-row"
-                         th:each="categoryStat : ${dashboard.categoryStatsList}">
-                        <div class="category-title">
-                            <span th:text="${categoryStat.categoryIcon}">💬</span>
-                            <strong th:text="${categoryStat.categoryName}">기타 문의</strong>
-                            <em th:text="|${categoryStat.chatCount}건|">0건</em>
-                        </div>
-                        <div class="category-progress">
-                            <span th:attr="data-count=${categoryStat.chatCount}"></span>
-                        </div>
-                        <p>
-                            진행 <b th:text="${categoryStat.openCount}">0</b> ·
-                            종료 <b th:text="${categoryStat.closedCount}">0</b>
-                        </p>
-                    </div>
-                </div>
-            </article>
-        </section>
-
-        <section class="dashboard-grid lower-grid">
-            <article class="panel recent-panel">
-                <div class="panel-head">
-                    <div>
-                        <span class="eyebrow">Recent Chats</span>
-                        <h2>최근 상담 목록</h2>
-                    </div>
-                    <a th:href="@{/admin/chats}" class="panel-link">전체 보기</a>
-                </div>
-
-                <div class="recent-chat-list">
-                    <a class="recent-chat-card"
-                       th:each="chatRoom : ${dashboard.recentChatRoomList}"
-                       th:href="@{/admin/chats/{roomNo}(roomNo=${chatRoom.roomNo})}">
-                        <div class="recent-chat-icon" th:text="${chatRoom.categoryIcon}">💬</div>
-                        <div class="recent-chat-body">
-                            <div class="recent-chat-title">
-                                <strong th:text="|#${chatRoom.roomNo} ${chatRoom.categoryName}|">#1 기타 문의</strong>
-                                <span th:classappend="${chatRoom.status == 'OPEN'} ? ' open' : ' closed'"
-                                      th:text="${chatRoom.statusName}">진행 중</span>
+                    <div class="category-list" id="categoryStats">
+                        <div class="category-row" th:each="category : ${dashboard.categoryStatsList}">
+                            <div class="category-title">
+                                <strong>
+                                    <span th:text="${category.categoryIcon}">💬</span>
+                                    <span th:text="${category.categoryName}">메일 문의</span>
+                                </strong>
+                                <em th:text="${category.chatCount} + '건'">0건</em>
                             </div>
-                            <p th:text="${chatRoom.lastMessage != null ? chatRoom.lastMessage : '아직 메시지가 없습니다.'}">
-                                최근 메시지
-                            </p>
-                            <small>
-                                사용자
-                                <b th:text="${chatRoom.userNickname != null ? chatRoom.userNickname : '탈퇴/미확인'}">사용자</b>
-                                · 안읽음
-                                <b th:text="${chatRoom.unreadCount}">0</b>
-                            </small>
+                            <div class="category-progress">
+                                <span th:attr="data-count=${category.chatCount}"></span>
+                            </div>
+                            <p th:text="'진행 ' + ${category.openCount} + ' · 종료 ' + ${category.closedCount}">진행 0 · 종료 0</p>
                         </div>
-                    </a>
-
-                    <div class="empty-state" th:if="${#lists.isEmpty(dashboard.recentChatRoomList)}">
-                        <strong>아직 상담 데이터가 없습니다.</strong>
-                        <p>사용자가 상담을 시작하면 이곳에 최근 상담이 표시됩니다.</p>
                     </div>
+                </article>
+            </section>
+
+            <section class="wide-grid">
+                <article class="panel">
+                    <div class="panel-head">
+                        <div>
+                            <span class="eyebrow">Recent Chats</span>
+                            <h2>최근 상담</h2>
+                        </div>
+                        <a th:href="@{/admin(view='chats')}" class="small-link">전체 상담 보기</a>
+                    </div>
+                    <div class="recent-chat-list">
+                        <a class="recent-chat-item"
+                           th:each="room : ${dashboard.recentChatRoomList}"
+                           th:href="@{/admin/chats/{roomNo}(roomNo=${room.roomNo})}">
+                            <span class="chat-icon" th:text="${room.categoryIcon}">💬</span>
+                            <div>
+                                <strong th:text="'#' + ${room.roomNo} + ' · ' + ${room.categoryName}">#1 · 메일 문의</strong>
+                                <p th:text="${room.lastMessage != null and !#strings.isEmpty(room.lastMessage) ? room.lastMessage : '아직 메시지가 없습니다.'}">최근 메시지</p>
+                            </div>
+                            <em th:classappend="${room.status == 'OPEN'} ? ' open' : ' closed'" th:text="${room.statusName}">진행 중</em>
+                        </a>
+                        <div class="empty-box" th:if="${dashboard.recentChatRoomList == null or #lists.isEmpty(dashboard.recentChatRoomList)}">
+                            <strong>최근 상담 없음</strong>
+                            <p>상담이 접수되면 이 영역에 최근 상담이 표시됩니다.</p>
+                        </div>
+                    </div>
+                </article>
+
+                <article class="panel">
+                    <div class="panel-head">
+                        <div>
+                            <span class="eyebrow">External Services</span>
+                            <h2>외부 서비스 상태</h2>
+                        </div>
+                        <a th:href="@{/admin(view='services')}" class="small-link">상태 보기</a>
+                    </div>
+                    <div class="service-list compact">
+                        <div class="service-card"
+                             th:each="service : ${dashboard.serviceStatusList}"
+                             th:classappend="${service.available} ? ' available' : ' pending'">
+                            <div>
+                                <strong th:text="${service.serviceName}">서비스명</strong>
+                                <p th:text="${service.description}">서비스 설명</p>
+                            </div>
+                            <span th:text="${service.status}">상태</span>
+                        </div>
+                    </div>
+                </article>
+            </section>
+        </section>
+
+        <!-- 상담 관리 영역: /admin 내부에서 표시됩니다. -->
+        <section class="admin-view" th:classappend="${activeView == 'chats'} ? ' active' : ''" id="chatManageView">
+            <article class="panel full-panel">
+                <div class="panel-head with-actions">
+                    <div>
+                        <span class="eyebrow">Chat Management</span>
+                        <h2>상담 관리</h2>
+                        <p>별도 페이지 이동 없이 관리자 콘솔 안에서 상담 목록을 검색하고 확인합니다.</p>
+                    </div>
+                    <a th:href="@{/admin(view='dashboard')}" class="small-link">대시보드</a>
+                </div>
+
+                <form class="admin-filter-form" th:action="@{/admin}" method="get">
+                    <input type="hidden" name="view" value="chats">
+                    <select name="chatStatus">
+                        <option value="" th:selected="${#strings.isEmpty(chatStatus)}">전체 상태</option>
+                        <option value="OPEN" th:selected="${chatStatus == 'OPEN'}">진행 중</option>
+                        <option value="CLOSED" th:selected="${chatStatus == 'CLOSED'}">종료</option>
+                    </select>
+                    <select name="chatCategory">
+                        <option value="" th:selected="${#strings.isEmpty(chatCategory)}">전체 카테고리</option>
+                        <option value="MAIL" th:selected="${chatCategory == 'MAIL'}">메일 문의</option>
+                        <option value="MAP" th:selected="${chatCategory == 'MAP'}">지도 문의</option>
+                        <option value="STOCK" th:selected="${chatCategory == 'STOCK'}">증권 문의</option>
+                        <option value="NEWS" th:selected="${chatCategory == 'NEWS'}">뉴스 문의</option>
+                        <option value="WEATHER" th:selected="${chatCategory == 'WEATHER'}">날씨 문의</option>
+                        <option value="CALENDAR" th:selected="${chatCategory == 'CALENDAR'}">캘린더 문의</option>
+                        <option value="ETC" th:selected="${chatCategory == 'ETC'}">기타 문의</option>
+                    </select>
+                    <input type="text" name="chatKeyword" th:value="${chatKeyword}" placeholder="방 번호, 닉네임, 최근 메시지 검색">
+                    <button type="submit">검색</button>
+                    <a th:href="@{/admin(view='chats')}" class="reset-link">초기화</a>
+                </form>
+
+                <div class="table-toolbar">
+                    <strong th:text="'검색 결과 ' + ${chatTotalCount} + '건'">검색 결과 0건</strong>
+                    <span>상담방 상세 응답 화면은 현재 안정화된 기존 화면을 연결합니다.</span>
+                </div>
+
+                <div class="admin-table-wrap">
+                    <table class="admin-table">
+                        <thead>
+                        <tr>
+                            <th>방 번호</th>
+                            <th>카테고리</th>
+                            <th>사용자</th>
+                            <th>상태</th>
+                            <th>안읽음</th>
+                            <th>최근 메시지</th>
+                            <th>접수일</th>
+                            <th>관리</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="room : ${adminChatRoomList}">
+                            <td th:text="'#' + ${room.roomNo}">#1</td>
+                            <td>
+                                <span th:text="${room.categoryIcon}">💬</span>
+                                <span th:text="${room.categoryName}">메일 문의</span>
+                            </td>
+                            <td th:text="${room.userNickname != null ? room.userNickname : '탈퇴/미지정'}">사용자</td>
+                            <td><span class="status-pill" th:classappend="${room.status == 'OPEN'} ? ' open' : ' closed'" th:text="${room.statusName}">진행 중</span></td>
+                            <td th:text="${room.unreadCount}">0</td>
+                            <td class="ellipsis" th:text="${room.lastMessage != null and !#strings.isEmpty(room.lastMessage) ? room.lastMessage : '메시지 없음'}">최근 메시지</td>
+                            <td th:text="${room.createdDate != null ? #temporals.format(room.createdDate, 'yyyy-MM-dd HH:mm') : '-'}">2026-07-13</td>
+                            <td><a class="table-action" th:href="@{/admin/chats/{roomNo}(roomNo=${room.roomNo})}">상담 열기</a></td>
+                        </tr>
+                        <tr th:if="${adminChatRoomList == null or #lists.isEmpty(adminChatRoomList)}">
+                            <td colspan="8" class="empty-cell">조회된 상담이 없습니다.</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="pagination" th:if="${chatTotalPages > 1}">
+                    <a th:if="${chatPage > 1}"
+                       th:href="@{/admin(view='chats', chatStatus=${chatStatus}, chatCategory=${chatCategory}, chatKeyword=${chatKeyword}, chatPage=${chatPage - 1})}">이전</a>
+                    <span th:each="pageNo : ${#numbers.sequence(1, chatTotalPages)}">
+                        <a th:href="@{/admin(view='chats', chatStatus=${chatStatus}, chatCategory=${chatCategory}, chatKeyword=${chatKeyword}, chatPage=${pageNo})}"
+                           th:text="${pageNo}"
+                           th:classappend="${pageNo == chatPage} ? ' active' : ''">1</a>
+                    </span>
+                    <a th:if="${chatPage < chatTotalPages}"
+                       th:href="@{/admin(view='chats', chatStatus=${chatStatus}, chatCategory=${chatCategory}, chatKeyword=${chatKeyword}, chatPage=${chatPage + 1})}">다음</a>
                 </div>
             </article>
+        </section>
 
-            <article class="panel" id="service-status">
+        <!-- 회원 관리 영역: /admin 내부에서 표시됩니다. -->
+        <section class="admin-view" th:classappend="${activeView == 'members'} ? ' active' : ''" id="memberManageView">
+            <article class="panel full-panel">
+                <div class="panel-head with-actions">
+                    <div>
+                        <span class="eyebrow">Member Management</span>
+                        <h2>회원 관리</h2>
+                        <p>회원 검색, 페이징, 전체선택, 부분선택을 관리자 콘솔 안에서 처리합니다.</p>
+                    </div>
+                    <a th:href="@{/admin(view='dashboard')}" class="small-link">대시보드</a>
+                </div>
+
+                <form class="admin-filter-form" th:action="@{/admin}" method="get">
+                    <input type="hidden" name="view" value="members">
+                    <input type="text" name="memberKeyword" th:value="${memberKeyword}" placeholder="아이디, 이름, 닉네임, 이메일, 전화번호, 권한 검색">
+                    <button type="submit">검색</button>
+                    <a th:href="@{/admin(view='members')}" class="reset-link">초기화</a>
+                </form>
+
+                <div class="table-toolbar">
+                    <div>
+                        <strong th:text="'검색 결과 ' + ${memberTotalCount} + '명'">검색 결과 0명</strong>
+                        <span id="selectedMemberCount">선택 0명</span>
+                    </div>
+                    <div class="toolbar-actions">
+                        <button type="button" class="ghost-button" id="selectAllMembers">전체선택</button>
+                        <button type="button" class="ghost-button" id="clearMemberSelection">선택해제</button>
+                    </div>
+                </div>
+
+                <div class="admin-table-wrap">
+                    <table class="admin-table selectable-table">
+                        <thead>
+                        <tr>
+                            <th><input type="checkbox" id="memberSelectAllCheckbox" aria-label="전체 선택"></th>
+                            <th>번호</th>
+                            <th>아이디</th>
+                            <th>이름/닉네임</th>
+                            <th>이메일</th>
+                            <th>연락처</th>
+                            <th>권한</th>
+                            <th>가입일</th>
+                            <th>관리</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr th:each="member : ${adminMemberList}">
+                            <td><input type="checkbox" class="member-row-checkbox" th:value="${member.no}" aria-label="회원 선택"></td>
+                            <td th:text="${member.no}">1</td>
+                            <td th:text="${member.memberId}">user01</td>
+                            <td>
+                                <strong th:text="${member.name != null and !#strings.isEmpty(member.name) ? member.name : '-'}">홍길동</strong>
+                                <span th:text="${member.nickname}">닉네임</span>
+                            </td>
+                            <td th:text="${member.email != null and !#strings.isEmpty(member.email) ? member.email : '미등록'}">email@test.com</td>
+                            <td th:text="${member.phone != null and !#strings.isEmpty(member.phone) ? member.phone : '미등록'}">010</td>
+                            <td><span class="role-tag" th:classappend="${member.role == 'ADMIN'} ? ' admin' : ' user'" th:text="${member.role}">USER</span></td>
+                            <td th:text="${member.regdate != null ? #temporals.format(member.regdate, 'yyyy-MM-dd') : '-'}">2026-07-13</td>
+                            <td>
+                                <button type="button"
+                                        class="table-action button-like"
+                                        data-member-detail-button
+                                        th:attr="data-member-no=${member.no},
+                                                 data-member-id=${member.memberId},
+                                                 data-member-name=${member.name},
+                                                 data-member-nickname=${member.nickname},
+                                                 data-member-email=${member.email},
+                                                 data-member-phone=${member.phone},
+                                                 data-member-role=${member.role},
+                                                 data-member-regdate=${member.regdate != null ? #temporals.format(member.regdate, 'yyyy-MM-dd HH:mm') : '미기록'}">
+                                    상세
+                                </button>
+                            </td>
+                        </tr>
+                        <tr th:if="${adminMemberList == null or #lists.isEmpty(adminMemberList)}">
+                            <td colspan="9" class="empty-cell">조회된 회원이 없습니다.</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="pagination" th:if="${memberTotalPages > 1}">
+                    <a th:if="${memberPage > 1}"
+                       th:href="@{/admin(view='members', memberKeyword=${memberKeyword}, memberPage=${memberPage - 1})}">이전</a>
+                    <span th:each="pageNo : ${#numbers.sequence(1, memberTotalPages)}">
+                        <a th:href="@{/admin(view='members', memberKeyword=${memberKeyword}, memberPage=${pageNo})}"
+                           th:text="${pageNo}"
+                           th:classappend="${pageNo == memberPage} ? ' active' : ''">1</a>
+                    </span>
+                    <a th:if="${memberPage < memberTotalPages}"
+                       th:href="@{/admin(view='members', memberKeyword=${memberKeyword}, memberPage=${memberPage + 1})}">다음</a>
+                </div>
+            </article>
+        </section>
+
+        <!-- 외부 서비스 상태 영역 -->
+        <section class="admin-view" th:classappend="${activeView == 'services'} ? ' active' : ''" id="serviceManageView">
+            <article class="panel full-panel">
                 <div class="panel-head">
                     <div>
                         <span class="eyebrow">External Services</span>
                         <h2>외부 서비스 상태</h2>
+                        <p>외부 API 키와 토큰 값은 노출하지 않고 설정 여부만 확인합니다.</p>
                     </div>
                 </div>
-
                 <div class="service-list">
                     <div class="service-card"
                          th:each="service : ${dashboard.serviceStatusList}"
@@ -315,17 +477,62 @@
                         <span th:text="${service.status}">상태</span>
                     </div>
                 </div>
-
-                <div class="admin-note">
-                    <strong>보안 메모</strong>
-                    <p>API 키와 토큰 값은 화면에 표시하지 않고, 설정 여부만 보여줍니다.</p>
-                </div>
             </article>
         </section>
     </main>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+<!-- 관리자 본인 정보 모달 -->
+<div class="admin-modal" id="adminProfileModal" aria-hidden="true">
+    <div class="admin-modal-backdrop" data-modal-close></div>
+    <div class="admin-modal-card">
+        <button type="button" class="modal-close" data-modal-close>×</button>
+        <div class="modal-profile-head">
+            <div class="modal-avatar"
+                 th:text="${loginAdmin != null and loginAdmin.nickname != null and !#strings.isEmpty(loginAdmin.nickname) ? #strings.substring(loginAdmin.nickname, 0, 1) : 'A'}">A</div>
+            <div>
+                <span class="eyebrow">Admin Profile</span>
+                <h2 th:text="${loginAdmin != null ? loginAdmin.memberId : 'admin'}">admin01</h2>
+                <p th:text="${loginAdmin != null and loginAdmin.email != null and !#strings.isEmpty(loginAdmin.email) ? loginAdmin.email : '이메일 미등록'}">admin@example.com</p>
+            </div>
+        </div>
+        <dl class="modal-info-grid">
+            <div><dt>권한</dt><dd th:text="${loginAdmin != null ? loginAdmin.role : 'ADMIN'}">ADMIN</dd></div>
+            <div><dt>회원번호</dt><dd th:text="${loginAdmin != null ? loginAdmin.no : '-'}">1</dd></div>
+            <div><dt>이름</dt><dd th:text="${loginAdmin != null and loginAdmin.name != null ? loginAdmin.name : '미등록'}">김관리</dd></div>
+            <div><dt>닉네임</dt><dd th:text="${loginAdmin != null ? loginAdmin.nickname : '미등록'}">관리자</dd></div>
+            <div><dt>전화번호</dt><dd th:text="${loginAdmin != null and loginAdmin.phone != null and !#strings.isEmpty(loginAdmin.phone) ? loginAdmin.phone : '미등록'}">010</dd></div>
+            <div><dt>가입일</dt><dd th:text="${loginAdmin != null and loginAdmin.regdate != null ? #temporals.format(loginAdmin.regdate, 'yyyy-MM-dd HH:mm') : '미기록'}">2026-07-13</dd></div>
+        </dl>
+    </div>
+</div>
+
+<!-- 회원 상세 모달 -->
+<div class="admin-modal" id="memberDetailModal" aria-hidden="true">
+    <div class="admin-modal-backdrop" data-modal-close></div>
+    <div class="admin-modal-card">
+        <button type="button" class="modal-close" data-modal-close>×</button>
+        <div class="modal-profile-head">
+            <div class="modal-avatar" id="memberModalAvatar">U</div>
+            <div>
+                <span class="eyebrow">Member Detail</span>
+                <h2 id="memberModalTitle">회원 상세</h2>
+                <p id="memberModalSubtitle">회원 정보를 확인합니다.</p>
+            </div>
+        </div>
+        <dl class="modal-info-grid">
+            <div><dt>회원번호</dt><dd id="memberModalNo">-</dd></div>
+            <div><dt>아이디</dt><dd id="memberModalId">-</dd></div>
+            <div><dt>이름</dt><dd id="memberModalName">-</dd></div>
+            <div><dt>닉네임</dt><dd id="memberModalNickname">-</dd></div>
+            <div><dt>이메일</dt><dd id="memberModalEmail">-</dd></div>
+            <div><dt>전화번호</dt><dd id="memberModalPhone">-</dd></div>
+            <div><dt>권한</dt><dd id="memberModalRole">-</dd></div>
+            <div><dt>가입일</dt><dd id="memberModalRegdate">-</dd></div>
+        </dl>
+    </div>
+</div>
+
 <script th:src="@{/js/admin-dashboard.js}"></script>
 <script th:src="@{/js/cookie-consent.js}"></script>
 </body>

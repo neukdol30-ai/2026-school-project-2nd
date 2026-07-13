@@ -10,11 +10,11 @@
 <body>
 <div class="admin-login-page">
     <section class="login-visual-panel">
-        <a th:href="@{/}" class="brand-mark">
-            <span>S</span>
+        <a th:href="@{/}" class="brand-mark home-link" title="메인페이지로 이동">
+            <span>🏠</span>
             <div>
-                <strong>SecondPro</strong>
-                <em>Admin Console</em>
+                <strong>메인페이지</strong>
+                <em>Home</em>
             </div>
         </a>
 
@@ -92,11 +92,6 @@
             <button type="submit" class="admin-login-button">관리자 로그인</button>
         </form>
 
-        <div class="login-bottom-actions">
-            <a th:href="@{/member/login}">일반 로그인</a>
-            <a th:href="@{/}">서비스 홈</a>
-        </div>
-
         <div class="security-note">
             <strong>보안 안내</strong>
             <p>관리자 페이지는 권한 검사를 통과한 ADMIN 계정만 접근할 수 있습니다.</p>
@@ -105,5 +100,6 @@
 </div>
 
 <script th:src="@{/js/cookie-consent.js}"></script>
+<script th:src="@{/js/password-autocomplete.JS.js}"></script>
 </body>
 </html>
