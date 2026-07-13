@@ -603,3 +603,87 @@ button, input, select { font-family: inherit; }
     .hero-card { align-items: flex-start; flex-direction: column; padding: 28px; }
     .modal-info-grid { grid-template-columns: 1fr; }
 }
+
+/* 처리 결과 안내 메시지입니다. 삭제 성공/실패 메시지를 관리자 화면 안에서 보여줍니다. */
+.admin-flash-area {
+    display: grid;
+    gap: 10px;
+    margin: -8px 0 18px;
+}
+.admin-flash {
+    padding: 14px 16px;
+    border-radius: 14px;
+    font-size: 13px;
+    font-weight: 900;
+    box-shadow: var(--admin-shadow);
+}
+.admin-flash.success {
+    color: #047857;
+    background: #d1fae5;
+}
+.admin-flash.error {
+    color: #b42318;
+    background: #fef3f2;
+}
+
+/* 테이블 관리 버튼 묶음입니다. 상세/수정/삭제 버튼이 좁은 화면에서도 겹치지 않도록 줄바꿈을 허용합니다. */
+.table-actions-inline {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+}
+
+.danger-button,
+.danger-action {
+    color: #b42318 !important;
+    background: #fef3f2 !important;
+}
+
+.danger-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 42px;
+    padding: 0 16px;
+    border: 0;
+    border-radius: 12px;
+    font-weight: 900;
+    cursor: pointer;
+}
+
+.table-muted-action {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 34px;
+    padding: 0 10px;
+    border-radius: 10px;
+    color: #98a2b3 !important;
+    background: #f2f4f7;
+    font-size: 12px !important;
+    font-weight: 900;
+    white-space: nowrap;
+}
+
+.admin-table input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    accent-color: var(--admin-primary);
+}
+
+.admin-table input[type="checkbox"]:disabled {
+    cursor: not-allowed;
+    opacity: 0.45;
+}
+
+@media (max-width: 760px) {
+    .table-toolbar {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .toolbar-actions {
+        flex-wrap: wrap;
+    }
+}

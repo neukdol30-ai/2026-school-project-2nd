@@ -178,4 +178,11 @@
         WHERE no = #{no} <!--MemberDto의 no 필드값. 없으면 전체 회원 다 수정된다.-->
     </update>
 
+
+    <!-- 관리자 회원 삭제용 -->
+    <delete id="deleteMember">
+        DELETE FROM member
+        WHERE no = #{no, jdbcType=NUMERIC}
+    </delete>
+
 </mapper>

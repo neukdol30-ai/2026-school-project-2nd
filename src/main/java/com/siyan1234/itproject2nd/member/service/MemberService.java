@@ -99,6 +99,46 @@ public class MemberService {
         memberDao.updateMember(memberDto);
     }
 
+
+    /**
+     * 관리자 회원 단건 삭제 처리입니다.
+     * member 테이블의 FK는 대부분 ON DELETE SET NULL/CASCADE로 설계되어 있어
+     * 회원 삭제 시 관련 데이터는 작성자 없음 또는 연동 정보 삭제로 정리됩니다.
+     */
+    public int deleteMember(Integer no) {
+        if (no == null) {
+            return 0;
+        }
+
+        return memberDao.deleteMember(no);
+    }
+
+    /**
+     * 관리자 회원 다중 삭제 처리입니다.
+     * 현재 로그인한 관리자 계정은 실수로 삭제되지 않도록 제외합니다.
+     */
+    public int deleteMembers(List<Integer> memberNoList, Integer loginAdminNo) {
+        if (memberNoList == null || memberNoList.isEmpty()) {
+            return 0;
+        }
+
+        int deletedCount = 0;
+
+        for (Integer memberNo : memberNoList) {
+            if (memberNo == null) {
+                continue;
+            }
+
+            if (loginAdminNo != null && loginAdminNo.equals(memberNo)) {
+                continue;
+            }
+
+            deletedCount += memberDao.deleteMember(memberNo);
+        }
+
+        return deletedCount;
+    }
+
     // 아이디 중복 여부 확인 (실시간 체크) / DB에 같은 아이디가 있으면 true(중복), 없으면 false(사용 가능)
     public boolean isMemberIdDuplicate(String memberId) {
         // findByMemberId는 이미 있는 메서드. 조회 결과 null 아니면 = 그 아이디 이미 존재 = 중복

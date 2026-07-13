@@ -24,4 +24,7 @@ public interface MemberDao {
     MemberDto findByNo(@Param("no") Integer no); // 관리자 회원 상세 조회용 SELECT 연결 (회원 고유번호 no 기준)
 
     int updateMember(MemberDto memberDto); // 관리자 회원 정보 수정용 UPDATE 연결.
+
+    /** 관리자 회원 삭제용 DELETE 연결 */
+    int deleteMember(@Param("no") Integer no);
 }
