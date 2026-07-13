@@ -5,6 +5,7 @@
     <title>게시글 상세</title>
     <link rel="stylesheet" href="https://uicdn.toast.com/editor/latest/toastui-editor.min.css">
     <script src="https://uicdn.toast.com/editor/latest/toastui-editor-viewer.min.js"></script>
+    <link rel="stylesheet" href="/css/cookie-consent.css">
 </head>
 <body>
 
@@ -59,7 +60,7 @@
 
             <button type="button"
                     th:onclick="'showEditForm(' + ${comment.no} + ')'">
-                   수정
+                수정
             </button>
 
             <a th:href="@{/board/comment/delete/{no}(no=${comment.no})}">
@@ -67,14 +68,14 @@
             </a>
 
             <form th:id="'comment-edit-form-' + ${comment.no}"
-                th:action="@{/board/comment/update/{no}(no=${comment.no})}"
-                method="post"
-                style="display:none; margin-top:10px;">
+                  th:action="@{/board/comment/update/{no}(no=${comment.no})}"
+                  method="post"
+                  style="display:none; margin-top:10px;">
 
                 <textarea name="content"
-                        rows="3"
-                        cols="50"
-                        th:text="${comment.content}"></textarea>
+                          rows="3"
+                          cols="50"
+                          th:text="${comment.content}"></textarea>
 
                 <br>
 
@@ -95,28 +96,28 @@
 
 
 
-        <hr>
+    <hr>
 
-        <h3>댓글 작성</h3>
+    <h3>댓글 작성</h3>
 
-        <form action="/board/comment/write" method="post">
+    <form action="/board/comment/write" method="post">
 
-            <input type="hidden"
-                    name="boardNo"
-                    th:value="${board.no}">
+        <input type="hidden"
+               name="boardNo"
+               th:value="${board.no}">
 
-            <textarea name="content"
-                        rows="3"
-                        cols="50"
-                        placeholder="댓글을 입력하세요"></textarea>
+        <textarea name="content"
+                  rows="3"
+                  cols="50"
+                  placeholder="댓글을 입력하세요"></textarea>
 
-            <br>
+        <br>
 
-            <button type="submit">
+        <button type="submit">
             댓글 등록
-            </button>
+        </button>
 
-        </form>
+    </form>
 
 </div>
 
@@ -143,5 +144,6 @@
 
 
 
+<script src="/js/cookie-consent.js"></script>
 </body>
 </html>

@@ -15,6 +15,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -36,6 +37,7 @@ import java.util.Map;
  * 사용자 화면:
  * - PC 상담 홈: /chat
  * - 모바일 상담 홈: /chat/mobile
+ * - 최근 사용 화면 이어가기: /chat/continue
  * - PC 상담방: /chat/room/{roomNo}
  * - 모바일 상담방: /chat/mobile/room/{roomNo}
  *
@@ -68,6 +70,44 @@ public class ChatController {
     @GetMapping("/mobile")
     public String mobileChatHome(HttpSession session, Model model) {
         return showChatHome(session, model, true);
+    }
+
+
+    /**
+     * 최근 사용한 상담 화면으로 이동
+     *
+     * 개인화 쿠키를 허용한 사용자의 경우
+     * SECONDPRO_LAST_CHAT_VIEW 값을 확인해서 PC 또는 모바일 상담 홈으로 이동한다.
+     *
+     * 주의:
+     * - /chat, /chat/mobile 직접 접근은 그대로 유지한다.
+     * - 자동 이동은 /chat/continue에서만 처리해서 사용자가 특정 화면을 직접 선택할 수 있게 한다.
+     */
+    @GetMapping("/continue")
+    public String continueChatView(
+            @CookieValue(value = "SECONDPRO_PERSONALIZATION", required = false) String personalizationCookie,
+            @CookieValue(value = "SECONDPRO_LAST_CHAT_VIEW", required = false) String lastChatView,
+            HttpSession session
+    ) {
+        MemberDto loginUser = getLoginUser(session);
+
+        if (loginUser == null) {
+            return redirectToUserLogin();
+        }
+
+        boolean personalizationAllowed =
+                "Y".equalsIgnoreCase(personalizationCookie)
+                        || "true".equalsIgnoreCase(personalizationCookie);
+
+        if (!personalizationAllowed) {
+            return "redirect:/chat";
+        }
+
+        if ("mobile".equalsIgnoreCase(lastChatView)) {
+            return "redirect:/chat/mobile";
+        }
+
+        return "redirect:/chat";
     }
 
     /** 사용자 PC 상담 시작 */

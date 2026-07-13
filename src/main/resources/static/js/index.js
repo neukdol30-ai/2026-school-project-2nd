@@ -190,6 +190,9 @@ function render() {
     app.innerHTML = `
         <div class="container">
             <div class="page-actions">
+                <a class="chat-continue-link" href="/chat/continue">
+                    💬 최근 상담 화면으로 이어가기
+                </a>
                 <button data-action="toggle-edit">
                     ${state.isEditMode ? "설정 완료" : "환경설정"}
                 </button>

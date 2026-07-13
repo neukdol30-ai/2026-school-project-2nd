@@ -112,6 +112,35 @@ button:disabled {
     cursor: not-allowed;
 }
 
+
+/* 메인 화면 상단 액션 버튼 영역 */
+.page-actions {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 18px;
+}
+
+/* 개인화 쿠키 기반 최근 상담 화면 이어가기 링크 */
+.chat-continue-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 36px;
+    padding: 8px 14px;
+    border-radius: 10px;
+    background: #111827;
+    color: #ffffff;
+    font-size: 14px;
+    font-weight: 700;
+    text-decoration: none;
+}
+
+.chat-continue-link:hover {
+    background: #1f2937;
+}
+
 /* 2:1 메인 레이아웃 */
 .dashboard-layout {
     display: grid;
