@@ -1,0 +1,183 @@
+/*
+ * admin-feedback.css
+ * 역할: 처리 결과 메시지, 삭제 버튼, 실시간 상담 상태 표시
+ */
+
+/* 처리 결과 안내 메시지입니다. 삭제 성공/실패 메시지를 관리자 화면 안에서 보여줍니다. */
+.admin-flash-area {
+    display: grid;
+    gap: 10px;
+    margin: -8px 0 18px;
+}
+.admin-flash {
+    padding: 14px 16px;
+    border-radius: 14px;
+    font-size: 13px;
+    font-weight: 900;
+    box-shadow: var(--admin-shadow);
+}
+.admin-flash.success {
+    color: #047857;
+    background: #d1fae5;
+}
+.admin-flash.error {
+    color: #b42318;
+    background: #fef3f2;
+}
+
+/* 테이블 관리 버튼 묶음입니다. 상세/수정/삭제 버튼이 좁은 화면에서도 겹치지 않도록 줄바꿈을 허용합니다. */
+.table-actions-inline {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+}
+
+.danger-button,
+.danger-action {
+    color: #b42318 !important;
+    background: #fef3f2 !important;
+}
+
+.danger-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 42px;
+    padding: 0 16px;
+    border: 0;
+    border-radius: 12px;
+    font-weight: 900;
+    cursor: pointer;
+}
+
+.table-muted-action {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 34px;
+    padding: 0 10px;
+    border-radius: 10px;
+    color: #98a2b3 !important;
+    background: #f2f4f7;
+    font-size: 12px !important;
+    font-weight: 900;
+    white-space: nowrap;
+}
+
+.admin-table input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    accent-color: var(--admin-primary);
+}
+
+.admin-table input[type="checkbox"]:disabled {
+    cursor: not-allowed;
+    opacity: 0.45;
+}
+
+@media (max-width: 760px) {
+    .table-toolbar {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .toolbar-actions {
+        flex-wrap: wrap;
+    }
+}
+
+/* 상담관리 패널 우측 액션 영역입니다. 실시간 연결 상태와 대시보드 이동 버튼을 함께 배치합니다. */
+.panel-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 10px;
+}
+
+/* /admin?view=chats 전용 실시간 연결 상태 표시입니다. */
+.chat-live-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 34px;
+    padding: 0 12px;
+    border-radius: 999px;
+    color: #475467;
+    background: #f2f4f7;
+    font-size: 12px;
+    font-weight: 900;
+}
+
+.chat-live-status span {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #98a2b3;
+}
+
+.chat-live-status.connected {
+    color: #047857;
+    background: #ecfdf3;
+}
+
+.chat-live-status.connected span {
+    background: #10b981;
+    box-shadow: 0 0 0 5px rgba(16, 185, 129, 0.14);
+}
+
+.chat-live-status.syncing {
+    color: #b54708;
+    background: #fffaeb;
+}
+
+.chat-live-status.syncing span {
+    background: #f59e0b;
+    box-shadow: 0 0 0 5px rgba(245, 158, 11, 0.14);
+}
+
+.chat-live-status.closed,
+.chat-live-status.error {
+    color: #b42318;
+    background: #fef3f2;
+}
+
+.chat-live-status.closed span,
+.chat-live-status.error span {
+    background: #ef4444;
+}
+
+/* 상담 목록 실시간 갱신 안내 문구입니다. */
+.realtime-hint {
+    display: inline-flex;
+    align-items: center;
+    min-height: 34px;
+    padding: 0 10px;
+    border-radius: 999px;
+    color: #475467;
+    background: #f8fafc;
+    font-size: 12px;
+    font-weight: 800;
+}
+
+/* WebSocket 알림으로 상담 목록이 갱신되었을 때 짧게 강조합니다. */
+.admin-table-wrap.realtime-updated {
+    animation: realtimeTableFlash 1.2s ease;
+}
+
+.realtime-chat-row {
+    transition: background 0.2s ease;
+}
+
+@keyframes realtimeTableFlash {
+    0% {
+        box-shadow: 0 0 0 0 rgba(79, 99, 246, 0.32);
+    }
+    45% {
+        box-shadow: 0 0 0 6px rgba(79, 99, 246, 0.12);
+    }
+    100% {
+        box-shadow: none;
+    }
+}

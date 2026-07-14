@@ -1,0 +1,93 @@
+/*
+ * admin-management.css
+ * 역할: 회원/상담 관리 검색폼, 테이블, 페이징 스타일
+ */
+
+.admin-filter-form {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 18px;
+}
+.admin-filter-form input,
+.admin-filter-form select {
+    height: 42px;
+    padding: 0 13px;
+    border: 1px solid var(--admin-line);
+    border-radius: 12px;
+    background: #ffffff;
+    color: var(--admin-text);
+    font-weight: 700;
+    outline: none;
+}
+.admin-filter-form input { min-width: 280px; flex: 1; }
+.admin-filter-form button,
+.ghost-button {
+    height: 42px;
+    padding: 0 16px;
+    border: 0;
+    border-radius: 12px;
+    color: #ffffff;
+    background: var(--admin-primary);
+    font-weight: 900;
+    cursor: pointer;
+}
+.ghost-button { color: var(--admin-primary); background: var(--admin-primary-soft); }
+.table-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin: 6px 0 14px;
+    color: var(--admin-muted);
+    font-size: 13px;
+}
+.table-toolbar strong { color: var(--admin-text); }
+.toolbar-actions { display: flex; gap: 8px; }
+.admin-table-wrap { overflow-x: auto; border: 1px solid var(--admin-line); border-radius: 18px; }
+.admin-table { width: 100%; border-collapse: collapse; min-width: 920px; background: #ffffff; }
+.admin-table th,
+.admin-table td { padding: 15px 14px; border-bottom: 1px solid var(--admin-line); text-align: left; font-size: 13px; vertical-align: middle; }
+.admin-table th { color: #475467; background: #f8fafc; font-size: 12px; font-weight: 900; }
+.admin-table tbody tr:hover { background: #fbfdff; }
+.admin-table td strong { display: block; }
+.admin-table td span { color: var(--admin-muted); font-size: 12px; }
+.ellipsis { max-width: 260px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.table-action {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 34px;
+    padding: 0 12px;
+    border-radius: 10px;
+    color: var(--admin-primary);
+    background: var(--admin-primary-soft);
+    font-size: 12px;
+    font-weight: 900;
+}
+.button-like { border: 0; cursor: pointer; }
+.role-tag { display: inline-flex !important; padding: 5px 9px; border-radius: 999px; font-weight: 900; }
+.role-tag.admin { color: #4c1d95 !important; background: #ede9fe; }
+.role-tag.user { color: #075985 !important; background: #e0f2fe; }
+.empty-cell,
+.empty-box { text-align: center; color: var(--admin-muted); padding: 32px !important; }
+.empty-box { border: 1px dashed var(--admin-line); border-radius: 16px; }
+.empty-box strong { display: block; color: var(--admin-text); }
+.empty-box p { margin: 6px 0 0; color: var(--admin-muted); }
+
+.pagination { display: flex; align-items: center; justify-content: center; gap: 6px; margin-top: 18px; }
+.pagination a {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 34px;
+    height: 34px;
+    padding: 0 10px;
+    border-radius: 10px;
+    color: #475467;
+    background: #f8fafc;
+    font-size: 12px;
+    font-weight: 900;
+}
+.pagination a.active { color: #ffffff; background: var(--admin-primary); }
+

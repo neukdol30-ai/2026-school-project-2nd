@@ -1,0 +1,40 @@
+/*
+ * admin-base.css
+ * 역할: 기본 변수, 전역 스타일, 콘솔 shell 스타일
+ */
+
+:root {
+    --admin-bg: #f5f7fb;
+    --admin-surface: #ffffff;
+    --admin-text: #101828;
+    --admin-muted: #667085;
+    --admin-soft: #f2f4f7;
+    --admin-line: #e8edf5;
+    --admin-primary: #4f63f6;
+    --admin-primary-dark: #24307c;
+    --admin-primary-soft: #eef1ff;
+    --admin-green: #10b981;
+    --admin-orange: #f59e0b;
+    --admin-red: #ef4444;
+    --admin-purple: #7c3aed;
+    --admin-shadow: 0 22px 60px rgba(15, 23, 42, 0.08);
+}
+
+* { box-sizing: border-box; }
+
+body {
+    margin: 0;
+    min-height: 100vh;
+    font-family: Inter, Pretendard, "Noto Sans KR", Arial, sans-serif;
+    color: var(--admin-text);
+    background: var(--admin-bg);
+}
+
+a { color: inherit; text-decoration: none; }
+button, input, select { font-family: inherit; }
+
+.admin-shell {
+    display: flex;
+    min-height: 100vh;
+}
+
