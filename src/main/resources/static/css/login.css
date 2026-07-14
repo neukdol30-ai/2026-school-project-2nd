@@ -117,3 +117,55 @@ body { /* <body> 하나에만 적용 */
 .bottom-link a:hover { /* .bottom-link 안의 <a>에 마우스를 올렸을 때만 적용 */
     text-decoration: underline;
 }
+
+/* 소셜 로그인 영역 */
+
+/* login.html의 <div class="social-divider"> */
+.social-divider {
+    display: flex;
+    align-items: center;
+    text-align: center;
+    margin: 24px 0;
+    color: #888;
+    font-size: 13px;
+}
+
+/* .social-divider 안의 <span> 요소 */
+.social-divider span {
+    padding: 0 12px;
+    white-space: nowrap;
+}
+
+/* ::before / ::after = 가상 요소 / social-divider 앞, 뒤에 가로선 */
+.social-divider::before,
+.social-divider::after {
+    content: "";
+    flex: 1;
+    height: 1px;
+    background-color: #ddd;
+}
+
+/* login.html의 <div class="social-login-wrap"> */
+.social-login-wrap {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+/* login.html의 <a class="social-button-link"> */
+.social-button-link {
+    display: block;
+    cursor: pointer;
+    transition: opacity 0.15s;
+}
+
+.social-button-ling:hover {
+    opacity: 0.85;
+}
+
+/* login.html에 새로 넣은 <img class="social-button-img"> (카카오/네이버 완성형 버튼) */
+.social-button-img {
+    display: block;
+    width: 100%;
+    height: auto;
+}

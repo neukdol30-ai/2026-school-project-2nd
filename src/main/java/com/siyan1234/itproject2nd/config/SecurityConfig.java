@@ -1,5 +1,7 @@
 package com.siyan1234.itproject2nd.config;
 
+import com.siyan1234.itproject2nd.member.service.OAuth2DetailsService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -8,7 +10,10 @@ import org.springframework.security.web.SecurityFilterChain;
 
 @Configuration
 @EnableWebSecurity
+@RequiredArgsConstructor
 public class SecurityConfig {
+
+    private final OAuth2DetailsService oAuth2DetailsService;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -30,6 +35,8 @@ public class SecurityConfig {
                                 "/chat/**",
                                 "/api/**",
                                 "/member/exists-nickname", // 닉네임 중복 확인(회원가입 중 = 로그인 전에도 호출) 없으면 403
+                                "/oauth2/**",
+                                "/login/oauth2/**",
                                 "/error" // 필수, 예외 발생 시 Spring Boot가 /error로 내부 포워딩. Security 6은 그 포워딩도 인가 재검사. 없으면 비로그인 상태 예외 -> 에러 화면 대신 로그인으로 302 (에러 은폐)
                         ).permitAll()
                         .requestMatchers("/admin/**").hasRole("ADMIN") // /admin으로 시작하는 주소는 ROLE_ADMIN 권한자만 접근
@@ -46,6 +53,13 @@ public class SecurityConfig {
                         .failureUrl("/member/login?error=true") // 실패 시 다시 로그인 화면으로.
                         .permitAll()
                 )
+                // 2-2 소셜 로그인 설정
+                .oauth2Login(oauth2 -> oauth2
+                        .loginPage("/member/login")
+                        .defaultSuccessUrl("/", true)
+                        .failureUrl("/member/login?error=social")
+                        .userInfoEndpoint(userInfo -> userInfo.userService(oAuth2DetailsService))
+                )
                 // 3 로그아웃 설정
                 .logout(logout -> logout
                         .logoutUrl("/member/logout") // 이 주소로 POST 요청 시 로그아웃
@@ -56,43 +70,3 @@ public class SecurityConfig {
         return http.build();
     }
 }
-
-///멤버 연결후 코드변경 ///
-//@Configuration
-//public class SecurityConfig {
-//
-//    @Bean
-//    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-//
-//        http
-//                .csrf(csrf -> csrf.disable())
-//                .authorizeHttpRequests(auth -> auth
-//                        .requestMatchers(
-//                                "/",
-//                                "/member/login",
-//                                "/member/signup",
-//                                "/oauth2/**",
-//                                "/login/oauth2/**",
-//                                "/css/**",
-//                                "/js/**",
-//                                "/images/**"
-//                        ).permitAll()
-//
-//                        .requestMatchers("/chat/admin/**").hasRole("ADMIN")
-//                        .requestMatchers("/chat/**").authenticated()
-//                        .requestMatchers("/ws/**").authenticated()
-//
-//                        .anyRequest().authenticated()
-//                )
-//                .formLogin(form -> form
-//                        .loginPage("/member/login")
-//                        .permitAll()
-//                )
-//                .logout(logout -> logout
-//                        .logoutUrl("/member/logout")
-//                        .logoutSuccessUrl("/")
-//                );
-//
-//        return http.build();
-//    }
-//}

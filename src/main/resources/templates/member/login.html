@@ -37,6 +37,20 @@
             <button type="submit" class="submit-button">로그인</button>
         </form>
 
+        <!-- 소셜 로그인 추가 -->
+        <div class="social-divider">
+            <span>또는 소셜 계정으로 로그인</span>
+        </div>
+
+        <div class="social-login-wrap">
+            <a th:href="@{/oauth2/authorization/kakao}" class="social-button-link">
+                <img th:src="@{/images/kakao_login_medium_wide.png}" alt="카카오 로그인" class="social-button-img">
+            </a>
+
+            <a th:href="@{/oauth2/authorization/naver}" class="social-button-link">
+                <img th:src="@{/images/NAVER_login_Light_KR_green_wide_H56.png}" alt="네이버 로그인" class="social-button-img">
+            </a>
+        </div>
         <div class="bottom-link">
             <a th:href="@{/member/signup}">회원가입</a>
         </div>
