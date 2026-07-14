@@ -1,5 +1,6 @@
 package com.siyan1234.itproject2nd.config;
 
+import com.siyan1234.itproject2nd.config.security.SecurityPaths;
 import com.siyan1234.itproject2nd.cookie.interceptor.VisitLogInterceptor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Configuration;
@@ -17,13 +18,6 @@ public class WebMvcConfig implements WebMvcConfigurer {
     public void addInterceptors(InterceptorRegistry registry) {
         registry.addInterceptor(visitLogInterceptor)
                 .addPathPatterns("/**")
-                .excludePathPatterns(
-                        "/css/**",
-                        "/js/**",
-                        "/images/**",
-                        "/favicon.ico",
-                        "/ws/**",
-                        "/error"
-                );
+                .excludePathPatterns(SecurityPaths.VISIT_LOG_EXCLUDE_PATTERNS);
     }
 }

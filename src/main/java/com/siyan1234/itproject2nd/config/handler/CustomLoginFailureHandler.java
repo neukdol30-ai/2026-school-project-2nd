@@ -1,5 +1,6 @@
 package com.siyan1234.itproject2nd.config.handler;
 
+import com.siyan1234.itproject2nd.config.security.SecurityPaths;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -13,20 +14,22 @@ import java.io.IOException;
 @Component
 public class CustomLoginFailureHandler implements AuthenticationFailureHandler {
 
+    private static final String ADMIN_LOGIN_TYPE = "admin";
+
     @Override
     public void onAuthenticationFailure(
             HttpServletRequest request,
             HttpServletResponse response,
             AuthenticationException exception
     ) throws IOException, ServletException {
-        String contextPath = request.getContextPath();
-        String loginType = request.getParameter("loginType");
+        String redirectPath = isAdminLoginRequest(request)
+                ? SecurityPaths.ADMIN_LOGIN + "?error=true"
+                : SecurityPaths.MEMBER_LOGIN + "?error=true";
 
-        if ("admin".equals(loginType)) {
-            response.sendRedirect(contextPath + "/admin/login?error=true");
-            return;
-        }
+        response.sendRedirect(SecurityPaths.withContextPath(request, redirectPath));
+    }
 
-        response.sendRedirect(contextPath + "/member/login?error=true");
+    private boolean isAdminLoginRequest(HttpServletRequest request) {
+        return ADMIN_LOGIN_TYPE.equals(request.getParameter("loginType"));
     }
 }

@@ -29,16 +29,29 @@ public class LoginMemberResolver {
     public MemberDto getCurrentMember() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 
-        if (authentication == null || !authentication.isAuthenticated()) {
+        if (isAnonymous(authentication)) {
             return null;
         }
 
-        if (authentication instanceof AnonymousAuthenticationToken) {
-            return null;
-        }
+        return resolvePrincipal(authentication.getPrincipal());
+    }
 
-        Object principal = authentication.getPrincipal();
+    public Integer getCurrentMemberNo() {
+        MemberDto memberDto = getCurrentMember();
+        return memberDto == null ? null : memberDto.getNo();
+    }
 
+    public boolean isAdmin(MemberDto memberDto) {
+        return memberDto != null && SecurityAuthority.ADMIN.equals(memberDto.getRole());
+    }
+
+    private boolean isAnonymous(Authentication authentication) {
+        return authentication == null
+                || !authentication.isAuthenticated()
+                || authentication instanceof AnonymousAuthenticationToken;
+    }
+
+    private MemberDto resolvePrincipal(Object principal) {
         if (principal instanceof CustomUserDetails customUserDetails) {
             return customUserDetails.getMemberDto();
         }
@@ -48,14 +61,5 @@ public class LoginMemberResolver {
         }
 
         return null;
-    }
-
-    public Integer getCurrentMemberNo() {
-        MemberDto memberDto = getCurrentMember();
-        return memberDto == null ? null : memberDto.getNo();
-    }
-
-    public boolean isAdmin(MemberDto memberDto) {
-        return memberDto != null && "ADMIN".equals(memberDto.getRole());
     }
 }

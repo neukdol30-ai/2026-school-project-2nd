@@ -1,5 +1,6 @@
 package com.siyan1234.itproject2nd.config.handler;
 
+import com.siyan1234.itproject2nd.config.security.SecurityPaths;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -19,19 +20,10 @@ public class CustomAuthenticationEntryPoint implements AuthenticationEntryPoint 
             HttpServletResponse response,
             AuthenticationException authException
     ) throws IOException, ServletException {
-        String contextPath = request.getContextPath();
-        String requestUri = request.getRequestURI();
+        String redirectPath = SecurityPaths.isAdminArea(request)
+                ? SecurityPaths.ADMIN_LOGIN
+                : SecurityPaths.MEMBER_LOGIN;
 
-        if (isAdminArea(contextPath, requestUri)) {
-            response.sendRedirect(contextPath + "/admin/login");
-            return;
-        }
-
-        response.sendRedirect(contextPath + "/member/login");
-    }
-
-    private boolean isAdminArea(String contextPath, String requestUri) {
-        return requestUri.startsWith(contextPath + "/admin")
-                || requestUri.startsWith(contextPath + "/chat/admin");
+        response.sendRedirect(SecurityPaths.withContextPath(request, redirectPath));
     }
 }
