@@ -1,25 +1,21 @@
 package com.siyan1234.itproject2nd.cookie.interceptor;
 
+import com.siyan1234.itproject2nd.config.security.LoginMemberResolver;
 import com.siyan1234.itproject2nd.cookie.dto.VisitLogDto;
 import com.siyan1234.itproject2nd.cookie.service.VisitLogService;
-import com.siyan1234.itproject2nd.member.dto.CustomUserDetails;
-import com.siyan1234.itproject2nd.member.dto.MemberDto;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.authentication.AnonymousAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
 
 import java.time.LocalDateTime;
 
 /**
- * 방문 기록 추적 Interceptor
+ * 방문 기록 추적 Interceptor입니다.
  *
- * SECONDPRO_ANALYTICS=Y 쿠키가 있을 때만 방문 기록을 저장합니다.
+ * SECONDPRO_ANALYTICS=Y 쿠키가 있을 때만 visit_log에 기록합니다.
  * 비밀번호, 토큰, 요청 body, 쿠키 원문은 저장하지 않습니다.
  */
 @Component
@@ -29,19 +25,16 @@ public class VisitLogInterceptor implements HandlerInterceptor {
     private static final String ANALYTICS_COOKIE_NAME = "SECONDPRO_ANALYTICS";
 
     private final VisitLogService visitLogService;
+    private final LoginMemberResolver loginMemberResolver;
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) {
-        if (!isAnalyticsAllowed(request)) {
-            return true;
-        }
-
-        if (!isTrackableRequest(request)) {
+        if (!isAnalyticsAllowed(request) || !isTrackableRequest(request)) {
             return true;
         }
 
         VisitLogDto visitLogDto = new VisitLogDto();
-        visitLogDto.setMemberNo(getLoginMemberNo());
+        visitLogDto.setMemberNo(loginMemberResolver.getCurrentMemberNo());
         visitLogDto.setSessionId(limit(getSessionId(request), 100));
         visitLogDto.setRequestUri(limit(request.getRequestURI(), 500));
         visitLogDto.setQueryString(limit(request.getQueryString(), 1000));
@@ -84,31 +77,6 @@ public class VisitLogInterceptor implements HandlerInterceptor {
                 && !uri.startsWith("/favicon")
                 && !uri.startsWith("/ws/")
                 && !uri.startsWith("/error");
-    }
-
-    private Integer getLoginMemberNo() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-
-        if (authentication == null || !authentication.isAuthenticated()) {
-            return null;
-        }
-
-        if (authentication instanceof AnonymousAuthenticationToken) {
-            return null;
-        }
-
-        Object principal = authentication.getPrincipal();
-
-        if (principal instanceof CustomUserDetails customUserDetails) {
-            MemberDto memberDto = customUserDetails.getMemberDto();
-            return memberDto == null ? null : memberDto.getNo();
-        }
-
-        if (principal instanceof MemberDto memberDto) {
-            return memberDto.getNo();
-        }
-
-        return null;
     }
 
     private String getSessionId(HttpServletRequest request) {
