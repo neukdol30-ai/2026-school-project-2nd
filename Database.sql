@@ -204,3 +204,6 @@ INSERT INTO stock_info VALUES (3, '035720', '카카오', 56000, 800, 1.45);
 INSERT INTO stock_info VALUES (4, '000660', 'SK하이닉스', 235000, 3000, 1.29);
 
 COMMIT;
+
+
+

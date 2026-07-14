@@ -77,27 +77,68 @@
 
     </nav>
 
+
     <!-- ========================= -->
     <!-- 검색 영역 -->
     <!-- ========================= -->
+
     <section class="board-toolbar">
 
-        <form th:action="@{/board/search}"
-              method="get"
-              class="board-search-form">
+        <!-- 검색창과 내 글 아이콘 선택 영역 -->
+        <div class="board-toolbar-left">
 
-            <input type="text"
-                   name="keyword"
-                   class="board-search-input"
-                   placeholder="제목 또는 작성자 검색"
-                   th:value="${keyword}">
+            <form th:action="@{/board/search}"
+                  method="get"
+                  class="board-search-form">
 
-            <button type="submit"
-                    class="board-search-button">
-                검색
-            </button>
+                <input type="text"
+                       name="keyword"
+                       class="board-search-input"
+                       placeholder="제목 또는 작성자 검색"
+                       th:value="${keyword}">
 
-        </form>
+                <button type="submit"
+                        class="board-search-button">
+                    검색
+                </button>
+
+            </form>
+
+            <!-- 로그인 사용자에게만 표시 -->
+            <div sec:authorize="isAuthenticated()"
+                 class="my-post-setting">
+
+            <span class="my-post-label">
+                내 글 표시
+            </span>
+
+                <button type="button"
+                        class="my-post-icon-button heart"
+                        data-icon="♥"
+                        data-type="heart"
+                        aria-label="하트로 표시">
+                    ♥
+                </button>
+
+                <button type="button"
+                        class="my-post-icon-button star"
+                        data-icon="★"
+                        data-type="star"
+                        aria-label="별로 표시">
+                    ★
+                </button>
+
+                <button type="button"
+                        class="my-post-icon-button clover"
+                        data-icon="🍀"
+                        data-type="clover"
+                        aria-label="네잎클로버로 표시">
+                    🍀
+                </button>
+
+            </div>
+
+        </div>
 
         <a th:href="@{/}"
            class="board-main-link">
@@ -197,11 +238,25 @@
                 </div>
 
                 <!-- 게시글 제목 -->
-                <a th:href="@{/board/detail/{no}(no=${board.no})}"
-                   th:text="${board.title}"
-                   class="question-card-title">
-                    질문 제목
-                </a>
+                <div class="question-title-row">
+
+                    <a th:href="@{/board/detail/{no}(no=${board.no})}"
+                       th:text="${board.title}"
+                       class="question-card-title">
+                        질문 제목
+                    </a>
+
+                    <span sec:authorize="isAuthenticated()"
+                          th:if="${#authentication.principal.memberDto.no.equals(board.writerNo)}"
+                          class="my-post-marker"
+                          title="내가 작성한 글">
+
+                        <span class="my-post-marker-icon"></span>
+                        <span class="my-post-marker-text">내 글</span>
+
+                    </span>
+
+                </div>
 
                 <!-- 게시글 보조 정보 -->
                 <div class="question-card-meta">
@@ -273,6 +328,83 @@
     </section>
 
 </main>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+
+        const iconButtons =
+            document.querySelectorAll(".my-post-icon-button");
+
+        const myPostMarkers =
+            document.querySelectorAll(".my-post-marker");
+
+        // 이전에 선택한 아이콘 불러오기
+        const savedIcon =
+            localStorage.getItem("myPostIcon") || "♥";
+
+        const savedType =
+            localStorage.getItem("myPostIconType") || "heart";
+
+        applyMyPostIcon(savedIcon, savedType);
+
+        iconButtons.forEach(function (button) {
+
+            button.addEventListener("click", function () {
+
+                const selectedIcon =
+                    button.dataset.icon;
+
+                const selectedType =
+                    button.dataset.type;
+
+                localStorage.setItem(
+                    "myPostIcon",
+                    selectedIcon
+                );
+
+                localStorage.setItem(
+                    "myPostIconType",
+                    selectedType
+                );
+
+                applyMyPostIcon(
+                    selectedIcon,
+                    selectedType
+                );
+            });
+        });
+
+        function applyMyPostIcon(icon, type) {
+
+            // 내 글 배지의 아이콘 및 색상 변경
+            myPostMarkers.forEach(function (marker) {
+
+                const iconElement =
+                    marker.querySelector(".my-post-marker-icon");
+
+                if (iconElement) {
+                    iconElement.textContent = icon;
+                }
+
+                marker.classList.remove(
+                    "heart",
+                    "star",
+                    "clover"
+                );
+
+                marker.classList.add(type);
+            });
+
+            // 선택된 버튼만 active 처리
+            iconButtons.forEach(function (button) {
+                button.classList.toggle(
+                    "active",
+                    button.dataset.type === type
+                );
+            });
+        }
+    });
+</script>
 
 </body>
 </html>
