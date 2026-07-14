@@ -10,7 +10,7 @@ import com.siyan1234.itproject2nd.chat.dto.ChatMessageDto;
 import com.siyan1234.itproject2nd.chat.dto.ChatRoomDto;
 import com.siyan1234.itproject2nd.chat.service.ChatRedisService;
 import com.siyan1234.itproject2nd.chat.service.ChatService;
-import com.siyan1234.itproject2nd.chat.websocket.ChatHandler;
+import com.siyan1234.itproject2nd.chat.websocket.ChatWebSocketBroadcaster;
 import com.siyan1234.itproject2nd.member.dto.MemberDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -28,7 +28,7 @@ public class AdminChatService {
     private final AdminDashboardService adminDashboardService;
     private final ChatService chatService;
     private final ChatRedisService chatRedisService;
-    private final ChatHandler chatHandler;
+    private final ChatWebSocketBroadcaster chatWebSocketBroadcaster;
 
     @Transactional(readOnly = true)
     public List<RecentChatRoomDto> findRooms(
@@ -123,7 +123,7 @@ public class AdminChatService {
         if (chatRoom.getAdminNo() == null) {
             chatService.assignAdmin(roomNo, adminNo);
             chatRoom = chatService.findRoomByRoomNo(roomNo);
-            chatHandler.broadcastAdminListRefresh(roomNo);
+            chatWebSocketBroadcaster.broadcastAdminListRefresh(roomNo);
         }
 
         return chatRoom;
@@ -142,8 +142,8 @@ public class AdminChatService {
 
         chatRedisService.saveMessage(closeMessage);
         chatService.updateLastMessage(roomNo, closeMessage.getMessageContent());
-        chatHandler.broadcastClose(roomNo, closeMessage);
-        chatHandler.broadcastAdminListRefresh(roomNo);
+        chatWebSocketBroadcaster.broadcastClose(roomNo, closeMessage);
+        chatWebSocketBroadcaster.broadcastAdminListRefresh(roomNo);
         return true;
     }
 
@@ -157,7 +157,7 @@ public class AdminChatService {
 
         chatRedisService.deleteMessages(roomNo);
         chatService.deleteRoom(roomNo);
-        chatHandler.broadcastAdminListRefresh(roomNo);
+        chatWebSocketBroadcaster.broadcastAdminListRefresh(roomNo);
         return true;
     }
 

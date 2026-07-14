@@ -2,7 +2,7 @@ package com.siyan1234.itproject2nd.chat.service;
 
 import com.siyan1234.itproject2nd.chat.dto.ChatRoomDto;
 import com.siyan1234.itproject2nd.chat.kakao.service.KakaoNotifyService;
-import com.siyan1234.itproject2nd.chat.websocket.ChatHandler;
+import com.siyan1234.itproject2nd.chat.websocket.ChatWebSocketBroadcaster;
 import com.siyan1234.itproject2nd.member.dto.MemberDto;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
@@ -24,7 +24,7 @@ public class ChatUserPageService {
 
     private final ChatService chatService;
     private final ChatAccessService chatAccessService;
-    private final ChatHandler chatHandler;
+    private final ChatWebSocketBroadcaster chatWebSocketBroadcaster;
     private final KakaoNotifyService kakaoNotifyService;
 
     public String showChatHome(HttpSession session, Model model, boolean mobile) {
@@ -78,7 +78,7 @@ public class ChatUserPageService {
             kakaoNotifyService.sendNewChatRoomAlert(chatRoom);
         }
 
-        chatHandler.broadcastAdminListRefresh(chatRoom.getRoomNo());
+        chatWebSocketBroadcaster.broadcastAdminListRefresh(chatRoom.getRoomNo());
 
         return mobile
                 ? "redirect:/chat/mobile/room/" + chatRoom.getRoomNo()
@@ -146,7 +146,7 @@ public class ChatUserPageService {
         }
 
         chatService.changeCategory(roomNo, loginUser.getNo(), category);
-        chatHandler.broadcastAdminListRefresh(roomNo);
+        chatWebSocketBroadcaster.broadcastAdminListRefresh(roomNo);
 
         return mobile ? "redirect:/chat/mobile/room/" + roomNo : "redirect:/chat/room/" + roomNo;
     }
