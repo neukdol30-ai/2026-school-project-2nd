@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.siyan1234.itproject2nd.admin.dao.AdminMemberDao">
+
+    <!-- 관리자 콘솔 회원관리: 검색/페이징 목록 -->
+    <select id="findAdminMembers"
+            resultType="com.siyan1234.itproject2nd.member.dto.MemberDto">
+        SELECT
+            no,
+            member_id,
+            name,
+            nickname,
+            email,
+            phone,
+            birth_date,
+            gender,
+            postcode,
+            address,
+            detail_address,
+            role,
+            profile_image,
+            last_login_date,
+            agree_terms_yn,
+            agree_privacy_yn,
+            regdate
+        FROM member
+        <where>
+            <if test="keyword != null and keyword != ''">
+                AND (
+                    LOWER(member_id) LIKE '%' || LOWER(#{keyword}) || '%'
+                    OR LOWER(name) LIKE '%' || LOWER(#{keyword}) || '%'
+                    OR LOWER(nickname) LIKE '%' || LOWER(#{keyword}) || '%'
+                    OR LOWER(email) LIKE '%' || LOWER(#{keyword}) || '%'
+                    OR phone LIKE '%' || #{keyword} || '%'
+                    OR LOWER(role) LIKE '%' || LOWER(#{keyword}) || '%'
+                )
+            </if>
+        </where>
+        ORDER BY no DESC
+        OFFSET #{offset, jdbcType=NUMERIC} ROWS
+        FETCH NEXT #{size, jdbcType=NUMERIC} ROWS ONLY
+    </select>
+
+    <!-- 관리자 콘솔 회원관리: 검색 결과 개수 -->
+    <select id="countAdminMembers" resultType="long">
+        SELECT COUNT(*)
+        FROM member
+        <where>
+            <if test="keyword != null and keyword != ''">
+                AND (
+                    LOWER(member_id) LIKE '%' || LOWER(#{keyword}) || '%'
+                    OR LOWER(name) LIKE '%' || LOWER(#{keyword}) || '%'
+                    OR LOWER(nickname) LIKE '%' || LOWER(#{keyword}) || '%'
+                    OR LOWER(email) LIKE '%' || LOWER(#{keyword}) || '%'
+                    OR phone LIKE '%' || #{keyword} || '%'
+                    OR LOWER(role) LIKE '%' || LOWER(#{keyword}) || '%'
+                )
+            </if>
+        </where>
+    </select>
+
+</mapper>

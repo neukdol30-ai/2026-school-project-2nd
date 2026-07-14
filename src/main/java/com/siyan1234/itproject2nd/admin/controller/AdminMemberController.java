@@ -1,9 +1,10 @@
 package com.siyan1234.itproject2nd.admin.controller;
 
+import com.siyan1234.itproject2nd.admin.dto.AdminDeleteResultDto;
+import com.siyan1234.itproject2nd.admin.service.AdminMemberService;
 import com.siyan1234.itproject2nd.config.security.LoginMemberResolver;
 import com.siyan1234.itproject2nd.member.dto.CustomUserDetails;
 import com.siyan1234.itproject2nd.member.dto.MemberDto;
-import com.siyan1234.itproject2nd.member.service.MemberService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
@@ -24,7 +25,7 @@ import java.util.List;
 @RequestMapping("/admin/members")
 public class AdminMemberController {
 
-    private final MemberService memberService;
+    private final AdminMemberService adminMemberService;
     private final LoginMemberResolver loginMemberResolver;
 
     @GetMapping
@@ -39,15 +40,12 @@ public class AdminMemberController {
             RedirectAttributes redirectAttributes
     ) {
         MemberDto loginAdmin = loginMemberResolver.fromPrincipal(customUserDetails);
+        Integer loginAdminNo = loginAdmin == null ? null : loginAdmin.getNo();
+        int deletedCount = adminMemberService.deleteMember(no, loginAdminNo);
 
-        if (loginAdmin != null && loginAdmin.getNo() != null && loginAdmin.getNo().equals(no)) {
+        if (loginAdminNo != null && loginAdminNo.equals(no)) {
             redirectAttributes.addFlashAttribute("adminErrorMessage", "현재 로그인 중인 관리자 본인 계정은 삭제할 수 없습니다.");
-            return "redirect:/admin?view=members";
-        }
-
-        int deletedCount = memberService.deleteMember(no);
-
-        if (deletedCount == 0) {
+        } else if (deletedCount == 0) {
             redirectAttributes.addFlashAttribute("adminErrorMessage", "삭제할 회원을 찾을 수 없습니다.");
         } else {
             redirectAttributes.addFlashAttribute("adminMessage", "회원 #" + no + "번을 삭제했습니다.");
@@ -62,22 +60,20 @@ public class AdminMemberController {
             @AuthenticationPrincipal CustomUserDetails customUserDetails,
             RedirectAttributes redirectAttributes
     ) {
-        if (memberNoList == null || memberNoList.isEmpty()) {
+        MemberDto loginAdmin = loginMemberResolver.fromPrincipal(customUserDetails);
+        Integer loginAdminNo = loginAdmin == null ? null : loginAdmin.getNo();
+        AdminDeleteResultDto result = adminMemberService.deleteMembers(memberNoList, loginAdminNo);
+
+        if (result.getRequestedCount() == 0) {
             redirectAttributes.addFlashAttribute("adminErrorMessage", "삭제할 회원을 선택해 주세요.");
             return "redirect:/admin?view=members";
         }
 
-        MemberDto loginAdmin = loginMemberResolver.fromPrincipal(customUserDetails);
-        Integer loginAdminNo = loginAdmin == null ? null : loginAdmin.getNo();
-        int requestedCount = memberNoList.size();
-        int deletedCount = memberService.deleteMembers(memberNoList, loginAdminNo);
-        int skippedCount = requestedCount - deletedCount;
-
-        if (deletedCount == 0) {
+        if (!result.hasDeletedItem()) {
             redirectAttributes.addFlashAttribute("adminErrorMessage", "삭제된 회원이 없습니다. 현재 로그인 중인 관리자 본인은 삭제할 수 없습니다.");
         } else {
-            redirectAttributes.addFlashAttribute("adminMessage", "회원 " + deletedCount + "명을 삭제했습니다."
-                    + (skippedCount > 0 ? " 제외된 항목 " + skippedCount + "건이 있습니다." : ""));
+            redirectAttributes.addFlashAttribute("adminMessage", "회원 " + result.getDeletedCount() + "명을 삭제했습니다."
+                    + (result.getSkippedCount() > 0 ? " 제외된 항목 " + result.getSkippedCount() + "건이 있습니다." : ""));
         }
 
         return "redirect:/admin?view=members";
@@ -98,7 +94,7 @@ public class AdminMemberController {
             @PathVariable("no") Integer no,
             Model model
     ) {
-        MemberDto member = memberService.findByNo(no);
+        MemberDto member = adminMemberService.findByNo(no);
 
         if (member == null) {
             return "redirect:/admin?view=members";
@@ -114,7 +110,7 @@ public class AdminMemberController {
             @ModelAttribute("member") MemberDto member
     ) {
         member.setNo(no);
-        memberService.updateMember(member);
+        adminMemberService.updateMember(member);
         return "redirect:/admin?view=members";
     }
 }

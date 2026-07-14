@@ -32,7 +32,4 @@ public class AdminDashboardDto {
     private List<RecentChatRoomDto> recentChatRoomList;
     private List<ServiceStatusDto> serviceStatusList;
 
-    public void setTotalBoardO() {
-
-    }
 }

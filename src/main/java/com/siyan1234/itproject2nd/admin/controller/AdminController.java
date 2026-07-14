@@ -2,7 +2,10 @@ package com.siyan1234.itproject2nd.admin.controller;
 
 import com.siyan1234.itproject2nd.admin.dto.AdminDashboardDto;
 import com.siyan1234.itproject2nd.admin.dto.RecentChatRoomDto;
+import com.siyan1234.itproject2nd.admin.service.AdminChatService;
 import com.siyan1234.itproject2nd.admin.service.AdminDashboardService;
+import com.siyan1234.itproject2nd.admin.service.AdminMemberService;
+import com.siyan1234.itproject2nd.admin.support.AdminPagingHelper;
 import com.siyan1234.itproject2nd.config.security.LoginMemberResolver;
 import com.siyan1234.itproject2nd.member.dto.CustomUserDetails;
 import com.siyan1234.itproject2nd.member.dto.MemberDto;
@@ -19,11 +22,8 @@ import java.util.List;
 /**
  * 관리자 단일 콘솔 화면 Controller입니다.
  *
- * 담당 범위:
- * - /admin 대시보드 화면 렌더링
- * - /admin?view=chats, /admin?view=members, /admin?view=services 화면 데이터 조립
- *
- * 상담 상세/삭제, 회원 삭제/수정, 로그인 처리는 별도 Controller로 분리했습니다.
+ * 이 Controller는 화면 렌더링에 필요한 Model 조립만 담당합니다.
+ * 실제 대시보드/상담/회원 조회 로직은 각 Service로 분리했습니다.
  */
 @Controller
 @RequiredArgsConstructor
@@ -34,6 +34,8 @@ public class AdminController {
     private static final int DEFAULT_CHAT_SIZE = 10;
 
     private final AdminDashboardService adminDashboardService;
+    private final AdminMemberService adminMemberService;
+    private final AdminChatService adminChatService;
     private final LoginMemberResolver loginMemberResolver;
 
     @GetMapping({"", "/", "/dashboard"})
@@ -57,24 +59,24 @@ public class AdminController {
         MemberDto loginAdmin = loginMemberResolver.fromPrincipal(customUserDetails);
         AdminDashboardDto dashboard = adminDashboardService.getDashboard();
 
-        memberPage = normalizePage(memberPage);
-        chatPage = normalizePage(chatPage);
-        memberSize = normalizeSize(memberSize, DEFAULT_MEMBER_SIZE);
-        chatSize = normalizeSize(chatSize, DEFAULT_CHAT_SIZE);
+        memberPage = AdminPagingHelper.normalizePage(memberPage);
+        chatPage = AdminPagingHelper.normalizePage(chatPage);
+        memberSize = AdminPagingHelper.normalizeSize(memberSize, DEFAULT_MEMBER_SIZE);
+        chatSize = AdminPagingHelper.normalizeSize(chatSize, DEFAULT_CHAT_SIZE);
 
-        String cleanMemberKeyword = cleanText(memberKeyword);
-        String cleanChatStatus = cleanText(chatStatus);
-        String cleanChatCategory = cleanText(chatCategory);
-        String cleanChatKeyword = cleanText(chatKeyword);
+        String cleanMemberKeyword = AdminPagingHelper.cleanText(memberKeyword);
+        String cleanChatStatus = AdminPagingHelper.cleanText(chatStatus);
+        String cleanChatCategory = AdminPagingHelper.cleanText(chatCategory);
+        String cleanChatKeyword = AdminPagingHelper.cleanText(chatKeyword);
 
-        List<MemberDto> adminMemberList = adminDashboardService.findAdminMembers(
+        List<MemberDto> adminMemberList = adminMemberService.findMembers(
                 cleanMemberKeyword,
                 memberPage,
                 memberSize
         );
-        long memberTotalCount = adminDashboardService.countAdminMembers(cleanMemberKeyword);
+        long memberTotalCount = adminMemberService.countMembers(cleanMemberKeyword);
 
-        List<RecentChatRoomDto> adminChatRoomList = adminDashboardService.findAdminChatRooms(
+        List<RecentChatRoomDto> adminChatRoomList = adminChatService.findRooms(
                 cleanChatStatus,
                 cleanChatCategory,
                 cleanChatKeyword,
@@ -82,7 +84,7 @@ public class AdminController {
                 chatPage,
                 chatSize
         );
-        long chatTotalCount = adminDashboardService.countAdminChatRooms(
+        long chatTotalCount = adminChatService.countRooms(
                 cleanChatStatus,
                 cleanChatCategory,
                 cleanChatKeyword
@@ -97,7 +99,7 @@ public class AdminController {
         model.addAttribute("memberPage", memberPage);
         model.addAttribute("memberSize", memberSize);
         model.addAttribute("memberTotalCount", memberTotalCount);
-        model.addAttribute("memberTotalPages", calculateTotalPages(memberTotalCount, memberSize));
+        model.addAttribute("memberTotalPages", AdminPagingHelper.calculateTotalPages(memberTotalCount, memberSize));
 
         model.addAttribute("adminChatRoomList", adminChatRoomList);
         model.addAttribute("chatStatus", cleanChatStatus);
@@ -106,7 +108,7 @@ public class AdminController {
         model.addAttribute("chatPage", chatPage);
         model.addAttribute("chatSize", chatSize);
         model.addAttribute("chatTotalCount", chatTotalCount);
-        model.addAttribute("chatTotalPages", calculateTotalPages(chatTotalCount, chatSize));
+        model.addAttribute("chatTotalPages", AdminPagingHelper.calculateTotalPages(chatTotalCount, chatSize));
 
         return "admin/dashboard";
     }
@@ -125,33 +127,5 @@ public class AdminController {
         }
 
         return "dashboard";
-    }
-
-    private int normalizePage(int page) {
-        return Math.max(page, 1);
-    }
-
-    private int normalizeSize(int size, int defaultSize) {
-        if (size < 1) {
-            return defaultSize;
-        }
-
-        return Math.min(size, 50);
-    }
-
-    private int calculateTotalPages(long totalCount, int size) {
-        if (totalCount <= 0) {
-            return 1;
-        }
-
-        return (int) Math.ceil((double) totalCount / size);
-    }
-
-    private String cleanText(String value) {
-        if (value == null) {
-            return "";
-        }
-
-        return value.trim();
     }
 }

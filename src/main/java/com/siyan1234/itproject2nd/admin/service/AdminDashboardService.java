@@ -2,10 +2,7 @@ package com.siyan1234.itproject2nd.admin.service;
 
 import com.siyan1234.itproject2nd.admin.dao.AdminDashboardDao;
 import com.siyan1234.itproject2nd.admin.dto.AdminDashboardDto;
-import com.siyan1234.itproject2nd.admin.dto.RecentChatRoomDto;
 import com.siyan1234.itproject2nd.admin.dto.ServiceStatusDto;
-import com.siyan1234.itproject2nd.chat.service.ChatRedisService;
-import com.siyan1234.itproject2nd.member.dto.MemberDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -13,13 +10,12 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
-/** 관리자 대시보드 화면에 필요한 통계 데이터를 조립하는 Service입니다. */
+/** 관리자 대시보드 화면에 필요한 현황 요약 데이터를 조립하는 Service입니다. */
 @Service
 @RequiredArgsConstructor
 public class AdminDashboardService {
 
     private final AdminDashboardDao adminDashboardDao;
-    private final ChatRedisService chatRedisService;
 
     @Value("${naver.client-id:}")
     private String naverClientId;
@@ -65,76 +61,6 @@ public class AdminDashboardService {
         return dashboard;
     }
 
-    @Transactional(readOnly = true)
-    public List<MemberDto> findAdminMembers(String keyword, int page, int size) {
-        int offset = calculateOffset(page, size);
-        return adminDashboardDao.findAdminMembers(cleanText(keyword), offset, size);
-    }
-
-    @Transactional(readOnly = true)
-    public long countAdminMembers(String keyword) {
-        return nullToZero(adminDashboardDao.countAdminMembers(cleanText(keyword)));
-    }
-
-    @Transactional(readOnly = true)
-    public List<RecentChatRoomDto> findAdminChatRooms(
-            String status,
-            String category,
-            String keyword,
-            int page,
-            int size
-    ) {
-        return findAdminChatRooms(status, category, keyword, null, page, size);
-    }
-
-    /**
-     * 관리자 콘솔 상담관리 목록 조회입니다.
-     *
-     * viewerNo가 전달되면 Redis에 아직 DB 저장 전인 메시지의 안읽음 개수까지 합산합니다.
-     * /admin?view=chats 실시간 목록 갱신에서도 이 메서드를 사용해서
-     * 관리자 콘솔과 채팅 모듈의 데이터를 같은 기준으로 보여줍니다.
-     */
-    @Transactional(readOnly = true)
-    public List<RecentChatRoomDto> findAdminChatRooms(
-            String status,
-            String category,
-            String keyword,
-            Integer viewerNo,
-            int page,
-            int size
-    ) {
-        int offset = calculateOffset(page, size);
-
-        List<RecentChatRoomDto> roomList = adminDashboardDao.findAdminChatRooms(
-                cleanText(status),
-                cleanText(category),
-                cleanText(keyword),
-                offset,
-                size
-        );
-
-        if (viewerNo == null) {
-            return roomList;
-        }
-
-        for (RecentChatRoomDto room : roomList) {
-            long dbUnreadCount = room.getUnreadCount() == null ? 0L : room.getUnreadCount();
-            int redisUnreadCount = chatRedisService.countUnreadMessages(room.getRoomNo(), viewerNo);
-            room.setUnreadCount(dbUnreadCount + redisUnreadCount);
-        }
-
-        return roomList;
-    }
-
-    @Transactional(readOnly = true)
-    public long countAdminChatRooms(String status, String category, String keyword) {
-        return nullToZero(adminDashboardDao.countAdminChatRooms(
-                cleanText(status),
-                cleanText(category),
-                cleanText(keyword)
-        ));
-    }
-
     private List<ServiceStatusDto> createServiceStatusList() {
         boolean naverAvailable = hasText(naverClientId) && hasText(naverClientSecret);
         boolean dataGoAvailable = hasText(dataGoServiceKey);
@@ -162,22 +88,8 @@ public class AdminDashboardService {
         );
     }
 
-    private int calculateOffset(int page, int size) {
-        int safePage = Math.max(page, 1);
-        int safeSize = Math.max(size, 1);
-        return (safePage - 1) * safeSize;
-    }
-
     private Long nullToZero(Long value) {
         return value == null ? 0L : value;
-    }
-
-    private String cleanText(String value) {
-        if (value == null) {
-            return "";
-        }
-
-        return value.trim();
     }
 
     private boolean hasText(String value) {
