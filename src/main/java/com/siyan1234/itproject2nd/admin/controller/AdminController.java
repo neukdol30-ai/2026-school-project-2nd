@@ -3,9 +3,11 @@ package com.siyan1234.itproject2nd.admin.controller;
 import com.siyan1234.itproject2nd.admin.dto.AdminDashboardDto;
 import com.siyan1234.itproject2nd.admin.dto.RecentChatRoomDto;
 import com.siyan1234.itproject2nd.admin.service.AdminDashboardService;
+import com.siyan1234.itproject2nd.chat.dto.ChatMessageDto;
 import com.siyan1234.itproject2nd.chat.dto.ChatRoomDto;
 import com.siyan1234.itproject2nd.chat.service.ChatRedisService;
 import com.siyan1234.itproject2nd.chat.service.ChatService;
+import com.siyan1234.itproject2nd.chat.websocket.ChatHandler;
 import com.siyan1234.itproject2nd.member.dto.CustomUserDetails;
 import com.siyan1234.itproject2nd.member.dto.MemberDto;
 import com.siyan1234.itproject2nd.member.service.MemberService;
@@ -16,7 +18,10 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * 관리자 콘솔 Controller입니다.
@@ -38,6 +43,7 @@ public class AdminController {
     private final AdminDashboardService adminDashboardService;
     private final ChatService chatService;
     private final ChatRedisService chatRedisService;
+    private final ChatHandler chatHandler;
 
     /**
      * 관리자 로그인 화면
@@ -100,6 +106,7 @@ public class AdminController {
                 cleanChatStatus,
                 cleanChatCategory,
                 cleanChatKeyword,
+                loginAdmin != null ? loginAdmin.getNo() : null,
                 chatPage,
                 chatSize
         );
@@ -142,13 +149,169 @@ public class AdminController {
         return "redirect:/admin?view=chats";
     }
 
+
     /**
-     * 기존 상세 상담방은 다음 단계에서 관리자 콘솔 내부 상세 패널로 통합 예정입니다.
-     * 현재는 기존 안정화된 상담 상세 화면을 유지합니다.
+     * 관리자 콘솔 상담관리 실시간 갱신용 JSON API입니다.
+     *
+     * /admin?view=chats 화면은 WebSocket으로 ADMIN_ROOM_REFRESH 이벤트를 받으면
+     * 이 API를 호출하여 현재 필터/검색/페이지 조건을 유지한 채 상담 목록만 다시 그립니다.
+     *
+     * 주의:
+     * - 관리자 콘솔 전용 API이므로 URL을 /admin/chats/rooms로 둡니다.
+     * - /chat/admin/rooms를 호출하지 않아 /chat 영역과 /admin 영역을 분리합니다.
+     */
+    @ResponseBody
+    @GetMapping("/chats/rooms")
+    public Map<String, Object> adminChatRoomsForConsole(
+            @RequestParam(value = "chatStatus", required = false) String chatStatus,
+            @RequestParam(value = "chatCategory", required = false) String chatCategory,
+            @RequestParam(value = "chatKeyword", required = false) String chatKeyword,
+            @RequestParam(value = "chatPage", defaultValue = "1") int chatPage,
+            @RequestParam(value = "chatSize", defaultValue = "10") int chatSize,
+            @AuthenticationPrincipal CustomUserDetails customUserDetails
+    ) {
+        MemberDto loginAdmin = getLoginMember(customUserDetails);
+
+        Map<String, Object> result = new HashMap<>();
+
+        if (!isAdmin(loginAdmin)) {
+            result.put("success", false);
+            result.put("message", "관리자 권한이 필요합니다.");
+            result.put("roomList", List.of());
+            result.put("chatPage", 1);
+            result.put("chatSize", chatSize);
+            result.put("chatTotalCount", 0);
+            result.put("chatTotalPages", 1);
+            return result;
+        }
+
+        chatPage = normalizePage(chatPage);
+        chatSize = normalizeSize(chatSize, DEFAULT_CHAT_SIZE);
+
+        String cleanChatStatus = cleanText(chatStatus);
+        String cleanChatCategory = cleanText(chatCategory);
+        String cleanChatKeyword = cleanText(chatKeyword);
+
+        long chatTotalCount = adminDashboardService.countAdminChatRooms(
+                cleanChatStatus,
+                cleanChatCategory,
+                cleanChatKeyword
+        );
+        int chatTotalPages = calculateTotalPages(chatTotalCount, chatSize);
+
+        if (chatPage > chatTotalPages) {
+            chatPage = chatTotalPages;
+        }
+
+        List<RecentChatRoomDto> roomList = adminDashboardService.findAdminChatRooms(
+                cleanChatStatus,
+                cleanChatCategory,
+                cleanChatKeyword,
+                loginAdmin.getNo(),
+                chatPage,
+                chatSize
+        );
+
+        AdminDashboardDto dashboard = adminDashboardService.getDashboard();
+
+        result.put("success", true);
+        result.put("roomList", roomList);
+        result.put("chatStatus", cleanChatStatus);
+        result.put("chatCategory", cleanChatCategory);
+        result.put("chatKeyword", cleanChatKeyword);
+        result.put("chatPage", chatPage);
+        result.put("chatSize", chatSize);
+        result.put("chatTotalCount", chatTotalCount);
+        result.put("chatTotalPages", chatTotalPages);
+        result.put("dashboard", dashboard);
+
+        return result;
+    }
+
+    /**
+     * 관리자 URL 기준 상담방 상세 화면입니다.
+     *
+     * URL은 /admin/chats/{roomNo}를 사용하여 관리자 운영 영역을 /admin 아래로 통합합니다.
+     * 화면 템플릿은 안정화된 기존 관리자 상담방 템플릿을 재사용합니다.
      */
     @GetMapping("/chats/{roomNo}")
-    public String adminChatRoom(@PathVariable("roomNo") Integer roomNo) {
-        return "redirect:/chat/admin/" + roomNo;
+    public String adminChatRoom(
+            @PathVariable("roomNo") Integer roomNo,
+            @AuthenticationPrincipal CustomUserDetails customUserDetails,
+            Model model,
+            RedirectAttributes redirectAttributes
+    ) {
+        MemberDto loginAdmin = getLoginMember(customUserDetails);
+
+        if (!isAdmin(loginAdmin)) {
+            return "redirect:/admin/login";
+        }
+
+        ChatRoomDto chatRoom = chatService.findRoomByRoomNo(roomNo);
+
+        if (chatRoom == null) {
+            redirectAttributes.addFlashAttribute("adminErrorMessage", "존재하지 않는 상담방입니다.");
+            return "redirect:/admin?view=chats";
+        }
+
+        if (chatRoom.getAdminNo() == null) {
+            chatService.assignAdmin(roomNo, loginAdmin.getNo());
+            chatRoom = chatService.findRoomByRoomNo(roomNo);
+            chatHandler.broadcastAdminListRefresh(roomNo);
+        }
+
+        model.addAttribute("chatRoom", chatRoom);
+        model.addAttribute("loginUser", loginAdmin);
+
+        return "chat/admin/admin-chat-room";
+    }
+
+    /**
+     * 관리자 URL 기준 상담 종료입니다.
+     *
+     * /chat/{roomNo}/close 대신 /admin/chats/{roomNo}/close를 사용해서
+     * 관리자 운영 액션을 /admin 영역에 둡니다.
+     */
+    @PostMapping("/chats/{roomNo}/close")
+    public String closeChatRoom(
+            @PathVariable("roomNo") Integer roomNo,
+            @AuthenticationPrincipal CustomUserDetails customUserDetails,
+            RedirectAttributes redirectAttributes
+    ) {
+        MemberDto loginAdmin = getLoginMember(customUserDetails);
+
+        if (!isAdmin(loginAdmin)) {
+            return "redirect:/admin/login";
+        }
+
+        ChatRoomDto chatRoom = chatService.findRoomByRoomNo(roomNo);
+
+        if (chatRoom == null) {
+            redirectAttributes.addFlashAttribute("adminErrorMessage", "존재하지 않는 상담방입니다.");
+            return "redirect:/admin?view=chats";
+        }
+
+        if ("CLOSED".equals(chatRoom.getStatus())) {
+            redirectAttributes.addFlashAttribute("adminErrorMessage", "이미 종료된 상담입니다.");
+            return "redirect:/admin/chats/" + roomNo;
+        }
+
+        chatService.closeRoom(roomNo);
+
+        ChatMessageDto closeMessage = new ChatMessageDto();
+        closeMessage.setRoomNo(roomNo);
+        closeMessage.setSenderNo(loginAdmin.getNo());
+        closeMessage.setMessageContent("상담이 종료되었습니다.");
+        closeMessage.setReadYn("N");
+        closeMessage.setCreatedDate(LocalDateTime.now());
+
+        chatRedisService.saveMessage(closeMessage);
+        chatService.updateLastMessage(roomNo, "상담이 종료되었습니다.");
+        chatHandler.broadcastClose(roomNo, closeMessage);
+        chatHandler.broadcastAdminListRefresh(roomNo);
+
+        redirectAttributes.addFlashAttribute("adminMessage", "상담방 #" + roomNo + "번을 종료했습니다.");
+        return "redirect:/admin/chats/" + roomNo;
     }
 
 
@@ -175,6 +338,7 @@ public class AdminController {
 
         chatRedisService.deleteMessages(roomNo);
         chatService.deleteRoom(roomNo);
+        chatHandler.broadcastAdminListRefresh(roomNo);
 
         redirectAttributes.addFlashAttribute("adminMessage", "종료된 상담방 #" + roomNo + "번을 삭제했습니다.");
         return "redirect:/admin?view=chats";
@@ -207,6 +371,7 @@ public class AdminController {
 
             chatRedisService.deleteMessages(roomNo);
             chatService.deleteRoom(roomNo);
+            chatHandler.broadcastAdminListRefresh(roomNo);
             deletedCount++;
         }
 

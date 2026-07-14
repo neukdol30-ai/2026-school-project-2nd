@@ -197,66 +197,14 @@ public class ChatController {
     }
 
     /**
-     * 관리자 상담 목록 화면
+     * 기존 채팅 모듈 관리자 상담 목록 URL입니다.
      *
-     * 상태, 문의 유형, 키워드 검색과 페이징을 처리한다.
+     * 관리자 운영 기능은 /admin 콘솔에서 처리하도록 분리했으므로
+     * /chat/admin으로 접근하면 /admin?view=chats로 이동시킵니다.
      */
     @GetMapping("/admin")
-    public String adminChatList(
-            @RequestParam(required = false) String status,
-            @RequestParam(required = false) String category,
-            @RequestParam(required = false) String keyword,
-            @RequestParam(defaultValue = "1") int page,
-            @RequestParam(defaultValue = "10") int size,
-            HttpSession session,
-            Model model
-    ) {
-        MemberDto loginUser = getLoginUser(session);
-
-        if (loginUser == null) {
-            return redirectToAdminLogin();
-        }
-
-        if (!isAdmin(loginUser)) {
-            return "redirect:/chat";
-        }
-
-        page = normalizePage(page);
-        size = normalizeSize(size);
-
-        int totalCount = chatService.countAdminRooms(status, category, keyword);
-        int totalPage = calculateTotalPage(totalCount, size);
-
-        if (page > totalPage) {
-            page = totalPage;
-        }
-
-        List<ChatRoomDto> roomList = chatService.findAdminRooms(
-                status,
-                category,
-                keyword,
-                loginUser.getNo(),
-                page,
-                size
-        );
-
-        int pageBlockSize = 5;
-        int startPageNo = ((page - 1) / pageBlockSize) * pageBlockSize + 1;
-        int endPageNo = Math.min(startPageNo + pageBlockSize - 1, totalPage);
-
-        model.addAttribute("roomList", roomList);
-        model.addAttribute("loginUser", loginUser);
-        model.addAttribute("status", status);
-        model.addAttribute("category", category);
-        model.addAttribute("keyword", keyword);
-        model.addAttribute("page", page);
-        model.addAttribute("size", size);
-        model.addAttribute("totalCount", totalCount);
-        model.addAttribute("totalPage", totalPage);
-        model.addAttribute("startPageNo", startPageNo);
-        model.addAttribute("endPageNo", endPageNo);
-
-        return "chat/admin/admin-chat-list";
+    public String adminChatList() {
+        return "redirect:/admin?view=chats";
     }
 
     /**
@@ -319,42 +267,14 @@ public class ChatController {
     }
 
     /**
-     * 관리자 상담방 상세 화면
+     * 기존 채팅 모듈 관리자 상담방 상세 URL입니다.
      *
-     * 관리자가 특정 상담방에 처음 입장하면 담당 관리자(adminNo)로 자동 배정한다.
+     * 관리자 운영 기능은 /admin 영역에서 처리하도록 분리했으므로
+     * /chat/admin/{roomNo}로 접근하면 /admin/chats/{roomNo}로 이동시킵니다.
      */
     @GetMapping("/admin/{roomNo}")
-    public String adminChatRoom(
-            @PathVariable Integer roomNo,
-            HttpSession session,
-            Model model
-    ) {
-        MemberDto loginUser = getLoginUser(session);
-
-        if (loginUser == null) {
-            return redirectToAdminLogin();
-        }
-
-        if (!isAdmin(loginUser)) {
-            return "redirect:/chat";
-        }
-
-        ChatRoomDto chatRoom = chatService.findRoomByRoomNo(roomNo);
-
-        if (chatRoom == null) {
-            return "redirect:/chat/admin";
-        }
-
-        if (chatRoom.getAdminNo() == null) {
-            chatService.assignAdmin(roomNo, loginUser.getNo());
-            chatRoom = chatService.findRoomByRoomNo(roomNo);
-            chatHandler.broadcastAdminListRefresh(roomNo);
-        }
-
-        model.addAttribute("chatRoom", chatRoom);
-        model.addAttribute("loginUser", loginUser);
-
-        return "chat/admin/admin-chat-room";
+    public String adminChatRoom(@PathVariable Integer roomNo) {
+        return "redirect:/admin/chats/" + roomNo;
     }
 
     /**

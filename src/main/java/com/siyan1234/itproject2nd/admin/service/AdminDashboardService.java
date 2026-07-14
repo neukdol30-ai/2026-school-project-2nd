@@ -4,6 +4,7 @@ import com.siyan1234.itproject2nd.admin.dao.AdminDashboardDao;
 import com.siyan1234.itproject2nd.admin.dto.AdminDashboardDto;
 import com.siyan1234.itproject2nd.admin.dto.RecentChatRoomDto;
 import com.siyan1234.itproject2nd.admin.dto.ServiceStatusDto;
+import com.siyan1234.itproject2nd.chat.service.ChatRedisService;
 import com.siyan1234.itproject2nd.member.dto.MemberDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -18,6 +19,7 @@ import java.util.List;
 public class AdminDashboardService {
 
     private final AdminDashboardDao adminDashboardDao;
+    private final ChatRedisService chatRedisService;
 
     @Value("${naver.client-id:}")
     private String naverClientId;
@@ -82,14 +84,46 @@ public class AdminDashboardService {
             int page,
             int size
     ) {
+        return findAdminChatRooms(status, category, keyword, null, page, size);
+    }
+
+    /**
+     * 관리자 콘솔 상담관리 목록 조회입니다.
+     *
+     * viewerNo가 전달되면 Redis에 아직 DB 저장 전인 메시지의 안읽음 개수까지 합산합니다.
+     * /admin?view=chats 실시간 목록 갱신에서도 이 메서드를 사용해서
+     * 관리자 콘솔과 채팅 모듈의 데이터를 같은 기준으로 보여줍니다.
+     */
+    @Transactional(readOnly = true)
+    public List<RecentChatRoomDto> findAdminChatRooms(
+            String status,
+            String category,
+            String keyword,
+            Integer viewerNo,
+            int page,
+            int size
+    ) {
         int offset = calculateOffset(page, size);
-        return adminDashboardDao.findAdminChatRooms(
+
+        List<RecentChatRoomDto> roomList = adminDashboardDao.findAdminChatRooms(
                 cleanText(status),
                 cleanText(category),
                 cleanText(keyword),
                 offset,
                 size
         );
+
+        if (viewerNo == null) {
+            return roomList;
+        }
+
+        for (RecentChatRoomDto room : roomList) {
+            long dbUnreadCount = room.getUnreadCount() == null ? 0L : room.getUnreadCount();
+            int redisUnreadCount = chatRedisService.countUnreadMessages(room.getRoomNo(), viewerNo);
+            room.setUnreadCount(dbUnreadCount + redisUnreadCount);
+        }
+
+        return roomList;
     }
 
     @Transactional(readOnly = true)

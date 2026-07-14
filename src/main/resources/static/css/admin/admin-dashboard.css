@@ -687,3 +687,98 @@ button, input, select { font-family: inherit; }
         flex-wrap: wrap;
     }
 }
+
+/* 상담관리 패널 우측 액션 영역입니다. 실시간 연결 상태와 대시보드 이동 버튼을 함께 배치합니다. */
+.panel-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 10px;
+}
+
+/* /admin?view=chats 전용 실시간 연결 상태 표시입니다. */
+.chat-live-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 34px;
+    padding: 0 12px;
+    border-radius: 999px;
+    color: #475467;
+    background: #f2f4f7;
+    font-size: 12px;
+    font-weight: 900;
+}
+
+.chat-live-status span {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #98a2b3;
+}
+
+.chat-live-status.connected {
+    color: #047857;
+    background: #ecfdf3;
+}
+
+.chat-live-status.connected span {
+    background: #10b981;
+    box-shadow: 0 0 0 5px rgba(16, 185, 129, 0.14);
+}
+
+.chat-live-status.syncing {
+    color: #b54708;
+    background: #fffaeb;
+}
+
+.chat-live-status.syncing span {
+    background: #f59e0b;
+    box-shadow: 0 0 0 5px rgba(245, 158, 11, 0.14);
+}
+
+.chat-live-status.closed,
+.chat-live-status.error {
+    color: #b42318;
+    background: #fef3f2;
+}
+
+.chat-live-status.closed span,
+.chat-live-status.error span {
+    background: #ef4444;
+}
+
+/* 상담 목록 실시간 갱신 안내 문구입니다. */
+.realtime-hint {
+    display: inline-flex;
+    align-items: center;
+    min-height: 34px;
+    padding: 0 10px;
+    border-radius: 999px;
+    color: #475467;
+    background: #f8fafc;
+    font-size: 12px;
+    font-weight: 800;
+}
+
+/* WebSocket 알림으로 상담 목록이 갱신되었을 때 짧게 강조합니다. */
+.admin-table-wrap.realtime-updated {
+    animation: realtimeTableFlash 1.2s ease;
+}
+
+.realtime-chat-row {
+    transition: background 0.2s ease;
+}
+
+@keyframes realtimeTableFlash {
+    0% {
+        box-shadow: 0 0 0 0 rgba(79, 99, 246, 0.32);
+    }
+    45% {
+        box-shadow: 0 0 0 6px rgba(79, 99, 246, 0.12);
+    }
+    100% {
+        box-shadow: none;
+    }
+}

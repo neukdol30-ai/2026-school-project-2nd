@@ -146,7 +146,7 @@
             <section class="hero-card">
                 <div>
                     <span class="notice-tag">운영 현황</span>
-                    <h2>오늘 접수된 상담 <strong th:text="${dashboard.todayChatRoomCount}">0</strong>건</h2>
+                    <h2>오늘 접수된 상담 <strong id="metricTodayChatRooms" th:text="${dashboard.todayChatRoomCount}">0</strong>건</h2>
                     <p>현황 요약을 먼저 확인하고, 필요한 관리 기능은 좌측 메뉴에서 바로 전환하세요.</p>
                 </div>
                 <a th:href="@{/admin(view='chats')}" class="hero-action">상담 관리</a>
@@ -155,32 +155,32 @@
             <section class="metric-grid">
                 <article class="metric-card">
                     <span>전체 회원</span>
-                    <strong th:text="${dashboard.totalMemberCount}">0</strong>
+                    <strong id="metricTotalMembers" th:text="${dashboard.totalMemberCount}">0</strong>
                     <small th:text="'오늘 가입 ' + ${dashboard.todayMemberCount} + '명'">오늘 가입 0명</small>
                 </article>
                 <article class="metric-card">
                     <span>전체 게시글</span>
-                    <strong th:text="${dashboard.totalBoardCount}">0</strong>
+                    <strong id="metricTotalBoards" th:text="${dashboard.totalBoardCount}">0</strong>
                     <small th:text="'오늘 작성 ' + ${dashboard.todayBoardCount} + '건'">오늘 작성 0건</small>
                 </article>
                 <article class="metric-card">
                     <span>진행 중 상담</span>
-                    <strong class="orange" th:text="${dashboard.openChatRoomCount}">0</strong>
-                    <small th:text="'오늘 접수 ' + ${dashboard.todayChatRoomCount} + '건'">오늘 접수 0건</small>
+                    <strong class="orange" id="metricOpenChats" th:text="${dashboard.openChatRoomCount}">0</strong>
+                    <small id="metricTodayChatText" th:text="'오늘 접수 ' + ${dashboard.todayChatRoomCount} + '건'">오늘 접수 0건</small>
                 </article>
                 <article class="metric-card">
                     <span>읽지 않은 상담</span>
-                    <strong class="red" th:text="${dashboard.unreadChatRoomCount}">0</strong>
+                    <strong class="red" id="metricUnreadChats" th:text="${dashboard.unreadChatRoomCount}">0</strong>
                     <small>사용자 메시지 기준</small>
                 </article>
                 <article class="metric-card">
                     <span>종료된 상담</span>
-                    <strong class="green" th:text="${dashboard.closedChatRoomCount}">0</strong>
-                    <small th:text="'전체 상담 ' + ${dashboard.totalChatRoomCount} + '건'">전체 상담 0건</small>
+                    <strong class="green" id="metricClosedChats" th:text="${dashboard.closedChatRoomCount}">0</strong>
+                    <small id="metricTotalChatText" th:text="'전체 상담 ' + ${dashboard.totalChatRoomCount} + '건'">전체 상담 0건</small>
                 </article>
                 <article class="metric-card">
                     <span>오늘 방문</span>
-                    <strong th:text="${dashboard.todayVisitCount}">0</strong>
+                    <strong id="metricTodayVisits" th:text="${dashboard.todayVisitCount}">0</strong>
                     <small>분석 쿠키 동의 기준</small>
                 </article>
             </section>
@@ -279,7 +279,13 @@
         </section>
 
         <!-- 상담 관리 영역: /admin 내부에서 표시됩니다. -->
-        <section class="admin-view" th:classappend="${activeView == 'chats'} ? ' active' : ''" id="chatManageView">
+        <section class="admin-view" th:classappend="${activeView == 'chats'} ? ' active' : ''" id="chatManageView"
+                 th:attr="data-active-view=${activeView},
+                          data-chat-status=${chatStatus},
+                          data-chat-category=${chatCategory},
+                          data-chat-keyword=${chatKeyword},
+                          data-chat-page=${chatPage},
+                          data-chat-size=${chatSize}">
             <article class="panel full-panel">
                 <div class="panel-head with-actions">
                     <div>
@@ -287,7 +293,13 @@
                         <h2>상담 관리</h2>
                         <p>별도 페이지 이동 없이 관리자 콘솔 안에서 상담 목록을 검색하고 확인합니다.</p>
                     </div>
-                    <a th:href="@{/admin(view='dashboard')}" class="small-link">대시보드</a>
+                    <div class="panel-actions">
+                        <div class="chat-live-status" id="adminChatLiveStatus">
+                            <span></span>
+                            <strong>실시간 연결 대기</strong>
+                        </div>
+                        <a th:href="@{/admin(view='dashboard')}" class="small-link">대시보드</a>
+                    </div>
                 </div>
 
                 <form class="admin-filter-form" th:action="@{/admin}" method="get">
@@ -314,10 +326,11 @@
 
                 <div class="table-toolbar">
                     <div>
-                        <strong th:text="'검색 결과 ' + ${chatTotalCount} + '건'">검색 결과 0건</strong>
+                        <strong id="adminChatResultCount" th:text="'검색 결과 ' + ${chatTotalCount} + '건'">검색 결과 0건</strong>
                         <span id="selectedChatCount">선택 0건</span>
                     </div>
                     <div class="toolbar-actions">
+                        <span class="realtime-hint" id="adminChatRealtimeMessage">실시간 알림 대기 중</span>
                         <button type="button" class="ghost-button" id="selectAllChats">전체선택</button>
                         <button type="button" class="ghost-button" id="clearChatSelection">선택해제</button>
                         <button type="button" class="danger-button" id="deleteSelectedChats">선택 삭제</button>
@@ -339,7 +352,7 @@
                             <th>관리</th>
                         </tr>
                         </thead>
-                        <tbody>
+                        <tbody id="adminChatTableBody">
                         <tr th:each="room : ${adminChatRoomList}">
                             <td>
                                 <input type="checkbox"
@@ -378,7 +391,7 @@
                     </table>
                 </div>
 
-                <div class="pagination" th:if="${chatTotalPages > 1}">
+                <div class="pagination" id="adminChatPagination" th:if="${chatTotalPages > 1}">
                     <a th:if="${chatPage > 1}"
                        th:href="@{/admin(view='chats', chatStatus=${chatStatus}, chatCategory=${chatCategory}, chatKeyword=${chatKeyword}, chatPage=${chatPage - 1})}">이전</a>
                     <span th:each="pageNo : ${#numbers.sequence(1, chatTotalPages)}">
