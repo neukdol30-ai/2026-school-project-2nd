@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<body>
+<!-- 관리자 본인 정보 모달 -->
+<div th:fragment="adminProfileModal" class="admin-modal" id="adminProfileModal" aria-hidden="true">
+    <div class="admin-modal-backdrop" data-modal-close></div>
+    <div class="admin-modal-card">
+        <button type="button" class="modal-close" data-modal-close>×</button>
+        <div class="modal-profile-head">
+            <div class="modal-avatar"
+                 th:text="${loginAdmin != null and loginAdmin.nickname != null and !#strings.isEmpty(loginAdmin.nickname) ? #strings.substring(loginAdmin.nickname, 0, 1) : 'A'}">A</div>
+            <div>
+                <span class="eyebrow">Admin Profile</span>
+                <h2 th:text="${loginAdmin != null ? loginAdmin.memberId : 'admin'}">admin01</h2>
+                <p th:text="${loginAdmin != null and loginAdmin.email != null and !#strings.isEmpty(loginAdmin.email) ? loginAdmin.email : '이메일 미등록'}">admin@example.com</p>
+            </div>
+        </div>
+        <dl class="modal-info-grid">
+            <div><dt>권한</dt><dd th:text="${loginAdmin != null ? loginAdmin.role : 'ADMIN'}">ADMIN</dd></div>
+            <div><dt>회원번호</dt><dd th:text="${loginAdmin != null ? loginAdmin.no : '-'}">1</dd></div>
+            <div><dt>이름</dt><dd th:text="${loginAdmin != null and loginAdmin.name != null ? loginAdmin.name : '미등록'}">김관리</dd></div>
+            <div><dt>닉네임</dt><dd th:text="${loginAdmin != null ? loginAdmin.nickname : '미등록'}">관리자</dd></div>
+            <div><dt>전화번호</dt><dd th:text="${loginAdmin != null and loginAdmin.phone != null and !#strings.isEmpty(loginAdmin.phone) ? loginAdmin.phone : '미등록'}">010</dd></div>
+            <div><dt>가입일</dt><dd th:text="${loginAdmin != null and loginAdmin.regdate != null ? #temporals.format(loginAdmin.regdate, 'yyyy-MM-dd HH:mm') : '미기록'}">2026-07-13</dd></div>
+        </dl>
+    </div>
+</div>
+
+<!-- 회원 상세 모달 -->
+<div th:fragment="memberDetailModal" class="admin-modal" id="memberDetailModal" aria-hidden="true">
+    <div class="admin-modal-backdrop" data-modal-close></div>
+    <div class="admin-modal-card">
+        <button type="button" class="modal-close" data-modal-close>×</button>
+        <div class="modal-profile-head">
+            <div class="modal-avatar" id="memberModalAvatar">U</div>
+            <div>
+                <span class="eyebrow">Member Detail</span>
+                <h2 id="memberModalTitle">회원 상세</h2>
+                <p id="memberModalSubtitle">회원 정보를 확인합니다.</p>
+            </div>
+        </div>
+        <dl class="modal-info-grid">
+            <div><dt>회원번호</dt><dd id="memberModalNo">-</dd></div>
+            <div><dt>아이디</dt><dd id="memberModalId">-</dd></div>
+            <div><dt>이름</dt><dd id="memberModalName">-</dd></div>
+            <div><dt>닉네임</dt><dd id="memberModalNickname">-</dd></div>
+            <div><dt>이메일</dt><dd id="memberModalEmail">-</dd></div>
+            <div><dt>전화번호</dt><dd id="memberModalPhone">-</dd></div>
+            <div><dt>권한</dt><dd id="memberModalRole">-</dd></div>
+            <div><dt>가입일</dt><dd id="memberModalRegdate">-</dd></div>
+        </dl>
+    </div>
+</div>
+</body>
+</html>
