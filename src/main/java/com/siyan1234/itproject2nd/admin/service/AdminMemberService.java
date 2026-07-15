@@ -16,6 +16,10 @@ import java.util.List;
 @RequiredArgsConstructor
 public class AdminMemberService {
 
+    private static final String ROLE_USER = "USER";
+    private static final String ROLE_ADMIN = "ADMIN";
+    private static final String DEFAULT_BAN_REASON = "관리자에 의해 이용이 제한되었습니다.";
+
     private final AdminMemberDao adminMemberDao;
     private final MemberService memberService;
 
@@ -42,12 +46,40 @@ public class AdminMemberService {
     }
 
     @Transactional
+    public int grantAdmin(Integer memberNo, Integer loginAdminNo) {
+        return updateRoleSafely(memberNo, loginAdminNo, ROLE_ADMIN);
+    }
+
+    @Transactional
+    public int grantUser(Integer memberNo, Integer loginAdminNo) {
+        return updateRoleSafely(memberNo, loginAdminNo, ROLE_USER);
+    }
+
+    @Transactional
+    public int banMember(Integer memberNo, String banReason, Integer loginAdminNo) {
+        if (isSelf(memberNo, loginAdminNo) || memberNo == null) {
+            return 0;
+        }
+
+        return adminMemberDao.banMember(memberNo, normalizeBanReason(banReason), loginAdminNo);
+    }
+
+    @Transactional
+    public int unbanMember(Integer memberNo) {
+        if (memberNo == null) {
+            return 0;
+        }
+
+        return adminMemberDao.unbanMember(memberNo);
+    }
+
+    @Transactional
     public int deleteMember(Integer memberNo, Integer loginAdminNo) {
         if (memberNo == null) {
             return 0;
         }
 
-        if (loginAdminNo != null && loginAdminNo.equals(memberNo)) {
+        if (isSelf(memberNo, loginAdminNo)) {
             return 0;
         }
 
@@ -69,5 +101,29 @@ public class AdminMemberService {
 
         int skippedCount = requestedCount - deletedCount;
         return new AdminDeleteResultDto(requestedCount, deletedCount, skippedCount);
+    }
+
+    private int updateRoleSafely(Integer memberNo, Integer loginAdminNo, String role) {
+        if (memberNo == null || isSelf(memberNo, loginAdminNo)) {
+            return 0;
+        }
+
+        return adminMemberDao.updateRole(memberNo, role);
+    }
+
+    private boolean isSelf(Integer memberNo, Integer loginAdminNo) {
+        return memberNo != null && loginAdminNo != null && memberNo.equals(loginAdminNo);
+    }
+
+    private String normalizeBanReason(String banReason) {
+        if (banReason == null || banReason.isBlank()) {
+            return DEFAULT_BAN_REASON;
+        }
+
+        String trimmedReason = banReason.trim();
+        if (trimmedReason.length() > 500) {
+            return trimmedReason.substring(0, 500);
+        }
+        return trimmedReason;
     }
 }

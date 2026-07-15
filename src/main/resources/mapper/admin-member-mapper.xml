@@ -4,29 +4,32 @@
         "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
 <mapper namespace="com.siyan1234.itproject2nd.admin.dao.AdminMemberDao">
-
     <!-- 관리자 콘솔 회원관리: 검색/페이징 목록 -->
-    <select id="findAdminMembers"
-            resultType="com.siyan1234.itproject2nd.member.dto.MemberDto">
-        SELECT
-            no,
-            member_id,
-            name,
-            nickname,
-            email,
-            phone,
-            birth_date,
-            gender,
-            postcode,
-            address,
-            detail_address,
-            role,
-            profile_image,
-            last_login_date,
-            agree_terms_yn,
-            agree_privacy_yn,
-            regdate
-        FROM member
+    <sql id="adminMemberColumns">
+        no,
+        member_id,
+        name,
+        nickname,
+        email,
+        phone,
+        birth_date,
+        gender,
+        postcode,
+        address,
+        detail_address,
+        role,
+        profile_image,
+        last_login_date,
+        agree_terms_yn,
+        agree_privacy_yn,
+        ban_yn,
+        ban_reason,
+        banned_date,
+        banned_by,
+        regdate
+    </sql>
+
+    <sql id="adminMemberSearchWhere">
         <where>
             <if test="keyword != null and keyword != ''">
                 AND (
@@ -36,9 +39,20 @@
                     OR LOWER(email) LIKE '%' || LOWER(#{keyword}) || '%'
                     OR phone LIKE '%' || #{keyword} || '%'
                     OR LOWER(role) LIKE '%' || LOWER(#{keyword}) || '%'
+                    OR LOWER(ban_reason) LIKE '%' || LOWER(#{keyword}) || '%'
+                    OR LOWER(ban_yn) LIKE '%' || LOWER(#{keyword}) || '%'
                 )
             </if>
         </where>
+    </sql>
+
+    <!-- 관리자 콘솔 회원관리: 검색/페이징 목록 -->
+    <select id="findAdminMembers"
+            resultType="com.siyan1234.itproject2nd.member.dto.MemberDto">
+        SELECT
+            <include refid="adminMemberColumns" />
+        FROM member
+        <include refid="adminMemberSearchWhere" />
         ORDER BY no DESC
         OFFSET #{offset, jdbcType=NUMERIC} ROWS
         FETCH NEXT #{size, jdbcType=NUMERIC} ROWS ONLY
@@ -48,18 +62,34 @@
     <select id="countAdminMembers" resultType="long">
         SELECT COUNT(*)
         FROM member
-        <where>
-            <if test="keyword != null and keyword != ''">
-                AND (
-                    LOWER(member_id) LIKE '%' || LOWER(#{keyword}) || '%'
-                    OR LOWER(name) LIKE '%' || LOWER(#{keyword}) || '%'
-                    OR LOWER(nickname) LIKE '%' || LOWER(#{keyword}) || '%'
-                    OR LOWER(email) LIKE '%' || LOWER(#{keyword}) || '%'
-                    OR phone LIKE '%' || #{keyword} || '%'
-                    OR LOWER(role) LIKE '%' || LOWER(#{keyword}) || '%'
-                )
-            </if>
-        </where>
+        <include refid="adminMemberSearchWhere" />
     </select>
+
+    <!-- 관리자 콘솔 회원관리: 권한 변경 -->
+    <update id="updateRole">
+        UPDATE member
+        SET role = #{role}
+        WHERE no = #{memberNo, jdbcType=NUMERIC}
+    </update>
+
+    <!-- 관리자 콘솔 회원관리: 회원 정지 -->
+    <update id="banMember">
+        UPDATE member
+        SET ban_yn = 'Y',
+            ban_reason = #{banReason, jdbcType=VARCHAR},
+            banned_date = SYSTIMESTAMP,
+            banned_by = #{bannedBy, jdbcType=NUMERIC}
+        WHERE no = #{memberNo, jdbcType=NUMERIC}
+    </update>
+
+    <!-- 관리자 콘솔 회원관리: 회원 정지 해제 -->
+    <update id="unbanMember">
+        UPDATE member
+        SET ban_yn = 'N',
+            ban_reason = NULL,
+            banned_date = NULL,
+            banned_by = NULL
+        WHERE no = #{memberNo, jdbcType=NUMERIC}
+    </update>
 
 </mapper>

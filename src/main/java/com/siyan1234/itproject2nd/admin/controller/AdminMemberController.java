@@ -35,17 +35,93 @@ public class AdminMemberController {
         return AdminRoutes.ADMIN_MEMBERS;
     }
 
+    @PostMapping("/{no}/role/admin")
+    public String grantAdminRole(
+            @PathVariable("no") Integer no,
+            @AuthenticationPrincipal CustomUserDetails customUserDetails,
+            RedirectAttributes redirectAttributes
+    ) {
+        Integer loginAdminNo = resolveLoginAdminNo(customUserDetails);
+        int updatedCount = adminMemberService.grantAdmin(no, loginAdminNo);
+
+        if (isSelf(no, loginAdminNo)) {
+            redirectAttributes.addFlashAttribute("adminErrorMessage", AdminFlashMessage.MEMBER_ROLE_SELF_DENIED);
+        } else if (updatedCount == 0) {
+            redirectAttributes.addFlashAttribute("adminErrorMessage", AdminFlashMessage.MEMBER_ROLE_CHANGE_FAILED);
+        } else {
+            redirectAttributes.addFlashAttribute("adminMessage", AdminFlashMessage.memberPromoted(no));
+        }
+
+        return AdminRoutes.ADMIN_MEMBERS;
+    }
+
+    @PostMapping("/{no}/role/user")
+    public String grantUserRole(
+            @PathVariable("no") Integer no,
+            @AuthenticationPrincipal CustomUserDetails customUserDetails,
+            RedirectAttributes redirectAttributes
+    ) {
+        Integer loginAdminNo = resolveLoginAdminNo(customUserDetails);
+        int updatedCount = adminMemberService.grantUser(no, loginAdminNo);
+
+        if (isSelf(no, loginAdminNo)) {
+            redirectAttributes.addFlashAttribute("adminErrorMessage", AdminFlashMessage.MEMBER_ROLE_SELF_DENIED);
+        } else if (updatedCount == 0) {
+            redirectAttributes.addFlashAttribute("adminErrorMessage", AdminFlashMessage.MEMBER_ROLE_CHANGE_FAILED);
+        } else {
+            redirectAttributes.addFlashAttribute("adminMessage", AdminFlashMessage.memberDemoted(no));
+        }
+
+        return AdminRoutes.ADMIN_MEMBERS;
+    }
+
+    @PostMapping("/{no}/ban")
+    public String banMember(
+            @PathVariable("no") Integer no,
+            @RequestParam(value = "banReason", required = false) String banReason,
+            @AuthenticationPrincipal CustomUserDetails customUserDetails,
+            RedirectAttributes redirectAttributes
+    ) {
+        Integer loginAdminNo = resolveLoginAdminNo(customUserDetails);
+        int updatedCount = adminMemberService.banMember(no, banReason, loginAdminNo);
+
+        if (isSelf(no, loginAdminNo)) {
+            redirectAttributes.addFlashAttribute("adminErrorMessage", AdminFlashMessage.MEMBER_BAN_SELF_DENIED);
+        } else if (updatedCount == 0) {
+            redirectAttributes.addFlashAttribute("adminErrorMessage", AdminFlashMessage.MEMBER_BAN_FAILED);
+        } else {
+            redirectAttributes.addFlashAttribute("adminMessage", AdminFlashMessage.memberBanned(no));
+        }
+
+        return AdminRoutes.ADMIN_MEMBERS;
+    }
+
+    @PostMapping("/{no}/unban")
+    public String unbanMember(
+            @PathVariable("no") Integer no,
+            RedirectAttributes redirectAttributes
+    ) {
+        int updatedCount = adminMemberService.unbanMember(no);
+
+        if (updatedCount == 0) {
+            redirectAttributes.addFlashAttribute("adminErrorMessage", AdminFlashMessage.MEMBER_UNBAN_FAILED);
+        } else {
+            redirectAttributes.addFlashAttribute("adminMessage", AdminFlashMessage.memberUnbanned(no));
+        }
+
+        return AdminRoutes.ADMIN_MEMBERS;
+    }
+
     @PostMapping("/{no}/delete")
     public String deleteMember(
             @PathVariable("no") Integer no,
             @AuthenticationPrincipal CustomUserDetails customUserDetails,
             RedirectAttributes redirectAttributes
     ) {
-        MemberDto loginAdmin = loginMemberResolver.fromPrincipal(customUserDetails);
-        Integer loginAdminNo = loginAdmin == null ? null : loginAdmin.getNo();
+        Integer loginAdminNo = resolveLoginAdminNo(customUserDetails);
         int deletedCount = adminMemberService.deleteMember(no, loginAdminNo);
 
-        if (loginAdminNo != null && loginAdminNo.equals(no)) {
+        if (isSelf(no, loginAdminNo)) {
             redirectAttributes.addFlashAttribute("adminErrorMessage", AdminFlashMessage.MEMBER_DELETE_SELF_DENIED);
         } else if (deletedCount == 0) {
             redirectAttributes.addFlashAttribute("adminErrorMessage", AdminFlashMessage.MEMBER_DELETE_NOT_FOUND);
@@ -62,8 +138,7 @@ public class AdminMemberController {
             @AuthenticationPrincipal CustomUserDetails customUserDetails,
             RedirectAttributes redirectAttributes
     ) {
-        MemberDto loginAdmin = loginMemberResolver.fromPrincipal(customUserDetails);
-        Integer loginAdminNo = loginAdmin == null ? null : loginAdmin.getNo();
+        Integer loginAdminNo = resolveLoginAdminNo(customUserDetails);
         AdminDeleteResultDto result = adminMemberService.deleteMembers(memberNoList, loginAdminNo);
 
         if (result.getRequestedCount() == 0) {
@@ -113,5 +188,14 @@ public class AdminMemberController {
         member.setNo(no);
         adminMemberService.updateMember(member);
         return AdminRoutes.ADMIN_MEMBERS;
+    }
+
+    private Integer resolveLoginAdminNo(CustomUserDetails customUserDetails) {
+        MemberDto loginAdmin = loginMemberResolver.fromPrincipal(customUserDetails);
+        return loginAdmin == null ? null : loginAdmin.getNo();
+    }
+
+    private boolean isSelf(Integer memberNo, Integer loginAdminNo) {
+        return memberNo != null && loginAdminNo != null && memberNo.equals(loginAdminNo);
     }
 }

@@ -10,14 +10,14 @@
                     <div>
                         <span class="eyebrow">Member Management</span>
                         <h2>회원 관리</h2>
-                        <p>회원 검색, 페이징, 전체선택, 부분선택을 관리자 콘솔 안에서 처리합니다.</p>
+                        <p>회원 검색, 페이징, 권한 부여, 회원 정지 처리를 관리자 콘솔 안에서 처리합니다.</p>
                     </div>
                     <a th:href="@{/admin(view='dashboard')}" class="small-link">대시보드</a>
                 </div>
 
                 <form class="admin-filter-form" th:action="@{/admin}" method="get">
                     <input type="hidden" name="view" value="members">
-                    <input type="text" name="memberKeyword" th:value="${memberKeyword}" placeholder="아이디, 이름, 닉네임, 이메일, 전화번호, 권한 검색">
+                    <input type="text" name="memberKeyword" th:value="${memberKeyword}" placeholder="아이디, 이름, 닉네임, 이메일, 전화번호, 권한, 정지 사유 검색">
                     <button type="submit">검색</button>
                     <a th:href="@{/admin(view='members')}" class="reset-link">초기화</a>
                 </form>
@@ -45,12 +45,13 @@
                             <th>이메일</th>
                             <th>연락처</th>
                             <th>권한</th>
+                            <th>상태</th>
                             <th>가입일</th>
                             <th>관리</th>
                         </tr>
                         </thead>
                         <tbody>
-                        <tr th:each="member : ${adminMemberList}">
+                        <tr th:each="member : ${adminMemberList}" th:classappend="${member.banYn == 'Y'} ? ' banned-row' : ''">
                             <td>
                                 <input type="checkbox"
                                        class="member-row-checkbox"
@@ -68,9 +69,16 @@
                             <td th:text="${member.email != null and !#strings.isEmpty(member.email) ? member.email : '미등록'}">email@test.com</td>
                             <td th:text="${member.phone != null and !#strings.isEmpty(member.phone) ? member.phone : '미등록'}">010</td>
                             <td><span class="role-tag" th:classappend="${member.role == 'ADMIN'} ? ' admin' : ' user'" th:text="${member.role}">USER</span></td>
+                            <td>
+                                <span th:if="${member.banYn == 'Y'}" class="status-tag banned">정지</span>
+                                <span th:if="${member.banYn != 'Y'}" class="status-tag active">정상</span>
+                                <small th:if="${member.banYn == 'Y' and member.banReason != null and !#strings.isEmpty(member.banReason)}"
+                                       class="ban-reason-preview"
+                                       th:text="${member.banReason}">정지 사유</small>
+                            </td>
                             <td th:text="${member.regdate != null ? #temporals.format(member.regdate, 'yyyy-MM-dd') : '-'}">2026-07-13</td>
                             <td>
-                                <div class="table-actions-inline">
+                                <div class="table-actions-inline member-actions">
                                     <button type="button"
                                             class="table-action button-like"
                                             data-member-detail-button
@@ -81,10 +89,38 @@
                                                      data-member-email=${member.email},
                                                      data-member-phone=${member.phone},
                                                      data-member-role=${member.role},
+                                                     data-member-ban-yn=${member.banYn},
+                                                     data-member-ban-reason=${member.banReason},
+                                                     data-member-banned-date=${member.bannedDate != null ? #temporals.format(member.bannedDate, 'yyyy-MM-dd HH:mm') : '미기록'},
                                                      data-member-regdate=${member.regdate != null ? #temporals.format(member.regdate, 'yyyy-MM-dd HH:mm') : '미기록'}">
                                         상세
                                     </button>
                                     <a class="table-action" th:href="@{/admin/members/{no}/edit(no=${member.no})}">수정</a>
+
+                                    <button type="button"
+                                            class="table-action promote-action button-like"
+                                            th:if="${member.role != 'ADMIN' and (loginAdmin == null or loginAdmin.no != member.no)}"
+                                            data-member-promote-button
+                                            th:attr="data-member-no=${member.no}, data-member-id=${member.memberId}">관리자 지정</button>
+
+                                    <button type="button"
+                                            class="table-action warning-action button-like"
+                                            th:if="${member.role == 'ADMIN' and (loginAdmin == null or loginAdmin.no != member.no)}"
+                                            data-member-demote-button
+                                            th:attr="data-member-no=${member.no}, data-member-id=${member.memberId}">USER 전환</button>
+
+                                    <button type="button"
+                                            class="table-action warning-action button-like"
+                                            th:if="${member.banYn != 'Y' and (loginAdmin == null or loginAdmin.no != member.no)}"
+                                            data-member-ban-button
+                                            th:attr="data-member-no=${member.no}, data-member-id=${member.memberId}">정지</button>
+
+                                    <button type="button"
+                                            class="table-action button-like"
+                                            th:if="${member.banYn == 'Y' and (loginAdmin == null or loginAdmin.no != member.no)}"
+                                            data-member-unban-button
+                                            th:attr="data-member-no=${member.no}, data-member-id=${member.memberId}">정지 해제</button>
+
                                     <button type="button"
                                             class="table-action danger-action button-like"
                                             data-member-delete-button
@@ -95,7 +131,7 @@
                             </td>
                         </tr>
                         <tr th:if="${adminMemberList == null or #lists.isEmpty(adminMemberList)}">
-                            <td colspan="9" class="empty-cell">조회된 회원이 없습니다.</td>
+                            <td colspan="10" class="empty-cell">조회된 회원이 없습니다.</td>
                         </tr>
                         </tbody>
                     </table>

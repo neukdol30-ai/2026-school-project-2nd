@@ -52,12 +52,19 @@
             </div>
         </div>
 
-        <div th:if="${param.error != null and param.error[0] != 'role'}" class="message-box message-error">
-            아이디 또는 비밀번호가 올바르지 않습니다.
+        <div th:if="${param.error != null and param.error[0] == 'banned'}" class="message-box message-error">
+            <strong>접속이 제한된 계정입니다.</strong><br>
+            <span th:text="${loginErrorMessage != null ? loginErrorMessage : '관리자에 의해 이용이 제한되었습니다.'}">
+                관리자에 의해 이용이 제한되었습니다.
+            </span>
         </div>
 
         <div th:if="${param.error != null and param.error[0] == 'role'}" class="message-box message-error">
             관리자 권한이 없는 계정입니다. ADMIN 계정으로 로그인해 주세요.
+        </div>
+
+        <div th:if="${param.error != null and param.error[0] != 'role' and param.error[0] != 'banned'}" class="message-box message-error">
+            아이디 또는 비밀번호가 올바르지 않습니다.
         </div>
 
         <div th:if="${loginUser != null and loginUser.role != 'ADMIN'}" class="message-box message-info">

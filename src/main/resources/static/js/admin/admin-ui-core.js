@@ -79,20 +79,32 @@
     };
 
     Admin.submitPostForm = function (action, fieldName, values) {
+        const fields = {};
+
+        if (fieldName && Array.isArray(values)) {
+            fields[fieldName] = values;
+        }
+
+        Admin.submitPostFormFields(action, fields);
+    };
+
+    Admin.submitPostFormFields = function (action, fields) {
         const form = document.createElement("form");
         form.method = "post";
         form.action = action;
         form.style.display = "none";
 
-        if (fieldName && Array.isArray(values)) {
-            values.forEach(function (value) {
+        Object.entries(fields || {}).forEach(function ([name, value]) {
+            const values = Array.isArray(value) ? value : [value];
+
+            values.forEach(function (item) {
                 const input = document.createElement("input");
                 input.type = "hidden";
-                input.name = fieldName;
-                input.value = value;
+                input.name = name;
+                input.value = item;
                 form.appendChild(input);
             });
-        }
+        });
 
         document.body.appendChild(form);
         form.submit();

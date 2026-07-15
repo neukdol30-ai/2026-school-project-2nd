@@ -91,3 +91,48 @@
 }
 .pagination a.active { color: #ffffff; background: var(--admin-primary); }
 
+
+/* 회원 권한/정지 상태 관리 */
+.status-tag {
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+    padding: 5px 9px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 900;
+}
+.status-tag.active {
+    color: #047857 !important;
+    background: #d1fae5;
+}
+.status-tag.banned {
+    color: #b91c1c !important;
+    background: #fee2e2;
+}
+.banned-row {
+    background: #fff7f7;
+}
+.ban-reason-preview {
+    display: block;
+    max-width: 170px;
+    margin-top: 5px;
+    color: #991b1b !important;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.member-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    min-width: 310px;
+}
+.promote-action {
+    color: #4c1d95 !important;
+    background: #ede9fe !important;
+}
+.warning-action {
+    color: #92400e !important;
+    background: #fef3c7 !important;
+}

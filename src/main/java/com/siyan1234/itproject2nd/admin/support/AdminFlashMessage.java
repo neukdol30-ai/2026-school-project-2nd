@@ -16,6 +16,12 @@ public final class AdminFlashMessage {
     public static final String MEMBER_DELETE_NOT_FOUND = "삭제할 회원을 찾을 수 없습니다.";
     public static final String MEMBER_DELETE_NO_RESULT = "삭제된 회원이 없습니다. 현재 로그인 중인 관리자 본인은 삭제할 수 없습니다.";
 
+    public static final String MEMBER_ROLE_SELF_DENIED = "현재 로그인 중인 관리자 본인의 권한은 변경할 수 없습니다.";
+    public static final String MEMBER_ROLE_CHANGE_FAILED = "회원 권한 변경에 실패했습니다.";
+    public static final String MEMBER_BAN_SELF_DENIED = "현재 로그인 중인 관리자 본인 계정은 정지할 수 없습니다.";
+    public static final String MEMBER_BAN_FAILED = "회원 정지 처리에 실패했습니다.";
+    public static final String MEMBER_UNBAN_FAILED = "회원 정지 해제에 실패했습니다.";
+
     private AdminFlashMessage() {
     }
 
@@ -39,6 +45,22 @@ public final class AdminFlashMessage {
     public static String selectedMembersDeleted(AdminDeleteResultDto result) {
         return "회원 " + result.getDeletedCount() + "명을 삭제했습니다."
                 + skippedSuffix(result, " 제외된 항목 ", "건이 있습니다.");
+    }
+
+    public static String memberPromoted(Integer memberNo) {
+        return "회원 #" + memberNo + "번에 ADMIN 권한을 부여했습니다.";
+    }
+
+    public static String memberDemoted(Integer memberNo) {
+        return "회원 #" + memberNo + "번을 USER 권한으로 변경했습니다.";
+    }
+
+    public static String memberBanned(Integer memberNo) {
+        return "회원 #" + memberNo + "번을 정지 처리했습니다.";
+    }
+
+    public static String memberUnbanned(Integer memberNo) {
+        return "회원 #" + memberNo + "번의 정지를 해제했습니다.";
     }
 
     private static String skippedSuffix(AdminDeleteResultDto result, String prefix, String suffix) {

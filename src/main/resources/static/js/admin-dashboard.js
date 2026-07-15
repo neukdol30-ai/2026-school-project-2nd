@@ -16,6 +16,7 @@
         Admin.Modal?.init();
         Admin.Selection?.init();
         Admin.Delete?.init();
+        Admin.MemberActions?.init();
         Admin.ChatRealtime?.init();
     });
 })(window);
