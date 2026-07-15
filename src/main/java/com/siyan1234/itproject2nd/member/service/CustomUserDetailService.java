@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 public class CustomUserDetailService implements UserDetailsService {
 
     private static final String BANNED_MESSAGE_PREFIX = "BANNED|";
+    private static final String DEFAULT_BANNED_MESSAGE = "관리자에 의해 이용이 제한된 계정입니다.";
 
     // UserDetailsService: Security가 로그인 시 자동으로 호출하는 규격.
     private final MemberDao memberDao; // 회원 조회 DAO
@@ -36,16 +37,29 @@ public class CustomUserDetailService implements UserDetailsService {
         return new CustomUserDetails(memberDto);
     }
 
-    public static boolean isBannedLoginException(Exception exception) {
-        return exception instanceof LockedException
-                && exception.getMessage() != null
-                && exception.getMessage().startsWith(BANNED_MESSAGE_PREFIX);
+    public static boolean isBannedLoginException(Throwable exception) {
+        Throwable current = exception;
+        while (current != null) {
+            if (current instanceof LockedException
+                    && current.getMessage() != null
+                    && current.getMessage().startsWith(BANNED_MESSAGE_PREFIX)) {
+                return true;
+            }
+            current = current.getCause();
+        }
+        return false;
     }
 
-    public static String extractBanReason(Exception exception) {
-        if (!isBannedLoginException(exception)) {
-            return "관리자에 의해 이용이 제한된 계정입니다.";
+    public static String extractBanReason(Throwable exception) {
+        Throwable current = exception;
+        while (current != null) {
+            if (current instanceof LockedException
+                    && current.getMessage() != null
+                    && current.getMessage().startsWith(BANNED_MESSAGE_PREFIX)) {
+                return current.getMessage().substring(BANNED_MESSAGE_PREFIX.length());
+            }
+            current = current.getCause();
         }
-        return exception.getMessage().substring(BANNED_MESSAGE_PREFIX.length());
+        return DEFAULT_BANNED_MESSAGE;
     }
 }
