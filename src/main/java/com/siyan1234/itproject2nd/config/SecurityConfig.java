@@ -6,6 +6,7 @@ import com.siyan1234.itproject2nd.config.handler.CustomLoginFailureHandler;
 import com.siyan1234.itproject2nd.config.handler.CustomLoginSuccessHandler;
 import com.siyan1234.itproject2nd.config.security.SecurityAuthority;
 import com.siyan1234.itproject2nd.config.security.SecurityPaths;
+import com.siyan1234.itproject2nd.member.service.OAuth2DetailsService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -28,6 +29,8 @@ public class SecurityConfig {
     private final CustomLoginFailureHandler customLoginFailureHandler;
     private final CustomAuthenticationEntryPoint customAuthenticationEntryPoint;
     private final CustomAccessDeniedHandler customAccessDeniedHandler;
+
+    private final OAuth2DetailsService oAuth2DetailsService;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -52,6 +55,13 @@ public class SecurityConfig {
                         .successHandler(customLoginSuccessHandler)
                         .failureHandler(customLoginFailureHandler)
                         .permitAll()
+                )
+                // 2-2 소셜 로그인 설정
+                .oauth2Login(oauth2 -> oauth2
+                        .loginPage("/member/login")
+                        .defaultSuccessUrl("/", true)
+                        .failureUrl("/member/login?error=social")
+                        .userInfoEndpoint(userInfo -> userInfo.userService(oAuth2DetailsService))
                 )
                 // 3 로그아웃 설정
                 .logout(logout -> logout

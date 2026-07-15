@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.siyan1234.itproject2nd.member.dao.SocialAccountDao">
+
+    <!-- id는 SocialAccountDao 메서드명과 일치하게 -->
+    <select id="findByProviderAndProviderId" resultType="SocialAccountDto">
+        SELECT no,
+        member_no,
+        provider,
+        provider_id,
+        created_date
+        FROM social_account
+        WHERE provider = #{provider}
+        AND provider_id = #{providerId}
+        <!-- #{provider}, #{providerId}는 Dao에서 @Param으로 이름 붙여 넘긴 값 -->
+    </select>
+
+    <insert id="insertSocialAccount" parameterType="SocialAccountDto">
+        INSERT INTO social_account (
+        member_no,
+        provider,
+        provider_id
+        )
+        VALUES (
+        #{memberNo},
+        #{provider},
+        #{providerId}
+        )
+        <!-- no(PK)와 created_date는 안 적음. DB가 자동으로 채우기 때문. -->
+    </insert>
+
+</mapper>

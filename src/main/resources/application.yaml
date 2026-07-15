@@ -1,4 +1,11 @@
 spring:
+  # ──── 소셜 로그인 키 파일 불러오기 (신규 추가) ────
+  config:
+    # application-secret.yaml 파일을 읽어와 이 설정에 합쳐 넣는다.
+    # classpath: = src/main/resources 폴더를 가리키는 Spring 전용 표기 [프레임워크 내부 규칙]
+    # optional:  = 그 파일이 없어도 서버가 죽지 않고 그냥 넘어간다는 뜻.
+    #              (팀원이 아직 키 파일을 안 만든 채로 pull 받아도 이 줄 때문에 터지진 않음)
+    import: optional:classpath:application-secret.yaml
   application:
     # 프로젝트 이름
     name: it-project-2nd

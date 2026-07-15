@@ -2,20 +2,32 @@ package com.siyan1234.itproject2nd.member.dto;
 
 import org.jspecify.annotations.Nullable;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.oauth2.core.user.OAuth2User;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
-public class CustomUserDetails implements UserDetails {
+// UserDetails(일반 폼 로그인용 규격) / OAuth2User(소셜 로그인용 규격)
+// 둘을 하나로 합쳐야 @AuthenticationPrincipal CustomUserDetails로 일반, 소셜 로그인 똑같이 꺼내 쓸 수 있음.
+public class CustomUserDetails implements UserDetails, OAuth2User {
 
-    // 로그인한 회원 정보
-    private final MemberDto memberDto;
+    private final MemberDto memberDto; // 로그인한 회원 정보
 
-    // 생성자: 조회한 회원 정보를 받아 보관
+    private Map<String, Object> oauth2Attributes; // 소셜 원본 JSON, 일반 폼 로그인 때는 null
+
+    // 생성자 1 - 일반 폼 로그인용. CustomUserDetailService가 이걸 호출
     public CustomUserDetails(MemberDto memberDto) {
+        this.memberDto = memberDto; // oauth2Attributes는 null 상태
+    }
+
+    // 생성자 2 - 소셜 로그인용. OAuth2DetailsService가 이걸 호출
+    public CustomUserDetails(MemberDto memberDto, Map<String, Object> oauth2Attributes) {
         this.memberDto = memberDto;
+        this.oauth2Attributes = oauth2Attributes;
     }
 
     // 컨트롤러 등에서 로그인한 회원 정보 꺼내 쓰기 위한 통로
@@ -23,6 +35,18 @@ public class CustomUserDetails implements UserDetails {
         return memberDto;
     }
 
+    // OAuth2User 규격 요구 메서드
+    @Override
+    public Map<String, Object> getAttributes() {
+        return oauth2Attributes == null ? Map.of() : oauth2Attributes;
+    }
+
+    @Override
+    public String getName() {
+        return memberDto.getMemberId();
+    }
+
+    // UserDetails 규격 요구 메서드
     // 권한 목록: 이 회원이 가진 권한 Security에 전달
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
@@ -32,6 +56,7 @@ public class CustomUserDetails implements UserDetails {
 
     @Override
     public String getPassword() {
+        // 소셜 회원도 무작위 BCrypt 해시 들어 있음. -> null 아님.
         return memberDto.getPassword();
     }
 
@@ -61,5 +86,4 @@ public class CustomUserDetails implements UserDetails {
     public boolean isEnabled() {
         return true; // 계정 사용 가능
     }
-    
 }

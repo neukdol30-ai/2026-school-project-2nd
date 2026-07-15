@@ -1,9 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-
 <!DOCTYPE mapper
         PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
-
 <mapper namespace="com.siyan1234.itproject2nd.member.dao.MemberDao">
 
     <select id="findByMemberId" parameterType="String" resultType="MemberDto">
@@ -54,7 +52,7 @@
         <!-- 이메일이 이미 존재하는지 확인 -->
     </select>
 
-                                                                                                                                                        <!-- 닉네임 중복 확인용 findByEmail과 동일 구조 -->
+    <!-- 닉네임 중복 확인용 findByEmail과 동일 구조 -->
     <select id="findByNickname" parameterType="String" resultType="MemberDto">
         SELECT no,
         member_id,
@@ -97,8 +95,7 @@
         agree_terms_yn,
         agree_privacy_yn
         )
-        VALUES
-        (
+        VALUES (
         #{memberId},
         #{password},
         #{name},
@@ -114,7 +111,6 @@
         #{agreeTermsYn},
         #{agreePrivacyYn}
         )
-
     </insert>
 
     <!-- 관리자 회원 목록 조회용 / MemberDao의 findAllMembers()와 일치 -->
@@ -140,7 +136,7 @@
         ORDER BY no DESC
     </select>
 
-<!--    관리자 회원 상세 조회용 / MemberDao - findByNo(Integer no)와 일치-->
+    <!--    관리자 회원 상세 조회용 / MemberDao - findByNo(Integer no)와 일치-->
     <select id="findByNo" parameterType="int" resultType="MemberDto">
         SELECT no,
         member_id,
@@ -177,6 +173,31 @@
         gender = #{gender}
         WHERE no = #{no} <!--MemberDto의 no 필드값. 없으면 전체 회원 다 수정된다.-->
     </update>
+
+    <insert id="insertSocialMember" parameterType="MemberDto">
+        INSERT INTO member (
+        member_id,
+        password,
+        name,
+        nickname,
+        email,
+        role,
+        agree_terms_yn,
+        agree_privacy_yn
+        )
+        VALUES (
+        #{memberId},
+        #{password},
+        #{name, jdbcType=VARCHAR},
+        #{nickname},
+        #{email, jdbcType=VARCHAR},
+        'USER',
+        'Y',
+        'Y'
+        )
+        <!-- jdbcType=VARCHAR -> 둘 다 null일 수 있는 컬럼(카카오가 이메일 동의를 거부당하면 null) -->
+        <!-- role/agree_*를 값으로 박은 이유: 셋 다 NOT NULL이라, 소셜 로그인 등 화면을 거쳤으므로 'Y'로 본다. -->
+    </insert>
 
 
     <!-- 관리자 회원 삭제용 -->
