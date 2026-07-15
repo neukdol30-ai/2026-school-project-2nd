@@ -1,5 +1,7 @@
 package com.siyan1234.itproject2nd.admin.dto;
 
+import com.siyan1234.itproject2nd.chat.support.ChatCategory;
+import com.siyan1234.itproject2nd.chat.support.ChatRoomStatus;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -24,31 +26,10 @@ public class RecentChatRoomDto {
     private Long unreadCount;
 
     public String getStatusName() {
-        if ("OPEN".equals(status)) {
-            return "진행 중";
-        }
-
-        if ("CLOSED".equals(status)) {
-            return "종료";
-        }
-
-        return "확인 필요";
+        return ChatRoomStatus.displayName(status);
     }
 
     public String getCategoryIcon() {
-        if (category == null) {
-            return "💬";
-        }
-
-        return switch (category) {
-            case "MAIL" -> "📧";
-            case "MAP" -> "🗺";
-            case "STOCK" -> "📈";
-            case "NEWS" -> "📰";
-            case "WEATHER" -> "🌤";
-            case "CALENDAR" -> "📅";
-            case "ETC" -> "💬";
-            default -> "💬";
-        };
+        return ChatCategory.icon(category);
     }
 }

@@ -2,6 +2,7 @@ package com.siyan1234.itproject2nd.chat.service;
 
 import com.siyan1234.itproject2nd.chat.dto.ChatRoomDto;
 import com.siyan1234.itproject2nd.chat.kakao.service.KakaoNotifyService;
+import com.siyan1234.itproject2nd.chat.support.ChatRoomStatus;
 import com.siyan1234.itproject2nd.chat.websocket.ChatWebSocketBroadcaster;
 import com.siyan1234.itproject2nd.member.dto.MemberDto;
 import jakarta.servlet.http.HttpSession;
@@ -137,7 +138,7 @@ public class ChatUserPageService {
             return mobile ? "redirect:/chat/mobile" : "redirect:/chat";
         }
 
-        if (!"OPEN".equals(chatRoom.getStatus())) {
+        if (!ChatRoomStatus.isOpen(chatRoom.getStatus())) {
             return mobile ? "redirect:/chat/mobile/room/" + roomNo : "redirect:/chat/room/" + roomNo;
         }
 

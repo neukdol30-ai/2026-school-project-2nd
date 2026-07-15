@@ -9,6 +9,8 @@ import com.siyan1234.itproject2nd.admin.support.AdminPagingHelper;
 import com.siyan1234.itproject2nd.chat.dto.ChatMessageDto;
 import com.siyan1234.itproject2nd.chat.dto.ChatRoomDto;
 import com.siyan1234.itproject2nd.chat.service.ChatRedisService;
+import com.siyan1234.itproject2nd.chat.support.ChatMessageFactory;
+import com.siyan1234.itproject2nd.chat.support.ChatRoomStatus;
 import com.siyan1234.itproject2nd.chat.service.ChatService;
 import com.siyan1234.itproject2nd.chat.websocket.ChatWebSocketBroadcaster;
 import com.siyan1234.itproject2nd.member.dto.MemberDto;
@@ -16,7 +18,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 /** 관리자 콘솔 상담 관리 Service입니다. */
@@ -133,12 +134,12 @@ public class AdminChatService {
     public boolean closeRoom(Integer roomNo, Integer adminNo) {
         ChatRoomDto chatRoom = chatService.findRoomByRoomNo(roomNo);
 
-        if (chatRoom == null || "CLOSED".equals(chatRoom.getStatus())) {
+        if (chatRoom == null || ChatRoomStatus.isClosed(chatRoom.getStatus())) {
             return false;
         }
 
         chatService.closeRoom(roomNo);
-        ChatMessageDto closeMessage = createCloseMessage(roomNo, adminNo);
+        ChatMessageDto closeMessage = ChatMessageFactory.closeMessage(roomNo, adminNo);
 
         chatRedisService.saveMessage(closeMessage);
         chatService.updateLastMessage(roomNo, closeMessage.getMessageContent());
@@ -151,7 +152,7 @@ public class AdminChatService {
     public boolean deleteClosedRoom(Integer roomNo) {
         ChatRoomDto chatRoom = chatService.findRoomByRoomNo(roomNo);
 
-        if (chatRoom == null || !"CLOSED".equals(chatRoom.getStatus())) {
+        if (chatRoom == null || !ChatRoomStatus.isClosed(chatRoom.getStatus())) {
             return false;
         }
 
@@ -183,13 +184,4 @@ public class AdminChatService {
         return chatService.findRoomByRoomNo(roomNo);
     }
 
-    private ChatMessageDto createCloseMessage(Integer roomNo, Integer adminNo) {
-        ChatMessageDto closeMessage = new ChatMessageDto();
-        closeMessage.setRoomNo(roomNo);
-        closeMessage.setSenderNo(adminNo);
-        closeMessage.setMessageContent("상담이 종료되었습니다.");
-        closeMessage.setReadYn("N");
-        closeMessage.setCreatedDate(LocalDateTime.now());
-        return closeMessage;
-    }
 }

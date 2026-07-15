@@ -1,6 +1,7 @@
 package com.siyan1234.itproject2nd.chat.service;
 
 import com.siyan1234.itproject2nd.chat.dto.ChatRoomDto;
+import com.siyan1234.itproject2nd.chat.support.ChatRoomStatus;
 import com.siyan1234.itproject2nd.config.security.LoginMemberResolver;
 import com.siyan1234.itproject2nd.member.dto.MemberDto;
 import jakarta.servlet.http.HttpSession;
@@ -64,7 +65,7 @@ public class ChatAccessService {
             return false;
         }
 
-        return "OPEN".equals(chatRoom.getStatus())
+        return ChatRoomStatus.isOpen(chatRoom.getStatus())
                 && chatRoom.getUserNo() != null
                 && chatRoom.getUserNo().equals(loginUser.getNo());
     }

@@ -2,6 +2,7 @@ package com.siyan1234.itproject2nd.chat.kakao.controller;
 
 import com.siyan1234.itproject2nd.chat.dto.ChatRoomDto;
 import com.siyan1234.itproject2nd.chat.kakao.service.KakaoNotifyService;
+import com.siyan1234.itproject2nd.chat.support.ChatCategory;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -26,7 +27,7 @@ public class KakaoTestController {
         ChatRoomDto chatRoom = new ChatRoomDto();
         chatRoom.setRoomNo(999);
         chatRoom.setUserNo(1);
-        chatRoom.setCategory("ETC");
+        chatRoom.setCategory(ChatCategory.DEFAULT);
 
         kakaoNotifyService.sendNewChatRoomAlert(chatRoom);
 

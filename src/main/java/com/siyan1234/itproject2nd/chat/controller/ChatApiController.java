@@ -5,6 +5,7 @@ import com.siyan1234.itproject2nd.chat.dto.ChatRoomDto;
 import com.siyan1234.itproject2nd.chat.service.ChatAccessService;
 import com.siyan1234.itproject2nd.chat.service.ChatRedisService;
 import com.siyan1234.itproject2nd.chat.service.ChatService;
+import com.siyan1234.itproject2nd.chat.support.ChatRoomStatus;
 import com.siyan1234.itproject2nd.member.dto.MemberDto;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
@@ -84,7 +85,7 @@ public class ChatApiController {
             return "forbidden";
         }
 
-        if (!"OPEN".equals(chatRoom.getStatus())) {
+        if (!ChatRoomStatus.isOpen(chatRoom.getStatus())) {
             return "closed";
         }
 

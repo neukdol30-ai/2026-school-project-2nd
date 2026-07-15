@@ -1,6 +1,7 @@
 package com.siyan1234.itproject2nd.chat.service;
 
 import com.siyan1234.itproject2nd.chat.dto.ChatMessageDto;
+import com.siyan1234.itproject2nd.chat.support.ChatReadStatus;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
@@ -39,9 +40,7 @@ public class ChatRedisService {
                 messageDto.setCreatedDate(LocalDateTime.now());
             }
 
-            if (!"Y".equals(messageDto.getReadYn()) && !"N".equals(messageDto.getReadYn())) {
-                messageDto.setReadYn("N");
-            }
+            messageDto.setReadYn(ChatReadStatus.normalize(messageDto.getReadYn()));
 
             String key = createKey(messageDto.getRoomNo());
             String json = objectMapper.writeValueAsString(messageDto);
@@ -148,11 +147,11 @@ public class ChatRedisService {
                     continue;
                 }
 
-                if (!"N".equals(messageDto.getReadYn())) {
+                if (!ChatReadStatus.isUnread(messageDto.getReadYn())) {
                     continue;
                 }
 
-                messageDto.setReadYn("Y");
+                messageDto.setReadYn(ChatReadStatus.READ);
                 String updateJson = objectMapper.writeValueAsString(messageDto);
 
                 redisTemplate.opsForList().set(key, i, updateJson);
@@ -176,7 +175,7 @@ public class ChatRedisService {
                 continue;
             }
 
-            if ("N".equals(message.getReadYn())) {
+            if (ChatReadStatus.isUnread(message.getReadYn())) {
                 count++;
             }
         }

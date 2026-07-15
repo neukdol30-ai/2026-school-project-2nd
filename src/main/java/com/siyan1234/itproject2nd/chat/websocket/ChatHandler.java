@@ -4,6 +4,8 @@ import com.siyan1234.itproject2nd.chat.dto.ChatMessageDto;
 import com.siyan1234.itproject2nd.chat.dto.ChatRoomDto;
 import com.siyan1234.itproject2nd.chat.service.ChatRedisService;
 import com.siyan1234.itproject2nd.chat.service.ChatService;
+import com.siyan1234.itproject2nd.chat.support.ChatReadStatus;
+import com.siyan1234.itproject2nd.chat.support.ChatRoomStatus;
 import com.siyan1234.itproject2nd.member.dto.MemberDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -131,7 +133,7 @@ public class ChatHandler extends TextWebSocketHandler {
             return;
         }
 
-        if (!"OPEN".equals(chatRoom.getStatus())) {
+        if (!ChatRoomStatus.isOpen(chatRoom.getStatus())) {
             return;
         }
 
@@ -157,7 +159,7 @@ public class ChatHandler extends TextWebSocketHandler {
     private void prepareMessage(ChatMessageDto chatMessageDto, Integer senderNo, String messageContent) {
         chatMessageDto.setSenderNo(senderNo);
         chatMessageDto.setMessageContent(messageContent.trim());
-        chatMessageDto.setReadYn("N");
+        chatMessageDto.setReadYn(ChatReadStatus.UNREAD);
         chatMessageDto.setCreatedDate(LocalDateTime.now());
     }
 

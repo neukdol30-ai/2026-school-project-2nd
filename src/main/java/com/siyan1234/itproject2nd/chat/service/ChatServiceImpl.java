@@ -3,6 +3,9 @@ package com.siyan1234.itproject2nd.chat.service;
 import com.siyan1234.itproject2nd.chat.dao.ChatDao;
 import com.siyan1234.itproject2nd.chat.dto.ChatMessageDto;
 import com.siyan1234.itproject2nd.chat.dto.ChatRoomDto;
+import com.siyan1234.itproject2nd.chat.support.ChatCategory;
+import com.siyan1234.itproject2nd.chat.support.ChatReadStatus;
+import com.siyan1234.itproject2nd.chat.support.ChatRoomStatus;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -30,7 +33,7 @@ public class ChatServiceImpl implements ChatService {
      */
     @Override
     public ChatRoomDto getOrCreateRoom(Integer userNo) {
-        return getOrCreateRoom(userNo, "ETC");
+        return getOrCreateRoom(userNo, ChatCategory.DEFAULT);
     }
 
     /**
@@ -116,9 +119,7 @@ public class ChatServiceImpl implements ChatService {
             chatMessageDto.setCreatedDate(LocalDateTime.now());
         }
 
-        if (!"Y".equals(chatMessageDto.getReadYn()) && !"N".equals(chatMessageDto.getReadYn())) {
-            chatMessageDto.setReadYn("N");
-        }
+        chatMessageDto.setReadYn(ChatReadStatus.normalize(chatMessageDto.getReadYn()));
 
         chatDao.saveMessage(chatMessageDto);
 
@@ -283,7 +284,7 @@ public class ChatServiceImpl implements ChatService {
             return;
         }
 
-        if (!"OPEN".equals(chatRoom.getStatus())) {
+        if (!ChatRoomStatus.isOpen(chatRoom.getStatus())) {
             return;
         }
 
@@ -301,15 +302,7 @@ public class ChatServiceImpl implements ChatService {
      * DB CHECK 제약조건 오류를 사전에 방지하기 위한 방어 코드이다.
      */
     private String normalizeCategory(String category) {
-        if (category == null || category.isBlank()) {
-            return "ETC";
-        }
-
-        if (!isValidCategory(category)) {
-            return "ETC";
-        }
-
-        return category;
+        return ChatCategory.normalize(category);
     }
 
     /**
@@ -358,10 +351,5 @@ public class ChatServiceImpl implements ChatService {
             return 0;
         }
         return chatDao.countUserRooms(userNo);
-    }
-
-    private boolean isValidCategory(String category) {
-        return List.of("MAIL", "MAP", "STOCK", "NEWS", "WEATHER", "CALENDAR", "ETC")
-                .contains(category);
     }
 }
