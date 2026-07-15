@@ -3,154 +3,59 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>관리자 1:1 상담 목록</title>
-    <link rel="stylesheet" th:href="@{/css/chat/admin/admin-chat-list.css}">
-    <link rel="stylesheet" href="/css/cookie-consent.css">
+    <meta http-equiv="refresh" content="0; url=/admin?view=chats">
+    <title>관리자 상담 관리로 이동 중</title>
+    <style>
+        body {
+            margin: 0;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: Pretendard, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            background: #f6f8fb;
+            color: #1f2937;
+        }
+        .legacy-redirect-box {
+            width: min(440px, calc(100% - 32px));
+            padding: 32px;
+            border-radius: 24px;
+            background: #fff;
+            box-shadow: 0 18px 50px rgba(15, 23, 42, 0.12);
+            text-align: center;
+        }
+        .legacy-redirect-box strong {
+            display: block;
+            margin-bottom: 10px;
+            font-size: 22px;
+        }
+        .legacy-redirect-box p {
+            margin: 0 0 18px;
+            color: #64748b;
+            line-height: 1.6;
+        }
+        .legacy-redirect-box a {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 42px;
+            padding: 0 18px;
+            border-radius: 999px;
+            background: #2563eb;
+            color: #fff;
+            text-decoration: none;
+            font-weight: 700;
+        }
+    </style>
 </head>
 <body>
-<div class="admin-page">
-    <header class="admin-header">
-        <div>
-            <span class="eyebrow">Admin Chat Center</span>
-            <h1>1:1 상담 목록</h1>
-            <p>새 문의, 안읽음 메시지, 종료 상담방을 한 화면에서 관리합니다.</p>
-        </div>
-        <div class="admin-header-actions">
-            <a th:href="@{/admin}" class="admin-dashboard-btn">
-                <span>🏠</span>
-                관리자 대시보드
-            </a>
-
-            <div class="admin-info">
-                <span>관리자</span>
-                <strong th:text="${loginUser.nickname != null ? loginUser.nickname : loginUser.memberId}">ADMIN</strong>
-            </div>
-        </div>
-    </header>
-
-    <section class="summary-grid">
-        <div class="summary-card primary">
-            <span>검색 결과</span>
-            <strong><b th:text="${totalCount}">0</b>개</strong>
-            <em>현재 조건에 맞는 상담방</em>
-        </div>
-        <div class="summary-card">
-            <span>현재 페이지</span>
-            <strong><b th:text="${page}">1</b>/<b th:text="${totalPage}">1</b></strong>
-            <em>페이지당 <b th:text="${size}">10</b>개 표시</em>
-        </div>
-        <div class="summary-card">
-            <span>실시간 상태</span>
-            <strong>WebSocket</strong>
-            <em>새 메시지 도착 시 목록 자동 갱신</em>
-        </div>
-    </section>
-
-    <section class="filter-panel">
-        <form class="search-form" method="get" th:action="@{/chat/admin}">
-            <input type="hidden" name="page" value="1">
-            <input type="hidden" name="size" th:value="${size}">
-
-            <label>
-                <span>상태</span>
-                <select name="status">
-                    <option value="" th:selected="${status == null or status == ''}">전체</option>
-                    <option value="OPEN" th:selected="${status == 'OPEN'}">진행중</option>
-                    <option value="CLOSED" th:selected="${status == 'CLOSED'}">종료</option>
-                </select>
-            </label>
-
-            <label>
-                <span>문의 유형</span>
-                <select name="category">
-                    <option value="" th:selected="${category == null or category == ''}">전체</option>
-                    <option value="MAIL" th:selected="${category == 'MAIL'}">메일 문의</option>
-                    <option value="MAP" th:selected="${category == 'MAP'}">지도 문의</option>
-                    <option value="STOCK" th:selected="${category == 'STOCK'}">증권 문의</option>
-                    <option value="NEWS" th:selected="${category == 'NEWS'}">뉴스 문의</option>
-                    <option value="WEATHER" th:selected="${category == 'WEATHER'}">날씨 문의</option>
-                    <option value="CALENDAR" th:selected="${category == 'CALENDAR'}">캘린더 문의</option>
-                    <option value="ETC" th:selected="${category == 'ETC'}">기타 문의</option>
-                </select>
-            </label>
-
-            <label class="keyword-label">
-                <span>검색어</span>
-                <input type="text" name="keyword" th:value="${keyword}" placeholder="방번호, 사용자번호, 관리자번호, 마지막 메시지">
-            </label>
-
-            <div class="filter-actions">
-                <button type="submit" class="search-btn">검색</button>
-                <a th:href="@{/chat/admin}" class="reset-btn">초기화</a>
-            </div>
-        </form>
-    </section>
-
-    <form id="batchDeleteForm" th:action="@{/chat/admin/rooms/delete}" method="post" onsubmit="return confirmBatchDelete();"></form>
-
-    <section class="list-panel">
-        <div class="list-toolbar">
-            <label class="check-all-label">
-                <input type="checkbox" id="checkAllClosed">
-                종료 상담 전체 선택
-            </label>
-            <button type="submit" form="batchDeleteForm" id="batchDeleteBtn" class="batch-delete-btn" disabled>선택 삭제</button>
-        </div>
-
-        <div class="room-list" id="roomList">
-            <div class="empty" th:if="${#lists.isEmpty(roomList)}">
-                <strong>조건에 맞는 상담방이 없습니다.</strong>
-                <span>검색 조건을 변경하거나 새 상담이 도착할 때까지 기다려주세요.</span>
-            </div>
-
-            <div class="room-card" th:each="room : ${roomList}" th:classappend="${room.status == 'CLOSED'} ? ' closed' : ''">
-                <div class="room-select">
-                    <input type="checkbox" class="room-check" name="roomNoList" th:value="${room.roomNo}" form="batchDeleteForm" th:if="${room.status == 'CLOSED'}">
-                </div>
-
-                <a class="room-item" th:href="@{/chat/admin/{roomNo}(roomNo=${room.roomNo})}" th:attr="data-room-no=${room.roomNo}" th:classappend="${room.status == 'CLOSED'} ? ' closed' : ''">
-                    <div class="room-main-line">
-                        <span class="category-chip">
-                            <span th:text="${room.categoryIcon}">💬</span>
-                            <b th:text="${room.categoryName}">기타 문의</b>
-                        </span>
-                        <strong class="room-title">상담방 #<span th:text="${room.roomNo}">0</span></strong>
-                        <span class="unread-badge" th:if="${room.unreadCount != null and room.unreadCount > 0}">안읽음 <b th:text="${room.unreadCount}">1</b></span>
-                        <span class="status" th:classappend="${room.status == 'OPEN'} ? ' open' : ' closed'" th:text="${room.status == 'OPEN'} ? '진행중' : '종료'">OPEN</span>
-                    </div>
-
-                    <div class="room-meta-grid">
-                        <span>사용자 <b th:text="${room.userNo != null ? room.userNo : '탈퇴 회원'}">1</b></span>
-                        <span>관리자 <b th:text="${room.adminNo != null ? room.adminNo : '미배정'}">미배정</b></span>
-                        <span>최근 <b th:text="${room.lastMessageDate != null ? #temporals.format(room.lastMessageDate, 'MM-dd HH:mm') : '-'}">-</b></span>
-                    </div>
-
-                    <div class="last-message">
-                        <span>마지막 메시지</span>
-                        <p th:text="${room.lastMessage != null ? room.lastMessage : '아직 메시지가 없습니다.'}">아직 메시지가 없습니다.</p>
-                    </div>
-                </a>
-
-                <div class="room-actions" th:if="${room.status == 'CLOSED'}">
-                    <form th:action="@{/chat/admin/{roomNo}/delete(roomNo=${room.roomNo})}" method="post" onsubmit="return confirm('상담방과 메시지가 모두 삭제됩니다. 정말 삭제하시겠습니까?');">
-                        <button type="submit" class="inline-delete-btn">삭제</button>
-                    </form>
-                </div>
-            </div>
-        </div>
-
-        <div class="pagination" id="pagination" th:if="${totalPage > 1}">
-            <a class="page-link" th:classappend="${page <= 1} ? ' disabled' : ''" th:href="@{/chat/admin(page=${page - 1}, size=${size}, status=${status}, category=${category}, keyword=${keyword})}">이전</a>
-            <a class="page-link" th:each="pageNum : ${#numbers.sequence(startPageNo, endPageNo)}" th:classappend="${pageNum == page} ? ' active' : ''" th:href="@{/chat/admin(page=${pageNum}, size=${size}, status=${status}, category=${category}, keyword=${keyword})}" th:text="${pageNum}">1</a>
-            <a class="page-link" th:classappend="${page >= totalPage} ? ' disabled' : ''" th:href="@{/chat/admin(page=${page + 1}, size=${size}, status=${status}, category=${category}, keyword=${keyword})}">다음</a>
-        </div>
-    </section>
+<div class="legacy-redirect-box">
+    <strong>통합 상담 관리로 이동합니다.</strong>
+    <p>이전 /chat/admin 상담 목록은 관리자 콘솔의 상담 관리 영역으로 정리되었습니다.</p>
+    <a href="/admin?view=chats">상담 관리 열기</a>
 </div>
-
-<script th:inline="javascript">
-    const adminViewerNo = /*[[${loginUser.no}]]*/ 0;
+<script>
+    window.location.replace('/admin?view=chats');
 </script>
-<script th:src="@{/js/admin-chat-list.js}"></script>
-    <script src="/js/cookie-consent.js"></script>
 </body>
 </html>
