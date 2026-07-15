@@ -1,5 +1,6 @@
 package com.siyan1234.itproject2nd.admin.controller;
 
+import com.siyan1234.itproject2nd.admin.support.AdminRoutes;
 import com.siyan1234.itproject2nd.config.security.LoginMemberResolver;
 import com.siyan1234.itproject2nd.member.dto.CustomUserDetails;
 import com.siyan1234.itproject2nd.member.dto.MemberDto;
@@ -26,7 +27,7 @@ public class AdminAuthController {
         MemberDto loginUser = loginMemberResolver.fromPrincipal(customUserDetails);
 
         if (loginMemberResolver.isAdmin(loginUser)) {
-            return "redirect:/admin";
+            return AdminRoutes.ADMIN_HOME;
         }
 
         model.addAttribute("loginUser", loginUser);

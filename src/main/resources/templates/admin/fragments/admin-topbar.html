@@ -5,8 +5,8 @@
 <body>
 <header th:fragment="topbar" class="admin-topbar">
             <div>
-                <span class="eyebrow" th:text="${activeView == 'chats' ? 'Chat Management' : (activeView == 'members' ? 'Member Management' : (activeView == 'services' ? 'Service Status' : 'Admin Dashboard'))}">Admin Dashboard</span>
-                <h1 th:text="${activeView == 'chats' ? '상담 관리' : (activeView == 'members' ? '회원 관리' : (activeView == 'services' ? '외부 서비스 상태' : '운영 현황 요약'))}">운영 현황 요약</h1>
+                <span class="eyebrow" th:text="${activeViewEyebrow}">Admin Dashboard</span>
+                <h1 th:text="${activeViewTitle}">운영 현황 요약</h1>
             </div>
             <div class="topbar-actions">
                 <button type="button" class="top-profile-chip" data-modal-open="adminProfileModal">

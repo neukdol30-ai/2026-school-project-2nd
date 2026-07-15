@@ -1,5 +1,6 @@
 package com.siyan1234.itproject2nd.chat.controller;
 
+import com.siyan1234.itproject2nd.admin.support.AdminRoutes;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -17,11 +18,11 @@ public class ChatLegacyController {
 
     @GetMapping
     public String legacyAdminChatList() {
-        return "redirect:/admin?view=chats";
+        return AdminRoutes.ADMIN_CHATS;
     }
 
     @GetMapping("/{roomNo}")
     public String legacyAdminChatRoom(@PathVariable Integer roomNo) {
-        return "redirect:/admin/chats/" + roomNo;
+        return AdminRoutes.chatRoom(roomNo);
     }
 }

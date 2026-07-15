@@ -3,7 +3,9 @@ package com.siyan1234.itproject2nd.admin.controller;
 import com.siyan1234.itproject2nd.admin.dto.AdminChatRoomListResponseDto;
 import com.siyan1234.itproject2nd.admin.dto.AdminDeleteResultDto;
 import com.siyan1234.itproject2nd.admin.service.AdminChatService;
+import com.siyan1234.itproject2nd.admin.support.AdminFlashMessage;
 import com.siyan1234.itproject2nd.admin.support.AdminPagingHelper;
+import com.siyan1234.itproject2nd.admin.support.AdminRoutes;
 import com.siyan1234.itproject2nd.chat.dto.ChatRoomDto;
 import com.siyan1234.itproject2nd.config.security.LoginMemberResolver;
 import com.siyan1234.itproject2nd.member.dto.CustomUserDetails;
@@ -40,7 +42,7 @@ public class AdminChatController {
 
     @GetMapping
     public String adminChats() {
-        return "redirect:/admin?view=chats";
+        return AdminRoutes.ADMIN_CHATS;
     }
 
     @ResponseBody
@@ -80,14 +82,14 @@ public class AdminChatController {
         MemberDto loginAdmin = loginMemberResolver.fromPrincipal(customUserDetails);
 
         if (!loginMemberResolver.isAdmin(loginAdmin)) {
-            return "redirect:/admin/login";
+            return AdminRoutes.ADMIN_LOGIN;
         }
 
         ChatRoomDto chatRoom = adminChatService.assignAdminIfEmpty(roomNo, loginAdmin.getNo());
 
         if (chatRoom == null) {
-            redirectAttributes.addFlashAttribute("adminErrorMessage", "존재하지 않는 상담방입니다.");
-            return "redirect:/admin?view=chats";
+            redirectAttributes.addFlashAttribute("adminErrorMessage", AdminFlashMessage.CHAT_ROOM_NOT_FOUND);
+            return AdminRoutes.ADMIN_CHATS;
         }
 
         model.addAttribute("chatRoom", chatRoom);
@@ -105,23 +107,23 @@ public class AdminChatController {
         MemberDto loginAdmin = loginMemberResolver.fromPrincipal(customUserDetails);
 
         if (!loginMemberResolver.isAdmin(loginAdmin)) {
-            return "redirect:/admin/login";
+            return AdminRoutes.ADMIN_LOGIN;
         }
 
         ChatRoomDto chatRoom = adminChatService.findRoomByRoomNo(roomNo);
 
         if (chatRoom == null) {
-            redirectAttributes.addFlashAttribute("adminErrorMessage", "존재하지 않는 상담방입니다.");
-            return "redirect:/admin?view=chats";
+            redirectAttributes.addFlashAttribute("adminErrorMessage", AdminFlashMessage.CHAT_ROOM_NOT_FOUND);
+            return AdminRoutes.ADMIN_CHATS;
         }
 
         if (!adminChatService.closeRoom(roomNo, loginAdmin.getNo())) {
-            redirectAttributes.addFlashAttribute("adminErrorMessage", "이미 종료된 상담입니다.");
-            return "redirect:/admin/chats/" + roomNo;
+            redirectAttributes.addFlashAttribute("adminErrorMessage", AdminFlashMessage.CHAT_ALREADY_CLOSED);
+            return AdminRoutes.chatRoom(roomNo);
         }
 
-        redirectAttributes.addFlashAttribute("adminMessage", "상담방 #" + roomNo + "번을 종료했습니다.");
-        return "redirect:/admin/chats/" + roomNo;
+        redirectAttributes.addFlashAttribute("adminMessage", AdminFlashMessage.chatClosed(roomNo));
+        return AdminRoutes.chatRoom(roomNo);
     }
 
     @PostMapping("/{roomNo}/delete")
@@ -132,17 +134,17 @@ public class AdminChatController {
         ChatRoomDto chatRoom = adminChatService.findRoomByRoomNo(roomNo);
 
         if (chatRoom == null) {
-            redirectAttributes.addFlashAttribute("adminErrorMessage", "존재하지 않는 상담방입니다.");
-            return "redirect:/admin?view=chats";
+            redirectAttributes.addFlashAttribute("adminErrorMessage", AdminFlashMessage.CHAT_ROOM_NOT_FOUND);
+            return AdminRoutes.ADMIN_CHATS;
         }
 
         if (!adminChatService.deleteClosedRoom(roomNo)) {
-            redirectAttributes.addFlashAttribute("adminErrorMessage", "진행 중 상담은 먼저 종료한 뒤 삭제할 수 있습니다.");
-            return "redirect:/admin?view=chats";
+            redirectAttributes.addFlashAttribute("adminErrorMessage", AdminFlashMessage.CHAT_DELETE_OPEN_DENIED);
+            return AdminRoutes.ADMIN_CHATS;
         }
 
-        redirectAttributes.addFlashAttribute("adminMessage", "종료된 상담방 #" + roomNo + "번을 삭제했습니다.");
-        return "redirect:/admin?view=chats";
+        redirectAttributes.addFlashAttribute("adminMessage", AdminFlashMessage.chatDeleted(roomNo));
+        return AdminRoutes.ADMIN_CHATS;
     }
 
     @PostMapping("/delete")
@@ -153,17 +155,16 @@ public class AdminChatController {
         AdminDeleteResultDto result = adminChatService.deleteClosedRooms(roomNoList);
 
         if (result.getRequestedCount() == 0) {
-            redirectAttributes.addFlashAttribute("adminErrorMessage", "삭제할 상담방을 선택해 주세요.");
-            return "redirect:/admin?view=chats";
+            redirectAttributes.addFlashAttribute("adminErrorMessage", AdminFlashMessage.CHAT_DELETE_NOT_SELECTED);
+            return AdminRoutes.ADMIN_CHATS;
         }
 
         if (!result.hasDeletedItem()) {
-            redirectAttributes.addFlashAttribute("adminErrorMessage", "삭제 가능한 종료 상담이 없습니다. 진행 중 상담은 종료 후 삭제해 주세요.");
+            redirectAttributes.addFlashAttribute("adminErrorMessage", AdminFlashMessage.CHAT_DELETE_NO_AVAILABLE_ROOM);
         } else {
-            redirectAttributes.addFlashAttribute("adminMessage", "종료 상담 " + result.getDeletedCount() + "건을 삭제했습니다."
-                    + (result.getSkippedCount() > 0 ? " 진행 중이거나 없는 상담 " + result.getSkippedCount() + "건은 제외했습니다." : ""));
+            redirectAttributes.addFlashAttribute("adminMessage", AdminFlashMessage.selectedChatsDeleted(result));
         }
 
-        return "redirect:/admin?view=chats";
+        return AdminRoutes.ADMIN_CHATS;
     }
 }

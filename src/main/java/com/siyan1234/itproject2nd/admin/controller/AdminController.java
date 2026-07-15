@@ -6,6 +6,7 @@ import com.siyan1234.itproject2nd.admin.service.AdminChatService;
 import com.siyan1234.itproject2nd.admin.service.AdminDashboardService;
 import com.siyan1234.itproject2nd.admin.service.AdminMemberService;
 import com.siyan1234.itproject2nd.admin.support.AdminPagingHelper;
+import com.siyan1234.itproject2nd.admin.support.AdminView;
 import com.siyan1234.itproject2nd.config.security.LoginMemberResolver;
 import com.siyan1234.itproject2nd.member.dto.CustomUserDetails;
 import com.siyan1234.itproject2nd.member.dto.MemberDto;
@@ -55,7 +56,7 @@ public class AdminController {
             Model model,
             @AuthenticationPrincipal CustomUserDetails customUserDetails
     ) {
-        String activeView = normalizeView(view);
+        AdminView activeView = AdminView.from(view);
         MemberDto loginAdmin = loginMemberResolver.fromPrincipal(customUserDetails);
         AdminDashboardDto dashboard = adminDashboardService.getDashboard();
 
@@ -92,7 +93,9 @@ public class AdminController {
 
         model.addAttribute("dashboard", dashboard);
         model.addAttribute("loginAdmin", loginAdmin);
-        model.addAttribute("activeView", activeView);
+        model.addAttribute("activeView", activeView.getCode());
+        model.addAttribute("activeViewEyebrow", activeView.getEyebrow());
+        model.addAttribute("activeViewTitle", activeView.getTitle());
 
         model.addAttribute("adminMemberList", adminMemberList);
         model.addAttribute("memberKeyword", cleanMemberKeyword);
@@ -111,21 +114,5 @@ public class AdminController {
         model.addAttribute("chatTotalPages", AdminPagingHelper.calculateTotalPages(chatTotalCount, chatSize));
 
         return "admin/dashboard";
-    }
-
-    private String normalizeView(String view) {
-        if ("members".equals(view)) {
-            return "members";
-        }
-
-        if ("chats".equals(view)) {
-            return "chats";
-        }
-
-        if ("services".equals(view)) {
-            return "services";
-        }
-
-        return "dashboard";
     }
 }
