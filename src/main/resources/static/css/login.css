@@ -159,7 +159,7 @@ body { /* <body> 하나에만 적용 */
     transition: opacity 0.15s;
 }
 
-.social-button-ling:hover {
+.social-button-link:hover {
     opacity: 0.85;
 }
 
