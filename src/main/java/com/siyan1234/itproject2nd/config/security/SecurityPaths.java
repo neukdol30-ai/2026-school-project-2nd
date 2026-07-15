@@ -32,6 +32,8 @@ public final class SecurityPaths {
             "/js/**",
             "/images/**",
             "/api/**",
+            "/oauth2/**",
+            "/login/oauth2/**",
             "/error" // 필수, 예외 발생 시 Spring Boot가 /error로 내부 포워딩. Security 6은 그 포워딩도 인가 재검사. 없으면 비로그인 상태 예외 -> 에러 화면 대신 로그인으로 302 (에러 은폐)
     };
 
