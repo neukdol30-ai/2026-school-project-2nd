@@ -4,6 +4,7 @@ import com.siyan1234.itproject2nd.config.handler.CustomAccessDeniedHandler;
 import com.siyan1234.itproject2nd.config.handler.CustomAuthenticationEntryPoint;
 import com.siyan1234.itproject2nd.config.handler.CustomLoginFailureHandler;
 import com.siyan1234.itproject2nd.config.handler.CustomLoginSuccessHandler;
+import com.siyan1234.itproject2nd.config.security.AdminSessionGuardFilter;
 import com.siyan1234.itproject2nd.config.security.SecurityAuthority;
 import com.siyan1234.itproject2nd.config.security.SecurityPaths;
 import com.siyan1234.itproject2nd.member.service.OAuth2DetailsService;
@@ -13,6 +14,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.access.intercept.AuthorizationFilter;
 
 /**
  * Spring Security 설정입니다.
@@ -29,6 +31,7 @@ public class SecurityConfig {
     private final CustomLoginFailureHandler customLoginFailureHandler;
     private final CustomAuthenticationEntryPoint customAuthenticationEntryPoint;
     private final CustomAccessDeniedHandler customAccessDeniedHandler;
+    private final AdminSessionGuardFilter adminSessionGuardFilter;
 
     private final OAuth2DetailsService oAuth2DetailsService;
 
@@ -73,7 +76,9 @@ public class SecurityConfig {
                 .exceptionHandling(exception -> exception
                         .authenticationEntryPoint(customAuthenticationEntryPoint)
                         .accessDeniedHandler(customAccessDeniedHandler)
-                );
+                )
+                // 로그인 이후 관리자 권한이 USER로 변경되어도 /admin 기능을 계속 쓰지 못하도록 DB 기준 권한을 재검증
+                .addFilterAfter(adminSessionGuardFilter, AuthorizationFilter.class);
 
         return http.build();
     }

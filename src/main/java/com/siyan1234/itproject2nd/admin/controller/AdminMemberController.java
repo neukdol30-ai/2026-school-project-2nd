@@ -68,6 +68,8 @@ public class AdminMemberController {
 
         if (isSelf(no, loginAdminNo)) {
             redirectAttributes.addFlashAttribute("adminErrorMessage", AdminFlashMessage.MEMBER_ROLE_SELF_DENIED);
+        } else if (adminMemberService.isLastActiveAdmin(no)) {
+            redirectAttributes.addFlashAttribute("adminErrorMessage", AdminFlashMessage.MEMBER_ROLE_LAST_ADMIN_DENIED);
         } else if (updatedCount == 0) {
             redirectAttributes.addFlashAttribute("adminErrorMessage", AdminFlashMessage.MEMBER_ROLE_CHANGE_FAILED);
         } else {
@@ -103,9 +105,11 @@ public class AdminMemberController {
     @PostMapping("/{no}/unban")
     public String unbanMember(
             @PathVariable("no") Integer no,
+            @AuthenticationPrincipal CustomUserDetails customUserDetails,
             RedirectAttributes redirectAttributes
     ) {
-        int updatedCount = adminMemberService.unbanMember(no);
+        Integer loginAdminNo = resolveLoginAdminNo(customUserDetails);
+        int updatedCount = adminMemberService.unbanMember(no, loginAdminNo);
 
         if (updatedCount == 0) {
             redirectAttributes.addFlashAttribute("adminErrorMessage", AdminFlashMessage.MEMBER_UNBAN_FAILED);

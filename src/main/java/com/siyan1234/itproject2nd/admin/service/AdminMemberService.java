@@ -47,7 +47,7 @@ public class AdminMemberService {
 
     @Transactional
     public int grantAdmin(Integer memberNo, Integer loginAdminNo) {
-        if (isBanned(memberNo)) {
+        if (!isActiveAdmin(loginAdminNo) || isBanned(memberNo)) {
             return 0;
         }
 
@@ -56,6 +56,10 @@ public class AdminMemberService {
 
     @Transactional
     public int grantUser(Integer memberNo, Integer loginAdminNo) {
+        if (!isActiveAdmin(loginAdminNo) || isLastActiveAdmin(memberNo)) {
+            return 0;
+        }
+
         return updateRoleSafely(memberNo, loginAdminNo, ROLE_USER);
     }
 
@@ -74,9 +78,30 @@ public class AdminMemberService {
         return member != null && ROLE_ADMIN.equalsIgnoreCase(member.getRole());
     }
 
+    @Transactional(readOnly = true)
+    public boolean isActiveAdmin(Integer memberNo) {
+        if (memberNo == null) {
+            return false;
+        }
+
+        return adminMemberDao.countActiveAdminByNo(memberNo) > 0;
+    }
+
+    @Transactional(readOnly = true)
+    public boolean isLastActiveAdmin(Integer memberNo) {
+        if (memberNo == null || !isActiveAdmin(memberNo)) {
+            return false;
+        }
+
+        return adminMemberDao.countActiveAdminsExcept(memberNo) == 0;
+    }
+
     @Transactional
     public int banMember(Integer memberNo, String banReason, Integer loginAdminNo) {
-        if (isSelf(memberNo, loginAdminNo) || memberNo == null || isAdminAccount(memberNo)) {
+        if (!isActiveAdmin(loginAdminNo)
+                || isSelf(memberNo, loginAdminNo)
+                || memberNo == null
+                || isAdminAccount(memberNo)) {
             return 0;
         }
 
@@ -84,8 +109,8 @@ public class AdminMemberService {
     }
 
     @Transactional
-    public int unbanMember(Integer memberNo) {
-        if (memberNo == null) {
+    public int unbanMember(Integer memberNo, Integer loginAdminNo) {
+        if (memberNo == null || !isActiveAdmin(loginAdminNo)) {
             return 0;
         }
 
@@ -94,7 +119,7 @@ public class AdminMemberService {
 
     @Transactional
     public int deleteMember(Integer memberNo, Integer loginAdminNo) {
-        if (memberNo == null) {
+        if (memberNo == null || !isActiveAdmin(loginAdminNo)) {
             return 0;
         }
 

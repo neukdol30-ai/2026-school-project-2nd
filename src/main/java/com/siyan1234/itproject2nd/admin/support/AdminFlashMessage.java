@@ -20,6 +20,7 @@ public final class AdminFlashMessage {
     public static final String MEMBER_ROLE_SELF_DENIED = "현재 로그인 중인 관리자 본인의 권한은 변경할 수 없습니다.";
     public static final String MEMBER_ROLE_BANNED_DENIED = "정지된 회원에게는 ADMIN 권한을 부여할 수 없습니다. 먼저 정지를 해제해 주세요.";
     public static final String MEMBER_ROLE_CHANGE_FAILED = "회원 권한 변경에 실패했습니다.";
+    public static final String MEMBER_ROLE_LAST_ADMIN_DENIED = "마지막 남은 관리자 계정은 USER 권한으로 변경할 수 없습니다.";
     public static final String MEMBER_BAN_SELF_DENIED = "현재 로그인 중인 관리자 본인 계정은 정지할 수 없습니다.";
     public static final String MEMBER_BAN_ADMIN_DENIED = "관리자 계정은 바로 정지할 수 없습니다. 먼저 USER 권한으로 전환한 뒤 처리해 주세요.";
     public static final String MEMBER_BAN_FAILED = "회원 정지 처리에 실패했습니다.";
