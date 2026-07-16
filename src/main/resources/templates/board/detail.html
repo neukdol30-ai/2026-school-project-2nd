@@ -179,7 +179,7 @@
 
 
     <!-- ========================= -->
-    <!-- 댓글 영역 -->
+    <!-- 답변 영역 -->
     <!-- 공지사항에서는 전체 영역 숨김 -->
     <!-- ========================= -->
     <section th:if="${board.category != 'NOTICE'}"
@@ -211,13 +211,13 @@
 
         </header>
 
-        <!-- 댓글 오류 메시지 -->
+        <!-- 답변 오류 메시지 -->
         <p th:if="${commentError}"
            th:text="${commentError}"
            class="board-error-message">
         </p>
 
-        <!-- 댓글이 없을 때 -->
+        <!-- 답변이 없을 때 -->
         <div th:if="${#lists.isEmpty(commentList)}"
              class="board-comment-empty">
 
@@ -225,7 +225,7 @@
 
         </div>
 
-        <!-- 댓글 목록 -->
+        <!-- 답변 목록 -->
         <div th:unless="${#lists.isEmpty(commentList)}"
              class="board-comment-list">
 
@@ -255,13 +255,13 @@
 
                     </div>
 
-                    <!-- 댓글 내용 -->
+                    <!-- 답변 내용 -->
                     <div th:id="'comment-text-' + ${comment.no}"
                          th:utext="${comment.content}"
                          class="board-comment-content">
                     </div>
 
-                    <!-- 본인 댓글 수정/삭제 -->
+                    <!-- 본인 답변 수정/삭제 -->
                     <div sec:authorize="isAuthenticated()"
                         th:if="${#authentication.principal.memberDto.no.equals(comment.writerNo)}"
                         class="board-comment-actions">
