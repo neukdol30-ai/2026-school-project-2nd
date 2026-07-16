@@ -1,9 +1,10 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
     <title>로그인</title>
     <link rel="stylesheet" th:href="@{/css/login.css}">
+    <link rel="stylesheet" href="/css/cookie-consent.css">
 </head>
 
 <body>
@@ -15,7 +16,14 @@
             회원가입이 완료되었습니다. 로그인하세요.
         </div>
 
-        <div th:if="${param.error}" class="message-box message-error">
+        <div th:if="${param.error != null and param.error[0] == 'banned'}" class="message-box message-error">
+            <strong>접속이 제한된 계정입니다.</strong><br>
+            <span th:text="${loginErrorMessage != null ? loginErrorMessage : '관리자에 의해 이용이 제한되었습니다.'}">
+                관리자에 의해 이용이 제한되었습니다.
+            </span>
+        </div>
+
+        <div th:if="${param.error != null and param.error[0] != 'banned'}" class="message-box message-error">
             아이디 또는 비밀번호가 올바르지 않습니다.
         </div>
 
@@ -23,15 +31,25 @@
             로그아웃되었습니다.
         </div>
 
-        <form th:action="@{/member/login}" method="post">
+        <form th:action="@{/member/login}" method="post" autocomplete="off" data-password-autocomplete-form>
             <div class="form-group">
                 <label class="form-label" for="memberId">아이디</label>
-                <input id="memberId" type="text" name="memberId" class="form-input">
+                <input id="memberId"
+                       type="text"
+                       name="memberId"
+                       class="form-input"
+                       autocomplete="off"
+                       data-autocomplete-allowed="username">
             </div>
 
             <div class="form-group">
                 <label class="form-label" for="password">비밀번호</label>
-                <input id="password" type="password" name="password" class="form-input">
+                <input id="password"
+                       type="password"
+                       name="password"
+                       class="form-input"
+                       autocomplete="off"
+                       data-autocomplete-allowed="current-password">
             </div>
 
             <button type="submit" class="submit-button">로그인</button>
@@ -56,5 +74,7 @@
         </div>
     </div>
 </div>
+
+    <script src="/js/cookie-consent.js"></script>
 </body>
 </html>

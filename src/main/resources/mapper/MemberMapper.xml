@@ -4,8 +4,8 @@
         "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.siyan1234.itproject2nd.member.dao.MemberDao">
 
-    <select id="findByMemberId" parameterType="String" resultType="MemberDto">
-        SELECT no,
+    <sql id="memberColumns">
+        no,
         member_id,
         password,
         name,
@@ -22,31 +22,24 @@
         last_login_date,
         agree_terms_yn,
         agree_privacy_yn,
+        ban_yn,
+        ban_reason,
+        banned_date,
+        banned_by,
         regdate
+    </sql>
+
+    <select id="findByMemberId" parameterType="String" resultType="MemberDto">
+        SELECT
+        <include refid="memberColumns" />
         FROM member
         WHERE member_id = #{memberId}
         <!-- #{memberId}는 Dao에서 @Param("memberId")로 넘긴 값 -->
     </select>
 
     <select id="findByEmail" parameterType="String" resultType="MemberDto"> <!-- 이메일 중복 확인용 -->
-        SELECT no,
-        member_id,
-        password,
-        name,
-        nickname,
-        email,
-        phone,
-        birth_date,
-        gender,
-        postcode,
-        address,
-        detail_address,
-        role,
-        profile_image,
-        last_login_date,
-        agree_terms_yn,
-        agree_privacy_yn,
-        regdate
+        SELECT
+        <include refid="memberColumns" />
         FROM member
         WHERE email = #{email}
         <!-- 이메일이 이미 존재하는지 확인 -->
@@ -54,24 +47,8 @@
 
     <!-- 닉네임 중복 확인용 findByEmail과 동일 구조 -->
     <select id="findByNickname" parameterType="String" resultType="MemberDto">
-        SELECT no,
-        member_id,
-        password,
-        name,
-        nickname,
-        email,
-        phone,
-        birth_date,
-        gender,
-        postcode,
-        address,
-        detail_address,
-        role,
-        profile_image,
-        last_login_date,
-        agree_terms_yn,
-        agree_privacy_yn,
-        regdate
+        SELECT
+        <include refid="memberColumns" />
         FROM member
         WHERE nickname = #{nickname}
         <!-- #{nickname} Dao에서 @Param("nickname")으로 넘긴 값 -->
@@ -115,46 +92,16 @@
 
     <!-- 관리자 회원 목록 조회용 / MemberDao의 findAllMembers()와 일치 -->
     <select id="findAllMembers" resultType="MemberDto">
-        SELECT no,
-        member_id,
-        name,
-        nickname,
-        email,
-        phone,
-        birth_date,
-        gender,
-        postcode,
-        address,
-        detail_address,
-        role,
-        profile_image,
-        last_login_date,
-        agree_terms_yn,
-        agree_privacy_yn,
-        regdate
+        SELECT
+        <include refid="memberColumns" />
         FROM member
         ORDER BY no DESC
     </select>
 
-    <!--    관리자 회원 상세 조회용 / MemberDao - findByNo(Integer no)와 일치-->
+    <!-- 관리자 회원 상세 조회용 / MemberDao - findByNo(Integer no)와 일치 -->
     <select id="findByNo" parameterType="int" resultType="MemberDto">
-        SELECT no,
-        member_id,
-        name,
-        nickname,
-        email,
-        phone,
-        birth_date,
-        gender,
-        postcode,
-        address,
-        detail_address,
-        role,
-        profile_image,
-        last_login_date,
-        agree_terms_yn,
-        agree_privacy_yn,
-        regdate
+        SELECT
+        <include refid="memberColumns" />
         FROM member
         WHERE no = #{no}
         <!-- #{no}는 Dao에서 @Param("no")로 넘긴 회원 고유번호 값-->
@@ -198,5 +145,11 @@
         <!-- jdbcType=VARCHAR -> 둘 다 null일 수 있는 컬럼(카카오가 이메일 동의를 거부당하면 null) -->
         <!-- role/agree_*를 값으로 박은 이유: 셋 다 NOT NULL이라, 소셜 로그인 등 화면을 거쳤으므로 'Y'로 본다. -->
     </insert>
+
+    <!-- 관리자 회원 삭제용 -->
+    <delete id="deleteMember">
+        DELETE FROM member
+        WHERE no = #{no, jdbcType=NUMERIC}
+    </delete>
 
 </mapper>

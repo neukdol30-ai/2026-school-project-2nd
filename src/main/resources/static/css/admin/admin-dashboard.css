@@ -1,0 +1,15 @@
+/*
+ * admin-dashboard.css
+ * 사용 위치: templates/admin/dashboard.html
+ * 역할: 관리자 콘솔 CSS 진입점입니다.
+ * 실제 스타일은 역할별 CSS 파일로 분리되어 있습니다.
+ */
+
+@import url("./admin-base.css");
+@import url("./admin-sidebar.css");
+@import url("./admin-layout.css");
+@import url("./admin-dashboard-view.css");
+@import url("./admin-management.css");
+@import url("./admin-modal.css");
+@import url("./admin-feedback.css");
+@import url("./admin-responsive.css");

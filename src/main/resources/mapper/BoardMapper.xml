@@ -1,0 +1,242 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.siyan1234.itproject2nd.board.dao.BoardDao">
+
+    <select id="findAll" resultType="BoardDto">
+        SELECT
+        b.no,
+        b.writer_no,
+        b.category,
+        b.answer_status,
+        b.title,
+        b.content,
+        b.view_count,
+        b.created_date,
+        b.modified_date,
+        m.name AS writer_name,
+        m.nickname AS writer_nickname,
+        (
+             SELECT COUNT(*)
+             FROM board_comment bc
+             WHERE bc.board_no = b.no
+            ) AS answer_count
+        FROM board b
+        LEFT JOIN member m
+        ON b.writer_no = m.no
+        ORDER BY b.no DESC
+    </select>
+
+    <select id="findByNo" parameterType="long" resultType="BoardDto">
+        SELECT
+        b.no,
+        b.writer_no,
+        b.category,
+        b.answer_status,
+        b.title,
+        b.content,
+        b.view_count,
+        b.created_date,
+        b.modified_date,
+        m.name AS writer_name,
+        m.nickname AS writer_nickname,
+            (
+              SELECT COUNT(*)
+              FROM board_comment bc
+              WHERE bc.board_no = b.no
+            ) AS answer_count
+        FROM board b
+        LEFT JOIN member m
+        ON b.writer_no = m.no
+        WHERE b.no = #{no}
+    </select>
+
+    <insert id="insert" parameterType="BoardDto">
+        INSERT INTO board (
+        writer_no,
+        category,
+        title,
+        content
+        )
+        VALUES (
+        #{writerNo},
+        #{category},
+        #{title},
+        #{content}
+        )
+    </insert>
+
+    <select id="findByCategory" parameterType="string" resultType="BoardDto">
+        SELECT
+        b.no,
+        b.writer_no,
+        b.category,
+        b.answer_status,
+        b.title,
+        b.content,
+        b.view_count,
+        b.created_date,
+        b.modified_date,
+        m.name AS writer_name,
+        m.nickname AS writer_nickname,
+            (
+              SELECT COUNT(*)
+              FROM board_comment bc
+              WHERE bc.board_no = b.no
+            ) AS answer_count
+        FROM board b
+        LEFT JOIN member m
+        ON b.writer_no = m.no
+        WHERE b.category = #{category}
+        ORDER BY b.no DESC
+    </select>
+
+
+    <!-- 게시글 검색 -->
+    <select id="search" parameterType="string" resultType="BoardDto">
+        SELECT
+        b.no,
+        b.writer_no,
+        b.category,
+        b.answer_status,
+        b.title,
+        b.content,
+        b.view_count,
+        b.created_date,
+        b.modified_date,
+        m.name AS writer_name,
+        m.nickname AS writer_nickname,
+            (
+              SELECT COUNT(*)
+              FROM board_comment bc
+              WHERE bc.board_no = b.no
+            ) AS answer_count
+        FROM board b
+        LEFT JOIN member m
+        ON b.writer_no = m.no
+        WHERE b.title LIKE '%' || #{keyword} || '%'
+        OR m.nickname LIKE '%' || #{keyword} || '%'
+        ORDER BY b.no DESC
+    </select>
+
+
+    <!-- 카테고리별 게시글 개수 조회 -->
+    <select id="countByCategory"
+            parameterType="string"
+            resultType="int">
+
+        SELECT COUNT(*)
+        FROM board
+        WHERE category = #{category}
+
+    </select>
+
+    <!-- 카테고리별 게시글 페이징 조회 -->
+    <select id="findPageByCategory"
+            resultType="BoardDto">
+
+        SELECT *
+        FROM (
+        SELECT
+        ROWNUM AS rn,
+        board_data.*
+        FROM (
+        SELECT
+        b.no,
+        b.writer_no,
+        b.category,
+        b.answer_status,
+        b.title,
+        b.content,
+        b.view_count,
+        b.created_date,
+        b.modified_date,
+        m.name AS writer_name,
+        m.nickname AS writer_nickname,
+            (
+              SELECT COUNT(*)
+              FROM board_comment bc
+              WHERE bc.board_no = b.no
+            ) AS answer_count
+        FROM board b
+        LEFT JOIN member m
+        ON b.writer_no = m.no
+        WHERE b.category = #{category}
+        ORDER BY b.no DESC
+        ) board_data
+        WHERE ROWNUM &lt;= #{endRow}
+        )
+        WHERE rn &gt;= #{startRow}
+
+    </select>
+
+
+
+    <!-- 게시글 전체 개수 조회 -->
+    <select id="countAll" resultType="int">
+        SELECT COUNT(*)
+        FROM board
+    </select>
+
+
+    <!-- 게시글 페이징 조회 -->
+    <select id="findPage" resultType="BoardDto">
+        SELECT *
+        FROM (
+        SELECT
+        ROWNUM AS rn,
+        board_data.*
+        FROM (
+        SELECT
+        b.no,
+        b.writer_no,
+        b.category,
+        b.answer_status,
+        b.title,
+        b.content,
+        b.view_count,
+        b.created_date,
+        b.modified_date,
+        m.name AS writer_name,
+        m.nickname AS writer_nickname,
+            (
+              SELECT COUNT(*)
+              FROM board_comment bc
+              WHERE bc.board_no = b.no
+            ) AS answer_count
+        FROM board b
+        LEFT JOIN member m
+        ON b.writer_no = m.no
+        ORDER BY b.no DESC
+        ) board_data
+        WHERE ROWNUM &lt;= #{endRow}
+        )
+        WHERE rn &gt;= #{startRow}
+    </select>
+
+
+    <update id="increaseViewCount" parameterType="long">
+        UPDATE board
+        SET view_count = view_count + 1
+        WHERE no = #{no}
+    </update>
+
+    <update id="update" parameterType="BoardDto">
+        UPDATE board
+        SET
+        category = #{category},
+        title = #{title},
+        content = #{content},
+        modified_date = SYSTIMESTAMP
+        WHERE no = #{no}
+    </update>
+
+    <delete id="delete" parameterType="long">
+        DELETE FROM board
+        WHERE no = #{no}
+    </delete>
+
+</mapper>

@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<body>
+<!-- 대시보드 영역 -->
+        <section th:fragment="dashboardView" class="admin-view" th:classappend="${activeView == 'dashboard'} ? ' active' : ''" id="dashboardView">
+            <section class="hero-card">
+                <div>
+                    <span class="notice-tag">운영 현황</span>
+                    <h2>오늘 접수된 상담 <strong id="metricTodayChatRooms" th:text="${dashboard.todayChatRoomCount}">0</strong>건</h2>
+                    <p>현황 요약을 먼저 확인하고, 필요한 관리 기능은 좌측 메뉴에서 바로 전환하세요.</p>
+                </div>
+                <a th:href="@{/admin(view='chats')}" class="hero-action">상담 관리</a>
+            </section>
+
+            <section class="metric-grid">
+                <article class="metric-card">
+                    <span>전체 회원</span>
+                    <strong id="metricTotalMembers" th:text="${dashboard.totalMemberCount}">0</strong>
+                    <small th:text="'오늘 가입 ' + ${dashboard.todayMemberCount} + '명'">오늘 가입 0명</small>
+                </article>
+                <article class="metric-card">
+                    <span>전체 게시글</span>
+                    <strong id="metricTotalBoards" th:text="${dashboard.totalBoardCount}">0</strong>
+                    <small th:text="'오늘 작성 ' + ${dashboard.todayBoardCount} + '건'">오늘 작성 0건</small>
+                </article>
+                <article class="metric-card">
+                    <span>진행 중 상담</span>
+                    <strong class="orange" id="metricOpenChats" th:text="${dashboard.openChatRoomCount}">0</strong>
+                    <small id="metricTodayChatText" th:text="'오늘 접수 ' + ${dashboard.todayChatRoomCount} + '건'">오늘 접수 0건</small>
+                </article>
+                <article class="metric-card">
+                    <span>읽지 않은 상담</span>
+                    <strong class="red" id="metricUnreadChats" th:text="${dashboard.unreadChatRoomCount}">0</strong>
+                    <small>사용자 메시지 기준</small>
+                </article>
+                <article class="metric-card">
+                    <span>종료된 상담</span>
+                    <strong class="green" id="metricClosedChats" th:text="${dashboard.closedChatRoomCount}">0</strong>
+                    <small id="metricTotalChatText" th:text="'전체 상담 ' + ${dashboard.totalChatRoomCount} + '건'">전체 상담 0건</small>
+                </article>
+                <article class="metric-card">
+                    <span>오늘 방문</span>
+                    <strong id="metricTodayVisits" th:text="${dashboard.todayVisitCount}">0</strong>
+                    <small>분석 쿠키 동의 기준</small>
+                </article>
+            </section>
+
+            <section class="dashboard-grid">
+                <article class="panel trend-panel">
+                    <div class="panel-head">
+                        <div>
+                            <span class="eyebrow">Last 7 Days</span>
+                            <h2>최근 7일 상담 접수 추이</h2>
+                        </div>
+                        <span class="panel-badge">chat_room.created_date 기준</span>
+                    </div>
+                    <div class="trend-chart" id="dailyChatTrend">
+                        <div class="trend-item" th:each="day : ${dashboard.dailyChatStatsList}">
+                            <span class="trend-value" th:text="${day.chatCount}">0</span>
+                            <div class="trend-bar" th:attr="data-count=${day.chatCount}"></div>
+                            <strong th:text="${day.dateLabel}">07/10</strong>
+                        </div>
+                    </div>
+                </article>
+
+                <article class="panel category-panel">
+                    <div class="panel-head">
+                        <div>
+                            <span class="eyebrow">Category</span>
+                            <h2>상담 카테고리별 통계</h2>
+                        </div>
+                    </div>
+                    <div class="category-list" id="categoryStats">
+                        <div class="category-row" th:each="category : ${dashboard.categoryStatsList}">
+                            <div class="category-title">
+                                <strong>
+                                    <span th:text="${category.categoryIcon}">💬</span>
+                                    <span th:text="${category.categoryName}">메일 문의</span>
+                                </strong>
+                                <em th:text="${category.chatCount} + '건'">0건</em>
+                            </div>
+                            <div class="category-progress">
+                                <span th:attr="data-count=${category.chatCount}"></span>
+                            </div>
+                            <p th:text="'진행 ' + ${category.openCount} + ' · 종료 ' + ${category.closedCount}">진행 0 · 종료 0</p>
+                        </div>
+                    </div>
+                </article>
+            </section>
+
+            <section class="wide-grid">
+                <article class="panel">
+                    <div class="panel-head">
+                        <div>
+                            <span class="eyebrow">Recent Chats</span>
+                            <h2>최근 상담</h2>
+                        </div>
+                        <a th:href="@{/admin(view='chats')}" class="small-link">전체 상담 보기</a>
+                    </div>
+                    <div class="recent-chat-list">
+                        <a class="recent-chat-item"
+                           th:each="room : ${dashboard.recentChatRoomList}"
+                           th:href="@{/admin/chats/{roomNo}(roomNo=${room.roomNo})}">
+                            <span class="chat-icon" th:text="${room.categoryIcon}">💬</span>
+                            <div>
+                                <strong th:text="'#' + ${room.roomNo} + ' · ' + ${room.categoryName}">#1 · 메일 문의</strong>
+                                <p th:text="${room.lastMessage != null and !#strings.isEmpty(room.lastMessage) ? room.lastMessage : '아직 메시지가 없습니다.'}">최근 메시지</p>
+                            </div>
+                            <em th:classappend="${room.status == 'OPEN'} ? ' open' : ' closed'" th:text="${room.statusName}">진행 중</em>
+                        </a>
+                        <div class="empty-box" th:if="${dashboard.recentChatRoomList == null or #lists.isEmpty(dashboard.recentChatRoomList)}">
+                            <strong>최근 상담 없음</strong>
+                            <p>상담이 접수되면 이 영역에 최근 상담이 표시됩니다.</p>
+                        </div>
+                    </div>
+                </article>
+
+                <article class="panel">
+                    <div class="panel-head">
+                        <div>
+                            <span class="eyebrow">External Services</span>
+                            <h2>외부 서비스 상태</h2>
+                        </div>
+                        <a th:href="@{/admin(view='services')}" class="small-link">상태 보기</a>
+                    </div>
+                    <div class="service-list compact">
+                        <div class="service-card"
+                             th:each="service : ${dashboard.serviceStatusList}"
+                             th:classappend="${service.available} ? ' available' : ' pending'">
+                            <div>
+                                <strong th:text="${service.serviceName}">서비스명</strong>
+                                <p th:text="${service.description}">서비스 설명</p>
+                            </div>
+                            <span th:text="${service.status}">상태</span>
+                        </div>
+                    </div>
+                </article>
+            </section>
+        </section>
+</body>
+</html>

@@ -23,6 +23,12 @@ spring:
     username: secondpro
     # DBeaver에서 쓰는 DB 비밀번호
     password: 1234
+  # (이미지삽입)파일 크기 설정
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 20MB
+
   # ──── Redis 추가 ────
   data:
     redis:
@@ -33,15 +39,44 @@ spring:
   thymeleaf:
     # HTML 수정 후 새로고침 반영
     cache: false
+
+
+
+naver:
+  client-id: NJCUDekz2OmI2rd2pYG9
+  client-secret: mctoRB8Xvz
+
+data-go:
+  service-key: 388f11902de0aa7de575bae95284d248e5323d5c86ef048cc5678acda55d9f3c
+
 server:
   # 서버 포트
   port: 8080
+  servlet:
+    session:
+      persistent: false
 mybatis:
   # mapper.xml 위치
   mapper-locations: classpath:mapper/**/*.xml
   # DTO 패키지 위치
-  type-aliases-package: com.siyan1234.itproject2nd.member.dto
+  type-aliases-package:
+      com.siyan1234.itproject2nd.member.dto,
+      com.siyan1234.itproject2nd.chat.dto,
+      com.siyan1234.itproject2nd.admin.dto,
+      com.siyan1234.itproject2nd.News.dto,
+      com.siyan1234.itproject2nd.board.dto
   configuration:
     # MEMBER_ID -> memberId 자동 매칭
     # AGREE_TERMS_YN -> agreeTermsYn 자동 매칭
     map-underscore-to-camel-case: true
+kakao:
+  notify:
+    enabled: ${KAKAO_NOTIFY_ENABLED:false}
+    rest-api-key: ${KAKAO_REST_API_KEY:}
+    client-secret: ${KAKAO_CLIENT_SECRET:}
+    redirect-uri: ${KAKAO_REDIRECT_URI:http://localhost:8080/kakao/callback}
+    admin-refresh-token: ${KAKAO_ADMIN_REFRESH_TOKEN:}
+    admin-room-base-url: ${KAKAO_ADMIN_ROOM_BASE_URL:http://localhost:8080/chat/admin}
+
+file:
+  board-image-dir: uploads/board-images

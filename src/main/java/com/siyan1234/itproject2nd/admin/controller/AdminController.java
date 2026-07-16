@@ -1,67 +1,118 @@
 package com.siyan1234.itproject2nd.admin.controller;
 
+import com.siyan1234.itproject2nd.admin.dto.AdminDashboardDto;
+import com.siyan1234.itproject2nd.admin.dto.RecentChatRoomDto;
+import com.siyan1234.itproject2nd.admin.service.AdminChatService;
+import com.siyan1234.itproject2nd.admin.service.AdminDashboardService;
+import com.siyan1234.itproject2nd.admin.service.AdminMemberService;
+import com.siyan1234.itproject2nd.admin.support.AdminPagingHelper;
+import com.siyan1234.itproject2nd.admin.support.AdminView;
+import com.siyan1234.itproject2nd.config.security.LoginMemberResolver;
+import com.siyan1234.itproject2nd.member.dto.CustomUserDetails;
 import com.siyan1234.itproject2nd.member.dto.MemberDto;
-import com.siyan1234.itproject2nd.member.service.MemberService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import java.util.List;
 
+/**
+ * 관리자 단일 콘솔 화면 Controller입니다.
+ *
+ * 이 Controller는 화면 렌더링에 필요한 Model 조립만 담당합니다.
+ * 실제 대시보드/상담/회원 조회 로직은 각 Service로 분리했습니다.
+ */
 @Controller
 @RequiredArgsConstructor
 @RequestMapping("/admin")
 public class AdminController {
 
-    private final MemberService memberService;
+    private static final int DEFAULT_MEMBER_SIZE = 10;
+    private static final int DEFAULT_CHAT_SIZE = 10;
 
-    @GetMapping({"", "/"})
-    public String adminMain() {
-        return "admin/main";
+    private final AdminDashboardService adminDashboardService;
+    private final AdminMemberService adminMemberService;
+    private final AdminChatService adminChatService;
+    private final LoginMemberResolver loginMemberResolver;
+
+    @GetMapping({"", "/", "/dashboard"})
+    public String adminDashboard(
+            @RequestParam(value = "view", defaultValue = "dashboard") String view,
+
+            @RequestParam(value = "memberKeyword", required = false) String memberKeyword,
+            @RequestParam(value = "memberPage", defaultValue = "1") int memberPage,
+            @RequestParam(value = "memberSize", defaultValue = "10") int memberSize,
+
+            @RequestParam(value = "chatStatus", required = false) String chatStatus,
+            @RequestParam(value = "chatCategory", required = false) String chatCategory,
+            @RequestParam(value = "chatKeyword", required = false) String chatKeyword,
+            @RequestParam(value = "chatPage", defaultValue = "1") int chatPage,
+            @RequestParam(value = "chatSize", defaultValue = "10") int chatSize,
+
+            Model model,
+            @AuthenticationPrincipal CustomUserDetails customUserDetails
+    ) {
+        AdminView activeView = AdminView.from(view);
+        MemberDto loginAdmin = loginMemberResolver.fromPrincipal(customUserDetails);
+        AdminDashboardDto dashboard = adminDashboardService.getDashboard();
+
+        memberPage = AdminPagingHelper.normalizePage(memberPage);
+        chatPage = AdminPagingHelper.normalizePage(chatPage);
+        memberSize = AdminPagingHelper.normalizeSize(memberSize, DEFAULT_MEMBER_SIZE);
+        chatSize = AdminPagingHelper.normalizeSize(chatSize, DEFAULT_CHAT_SIZE);
+
+        String cleanMemberKeyword = AdminPagingHelper.cleanText(memberKeyword);
+        String cleanChatStatus = AdminPagingHelper.cleanText(chatStatus);
+        String cleanChatCategory = AdminPagingHelper.cleanText(chatCategory);
+        String cleanChatKeyword = AdminPagingHelper.cleanText(chatKeyword);
+
+        List<MemberDto> adminMemberList = adminMemberService.findMembers(
+                cleanMemberKeyword,
+                memberPage,
+                memberSize
+        );
+        long memberTotalCount = adminMemberService.countMembers(cleanMemberKeyword);
+
+        List<RecentChatRoomDto> adminChatRoomList = adminChatService.findRooms(
+                cleanChatStatus,
+                cleanChatCategory,
+                cleanChatKeyword,
+                loginAdmin == null ? null : loginAdmin.getNo(),
+                chatPage,
+                chatSize
+        );
+        long chatTotalCount = adminChatService.countRooms(
+                cleanChatStatus,
+                cleanChatCategory,
+                cleanChatKeyword
+        );
+
+        model.addAttribute("dashboard", dashboard);
+        model.addAttribute("loginAdmin", loginAdmin);
+        model.addAttribute("activeView", activeView.getCode());
+        model.addAttribute("activeViewEyebrow", activeView.getEyebrow());
+        model.addAttribute("activeViewTitle", activeView.getTitle());
+
+        model.addAttribute("adminMemberList", adminMemberList);
+        model.addAttribute("memberKeyword", cleanMemberKeyword);
+        model.addAttribute("memberPage", memberPage);
+        model.addAttribute("memberSize", memberSize);
+        model.addAttribute("memberTotalCount", memberTotalCount);
+        model.addAttribute("memberTotalPages", AdminPagingHelper.calculateTotalPages(memberTotalCount, memberSize));
+
+        model.addAttribute("adminChatRoomList", adminChatRoomList);
+        model.addAttribute("chatStatus", cleanChatStatus);
+        model.addAttribute("chatCategory", cleanChatCategory);
+        model.addAttribute("chatKeyword", cleanChatKeyword);
+        model.addAttribute("chatPage", chatPage);
+        model.addAttribute("chatSize", chatSize);
+        model.addAttribute("chatTotalCount", chatTotalCount);
+        model.addAttribute("chatTotalPages", AdminPagingHelper.calculateTotalPages(chatTotalCount, chatSize));
+
+        return "admin/dashboard";
     }
-
-    @GetMapping("/members")
-    public String memberList(Model model) {
-
-        List<MemberDto> memberList = memberService.findAllMembers();
-
-        model.addAttribute("memberList", memberList);
-
-        return "admin/member-list";
-    }
-
-    // 관리자 회원 상세보기 화면 / GET /admin/members/{no}
-    @GetMapping("/members/{no}")
-    public String memberDetail(@PathVariable("no") Integer no, Model model) {
-
-        MemberDto member = memberService.findByNo(no); // no로 회원 한 명 조회.
-
-        if (member == null) {
-            return "redirect:/admin/members";
-        }
-
-        model.addAttribute("member", member); // 조회한 회원을 화면으로 전달(이름 "member")
-
-        return "admin/member-detail"; // templates/admin/member-detail.html
-    }
-
-    @GetMapping("/members/{no}/edit") // {no} : 주소 안 변수
-    public String memberEditForm(@PathVariable("no") Integer no, Model model) {
-        MemberDto member = memberService.findByNo(no);
-        if (member == null) {
-            return "redirect:/admin/members";
-        }
-        model.addAttribute("member", member);
-        return "admin/member-edit";
-    }
-
-    @PostMapping("/members/{no}/edit")
-    public String memberEditUpdate(@PathVariable("no") Integer no,
-                                   @ModelAttribute("member") MemberDto member) {
-        member.setNo(no);
-        memberService.updateMember(member);
-        return "redirect:/admin/members/" + no;
-    }
-
 }

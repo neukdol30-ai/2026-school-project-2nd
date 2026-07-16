@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>1:1 상담 채팅</title>
+    <link rel="stylesheet" th:href="@{/css/chat/pc/chat-room-pc.css}">
+    <link rel="stylesheet" href="/css/cookie-consent.css">
+</head>
+<body>
+<div class="chat-page">
+    <aside class="room-sidebar">
+        <a class="back-link" th:href="@{/chat}">← 상담 홈</a>
+
+        <div class="room-card">
+            <div class="room-icon" th:text="${chatRoom.categoryIcon}">💬</div>
+            <h1>SecondPro 상담센터</h1>
+            <p>선택한 문의 유형에 맞춰 관리자가 답변드립니다.</p>
+        </div>
+
+        <div class="info-list">
+            <div>
+                <span>상담방 번호</span>
+                <strong>#<b th:text="${chatRoom.roomNo}">0</b></strong>
+            </div>
+            <div>
+                <span>문의 유형</span>
+                <strong th:text="${chatRoom.categoryName}">기타 문의</strong>
+            </div>
+            <div>
+                <span>상담 상태</span>
+                <strong th:text="${chatRoom.status == 'OPEN'} ? '진행중' : '종료'">진행중</strong>
+            </div>
+        </div>
+
+        <form class="category-form"
+              th:if="${chatRoom.status == 'OPEN' and loginUser.role == 'USER'}"
+              th:action="@{/chat/{roomNo}/category(roomNo=${chatRoom.roomNo})}"
+              method="post">
+            <label>문의 유형 변경</label>
+            <select name="category">
+                <option value="MAIL" th:selected="${chatRoom.category == 'MAIL'}">메일 문의</option>
+                <option value="MAP" th:selected="${chatRoom.category == 'MAP'}">지도 문의</option>
+                <option value="STOCK" th:selected="${chatRoom.category == 'STOCK'}">증권 문의</option>
+                <option value="NEWS" th:selected="${chatRoom.category == 'NEWS'}">뉴스 문의</option>
+                <option value="WEATHER" th:selected="${chatRoom.category == 'WEATHER'}">날씨 문의</option>
+                <option value="CALENDAR" th:selected="${chatRoom.category == 'CALENDAR'}">캘린더 문의</option>
+                <option value="ETC" th:selected="${chatRoom.category == 'ETC'}">기타 문의</option>
+            </select>
+            <button type="submit">변경</button>
+        </form>
+
+        <div class="side-note">
+            모바일 화면이 필요하면 <a th:href="@{/chat/mobile/room/{roomNo}(roomNo=${chatRoom.roomNo})}">모바일 버전</a>으로 전환할 수 있습니다.
+        </div>
+    </aside>
+
+    <section class="chat-panel">
+        <header class="chat-header">
+            <div>
+                <h2>1:1 실시간 상담</h2>
+                <p>메시지는 실시간으로 전송되며 상담 이력에 저장됩니다.</p>
+            </div>
+            <span class="category-badge">
+                <span th:text="${chatRoom.categoryIcon}">💬</span>
+                <b th:text="${chatRoom.categoryName}">기타 문의</b>
+            </span>
+        </header>
+
+        <div id="chatBody" class="chat-body"></div>
+
+        <div class="chat-input-box">
+            <input type="text"
+                   id="messageInput"
+                   th:placeholder="${chatRoom.status == 'CLOSED'} ? '상담이 종료되었습니다.' : '메시지를 입력하세요'"
+                   th:disabled="${chatRoom.status == 'CLOSED'}">
+            <button type="button" id="sendBtn" th:disabled="${chatRoom.status == 'CLOSED'}">전송</button>
+        </div>
+    </section>
+</div>
+
+<script th:inline="javascript">
+    const roomNo = /*[[${chatRoom.roomNo}]]*/ 0;
+    const senderNo = /*[[${loginUser.no}]]*/ 0;
+    const loginRole = /*[[${loginUser.role}]]*/ "USER";
+    const roomUserNo = /*[[${chatRoom.userNo}]]*/ 0;
+    const roomStatus = /*[[${chatRoom.status}]]*/ "OPEN";
+</script>
+<script th:src="@{/js/chat.js}"></script>
+    <script src="/js/cookie-consent.js"></script>
+</body>
+</html>

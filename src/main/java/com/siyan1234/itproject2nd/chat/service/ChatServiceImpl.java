@@ -3,6 +3,9 @@ package com.siyan1234.itproject2nd.chat.service;
 import com.siyan1234.itproject2nd.chat.dao.ChatDao;
 import com.siyan1234.itproject2nd.chat.dto.ChatMessageDto;
 import com.siyan1234.itproject2nd.chat.dto.ChatRoomDto;
+import com.siyan1234.itproject2nd.chat.support.ChatCategory;
+import com.siyan1234.itproject2nd.chat.support.ChatReadStatus;
+import com.siyan1234.itproject2nd.chat.support.ChatRoomStatus;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -30,7 +33,7 @@ public class ChatServiceImpl implements ChatService {
      */
     @Override
     public ChatRoomDto getOrCreateRoom(Integer userNo) {
-        return getOrCreateRoom(userNo, "ETC");
+        return getOrCreateRoom(userNo, ChatCategory.DEFAULT);
     }
 
     /**
@@ -116,9 +119,7 @@ public class ChatServiceImpl implements ChatService {
             chatMessageDto.setCreatedDate(LocalDateTime.now());
         }
 
-        if (!"Y".equals(chatMessageDto.getReadYn()) && !"N".equals(chatMessageDto.getReadYn())) {
-            chatMessageDto.setReadYn("N");
-        }
+        chatMessageDto.setReadYn(ChatReadStatus.normalize(chatMessageDto.getReadYn()));
 
         chatDao.saveMessage(chatMessageDto);
 
@@ -283,7 +284,7 @@ public class ChatServiceImpl implements ChatService {
             return;
         }
 
-        if (!"OPEN".equals(chatRoom.getStatus())) {
+        if (!ChatRoomStatus.isOpen(chatRoom.getStatus())) {
             return;
         }
 
@@ -301,19 +302,54 @@ public class ChatServiceImpl implements ChatService {
      * DB CHECK 제약조건 오류를 사전에 방지하기 위한 방어 코드이다.
      */
     private String normalizeCategory(String category) {
-        if (category == null || category.isBlank()) {
-            return "ETC";
-        }
-
-        if (!isValidCategory(category)) {
-            return "ETC";
-        }
-
-        return category;
+        return ChatCategory.normalize(category);
     }
 
-    private boolean isValidCategory(String category) {
-        return List.of("MAIL", "MAP", "STOCK", "NEWS", "WEATHER", "CALENDAR", "ETC")
-                .contains(category);
+    /**
+     * 사용자 본인의 상담내역 목록 조회
+     *
+     * 보안 기준:
+     * - userNo는 Controller에서 로그인 사용자 번호로 넘긴다.
+     * - SQL에서도 WHERE r.user_no = #{userNo} 조건으로 본인 상담방만 조회한다.
+     *
+     * unreadCount:
+     * - 관리자가 보냈고 사용자가 아직 읽지 않은 메시지 개수이다.
+     * - Oracle DB에 저장된 메시지와 Redis에 남아있는 메시지 개수를 합산한다.
+     */
+    @Override
+    @Transactional(readOnly = true)
+    public List<ChatRoomDto> findUserRooms(Integer userNo, int page, int size) {
+        if (userNo == null) {
+            return List.of();
+        }
+
+        if (page < 1) {
+            page = 1;
+        }
+        if (size < 1) {
+            size = 10;
+        }
+        int pageStart = (page - 1) * size;
+        int pageEnd = size;
+
+        List<ChatRoomDto> roomList = chatDao.findUserRooms(userNo, pageStart, pageEnd);
+
+        for (ChatRoomDto room : roomList) {
+            int dbUnreadCount = room.getUnreadCount() == null ? 0 : room.getUnreadCount();
+            int redisUnreadCount = chatRedisService.countUnreadMessages(room.getRoomNo(), userNo);
+
+            room.setUnreadCount(dbUnreadCount + redisUnreadCount);
+        }
+        return roomList;
+    }
+
+    //사용자 본인의 상담내역 전체 개수 조회
+    @Override
+    @Transactional(readOnly = true)
+    public int countUserRooms(Integer userNo) {
+        if (userNo == null) {
+            return 0;
+        }
+        return chatDao.countUserRooms(userNo);
     }
 }

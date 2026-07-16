@@ -1,0 +1,178 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.siyan1234.itproject2nd.admin.dao.AdminDashboardDao">
+
+    <!-- 전체 회원 수 -->
+    <select id="countTotalMembers" resultType="long">
+        SELECT COUNT(*)
+        FROM member
+    </select>
+
+    <!-- 오늘 가입 회원 수 -->
+    <select id="countTodayMembers" resultType="long">
+        SELECT COUNT(*)
+        FROM member
+        WHERE regdate &gt;= TRUNC(SYSDATE)
+    </select>
+
+    <!-- 전체 게시글 수 -->
+    <select id="countTotalBoards" resultType="long">
+        SELECT COUNT(*)
+        FROM board
+    </select>
+
+    <!-- 오늘 작성 게시글 수 -->
+    <select id="countTodayBoards" resultType="long">
+        SELECT COUNT(*)
+        FROM board
+        WHERE created_date &gt;= TRUNC(SYSDATE)
+    </select>
+
+    <!-- 전체 상담방 수 -->
+    <select id="countTotalChatRooms" resultType="long">
+        SELECT COUNT(*)
+        FROM chat_room
+    </select>
+
+    <!-- 오늘 접수된 상담 수 -->
+    <select id="countTodayChatRooms" resultType="long">
+        SELECT COUNT(*)
+        FROM chat_room
+        WHERE created_date &gt;= TRUNC(SYSDATE)
+    </select>
+
+    <!-- 진행 중 상담 수 -->
+    <select id="countOpenChatRooms" resultType="long">
+        SELECT COUNT(*)
+        FROM chat_room
+        WHERE status = 'OPEN'
+    </select>
+
+    <!-- 종료된 상담 수 -->
+    <select id="countClosedChatRooms" resultType="long">
+        SELECT COUNT(*)
+        FROM chat_room
+        WHERE status = 'CLOSED'
+    </select>
+
+    <!-- 사용자가 보낸 메시지 중 아직 읽음 처리되지 않은 상담방 수 -->
+    <select id="countUnreadChatRooms" resultType="long">
+        SELECT COUNT(DISTINCT r.room_no)
+        FROM chat_room r
+        INNER JOIN chat_message m
+        ON r.room_no = m.room_no
+        WHERE m.sender_no = r.user_no
+        AND m.read_yn = 'N'
+    </select>
+
+    <!-- 오늘 방문자 수: 분석 쿠키 동의 사용자 중 IP 기준 1일 1회만 집계합니다. -->
+    <select id="countTodayVisits" resultType="long">
+        SELECT COUNT(DISTINCT v.ip_address)
+        FROM visit_log v
+        WHERE v.created_date &gt;= TRUNC(SYSDATE)
+        AND v.ip_address IS NOT NULL
+        AND NOT EXISTS (
+            SELECT 1
+            FROM member m
+            WHERE m.no = v.member_no
+            AND m.role = 'ADMIN'
+        )
+    </select>
+
+    <!-- 상담 카테고리별 통계: 상담이 0건이어도 모든 카테고리를 표시합니다. -->
+    <select id="findCategoryStats"
+            resultType="com.siyan1234.itproject2nd.admin.dto.CategoryStatsDto">
+        WITH category_map AS (
+            SELECT 'MAIL' AS category, '메일 문의' AS category_name, 1 AS sort_order FROM dual
+            UNION ALL SELECT 'MAP', '지도 문의', 2 FROM dual
+            UNION ALL SELECT 'STOCK', '증권 문의', 3 FROM dual
+            UNION ALL SELECT 'NEWS', '뉴스 문의', 4 FROM dual
+            UNION ALL SELECT 'WEATHER', '날씨 문의', 5 FROM dual
+            UNION ALL SELECT 'CALENDAR', '캘린더 문의', 6 FROM dual
+            UNION ALL SELECT 'ETC', '기타 문의', 7 FROM dual
+        )
+        SELECT
+            cm.category,
+            cm.category_name,
+            COUNT(r.room_no) AS chat_count,
+            SUM(CASE WHEN r.status = 'OPEN' THEN 1 ELSE 0 END) AS open_count,
+            SUM(CASE WHEN r.status = 'CLOSED' THEN 1 ELSE 0 END) AS closed_count
+        FROM category_map cm
+        LEFT JOIN chat_room r
+        ON cm.category = r.category
+        GROUP BY cm.category, cm.category_name, cm.sort_order
+        ORDER BY cm.sort_order
+    </select>
+
+    <!-- 최근 7일 상담 접수 추이 -->
+    <select id="findDailyChatStats"
+            resultType="com.siyan1234.itproject2nd.admin.dto.DailyChatStatsDto">
+        WITH days AS (
+            SELECT TRUNC(SYSDATE) - 7 + LEVEL AS stat_day
+            FROM dual
+            CONNECT BY LEVEL &lt;= 7
+        )
+        SELECT
+            TO_CHAR(d.stat_day, 'MM/DD') AS date_label,
+            COUNT(r.room_no) AS chat_count
+        FROM days d
+        LEFT JOIN chat_room r
+        ON TRUNC(r.created_date) = d.stat_day
+        GROUP BY d.stat_day
+        ORDER BY d.stat_day
+    </select>
+
+    <!-- 최근 상담 목록: 관리자 대시보드 하단에서 운영자가 바로 확인합니다. -->
+    <select id="findRecentChatRooms"
+            resultType="com.siyan1234.itproject2nd.admin.dto.RecentChatRoomDto">
+        SELECT *
+        FROM (
+            SELECT
+                r.room_no,
+                r.user_no,
+                r.admin_no,
+                user_member.nickname AS user_nickname,
+                admin_member.nickname AS admin_nickname,
+                r.status,
+                r.category,
+                CASE r.category
+                    WHEN 'MAIL' THEN '메일 문의'
+                    WHEN 'MAP' THEN '지도 문의'
+                    WHEN 'STOCK' THEN '증권 문의'
+                    WHEN 'NEWS' THEN '뉴스 문의'
+                    WHEN 'WEATHER' THEN '날씨 문의'
+                    WHEN 'CALENDAR' THEN '캘린더 문의'
+                    WHEN 'ETC' THEN '기타 문의'
+                    ELSE '일반 문의'
+                END AS category_name,
+                r.last_message,
+                r.last_message_date,
+                r.created_date,
+                (
+                    SELECT COUNT(*)
+                    FROM chat_message m
+                    WHERE m.room_no = r.room_no
+                    AND m.sender_no = r.user_no
+                    AND m.read_yn = 'N'
+                ) AS unread_count
+            FROM chat_room r
+            LEFT JOIN member user_member
+            ON r.user_no = user_member.no
+            LEFT JOIN member admin_member
+            ON r.admin_no = admin_member.no
+            ORDER BY
+                CASE r.status
+                    WHEN 'OPEN' THEN 1
+                    WHEN 'CLOSED' THEN 2
+                    ELSE 3
+                END,
+                r.last_message_date DESC NULLS LAST,
+                r.created_date DESC
+        )
+        WHERE ROWNUM &lt;= 6
+    </select>
+
+</mapper>

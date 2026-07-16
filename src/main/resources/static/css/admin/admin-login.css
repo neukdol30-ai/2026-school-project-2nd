@@ -1,0 +1,328 @@
+/*
+ * admin-login.css
+ * 사용 위치: templates/admin/login.html
+ * 역할: 관리자 전용 로그인 화면 스타일입니다.
+ */
+
+:root {
+    --login-bg: #f5f7fb;
+    --login-text: #101828;
+    --login-muted: #667085;
+    --login-line: #d0d5dd;
+    --login-primary: #4f63f6;
+    --login-dark: #111827;
+    --login-shadow: 0 26px 80px rgba(15, 23, 42, 0.14);
+}
+
+* { box-sizing: border-box; }
+
+body {
+    margin: 0;
+    min-height: 100vh;
+    font-family: Inter, Pretendard, "Noto Sans KR", Arial, sans-serif;
+    color: var(--login-text);
+    background:
+        radial-gradient(circle at 70% 35%, rgba(79,99,246,0.13), transparent 30%),
+        var(--login-bg);
+}
+
+a { color: inherit; text-decoration: none; }
+
+.admin-login-page {
+    min-height: 100vh;
+    display: grid;
+    grid-template-columns: minmax(0, 1.35fr) minmax(360px, 0.65fr);
+    align-items: center;
+    gap: 34px;
+    padding: 42px;
+}
+
+.login-visual-panel {
+    position: relative;
+    min-height: 720px;
+    padding: 44px;
+    overflow: hidden;
+    border-radius: 32px;
+    color: #ffffff;
+    background:
+        radial-gradient(circle at 90% 90%, rgba(255,255,255,0.14), transparent 28%),
+        linear-gradient(135deg, #111827, #243f92, #4338ca);
+    box-shadow: var(--login-shadow);
+}
+
+.login-visual-panel::after {
+    content: "";
+    position: absolute;
+    right: -120px;
+    bottom: -120px;
+    width: 360px;
+    height: 360px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.12);
+}
+
+.brand-mark {
+    position: relative;
+    z-index: 2;
+    display: inline-flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.brand-mark > span {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 48px;
+    height: 48px;
+    border-radius: 16px;
+    color: #111827;
+    font-size: 23px;
+    font-weight: 900;
+    background: #ffffff;
+    box-shadow: 0 18px 36px rgba(0,0,0,0.14);
+}
+
+.brand-mark strong { display: block; font-size: 21px; }
+.brand-mark em { display: block; margin-top: 2px; color: rgba(255,255,255,0.76); font-style: normal; font-size: 12px; }
+
+.home-link:hover strong { text-decoration: underline; text-underline-offset: 4px; }
+
+.visual-content {
+    position: relative;
+    z-index: 2;
+    margin-top: 170px;
+    max-width: 680px;
+}
+
+.visual-badge {
+    display: inline-flex;
+    margin-bottom: 18px;
+    padding: 8px 12px;
+    border-radius: 999px;
+    background: rgba(255,255,255,0.16);
+    color: #dbeafe;
+    font-size: 12px;
+    font-weight: 900;
+}
+
+.visual-content h1 {
+    margin: 0 0 22px;
+    font-size: 46px;
+    line-height: 1.15;
+    letter-spacing: -0.06em;
+}
+
+.visual-content p {
+    margin: 0;
+    max-width: 620px;
+    color: rgba(255,255,255,0.82);
+    font-size: 16px;
+    line-height: 1.8;
+}
+
+.visual-card-grid {
+    position: absolute;
+    z-index: 2;
+    left: 44px;
+    right: 44px;
+    bottom: 42px;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 14px;
+}
+
+.mini-stat-card {
+    padding: 20px;
+    border: 1px solid rgba(255,255,255,0.16);
+    border-radius: 18px;
+    background: rgba(255,255,255,0.10);
+    backdrop-filter: blur(12px);
+}
+
+.mini-stat-card strong { display: block; margin-bottom: 8px; font-size: 16px; }
+.mini-stat-card span { color: rgba(255,255,255,0.76); font-size: 13px; }
+
+.admin-login-card {
+    width: min(430px, 100%);
+    justify-self: center;
+    padding: 38px;
+    border: 1px solid rgba(208,213,221,0.8);
+    border-radius: 28px;
+    background: rgba(255,255,255,0.94);
+    box-shadow: var(--login-shadow);
+}
+
+.card-heading {
+    display: flex;
+    gap: 14px;
+    align-items: flex-start;
+    margin-bottom: 26px;
+}
+
+.admin-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    border-radius: 15px;
+    background: #eef1ff;
+    font-size: 22px;
+}
+
+.card-heading h2 { margin: 0 0 6px; font-size: 28px; letter-spacing: -0.05em; }
+.card-heading p { margin: 0; color: var(--login-muted); font-size: 13px; line-height: 1.55; }
+
+.message-box {
+    margin-bottom: 16px;
+    padding: 12px 14px;
+    border-radius: 12px;
+    font-size: 13px;
+    font-weight: 800;
+}
+.message-error { color: #b42318; background: #fef3f2; }
+.message-info { color: #1d4ed8; background: #eff6ff; }
+
+.form-group { margin-bottom: 18px; }
+.form-group label { display: block; margin-bottom: 8px; color: #344054; font-size: 13px; font-weight: 900; }
+.form-group input {
+    width: 100%;
+    height: 52px;
+    padding: 0 15px;
+    border: 1px solid var(--login-line);
+    border-radius: 14px;
+    background: #ffffff;
+    color: var(--login-text);
+    font-size: 15px;
+    font-weight: 700;
+    outline: none;
+    transition: 0.18s ease;
+}
+.form-group input:focus { border-color: var(--login-primary); box-shadow: 0 0 0 4px rgba(79,99,246,0.12); }
+
+.admin-login-button {
+    width: 100%;
+    height: 52px;
+    margin-top: 4px;
+    border: 0;
+    border-radius: 14px;
+    color: #ffffff;
+    background: linear-gradient(135deg, var(--login-primary), var(--login-dark));
+    font-size: 15px;
+    font-weight: 900;
+    cursor: pointer;
+    box-shadow: 0 18px 32px rgba(79,99,246,0.22);
+}
+
+.security-note {
+    margin-top: 22px;
+    padding: 16px;
+    border-radius: 16px;
+    background: #f8fafc;
+}
+.security-note strong { display: block; margin-bottom: 6px; font-size: 13px; }
+.security-note p { margin: 0; color: var(--login-muted); font-size: 12px; line-height: 1.6; }
+
+@media (max-width: 1100px) {
+    .admin-login-page { grid-template-columns: 1fr; padding: 24px; }
+    .login-visual-panel { min-height: 520px; }
+    .visual-content { margin-top: 100px; }
+}
+
+@media (max-width: 680px) {
+    .login-visual-panel { padding: 28px; }
+    .visual-content h1 { font-size: 34px; }
+    .visual-card-grid { position: relative; left: auto; right: auto; bottom: auto; margin-top: 60px; grid-template-columns: 1fr; }
+    .admin-login-card { padding: 26px; }
+}
+
+/* 창 크기 변화 시 왼쪽 안내 문구와 하단 카드가 겹치지 않도록 로그인 화면을 그리드 구조로 보정합니다. */
+.login-visual-panel {
+    display: grid;
+    grid-template-rows: auto minmax(0, 1fr) auto;
+    gap: 32px;
+}
+
+.visual-content {
+    align-self: center;
+    margin-top: 0;
+}
+
+.visual-card-grid {
+    position: relative;
+    left: auto;
+    right: auto;
+    bottom: auto;
+    align-self: end;
+}
+
+@media (max-height: 820px) {
+    .admin-login-page {
+        align-items: start;
+    }
+
+    .login-visual-panel {
+        min-height: calc(100vh - 84px);
+        padding: 34px;
+        gap: 24px;
+    }
+
+    .visual-content h1 {
+        font-size: 38px;
+    }
+
+    .visual-content p {
+        font-size: 14px;
+    }
+
+    .mini-stat-card {
+        padding: 16px;
+    }
+}
+
+@media (max-width: 1100px) {
+    .login-visual-panel {
+        min-height: auto;
+    }
+}
+
+@media (max-width: 760px) {
+    .admin-login-page {
+        gap: 18px;
+        padding: 18px;
+    }
+
+    .login-visual-panel {
+        padding: 24px;
+        border-radius: 24px;
+    }
+
+    .brand-mark strong {
+        font-size: 17px;
+    }
+
+    .brand-mark > span {
+        width: 42px;
+        height: 42px;
+        border-radius: 14px;
+        font-size: 20px;
+    }
+
+    .visual-content h1 {
+        font-size: 30px;
+    }
+
+    .visual-content p {
+        font-size: 13px;
+    }
+
+    .visual-card-grid {
+        margin-top: 8px;
+        grid-template-columns: 1fr;
+    }
+
+    .admin-login-card {
+        border-radius: 22px;
+    }
+}

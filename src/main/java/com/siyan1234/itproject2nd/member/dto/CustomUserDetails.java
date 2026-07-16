@@ -1,8 +1,6 @@
 package com.siyan1234.itproject2nd.member.dto;
 
-import org.jspecify.annotations.Nullable;
 import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.oauth2.core.user.OAuth2User;
@@ -74,7 +72,7 @@ public class CustomUserDetails implements UserDetails, OAuth2User {
 
     @Override
     public boolean isAccountNonLocked() {
-        return true; // 계정 잠김 안 됨
+        return memberDto == null || !memberDto.isBanned(); //계정 잠김 안 됨
     }
 
     @Override
@@ -84,6 +82,6 @@ public class CustomUserDetails implements UserDetails, OAuth2User {
 
     @Override
     public boolean isEnabled() {
-        return true; // 계정 사용 가능
+        return true; // 계정 사용 가능. 관리자 정지는 isAccountNonLocked에서 처리.
     }
 }

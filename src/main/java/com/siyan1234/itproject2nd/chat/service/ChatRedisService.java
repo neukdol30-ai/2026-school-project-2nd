@@ -1,6 +1,7 @@
 package com.siyan1234.itproject2nd.chat.service;
 
 import com.siyan1234.itproject2nd.chat.dto.ChatMessageDto;
+import com.siyan1234.itproject2nd.chat.support.ChatReadStatus;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
@@ -11,10 +12,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Redis에 채팅 메시지를 임시 저장하고 조회/삭제/읽음 처리하는 Service
+ * Redis 채팅 메시지 임시 저장 Service
  *
- * 메시지는 WebSocket 수신 시 Redis에 먼저 저장되고,
- * Scheduler가 일정 주기마다 Oracle DB로 옮긴다.
+ * 메시지 처리 흐름:
+ * 1. WebSocket 수신 메시지를 Redis List에 먼저 저장한다.
+ * 2. Scheduler가 Redis 메시지를 Oracle DB로 옮긴다.
+ * 3. DB 저장이 완료된 메시지 개수만큼만 Redis 앞쪽에서 제거한다.
  */
 @Service
 @RequiredArgsConstructor
@@ -23,14 +26,10 @@ public class ChatRedisService {
     private final StringRedisTemplate redisTemplate;
     private final ObjectMapper objectMapper;
 
-    /**
-     * Redis key 예시: chat:room64
-     */
+    /** Redis key 예시: chat:room64 */
     private static final String CHAT_KEY_PREFIX = "chat:room";
 
-    /**
-     * 메시지를 Redis List에 저장한다.
-     */
+    /** 메시지를 Redis List 뒤쪽에 저장한다. */
     public void saveMessage(ChatMessageDto messageDto) {
         try {
             if (messageDto == null || messageDto.getRoomNo() == null) {
@@ -41,9 +40,7 @@ public class ChatRedisService {
                 messageDto.setCreatedDate(LocalDateTime.now());
             }
 
-            if (!"Y".equals(messageDto.getReadYn()) && !"N".equals(messageDto.getReadYn())) {
-                messageDto.setReadYn("N");
-            }
+            messageDto.setReadYn(ChatReadStatus.normalize(messageDto.getReadYn()));
 
             String key = createKey(messageDto.getRoomNo());
             String json = objectMapper.writeValueAsString(messageDto);
@@ -54,16 +51,17 @@ public class ChatRedisService {
         }
     }
 
-    /**
-     * Redis에 저장된 특정 상담방 메시지 목록 조회
-     */
+    /** Redis에 남아 있는 특정 상담방 메시지 목록 조회 */
     public List<ChatMessageDto> findMessages(Integer roomNo) {
-        String key = createKey(roomNo);
+        if (roomNo == null) {
+            return List.of();
+        }
 
+        String key = createKey(roomNo);
         List<String> jsonList = redisTemplate.opsForList().range(key, 0, -1);
         List<ChatMessageDto> messages = new ArrayList<>();
 
-        if (jsonList == null) {
+        if (jsonList == null || jsonList.isEmpty()) {
             return messages;
         }
 
@@ -79,21 +77,22 @@ public class ChatRedisService {
         return messages;
     }
 
-    /**
-     * 특정 상담방 Redis 메시지 전체 삭제
-     *
-     * 관리자 하드 DELETE 시 사용한다.
-     */
+    /** 상담방 삭제 시 Redis 메시지 전체 삭제 */
     public void deleteMessages(Integer roomNo) {
+        if (roomNo == null) {
+            return;
+        }
+
         String key = createKey(roomNo);
         redisTemplate.delete(key);
     }
 
     /**
-     * Scheduler가 Oracle에 저장 완료한 메시지만 Redis에서 제거한다.
+     * Scheduler가 Oracle에 저장 완료한 메시지 개수만큼 Redis 앞쪽에서 제거한다.
      *
-     * 기존 deleteMessages(roomNo)를 사용하면 Scheduler 저장 중 새로 들어온 메시지까지
-     * 같이 삭제될 수 있으므로, 저장 완료한 개수만큼 앞에서 제거한다.
+     * 예:
+     * - Scheduler가 5개를 읽어서 DB에 저장하는 동안 새 메시지 2개가 Redis 뒤에 추가됨
+     * - 전체 delete가 아니라 앞의 5개만 제거해야 새 메시지 2개가 소실되지 않음
      */
     public void deleteSavedMessages(Integer roomNo, int savedCount) {
         if (roomNo == null || savedCount <= 0) {
@@ -103,7 +102,11 @@ public class ChatRedisService {
         String key = createKey(roomNo);
         Long currentSize = redisTemplate.opsForList().size(key);
 
-        if (currentSize == null || currentSize <= savedCount) {
+        if (currentSize == null || currentSize == 0) {
+            return;
+        }
+
+        if (currentSize <= savedCount) {
             redisTemplate.delete(key);
             return;
         }
@@ -112,10 +115,11 @@ public class ChatRedisService {
     }
 
     /**
-     * Redis에 남아 있는 메시지 읽음 처리
+     * Redis 메시지 읽음 처리
      *
-     * 현재 접속자가 보낸 메시지는 제외하고,
-     * 상대방이 보낸 메시지만 readYn = Y 로 변경한다.
+     * 주의:
+     * - Redis key를 delete 후 재삽입하지 않는다.
+     * - 기존 List index 위치의 값만 set으로 바꿔 메시지 순서와 데이터 소실 위험을 줄인다.
      */
     public void updateReadYn(Integer roomNo, Integer viewerNo) {
         if (roomNo == null || viewerNo == null) {
@@ -129,32 +133,37 @@ public class ChatRedisService {
             return;
         }
 
-        redisTemplate.delete(key);
+        for (int i = 0; i < jsonList.size(); i++) {
+            String json = jsonList.get(i);
 
-        for (String json : jsonList) {
             try {
                 ChatMessageDto messageDto = objectMapper.readValue(json, ChatMessageDto.class);
 
-                if (messageDto.getSenderNo() != null && !messageDto.getSenderNo().equals(viewerNo)) {
-                    messageDto.setReadYn("Y");
+                if (messageDto.getSenderNo() == null) {
+                    continue;
                 }
 
+                if (messageDto.getSenderNo().equals(viewerNo)) {
+                    continue;
+                }
+
+                if (!ChatReadStatus.isUnread(messageDto.getReadYn())) {
+                    continue;
+                }
+
+                messageDto.setReadYn(ChatReadStatus.READ);
                 String updateJson = objectMapper.writeValueAsString(messageDto);
-                redisTemplate.opsForList().rightPush(key, updateJson);
+
+                redisTemplate.opsForList().set(key, i, updateJson);
             } catch (Exception e) {
                 throw new RuntimeException("Redis 읽음 처리 실패", e);
             }
         }
     }
 
-    /**
-     * Redis에 아직 남아 있는 안읽음 메시지 개수 계산
-     *
-     * 관리자 목록에서는 DB 안읽음 개수와 Redis 안읽음 개수를 합쳐서 표시한다.
-     */
+    /** Redis에 남아 있는 안읽음 메시지 개수 계산 */
     public int countUnreadMessages(Integer roomNo, Integer viewerNo) {
         List<ChatMessageDto> messages = findMessages(roomNo);
-
         int count = 0;
 
         for (ChatMessageDto message : messages) {
@@ -166,7 +175,7 @@ public class ChatRedisService {
                 continue;
             }
 
-            if ("N".equals(message.getReadYn())) {
+            if (ChatReadStatus.isUnread(message.getReadYn())) {
                 count++;
             }
         }

@@ -1,0 +1,379 @@
+/*
+ * chat-history-pc.css
+ * 사용 위치: templates/chat/pc/chat-history.html
+ * 역할: PC 사용자 상담내역 목록 화면 스타일입니다.
+ */
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    min-height: 100vh;
+    font-family: Arial, sans-serif;
+    background: linear-gradient(135deg, #eef3ff 0%, #f8fafc 48%, #eef8f3 100%);
+    color: #1f2937;
+}
+
+/* 전체 페이지 폭과 여백입니다. */
+.history-page {
+    width: min(1120px, calc(100% - 48px));
+    margin: 0 auto;
+    padding: 44px 0;
+}
+
+/* 상단 제목 영역입니다. */
+.history-header {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 24px;
+    margin-bottom: 28px;
+}
+
+.eyebrow {
+    display: inline-flex;
+    color: #0b24d9;
+    font-size: 13px;
+    font-weight: 900;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+}
+
+.history-header h1 {
+    margin: 0;
+    font-size: 40px;
+    line-height: 1.18;
+    letter-spacing: -0.04em;
+}
+
+.history-header p {
+    margin: 14px 0 0;
+    color: #64748b;
+    line-height: 1.6;
+}
+
+.header-actions {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+}
+
+.outline-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 42px;
+    padding: 0 18px;
+    border-radius: 999px;
+    background: #ffffff;
+    border: 1px solid #dbe3f0;
+    color: #0b24d9;
+    font-weight: 800;
+    text-decoration: none;
+}
+
+/* 좌측 요약 카드 + 우측 상담목록 2단 레이아웃입니다. */
+.history-layout {
+    display: grid;
+    grid-template-columns: 320px 1fr;
+    gap: 22px;
+}
+
+.history-summary,
+.history-panel {
+    background: rgba(255, 255, 255, 0.94);
+    border: 1px solid #e2e8f0;
+    border-radius: 28px;
+    box-shadow: 0 18px 45px rgba(15, 23, 42, 0.08);
+}
+
+/* 좌측 상담 이력 요약 카드입니다. */
+.history-summary {
+    padding: 28px;
+    min-height: 420px;
+}
+
+.summary-icon {
+    width: 72px;
+    height: 72px;
+    border-radius: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 34px;
+    background: #eef3ff;
+    margin-bottom: 20px;
+}
+
+.history-summary h2 {
+    margin: 0;
+    font-size: 25px;
+}
+
+.history-summary p {
+    margin: 12px 0 0;
+    color: #64748b;
+    line-height: 1.6;
+}
+
+.history-summary p b {
+    color: #0b24d9;
+}
+
+.summary-box {
+    margin-top: 28px;
+    padding: 16px;
+    border-radius: 18px;
+    background: #f8fafc;
+    color: #64748b;
+    font-size: 13px;
+    line-height: 1.55;
+}
+
+.summary-box strong {
+    display: block;
+    color: #111827;
+    margin-bottom: 6px;
+}
+
+/* 우측 상담 목록 패널입니다. */
+.history-panel {
+    padding: 28px;
+}
+
+.panel-title h2 {
+    margin: 0;
+    font-size: 24px;
+}
+
+.panel-title p {
+    margin: 8px 0 22px;
+    color: #64748b;
+}
+
+/* 상담내역이 없을 때 표시되는 박스입니다. */
+.empty-box {
+    min-height: 260px;
+    border: 1px dashed #cbd5e1;
+    border-radius: 24px;
+    background: #f8fafc;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    text-align: center;
+    color: #64748b;
+}
+
+.empty-box strong {
+    color: #111827;
+    font-size: 20px;
+}
+
+.empty-box a {
+    margin-top: 8px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 42px;
+    padding: 0 18px;
+    border-radius: 14px;
+    background: #0b24d9;
+    color: white;
+    text-decoration: none;
+    font-weight: 900;
+}
+
+.room-list {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+/* 상담방 한 개 카드입니다. */
+.room-item {
+    display: grid;
+    grid-template-columns: 62px 1fr 132px;
+    gap: 16px;
+    align-items: center;
+    padding: 18px;
+    border: 1px solid #e2e8f0;
+    border-radius: 22px;
+    background: #ffffff;
+    transition: transform 0.16s ease, box-shadow 0.16s ease, border-color 0.16s ease;
+}
+
+.room-item:hover {
+    transform: translateY(-2px);
+    border-color: #0b24d9;
+    box-shadow: 0 16px 34px rgba(11, 36, 217, 0.10);
+}
+
+.room-icon {
+    width: 62px;
+    height: 62px;
+    border-radius: 22px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #f1f5ff;
+    font-size: 28px;
+}
+
+.room-top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.room-top strong {
+    display: block;
+    color: #111827;
+    font-size: 17px;
+}
+
+.room-top em {
+    display: block;
+    margin-top: 5px;
+    color: #64748b;
+    font-style: normal;
+    font-size: 13px;
+}
+
+.status-badge {
+    flex: 0 0 auto;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 62px;
+    height: 28px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 900;
+}
+
+.status-badge.open {
+    background: #dcfce7;
+    color: #166534;
+}
+
+.status-badge.closed {
+    background: #e2e8f0;
+    color: #475569;
+}
+
+.last-message {
+    margin: 12px 0 0;
+    color: #334155;
+    line-height: 1.45;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+}
+
+.room-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 14px;
+    margin-top: 12px;
+    color: #94a3b8;
+    font-size: 12px;
+}
+
+.room-meta b {
+    color: #64748b;
+    font-weight: 700;
+}
+
+/* 카드 오른쪽 버튼 영역입니다. */
+.room-actions {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+}
+
+.unread-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 30px;
+    border-radius: 999px;
+    background: #fff1f2;
+    color: #e11d48;
+    font-size: 12px;
+    font-weight: 900;
+}
+
+.room-actions a {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 42px;
+    border-radius: 14px;
+    background: #0b24d9;
+    color: white;
+    text-decoration: none;
+    font-weight: 900;
+    font-size: 14px;
+}
+
+.pagination {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 24px;
+}
+
+.page-link,
+.page-current {
+    min-width: 70px;
+    height: 38px;
+    border-radius: 999px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 14px;
+    font-weight: 800;
+    text-decoration: none;
+}
+
+.page-link {
+    background: white;
+    color: #0b24d9;
+    border: 1px solid #dbe3f0;
+}
+
+.page-current {
+    color: #64748b;
+}
+
+@media (max-width: 900px) {
+    .history-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .history-header {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .room-item {
+        grid-template-columns: 54px 1fr;
+    }
+
+    .room-actions {
+        grid-column: 1 / 3;
+        flex-direction: row;
+        justify-content: flex-end;
+    }
+}

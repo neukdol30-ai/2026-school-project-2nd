@@ -1,0 +1,55 @@
+/*
+ * admin-modal.css
+ * 역할: 관리자 내정보/회원 상세 모달 스타일
+ */
+
+.admin-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+}
+.admin-modal.is-open { display: flex; }
+.admin-modal-backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(15,23,42,0.48);
+    backdrop-filter: blur(4px);
+}
+.admin-modal-card {
+    position: relative;
+    z-index: 2;
+    width: min(620px, 100%);
+    padding: 28px;
+    border-radius: 24px;
+    background: #ffffff;
+    box-shadow: 0 30px 80px rgba(15,23,42,0.28);
+}
+.modal-close {
+    position: absolute;
+    right: 16px;
+    top: 14px;
+    width: 36px;
+    height: 36px;
+    border: 0;
+    border-radius: 50%;
+    background: #f2f4f7;
+    font-size: 24px;
+    cursor: pointer;
+}
+.modal-profile-head { display: flex; align-items: center; gap: 16px; margin-bottom: 24px; }
+.modal-avatar { width: 64px; height: 64px; border-radius: 20px; font-size: 28px; }
+.modal-profile-head h2 { margin: 3px 0 4px; font-size: 25px; }
+.modal-profile-head p { margin: 0; color: var(--admin-muted); }
+.modal-info-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+    margin: 0;
+}
+.modal-info-grid div { padding: 14px; border-radius: 14px; background: #f8fafc; }
+.modal-info-grid dt { margin-bottom: 6px; color: var(--admin-muted); font-size: 12px; font-weight: 800; }
+.modal-info-grid dd { margin: 0; font-weight: 900; word-break: break-word; }

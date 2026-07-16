@@ -1,5 +1,6 @@
 package com.siyan1234.itproject2nd.member.controller;
 
+import com.siyan1234.itproject2nd.config.handler.CustomLoginFailureHandler;
 import com.siyan1234.itproject2nd.member.dto.CustomUserDetails;
 import com.siyan1234.itproject2nd.member.dto.SignupDto;
 import com.siyan1234.itproject2nd.member.service.MemberService;
@@ -11,6 +12,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
+import jakarta.servlet.http.HttpSession;
 
 
 @Slf4j
@@ -62,10 +64,20 @@ public class MemberController {
     }
 
     @GetMapping("/login")
-    public String loginForm(@AuthenticationPrincipal CustomUserDetails loginUser) { // 로그인 화면 보여줌
+    public String loginForm(
+            @AuthenticationPrincipal CustomUserDetails loginUser,
+            HttpSession session,
+            Model model
+    ) { // 로그인 화면 보여줌
 
         if (loginUser != null) { // 이미 로그인한 사용자인지 확인
             return "redirect:/"; // 로그인 상태라면 로그인 화면 대신 메인으로 보냄.
+        }
+
+        Object loginErrorMessage = session.getAttribute(CustomLoginFailureHandler.LOGIN_ERROR_MESSAGE_SESSION_KEY);
+        if (loginErrorMessage != null) {
+            model.addAttribute("loginErrorMessage", loginErrorMessage);
+            session.removeAttribute(CustomLoginFailureHandler.LOGIN_ERROR_MESSAGE_SESSION_KEY);
         }
 
         return "member/login";

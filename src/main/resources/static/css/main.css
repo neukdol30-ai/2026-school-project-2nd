@@ -52,16 +52,3 @@ body {
 .bottom-link:hover {
     text-decoration: underline;
 }
-
-/* .link-area = main.html 하단 링크 2개를 감싼 div */
-.link-area {
-    display: flex;
-    flex-direction: column; /*기본 가로를 세로로 변경(세로 쌓기)*/
-    align-items: center;
-    gap: 10px;
-    margin-top: 20px;
-}
-
-.link-area .bottom-link {
-    margin-top: 0;
-}

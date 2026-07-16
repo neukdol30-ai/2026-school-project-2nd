@@ -1,0 +1,61 @@
+/*
+ * admin-layout.css
+ * 역할: 관리자 메인 영역, 상단바, 공통 view 표시 제어
+ */
+
+.admin-main {
+    flex: 1;
+    min-width: 0;
+    margin-left: 292px;
+    padding: 34px 36px 54px;
+}
+
+.admin-topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    margin-bottom: 24px;
+}
+.eyebrow {
+    display: inline-block;
+    color: var(--admin-primary);
+    font-size: 12px;
+    font-weight: 900;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+.admin-topbar h1 { margin: 4px 0 0; font-size: 30px; letter-spacing: -0.05em; }
+.topbar-actions { display: flex; align-items: center; gap: 12px; }
+.top-profile-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    height: 46px;
+    padding: 0 12px 0 6px;
+    border: 1px solid var(--admin-line);
+    border-radius: 999px;
+    background: #ffffff;
+    cursor: pointer;
+}
+.top-profile-avatar { width: 36px; height: 36px; border-radius: 50%; font-size: 16px; }
+.login-user { display: flex; flex-direction: column; align-items: flex-start; color: var(--admin-muted); font-size: 11px; }
+.login-user strong { color: var(--admin-text); font-size: 14px; }
+.top-link,
+.logout-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 42px;
+    padding: 0 16px;
+    border: 1px solid var(--admin-line);
+    border-radius: 12px;
+    color: #344054;
+    background: #ffffff;
+    font-weight: 900;
+    cursor: pointer;
+}
+.logout-btn { color: #ffffff; border-color: transparent; background: #111827; }
+
+.admin-view { display: none; }
+.admin-view.active { display: block; }

@@ -1,0 +1,290 @@
+/*
+ * chat-home-pc.css
+ * 사용 위치: templates/chat/pc/chat-home.html
+ * 역할: PC 사용자 상담 홈 화면 스타일입니다.
+ * 주요 영역:
+ * - .chat-home-page: PC 상담 홈 전체 폭과 여백
+ * - .home-header: 상단 제목/설명/모바일 전환 링크
+ * - .profile-card: 로그인 사용자 정보와 기존 상담방 이어가기
+ * - .category-panel, .category-grid: 문의 유형 선택 카드 목록
+ * - @media: 화면이 좁아졌을 때 1열로 변경
+ */
+
+/* 전체 요소 박스 크기를 border-box로 통일해서 레이아웃 계산을 쉽게 합니다. */
+* {
+    box-sizing: border-box;
+}
+
+/* PC 상담 홈의 배경, 기본 글꼴, 기본 글자색 설정입니다. */
+body {
+    margin: 0;
+    min-height: 100vh;
+    font-family: Arial, sans-serif;
+    background: linear-gradient(135deg, #eef3ff 0%, #f8fafc 45%, #eef8f3 100%);
+    color: #1f2937;
+}
+
+/* PC 상담 홈 전체 컨테이너입니다. 화면 중앙에 1120px 이하 폭으로 배치합니다. */
+.chat-home-page {
+    width: min(1120px, calc(100% - 48px));
+    margin: 0 auto;
+    padding: 44px 0;
+}
+
+/* 상단 소개 영역입니다. 왼쪽에는 제목/설명, 오른쪽에는 모바일 버전 이동 버튼이 배치됩니다. */
+.home-header {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 24px;
+    margin-bottom: 28px;
+}
+
+/* 작은 강조 문구입니다. 예: SECONDPRO HELP 같은 보조 타이틀에 사용합니다. */
+.eyebrow {
+    display: inline-flex;
+    color: #0b24d9;
+    font-size: 13px;
+    font-weight: 900;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+}
+
+.home-header h1 {
+    margin: 0;
+    font-size: 40px;
+    line-height: 1.18;
+    letter-spacing: -0.04em;
+}
+
+.home-header p {
+    margin: 14px 0 0;
+    color: #64748b;
+    line-height: 1.6;
+}
+
+/* PC 화면에서 모바일 상담 화면으로 이동하는 버튼입니다. */
+.mode-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 42px;
+    padding: 0 18px;
+    border-radius: 999px;
+    background: #ffffff;
+    border: 1px solid #dbe3f0;
+    color: #0b24d9;
+    font-weight: 800;
+    text-decoration: none;
+}
+
+/* 좌측 프로필 카드와 우측 문의 유형 선택 패널을 2열로 배치합니다. */
+.home-grid {
+    display: grid;
+    grid-template-columns: 340px 1fr;
+    gap: 22px;
+}
+
+.profile-card,
+.category-panel {
+    background: rgba(255, 255, 255, 0.92);
+    border: 1px solid #e2e8f0;
+    border-radius: 28px;
+    box-shadow: 0 18px 45px rgba(15, 23, 42, 0.08);
+}
+
+/* 좌측 사용자 정보 카드입니다. 닉네임, 기존 상담방, 안내 문구를 보여줍니다. */
+.profile-card {
+    padding: 28px;
+    min-height: 520px;
+}
+
+/* 프로필 카드 상단의 상담 아이콘 박스입니다. */
+.profile-icon {
+    width: 72px;
+    height: 72px;
+    border-radius: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 34px;
+    background: #eef3ff;
+    margin-bottom: 20px;
+}
+
+.profile-card h2 {
+    margin: 0;
+    font-size: 25px;
+    line-height: 1.3;
+}
+
+.profile-card h2 span {
+    color: #0b24d9;
+}
+
+.profile-card p {
+    margin: 12px 0 0;
+    color: #64748b;
+    line-height: 1.6;
+}
+
+/* 진행 중인 OPEN 상담방이 있을 때 표시되는 기존 상담 이어가기 영역입니다. */
+.current-room {
+    margin-top: 28px;
+    padding: 18px;
+    border-radius: 20px;
+    background: #f8f9ff;
+    border: 1px solid #dfe6ff;
+}
+
+.current-room div {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-bottom: 14px;
+}
+
+.current-room span {
+    color: #64748b;
+    font-size: 14px;
+}
+
+.current-room a {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 44px;
+    border-radius: 14px;
+    background: #0b24d9;
+    color: white;
+    text-decoration: none;
+    font-weight: 900;
+}
+
+/* 상담 이용 안내 문구 박스입니다. */
+.help-note {
+    margin-top: 28px;
+    padding: 16px;
+    border-radius: 18px;
+    background: #f8fafc;
+    color: #64748b;
+    font-size: 13px;
+    line-height: 1.55;
+}
+
+/* 우측 문의 유형 선택 전체 패널의 내부 여백입니다. */
+.category-panel {
+    padding: 28px;
+}
+
+/* 문의 유형 선택 영역의 제목 스타일입니다. */
+.section-title h2 {
+    margin: 0;
+    font-size: 24px;
+}
+
+.section-title p {
+    margin: 8px 0 22px;
+    color: #64748b;
+}
+
+/* 문의 유형 카드들을 PC에서 2열 그리드로 배치합니다. */
+.category-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+}
+
+/* 각 문의 유형 form 요소입니다. button을 감싸는 용도입니다. */
+.category-card {
+    margin: 0;
+}
+
+/* 문의 유형 선택 버튼입니다. MAIL, MAP, STOCK 등의 카드를 표현합니다. */
+.category-card button {
+    width: 100%;
+    min-height: 118px;
+    border: 1px solid #e2e8f0;
+    border-radius: 22px;
+    background: white;
+    padding: 18px;
+    text-align: left;
+    cursor: pointer;
+    transition: transform 0.16s ease, box-shadow 0.16s ease, border-color 0.16s ease;
+}
+
+.category-card button:hover {
+    transform: translateY(-3px);
+    border-color: #0b24d9;
+    box-shadow: 0 16px 35px rgba(11, 36, 217, 0.12);
+}
+
+.category-card .icon {
+    display: block;
+    font-size: 26px;
+    margin-bottom: 12px;
+}
+
+.category-card strong {
+    display: block;
+    font-size: 17px;
+    color: #111827;
+}
+
+.category-card em {
+    display: block;
+    margin-top: 7px;
+    color: #64748b;
+    font-style: normal;
+    font-size: 13px;
+    line-height: 1.4;
+}
+
+/* PC 폭이 좁아질 때 좌우 2열을 1열로 바꾸는 반응형 처리입니다. */
+@media (max-width: 900px) {
+    .home-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .home-header {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+}
+
+/* 상담내역 바로가기 버튼 2개를 가로로 배치합니다. */
+.header-actions {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+}
+
+/* 좌측 프로필 카드 안의 상담내역 바로가기 영역입니다. */
+.history-shortcut {
+    margin-top: 18px;
+    padding: 16px;
+    border-radius: 18px;
+    background: #eef3ff;
+    border: 1px solid #dfe6ff;
+}
+
+.history-shortcut strong {
+    display: block;
+    margin-bottom: 10px;
+    color: #111827;
+}
+
+.history-shortcut a {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 40px;
+    border-radius: 14px;
+    background: white;
+    border: 1px solid #dbe3f0;
+    color: #0b24d9;
+    text-decoration: none;
+    font-weight: 900;
+}

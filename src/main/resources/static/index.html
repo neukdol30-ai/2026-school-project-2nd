@@ -3,15 +3,45 @@
 <head>
   <meta charset="UTF-8">
   <title>위젯 대시보드 - 2:1 레이아웃</title>
-
-  <!-- Vue 3 CDN: Vue를 브라우저에서 바로 사용하기 위한 CDN -->
+  <!--  swiper js-->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css"/>
+  <!-- 메인 페이지 스타일 -->
   <link rel="stylesheet" href="./css/index.css">
 
+  <link rel="stylesheet" href="/css/cookie-consent.css">
 </head>
 
 <body>
 <div id="app"></div>
 
+<!-- 외부 라이브러리 -->
+<script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="./js/index.js"></script>
+<script src="/js/cookie-consent.js"></script>
+
+<!-- 공통 상태와 도구 -->
+<script src="./js/index/state.js"></script>
+<script src="./js/index/utils.js"></script>
+
+<!-- 개별 위젯 -->
+<script src="./js/index/widgets/calculator.js"></script>
+<script src="js/index/widgets/calendar.js"></script>
+<script src="./js/index/widgets/memo.js"></script>
+<script src="./js/index/widgets/news.js"></script>
+<script src="./js/index/widgets/weather.js"></script>
+<script src="./js/index/widgets/stock.js"></script>
+<script src="./js/index/widgets/login.js"></script>
+<script src="./js/index/widgets/issue.js"></script>
+<script src="./js/index/widgets/schedule.js"></script>
+
+<!-- 공통 위젯 및 이벤트 -->
+<script src="./js/index/widget-manager.js"></script>
+<script src="./js/index/widget-renderer.js"></script>
+<script src="./js/index/event.js"></script>
+
+<!-- 최초 실행 -->
+<script src="js/index/index.js"></script>
+
 </body>
 </html>

@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SecondPro 관리자 콘솔</title>
+    <link rel="stylesheet" th:href="@{/css/admin/admin-dashboard.css}">
+    <link rel="stylesheet" th:href="@{/css/cookie-consent.css}">
+</head>
+<body>
+<div class="admin-shell">
+    <th:block th:replace="~{admin/fragments/admin-sidebar :: sidebar}"></th:block>
+
+    <main class="admin-main">
+        <th:block th:replace="~{admin/fragments/admin-topbar :: topbar}"></th:block>
+        <th:block th:replace="~{admin/fragments/admin-flash :: flash}"></th:block>
+        <th:block th:replace="~{admin/fragments/admin-dashboard-view :: dashboardView}"></th:block>
+        <th:block th:replace="~{admin/fragments/admin-chat-view :: chatManageView}"></th:block>
+        <th:block th:replace="~{admin/fragments/admin-member-view :: memberManageView}"></th:block>
+        <th:block th:replace="~{admin/fragments/admin-service-view :: serviceManageView}"></th:block>
+    </main>
+</div>
+
+<th:block th:replace="~{admin/fragments/admin-modals :: adminProfileModal}"></th:block>
+<th:block th:replace="~{admin/fragments/admin-modals :: memberDetailModal}"></th:block>
+
+<script th:src="@{/js/admin/admin-ui-core.js}"></script>
+<script th:src="@{/js/admin/admin-dashboard-visual.js}"></script>
+<script th:src="@{/js/admin/admin-modal.js}"></script>
+<script th:src="@{/js/admin/admin-selection.js}"></script>
+<script th:src="@{/js/admin/admin-delete.js}"></script>
+<script th:src="@{/js/admin/admin-member-actions.js}"></script>
+<script th:src="@{/js/admin/admin-browser-notification.js}"></script>
+<script th:src="@{/js/admin/admin-chat-realtime.js}"></script>
+<script th:src="@{/js/admin-dashboard.js}"></script>
+<script th:src="@{/js/cookie-consent.js}"></script>
+</body>
+</html>

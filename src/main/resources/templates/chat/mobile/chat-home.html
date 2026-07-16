@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+    <title>모바일 상담 홈</title>
+    <link rel="stylesheet" th:href="@{/css/chat/mobile/chat-home-mobile.css}">
+    <link rel="stylesheet" href="/css/cookie-consent.css">
+</head>
+<body>
+<div class="mobile-shell">
+    <header class="mobile-hero">
+        <div class="top-line">
+            <span>SecondPro Help</span>
+            <div class="top-actions">
+                <a th:href="@{/chat/mobile/history}">내역</a>
+                <a th:href="@{/chat}">PC</a>
+            </div>
+        </div>
+        <h1>안녕하세요,<br><b th:text="${loginUser.nickname}">사용자</b>님</h1>
+        <p>문의 유형을 선택하면 실시간 상담방으로 이동합니다.</p>
+    </header>
+
+    <main class="mobile-card">
+        <a class="resume-card" th:if="${openRoom != null}"
+           th:href="@{/chat/mobile/room/{roomNo}(roomNo=${openRoom.roomNo})}">
+            <span>진행 중인 상담</span>
+            <strong>#<b th:text="${openRoom.roomNo}">0</b> · <b th:text="${openRoom.categoryName}">기타 문의</b></strong>
+            <em>이어서 대화하기 →</em>
+        </a>
+
+        <a class="history-link-card" th:href="@{/chat/mobile/history}">
+            <span>🗂</span>
+            <b>내 상담내역</b>
+            <em>지난 상담 다시 보기 →</em>
+        </a>
+
+        <section class="mobile-section">
+            <h2>문의 유형</h2>
+            <div class="mobile-category-list">
+                <form th:action="@{/chat/mobile/start}" method="post">
+                    <input type="hidden" name="category" value="MAIL">
+                    <button type="submit"><span>📧</span><b>메일 문의</b><em>메일 기능 문의</em></button>
+                </form>
+                <form th:action="@{/chat/mobile/start}" method="post">
+                    <input type="hidden" name="category" value="MAP">
+                    <button type="submit"><span>🗺</span><b>지도 문의</b><em>지도/장소 문의</em></button>
+                </form>
+                <form th:action="@{/chat/mobile/start}" method="post">
+                    <input type="hidden" name="category" value="STOCK">
+                    <button type="submit"><span>📈</span><b>증권 문의</b><em>차트/종목 문의</em></button>
+                </form>
+                <form th:action="@{/chat/mobile/start}" method="post">
+                    <input type="hidden" name="category" value="NEWS">
+                    <button type="submit"><span>📰</span><b>뉴스 문의</b><em>뉴스 기능 문의</em></button>
+                </form>
+                <form th:action="@{/chat/mobile/start}" method="post">
+                    <input type="hidden" name="category" value="WEATHER">
+                    <button type="submit"><span>🌤</span><b>날씨 문의</b><em>지역/예보 문의</em></button>
+                </form>
+                <form th:action="@{/chat/mobile/start}" method="post">
+                    <input type="hidden" name="category" value="CALENDAR">
+                    <button type="submit"><span>📅</span><b>캘린더 문의</b><em>일정 기능 문의</em></button>
+                </form>
+                <form th:action="@{/chat/mobile/start}" method="post">
+                    <input type="hidden" name="category" value="ETC">
+                    <button type="submit"><span>💬</span><b>기타 문의</b><em>일반 문의</em></button>
+                </form>
+            </div>
+        </section>
+    </main>
+</div>
+    <script src="/js/cookie-consent.js"></script>
+</body>
+</html>

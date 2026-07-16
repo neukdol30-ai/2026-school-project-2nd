@@ -1,0 +1,96 @@
+package com.siyan1234.itproject2nd.chat.controller;
+
+import com.siyan1234.itproject2nd.chat.dto.ChatMessageDto;
+import com.siyan1234.itproject2nd.chat.dto.ChatRoomDto;
+import com.siyan1234.itproject2nd.chat.service.ChatAccessService;
+import com.siyan1234.itproject2nd.chat.service.ChatRedisService;
+import com.siyan1234.itproject2nd.chat.service.ChatService;
+import com.siyan1234.itproject2nd.chat.support.ChatRoomStatus;
+import com.siyan1234.itproject2nd.member.dto.MemberDto;
+import jakarta.servlet.http.HttpSession;
+import lombok.RequiredArgsConstructor;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+
+/**
+ * 사용자 채팅 API Controller입니다.
+ *
+ * 화면 이동은 ChatController가 담당하고,
+ * 메시지 목록 조회와 테스트용 HTTP 메시지 저장 API만 이 Controller에서 담당합니다.
+ */
+@RestController
+@RequestMapping("/chat")
+@RequiredArgsConstructor
+public class ChatApiController {
+
+    private final ChatService chatService;
+    private final ChatRedisService chatRedisService;
+    private final ChatAccessService chatAccessService;
+
+    /** 채팅방 메시지 목록 조회 API */
+    @GetMapping("/{roomNo}/messages")
+    public List<ChatMessageDto> messages(
+            @PathVariable Integer roomNo,
+            HttpSession session
+    ) {
+        MemberDto loginUser = chatAccessService.getLoginUser(session);
+
+        if (loginUser == null) {
+            return List.of();
+        }
+
+        ChatRoomDto chatRoom = chatService.findRoomByRoomNo(roomNo);
+
+        if (!chatAccessService.canAccessRoom(loginUser, chatRoom)) {
+            return List.of();
+        }
+
+        chatService.updateReadYn(roomNo, loginUser.getNo());
+        chatRedisService.updateReadYn(roomNo, loginUser.getNo());
+
+        List<ChatMessageDto> messages = new ArrayList<>();
+        messages.addAll(chatService.findMessagesByRoomNo(roomNo));
+        messages.addAll(chatRedisService.findMessages(roomNo));
+        messages.sort(Comparator.comparing(
+                ChatMessageDto::getCreatedDate,
+                Comparator.nullsLast(Comparator.naturalOrder())
+        ));
+
+        return messages;
+    }
+
+    /** 초기 테스트용 HTTP 메시지 저장 API. 실제 실시간 메시지는 WebSocket이 담당합니다. */
+    @PostMapping("/message")
+    public String sendMessage(
+            @RequestBody ChatMessageDto chatMessageDto,
+            HttpSession session
+    ) {
+        MemberDto loginUser = chatAccessService.getLoginUser(session);
+
+        if (loginUser == null) {
+            return "login-required";
+        }
+
+        ChatRoomDto chatRoom = chatService.findRoomByRoomNo(chatMessageDto.getRoomNo());
+
+        if (!chatAccessService.canAccessRoom(loginUser, chatRoom)) {
+            return "forbidden";
+        }
+
+        if (!ChatRoomStatus.isOpen(chatRoom.getStatus())) {
+            return "closed";
+        }
+
+        chatMessageDto.setSenderNo(loginUser.getNo());
+        chatService.saveMessage(chatMessageDto);
+        return "ok";
+    }
+}
