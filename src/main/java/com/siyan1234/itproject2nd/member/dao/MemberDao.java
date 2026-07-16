@@ -29,5 +29,5 @@ public interface MemberDao {
     int updateMember(MemberDto memberDto); // 관리자 회원 정보 수정용 UPDATE 연결.
 
     /** 관리자 회원 삭제용 DELETE 연결 */
-    int deleteMember(@Param("no") Integer no);
+    int deleteMember(@Param("no") Integer no); // 영준
 }

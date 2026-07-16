@@ -14,8 +14,8 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class CustomUserDetailService implements UserDetailsService {
 
-    private static final String BANNED_MESSAGE_PREFIX = "BANNED|";
-    private static final String DEFAULT_BANNED_MESSAGE = "관리자에 의해 이용이 제한된 계정입니다.";
+    private static final String BANNED_MESSAGE_PREFIX = "BANNED|"; // 1. 영준
+    private static final String DEFAULT_BANNED_MESSAGE = "관리자에 의해 이용이 제한된 계정입니다."; // 2. 영준 추가
 
     // UserDetailsService: Security가 로그인 시 자동으로 호출하는 규격.
     private final MemberDao memberDao; // 회원 조회 DAO
@@ -31,16 +31,16 @@ public class CustomUserDetailService implements UserDetailsService {
         }
 
         if (memberDto.isBanned()) {
-            throw new LockedException(BANNED_MESSAGE_PREFIX + memberDto.displayBanReason());
+            throw new LockedException(BANNED_MESSAGE_PREFIX + memberDto.displayBanReason()); // 영준
         }
 
         return new CustomUserDetails(memberDto);
     }
 
-    public static boolean isBannedLoginException(Throwable exception) {
+    public static boolean isBannedLoginException(Throwable exception) { // Throwab 영준 추가
         Throwable current = exception;
-        while (current != null) {
-            if (current instanceof LockedException
+        while (current != null) { // 영준
+            if (current instanceof LockedException // 영준
                     && current.getMessage() != null
                     && current.getMessage().startsWith(BANNED_MESSAGE_PREFIX)) {
                 return true;
@@ -52,14 +52,14 @@ public class CustomUserDetailService implements UserDetailsService {
 
     public static String extractBanReason(Throwable exception) {
         Throwable current = exception;
-        while (current != null) {
-            if (current instanceof LockedException
+        while (current != null) { // 영준
+            if (current instanceof LockedException // 영준
                     && current.getMessage() != null
                     && current.getMessage().startsWith(BANNED_MESSAGE_PREFIX)) {
                 return current.getMessage().substring(BANNED_MESSAGE_PREFIX.length());
             }
             current = current.getCause();
         }
-        return DEFAULT_BANNED_MESSAGE;
+        return DEFAULT_BANNED_MESSAGE; // 영준
     }
 }

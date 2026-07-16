@@ -146,7 +146,7 @@
         <!-- role/agree_*를 값으로 박은 이유: 셋 다 NOT NULL이라, 소셜 로그인 등 화면을 거쳤으므로 'Y'로 본다. -->
     </insert>
 
-    <!-- 관리자 회원 삭제용 -->
+    <!-- 관리자 회원 삭제용 // 영준 -->
     <delete id="deleteMember">
         DELETE FROM member
         WHERE no = #{no, jdbcType=NUMERIC}

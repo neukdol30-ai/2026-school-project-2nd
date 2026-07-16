@@ -72,7 +72,7 @@ public class CustomUserDetails implements UserDetails, OAuth2User {
 
     @Override
     public boolean isAccountNonLocked() {
-        return memberDto == null || !memberDto.isBanned(); //계정 잠김 안 됨
+        return memberDto == null || !memberDto.isBanned(); //계정 잠김 안 됨 => // 영준
     }
 
     @Override
@@ -82,6 +82,6 @@ public class CustomUserDetails implements UserDetails, OAuth2User {
 
     @Override
     public boolean isEnabled() {
-        return true; // 계정 사용 가능. 관리자 정지는 isAccountNonLocked에서 처리.
+        return true; // 계정 사용 가능. 관리자 정지는 isAccountNonLocked에서 처리. => 영준이가 주석만 추가
     }
 }

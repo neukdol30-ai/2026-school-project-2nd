@@ -66,8 +66,8 @@ public class MemberController {
     @GetMapping("/login")
     public String loginForm(
             @AuthenticationPrincipal CustomUserDetails loginUser,
-            HttpSession session,
-            Model model
+            HttpSession session, // 영준
+            Model model // 영준
     ) { // 로그인 화면 보여줌
 
         if (loginUser != null) { // 이미 로그인한 사용자인지 확인
@@ -78,7 +78,7 @@ public class MemberController {
         if (loginErrorMessage != null) {
             model.addAttribute("loginErrorMessage", loginErrorMessage);
             session.removeAttribute(CustomLoginFailureHandler.LOGIN_ERROR_MESSAGE_SESSION_KEY);
-        }
+        } // 영준
 
         return "member/login";
     }
