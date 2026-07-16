@@ -23,6 +23,11 @@ spring:
     username: secondpro
     # DBeaver에서 쓰는 DB 비밀번호
     password: 1234
+  # (이미지삽입)파일 크기 설정
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 20MB
 
   # ──── Redis 추가 ────
   data:
@@ -34,6 +39,8 @@ spring:
   thymeleaf:
     # HTML 수정 후 새로고침 반영
     cache: false
+
+
 
 naver:
   client-id: NJCUDekz2OmI2rd2pYG9
@@ -70,3 +77,6 @@ kakao:
     redirect-uri: ${KAKAO_REDIRECT_URI:http://localhost:8080/kakao/callback}
     admin-refresh-token: ${KAKAO_ADMIN_REFRESH_TOKEN:}
     admin-room-base-url: ${KAKAO_ADMIN_ROOM_BASE_URL:http://localhost:8080/chat/admin}
+
+file:
+  board-image-dir: uploads/board-images

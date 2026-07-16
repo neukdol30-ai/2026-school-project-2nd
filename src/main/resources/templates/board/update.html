@@ -1,59 +1,226 @@
 <!DOCTYPE html>
-<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
     <title>게시글 수정</title>
-    <!--TOAST UI CDN 추가-->
-    <link rel="stylesheet" href="https://uicdn.toast.com/editor/latest/toastui-editor.min.css">
+
+    <!-- 공통 CSS -->
+    <link rel="stylesheet"
+          th:href="@{/css/main.css}">
+
+    <!-- 게시판 전용 CSS -->
+    <link rel="stylesheet"
+          th:href="@{/css/board.css}">
+
+    <!-- TOAST UI Editor CSS -->
+    <link rel="stylesheet"
+          href="https://uicdn.toast.com/editor/latest/toastui-editor.min.css">
+
+    <!-- TOAST UI Editor JS -->
     <script src="https://uicdn.toast.com/editor/latest/toastui-editor-all.min.js"></script>
     <script src="https://uicdn.toast.com/editor/latest/i18n/ko-kr.js"></script>
     <link rel="stylesheet" href="/css/cookie-consent.css">
 </head>
+
 <body>
 
-<h1>게시글 수정</h1>
+<main class="board-page">
 
-<form th:action="@{/board/update/{no}(no=${board.no})}" method="post">
-    <select name="category">
-        <option value="FREE" th:selected="${board.category == 'FREE'}">자유게시판</option>
-        <option value="NOTICE" th:selected="${board.category == 'NOTICE'}">공지사항</option>
-    </select>
 
-    <br><br>
+    <!-- 수정 화면 상단 제목 -->
 
-    <input type="text" name="title" th:value="${board.title}" placeholder="제목">
+    <section class="board-form-header">
 
-    <br><br>
+        <div>
+            <h1 class="board-form-title">
+                게시글 수정
+            </h1>
 
-    <!-- TOAST UI Editor가 들어갈 영역 -->
-    <div id="editor"></div>
+            <p class="board-form-description">
+                게시글 내용을 수정한 뒤 저장해주세요.
+            </p>
+        </div>
 
-    <!-- 실제 서버로 전송될 content 값 -->
-    <input type="hidden"
-           name="content"
-           id="content"
-           th:value="${board.content}">
+        <a th:href="@{/board/detail/{no}(no=${board.no})}"
+           class="board-main-link">
+            상세보기로
+        </a>
 
-    <br><br>
+    </section>
 
-    <button type="submit">수정</button>
-</form>
 
-<a href="/board/list">목록</a>
+    <!-- 게시글 수정 카드 -->
+
+    <section class="board-form-box">
+
+        <form th:action="@{/board/update/{no}(no=${board.no})}"
+              method="post"
+              th:object="${board}">
+
+            <!-- 카테고리 -->
+            <div class="board-form-group">
+
+                <label for="category"
+                       class="board-form-label">
+                    카테고리
+                </label>
+
+                <select id="category"
+                        th:field="*{category}"
+                        class="board-form-select">
+
+                    <option value="QUESTION">
+                        문의 게시판
+                    </option>
+
+                    <!-- 관리자에게만 공지사항 표시 -->
+                    <option value="NOTICE"
+                            sec:authorize="hasRole('ADMIN')">
+                        공지사항
+                    </option>
+
+                </select>
+
+            </div>
+
+            <!-- 제목 -->
+            <div class="board-form-group">
+
+                <label for="title"
+                       class="board-form-label">
+                    제목
+                </label>
+
+                <input id="title"
+                       type="text"
+                       th:field="*{title}"
+                       class="board-form-input"
+                       placeholder="제목을 입력해주세요.">
+
+                <!-- 제목 Validation 오류 -->
+                <p th:if="${#fields.hasErrors('title')}"
+                   th:errors="*{title}"
+                   class="board-form-error">
+                </p>
+
+            </div>
+
+            <!-- 본문 -->
+            <div class="board-form-group">
+
+                <label class="board-form-label">
+                    내용
+                </label>
+
+                <!-- TOAST UI Editor 영역 -->
+                <div id="editor"
+                     class="board-editor">
+                </div>
+
+                <!-- 서버로 전송할 HTML 본문 -->
+                <input type="hidden"
+                       id="content"
+                       th:field="*{content}">
+
+                <!-- DTO Validation 오류 -->
+                <p th:if="${#fields.hasErrors('content')}"
+                   th:errors="*{content}"
+                   class="board-form-error">
+                </p>
+
+                <!-- TOAST UI 빈 본문 검사 오류 -->
+                <p th:if="${contentError}"
+                   th:text="${contentError}"
+                   class="board-form-error">
+                </p>
+
+            </div>
+
+            <!-- 하단 버튼 -->
+            <div class="board-form-actions">
+
+                <a th:href="@{/board/detail/{no}(no=${board.no})}"
+                   class="board-button board-button-secondary">
+                    취소
+                </a>
+
+                <button type="submit"
+                        class="board-button board-button-primary">
+                    수정 완료
+                </button>
+
+            </div>
+
+        </form>
+
+    </section>
+
+</main>
 
 <script>
+    // 기존 게시글 본문 또는 Validation 실패 후 입력했던 본문
+    const savedContent =
+        document.querySelector("#content").value || "";
+
     const editor = new toastui.Editor({
-        el: document.querySelector('#editor'),
-        height: '600px',
-        initialEditType: 'wysiwyg',
-        previewStyle: 'vertical',
-        language: 'ko-KR',
-        initialValue: document.querySelector('#content').value
+        el: document.querySelector("#editor"),
+        height: "560px",
+        initialEditType: "wysiwyg",
+        previewStyle: "vertical",
+        language: "ko-KR",
+        initialValue: savedContent,
+
+        hooks: {
+            addImageBlobHook: async function (
+                blob,
+                callback
+            ) {
+                const formData = new FormData();
+                formData.append("image", blob);
+
+                try {
+                    const response = await fetch(
+                        "/board/image/upload",
+                        {
+                            method: "POST",
+                            body: formData
+                        }
+                    );
+
+                    const result = await response.json();
+
+                    if (!response.ok) {
+                        throw new Error(
+                            result.message ||
+                            "이미지 업로드에 실패했습니다."
+                        );
+                    }
+
+                    callback(
+                        result.imageUrl,
+                        blob.name || "게시글 이미지"
+                    );
+
+                } catch (error) {
+                    alert(error.message);
+                }
+            }
+        }
     });
 
-    document.querySelector('form').addEventListener('submit', function () {
-        document.querySelector('#content').value = editor.getHTML();
-    });
+    // 수정 버튼을 누르면
+    // TOAST UI HTML 내용을 hidden input에 저장
+    document.querySelector("form")
+        .addEventListener("submit", function () {
+            document.querySelector("#content").value =
+                editor.getHTML();
+        });
 </script>
 
     <script src="/js/cookie-consent.js"></script>

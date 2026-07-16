@@ -1,105 +1,411 @@
 <!DOCTYPE html>
-<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
     <title>게시글 목록</title>
     <link rel="stylesheet" href="/css/cookie-consent.css">
+
+    <!-- 공통 CSS -->
+    <link rel="stylesheet"
+          th:href="@{/css/main.css}">
+
+    <!-- 게시판 전용 CSS -->
+    <link rel="stylesheet"
+          th:href="@{/css/board.css}">
 </head>
+
 <body>
 
-<h1 th:text="${pageTitle != null ? pageTitle : '게시글 목록'}">게시글 목록</h1>
-
-<a href="/board/list">전체</a>
-<a href="/board/notice">공지사항</a>
-<a href="/board/free">자유게시판</a>
+<main class="board-page">
 
 
-<br><br>
+    <!-- 게시판 상단 제목 영역 -->
 
-<!-- ========================= -->
-<!-- 게시글 검색 -->
-<!-- ========================= -->
+    <section class="board-header">
 
-<!--
-    검색어 입력 후
-    /board/search 로 GET 요청
+        <div>
+            <h1 class="board-title"
+                th:text="${pageTitle != null ? pageTitle : '게시글 목록'}">
+                게시글 목록
+            </h1>
 
-    Controller에서 검색 결과를 받아
-    같은 list.html 화면에 출력
--->
+            <p class="board-description">
+                공지사항과 문의 게시판의 글을 확인할 수 있습니다.
+            </p>
+        </div>
 
-<form action="/board/search" method="get">
+        <!-- 로그인 사용자에게만 글쓰기 버튼 표시 -->
+        <a sec:authorize="isAuthenticated()"
+           th:href="@{/board/write}"
+           class="board-write-button">
+            글쓰기
+        </a>
 
-    <input type="text"
-           name="keyword"
-           placeholder="검색어 입력"
-           th:value="${keyword}">
-
-    <button type="submit">
-        검색
-    </button>
-
-</form>
-
-<br>
+    </section>
 
 
-<a href="/">메인</a>
-<a href="/board/write">글쓰기</a>
+    <!-- 게시판 카테고리 메뉴 -->
 
-<table border="1">
-    <tr>
-        <th>번호</th>
-        <th>카테고리</th>
-        <th>제목</th>
-        <th>작성자</th>
-        <th>조회수</th>
-        <th>작성일</th>
-    </tr>
+    <nav class="board-category-nav">
 
-    <tr th:each="board : ${boardList}">
-        <td th:text="${board.no}"></td>
-        <td th:text="${board.category}"></td>
-        <td>
-            <a th:href="@{/board/detail/{no}(no=${board.no})}"
-               th:text="${board.title}"></a>
-        </td>
-        <td th:text="${board.writerNickname != null ? board.writerNickname : '탈퇴회원'}"></td>
-        <td th:text="${board.viewCount}"></td>
-        <td th:text="${#temporals.format(board.createdDate, 'yyyy-MM-dd HH:mm')}"></td>
-    </tr>
-</table>
+        <a th:href="@{/board/list}"
+           class="board-category-link"
+           th:classappend="${pageUrl == '/board/list'}
+                ? ' active'
+                : ''">
+            전체
+        </a>
 
-<!-- ========================= -->
-<!-- 게시글 페이징 -->
-<!-- ========================= -->
+        <a th:href="@{/board/notice}"
+           class="board-category-link"
+           th:classappend="${pageUrl == '/board/notice'}
+                ? ' active'
+                : ''">
+            공지사항
+        </a>
 
-<!--
-    이전 / 다음 버튼과
+        <a th:href="@{/board/question}"
+           class="board-category-link"
+           th:classappend="${pageUrl == '/board/question'} ? ' active' : ''">
+            문의 게시판
+        </a>
 
-    페이지 번호를 출력
+    </nav>
 
-    사용자가 원하는 페이지로 이동
--->
 
-<div>
-    <!-- 이전 -->
-    <a th:if="${currentPage > 1}"
-       th:href="@{/board/list(page=${currentPage - 1})}">
-        이전
-    </a>
-    <!-- 페이지 번호 -->
-    <span th:each="pageNum : ${#numbers.sequence(1, totalPage)}">
-        <a th:href="@{/board/list(page=${pageNum})}"
-           th:text="${pageNum}"></a>
-    </span>
-    <!-- 다음 -->
-    <a th:if="${currentPage < totalPage}"
-       th:href="@{/board/list(page=${currentPage + 1})}">
-        다음
-    </a>
-</div>
 
+    <!-- 검색 영역 -->
+
+
+    <section class="board-toolbar">
+
+        <!-- 검색창과 내 글 아이콘 선택 영역 -->
+        <div class="board-toolbar-left">
+
+            <form th:action="@{/board/search}"
+                  method="get"
+                  class="board-search-form">
+
+                <input type="text"
+                       name="keyword"
+                       class="board-search-input"
+                       placeholder="제목 또는 작성자 검색"
+                       th:value="${keyword}">
+
+                <button type="submit"
+                        class="board-search-button">
+                    검색
+                </button>
+
+            </form>
+
+            <!-- 로그인 사용자에게만 표시 -->
+            <div sec:authorize="isAuthenticated()"
+                 class="my-post-setting">
+
+            <span class="my-post-label">
+                내 글 표시
+            </span>
+
+                <button type="button"
+                        class="my-post-icon-button heart"
+                        data-icon="♥"
+                        data-type="heart"
+                        aria-label="하트로 표시">
+                    ♥
+                </button>
+
+                <button type="button"
+                        class="my-post-icon-button star"
+                        data-icon="★"
+                        data-type="star"
+                        aria-label="별로 표시">
+                    ★
+                </button>
+
+                <button type="button"
+                        class="my-post-icon-button clover"
+                        data-icon="🍀"
+                        data-type="clover"
+                        aria-label="네잎클로버로 표시">
+                    🍀
+                </button>
+
+            </div>
+
+        </div>
+
+        <a th:href="@{/}"
+           class="board-main-link">
+            메인으로
+        </a>
+
+    </section>
+
+
+    <!-- 문의 게시글 카드 목록 -->
+
+    <section class="question-list-box">
+
+        <!-- 게시글이 없는 경우 -->
+        <div th:if="${#lists.isEmpty(boardList)}"
+             class="question-empty">
+
+            <strong>
+                게시글이 없습니다.
+            </strong>
+
+            <span>
+            첫 번째 질문을 작성해보세요.
+        </span>
+
+        </div>
+
+        <!-- 게시글 카드 반복 -->
+        <article th:each="board : ${boardList}"
+                 class="question-card">
+
+            <!-- 왼쪽 상태 영역 -->
+            <div class="question-card-status">
+
+                <!-- 공지사항 -->
+                <div th:if="${board.category == 'NOTICE'}"
+                     class="question-status-block">
+
+                <span class="board-badge board-badge-notice">
+                    공지
+                </span>
+
+                </div>
+
+                <!-- 문의글 -->
+                <div th:if="${board.category == 'QUESTION'}"
+                     class="question-status-block">
+
+                <span th:if="${board.answerCount == null
+                              or board.answerCount == 0}"
+                      class="board-status-badge board-status-waiting">
+                    답변대기
+                </span>
+
+                    <span th:if="${board.answerCount != null
+                              and board.answerCount > 0}"
+                          class="board-status-badge board-status-answered">
+                    답변완료
+                </span>
+
+                    <strong class="question-answer-count"
+                            th:text="${board.answerCount != null
+                            ? board.answerCount
+                            : 0}">
+                        0
+                    </strong>
+
+                    <span class="question-answer-label">
+                    답변
+                </span>
+
+                </div>
+
+            </div>
+
+            <!-- 오른쪽 질문 정보 -->
+            <div class="question-card-content">
+
+                <!-- 카테고리 및 게시글 번호 -->
+                <div class="question-card-top">
+
+                <span th:if="${board.category == 'NOTICE'}"
+                      class="board-badge board-badge-notice">
+                    공지
+                </span>
+
+                    <span th:if="${board.category == 'QUESTION'}"
+                          class="board-badge board-badge-question">
+                    문의
+                </span>
+
+                    <span class="question-board-number"
+                          th:text="'#' + ${board.no}">
+                    #1
+                </span>
+
+                </div>
+
+                <!-- 게시글 제목 -->
+                <div class="question-title-row">
+
+                    <a th:href="@{/board/detail/{no}(no=${board.no})}"
+                       th:text="${board.title}"
+                       class="question-card-title">
+                        질문 제목
+                    </a>
+
+                    <span sec:authorize="isAuthenticated()"
+                          th:if="${#authentication.principal.memberDto.no.equals(board.writerNo)}"
+                          class="my-post-marker"
+                          title="내가 작성한 글">
+
+                        <span class="my-post-marker-icon"></span>
+                        <span class="my-post-marker-text">내 글</span>
+
+                    </span>
+
+                </div>
+
+                <!-- 게시글 보조 정보 -->
+                <div class="question-card-meta">
+
+                <span th:text="${board.writerNickname != null
+                    ? board.writerNickname
+                    : '탈퇴회원'}">
+                    작성자
+                </span>
+
+                    <span class="question-meta-divider">
+                    ·
+                </span>
+
+                    <span th:text="'조회 ' + ${board.viewCount}">
+                    조회 0
+                </span>
+
+                    <span class="question-meta-divider">
+                    ·
+                </span>
+
+                    <span th:if="${board.createdDate != null}"
+                          th:text="${#temporals.format(
+                        board.createdDate,
+                        'yyyy-MM-dd HH:mm'
+                      )}">
+                    2026-07-13 12:00
+                </span>
+
+                </div>
+
+            </div>
+
+        </article>
+
+    </section>
+
+
+    <!-- 게시판 페이징 -->
+
+    <section th:if="${pageUrl != null and totalPage > 0}"
+             class="board-pagination">
+
+        <!-- 이전 페이지 -->
+        <a th:if="${currentPage > 1}"
+           th:href="@{${pageUrl}(page=${currentPage - 1})}"
+           class="board-page-link">
+            이전
+        </a>
+
+        <!-- 페이지 번호 -->
+        <a th:each="pageNum : ${#numbers.sequence(1, totalPage)}"
+           th:href="@{${pageUrl}(page=${pageNum})}"
+           th:text="${pageNum}"
+           class="board-page-link"
+           th:classappend="${pageNum == currentPage}
+                ? ' active'
+                : ''">
+        </a>
+
+        <!-- 다음 페이지 -->
+        <a th:if="${currentPage < totalPage}"
+           th:href="@{${pageUrl}(page=${currentPage + 1})}"
+           class="board-page-link">
+            다음
+        </a>
+
+    </section>
+
+</main>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+
+        const iconButtons =
+            document.querySelectorAll(".my-post-icon-button");
+
+        const myPostMarkers =
+            document.querySelectorAll(".my-post-marker");
+
+        // 이전에 선택한 아이콘 불러오기
+        const savedIcon =
+            localStorage.getItem("myPostIcon") || "♥";
+
+        const savedType =
+            localStorage.getItem("myPostIconType") || "heart";
+
+        applyMyPostIcon(savedIcon, savedType);
+
+        iconButtons.forEach(function (button) {
+
+            button.addEventListener("click", function () {
+
+                const selectedIcon =
+                    button.dataset.icon;
+
+                const selectedType =
+                    button.dataset.type;
+
+                localStorage.setItem(
+                    "myPostIcon",
+                    selectedIcon
+                );
+
+                localStorage.setItem(
+                    "myPostIconType",
+                    selectedType
+                );
+
+                applyMyPostIcon(
+                    selectedIcon,
+                    selectedType
+                );
+            });
+        });
+
+        function applyMyPostIcon(icon, type) {
+
+            // 내 글 배지의 아이콘 및 색상 변경
+            myPostMarkers.forEach(function (marker) {
+
+                const iconElement =
+                    marker.querySelector(".my-post-marker-icon");
+
+                if (iconElement) {
+                    iconElement.textContent = icon;
+                }
+
+                marker.classList.remove(
+                    "heart",
+                    "star",
+                    "clover"
+                );
+
+                marker.classList.add(type);
+            });
+
+            // 선택된 버튼만 active 처리
+            iconButtons.forEach(function (button) {
+                button.classList.toggle(
+                    "active",
+                    button.dataset.type === type
+                );
+            });
+        }
+    });
+</script>
 
     <script src="/js/cookie-consent.js"></script>
 </body>

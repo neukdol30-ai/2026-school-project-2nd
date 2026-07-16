@@ -281,11 +281,7 @@ button:disabled {
     font-size: 14px;
 }
 
-/* 날씨 온도 표시 */
-.weather-temp {
-    font-size: 44px;
-    font-weight: bold;
-}
+
 
 /* 계산기 표시창 */
 .calculator-display {
@@ -487,3 +483,77 @@ textarea {
     right: 8px;
 }
 
+/*날씨 관련*/
+.weather-current {
+    padding: 4px 0 12px;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.weather-main {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.weather-location {
+    font-size: 14px;
+    font-weight: 700;
+    color: #111827;
+}
+
+.weather-text {
+    margin-top: 4px;
+    font-size: 13px;
+    color: #6b7280;
+}
+
+/* 날씨 온도 표시 */
+.weather-temp {
+    font-size: 34px;
+    font-weight: 800;
+    color: #111827;
+    line-height: 1;
+}
+
+.weather-rain {
+    margin-top: 8px;
+    font-size: 12px;
+    color: #6b7280;
+}
+
+.weather-weekly {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 6px;
+    margin: 12px 0 0;
+    padding: 0;
+    list-style: none;
+}
+
+.weather-day {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    padding: 8px 4px;
+    border: 1px solid #e5e7eb;
+    border-radius: 6px;
+    background: #f9fafb;
+}
+
+.weather-day strong {
+    font-size: 12px;
+    color: #374151;
+}
+
+.weather-icon {
+    font-size: 20px;
+    line-height: 1;
+}
+
+.weather-range {
+    font-size: 11px;
+    color: #6b7280;
+    white-space: nowrap;
+}
