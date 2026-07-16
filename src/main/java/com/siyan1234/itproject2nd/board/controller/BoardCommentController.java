@@ -20,14 +20,7 @@ public class BoardCommentController {
     private final BoardCommentService boardCommentService;
     private final BoardService boardService;
 
-    // =========================
     // 답변 등록 처리
-    // =========================
-    //
-    // 문의 게시글 상세 화면에서 작성한 답변을 저장한다.
-    // 로그인한 회원만 답변을 등록할 수 있다.
-    // 공지사항에는 답변을 등록할 수 없다.
-    //
     @PostMapping("/write")
     public String write(
             BoardCommentDto commentDto,
@@ -84,13 +77,7 @@ public class BoardCommentController {
                 + "#comments-bottom";
     }
 
-    // =========================
     // 답변 삭제 처리
-    // =========================
-    //
-    // 주소 접속만으로 삭제되지 않도록 POST 방식으로 처리한다.
-    // 답변 작성자 본인만 삭제할 수 있다.
-    //
     @PostMapping("/delete/{no}")
     public String delete(
             @PathVariable Long no,
@@ -129,13 +116,7 @@ public class BoardCommentController {
                 + "#comments";
     }
 
-    // =========================
     // 답변 수정 처리
-    // =========================
-    //
-    // TOAST UI 수정 에디터에서 전송된 HTML 내용을 저장한다.
-    // 답변 작성자 본인만 수정할 수 있다.
-    //
     @PostMapping("/update/{no}")
     public String updateProcess(
             @PathVariable Long no,

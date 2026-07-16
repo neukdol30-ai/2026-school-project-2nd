@@ -18,9 +18,8 @@ public class BoardCommentService {
     // DB 컬럼은 CLOB이지만 지나치게 큰 입력을 제한하기 위한 값
     private static final int MAX_CONTENT_LENGTH = 50_000;
 
-    // =========================
+
     // 특정 문의글의 답변 목록 조회
-    // =========================
     public List<BoardCommentDto> findByBoardNo(Long boardNo) {
 
         if (boardNo == null) {
@@ -30,9 +29,8 @@ public class BoardCommentService {
         return boardCommentDao.findByBoardNo(boardNo);
     }
 
-    // =========================
+
     // 답변 한 건 조회
-    // =========================
     public BoardCommentDto findByNo(Long no) {
 
         if (no == null) {
@@ -42,12 +40,8 @@ public class BoardCommentService {
         return boardCommentDao.findByNo(no);
     }
 
-    // =========================
+
     // 답변 등록
-    // =========================
-    //
-    // TOAST UI Editor에서 전달된 HTML 내용을 검사한 뒤 저장한다.
-    //
     @Transactional
     public int insert(BoardCommentDto commentDto) {
 
@@ -68,12 +62,8 @@ public class BoardCommentService {
         return boardCommentDao.insert(commentDto);
     }
 
-    // =========================
+
     // 답변 수정
-    // =========================
-    //
-    // TOAST UI 수정 에디터에서 전달된 HTML 내용을 검사한 뒤 수정한다.
-    //
     @Transactional
     public int update(BoardCommentDto commentDto) {
 
@@ -96,9 +86,8 @@ public class BoardCommentService {
         return boardCommentDao.update(commentDto);
     }
 
-    // =========================
+
     // 답변 삭제
-    // =========================
     @Transactional
     public int delete(Long no) {
 
@@ -111,13 +100,8 @@ public class BoardCommentService {
         return boardCommentDao.delete(no);
     }
 
-    // =========================
+
     // 답변 내용 정리
-    // =========================
-    //
-    // HTML 전체의 앞뒤 불필요한 공백만 제거한다.
-    // HTML 태그 내부의 내용은 그대로 유지한다.
-    //
     private String normalizeContent(String content) {
 
         if (content == null) {
@@ -127,13 +111,8 @@ public class BoardCommentService {
         return content.trim();
     }
 
-    // =========================
+
     // 답변 내용 유효성 검사
-    // =========================
-    //
-    // TOAST UI의 빈 HTML을 실제 빈 내용으로 판별한다.
-    // 글자는 없더라도 이미지가 있으면 정상 답변으로 인정한다.
-    //
     private void validateContent(String content) {
 
         if (content == null || content.isBlank()) {

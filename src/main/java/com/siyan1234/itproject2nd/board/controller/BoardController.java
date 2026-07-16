@@ -23,20 +23,8 @@ public class BoardController {
 
     private final BoardService boardService;
     private final BoardCommentService boardCommentService;
-    // =========================
+
     // 게시글 목록(페이징)
-    // =========================
-    //
-    // page 파라미터를 받아
-    // 해당 페이지의 게시글 목록을 조회
-    //
-    // 전체 게시글 개수로
-    // 전체 페이지 수도 계산
-    //
-    // 예)
-    // /board/list?page=1
-    // /board/list?page=2
-    //
     @GetMapping("/list")
     public String list(@RequestParam(defaultValue = "1") int page,
                        Model model) {
@@ -168,9 +156,7 @@ public class BoardController {
         return "board/list";
     }
 
-    // =========================
     // 문의 게시판 목록
-    // =========================
     @GetMapping("/question")
     public String question(
             @RequestParam(defaultValue = "1") int page,
@@ -200,9 +186,6 @@ public class BoardController {
 
 
     // 게시글 검색
-    // 사용자가 입력한 검색어를 받아
-    // 제목, 내용, 작성자를 검색하여
-    // 검색 결과를 게시글 목록 화면에 출력
     @GetMapping("/search")
     public String search(@RequestParam String keyword,
                          Model model) {
@@ -313,12 +296,10 @@ public class BoardController {
         return "redirect:/board/detail/" + no;
     }
 
-    // =========================
+
     // 게시글 삭제 처리
-    // =========================
     // GET이 아니라 POST로 처리하여
     // 주소 접속만으로 삭제되는 문제를 방지
-    //
     @PostMapping("/delete/{no}")
     public String delete(
             @PathVariable Long no,

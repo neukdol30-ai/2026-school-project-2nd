@@ -32,35 +32,21 @@ public class BoardService {
     }
 
 
-    // =========================
+
     // 게시글 조회
-    // =========================
-    //
     // 조회수 증가 없이
     // 게시글만 조회
-    //
     public BoardDto findByNo(Long no) {
         return boardDao.findByNo(no);
     }
 
 
 
-    // =========================
+
     // 게시글 페이징 조회
-    // =========================
-    //
     // 사용자가 요청한 페이지 번호를
     // Oracle에서 사용할 시작행/끝행으로 변환
-    //
-    // 예)
-    // page = 1
-    // startRow = 1
-    // endRow = 10
-    //
-    // page = 2
-    // startRow = 11
-    // endRow = 20
-    //
+
     public List<BoardDto> findPage(int page) {
         int pageSize = 10;
 
@@ -70,13 +56,11 @@ public class BoardService {
         return boardDao.findPage(startRow, endRow);
     }
 
-    // =========================
+
     // 전체 게시글 개수 조회
-    // =========================
-    //
     // 전체 게시글 개수를 조회하여
     // 전체 페이지 수 계산에 사용
-    //
+
     public int countAll() {
         return boardDao.countAll();
     }
@@ -103,19 +87,8 @@ public class BoardService {
 
 
 
-    // =========================
+
     // 게시글 조회수 증가
-    // =========================
-    //
-    // 게시글 상세보기에 처음 들어왔을 때
-    // 조회수를 1 증가시키는 메서드
-    //
-    // Controller에서 세션을 확인한 후
-    // 처음 조회한 경우에만 호출됨
-    //
-    // 게시글 번호(no)를 받아
-    // BoardDao의 increaseViewCount()를 실행
-    //
     @Transactional
     public int increaseViewCount(Long no) {
         return boardDao.increaseViewCount(no);
@@ -141,16 +114,7 @@ public class BoardService {
         return boardDao.delete(no);
     }
 
-    // =========================
     // TOAST UI 게시글 본문 검사
-    // =========================
-    //
-    // TOAST UI에서 아무것도 입력하지 않아도
-    // <p><br></p> 같은 HTML 문자열이 전송될 수 있음
-    //
-    // HTML 태그와 공백 문자를 제거한 후
-    // 실제 글자가 있는지 검사
-    //
     private void validateContent(String content) {
 
         if (content == null || content.trim().isEmpty()) {

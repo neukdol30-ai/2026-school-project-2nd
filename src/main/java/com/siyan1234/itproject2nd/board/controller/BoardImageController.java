@@ -32,9 +32,8 @@ public class BoardImageController {
             "image/webp"
     );
 
-    // =========================
+
     // TOAST UI 본문 이미지 업로드
-    // =========================
     @PostMapping("/upload")
     @ResponseBody
     public ResponseEntity<Map<String, String>> upload(
