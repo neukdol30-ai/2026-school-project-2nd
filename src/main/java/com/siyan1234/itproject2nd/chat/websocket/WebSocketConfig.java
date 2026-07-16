@@ -1,4 +1,4 @@
-package com.siyan1234.itproject2nd.chat.config;
+package com.siyan1234.itproject2nd.chat.websocket;
 
 import com.siyan1234.itproject2nd.chat.websocket.ChatHandler;
 import lombok.RequiredArgsConstructor;

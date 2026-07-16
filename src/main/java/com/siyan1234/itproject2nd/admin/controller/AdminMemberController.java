@@ -46,6 +46,8 @@ public class AdminMemberController {
 
         if (isSelf(no, loginAdminNo)) {
             redirectAttributes.addFlashAttribute("adminErrorMessage", AdminFlashMessage.MEMBER_ROLE_SELF_DENIED);
+        } else if (adminMemberService.isBanned(no)) {
+            redirectAttributes.addFlashAttribute("adminErrorMessage", AdminFlashMessage.MEMBER_ROLE_BANNED_DENIED);
         } else if (updatedCount == 0) {
             redirectAttributes.addFlashAttribute("adminErrorMessage", AdminFlashMessage.MEMBER_ROLE_CHANGE_FAILED);
         } else {
@@ -87,6 +89,8 @@ public class AdminMemberController {
 
         if (isSelf(no, loginAdminNo)) {
             redirectAttributes.addFlashAttribute("adminErrorMessage", AdminFlashMessage.MEMBER_BAN_SELF_DENIED);
+        } else if (adminMemberService.isAdminAccount(no)) {
+            redirectAttributes.addFlashAttribute("adminErrorMessage", AdminFlashMessage.MEMBER_BAN_ADMIN_DENIED);
         } else if (updatedCount == 0) {
             redirectAttributes.addFlashAttribute("adminErrorMessage", AdminFlashMessage.MEMBER_BAN_FAILED);
         } else {
@@ -123,6 +127,8 @@ public class AdminMemberController {
 
         if (isSelf(no, loginAdminNo)) {
             redirectAttributes.addFlashAttribute("adminErrorMessage", AdminFlashMessage.MEMBER_DELETE_SELF_DENIED);
+        } else if (adminMemberService.isAdminAccount(no)) {
+            redirectAttributes.addFlashAttribute("adminErrorMessage", AdminFlashMessage.MEMBER_DELETE_ADMIN_DENIED);
         } else if (deletedCount == 0) {
             redirectAttributes.addFlashAttribute("adminErrorMessage", AdminFlashMessage.MEMBER_DELETE_NOT_FOUND);
         } else {

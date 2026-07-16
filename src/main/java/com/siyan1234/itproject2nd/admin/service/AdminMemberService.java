@@ -47,6 +47,10 @@ public class AdminMemberService {
 
     @Transactional
     public int grantAdmin(Integer memberNo, Integer loginAdminNo) {
+        if (isBanned(memberNo)) {
+            return 0;
+        }
+
         return updateRoleSafely(memberNo, loginAdminNo, ROLE_ADMIN);
     }
 
@@ -55,9 +59,24 @@ public class AdminMemberService {
         return updateRoleSafely(memberNo, loginAdminNo, ROLE_USER);
     }
 
+    @Transactional(readOnly = true)
+    public boolean isBanned(Integer memberNo) {
+        if (memberNo == null) {
+            return false;
+        }
+
+        return adminMemberDao.countBannedMember(memberNo) > 0;
+    }
+
+    @Transactional(readOnly = true)
+    public boolean isAdminAccount(Integer memberNo) {
+        MemberDto member = findByNo(memberNo);
+        return member != null && ROLE_ADMIN.equalsIgnoreCase(member.getRole());
+    }
+
     @Transactional
     public int banMember(Integer memberNo, String banReason, Integer loginAdminNo) {
-        if (isSelf(memberNo, loginAdminNo) || memberNo == null) {
+        if (isSelf(memberNo, loginAdminNo) || memberNo == null || isAdminAccount(memberNo)) {
             return 0;
         }
 
@@ -79,7 +98,7 @@ public class AdminMemberService {
             return 0;
         }
 
-        if (isSelf(memberNo, loginAdminNo)) {
+        if (isSelf(memberNo, loginAdminNo) || isAdminAccount(memberNo)) {
             return 0;
         }
 

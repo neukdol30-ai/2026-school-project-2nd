@@ -13,12 +13,15 @@ public final class AdminFlashMessage {
 
     public static final String MEMBER_DELETE_NOT_SELECTED = "삭제할 회원을 선택해 주세요.";
     public static final String MEMBER_DELETE_SELF_DENIED = "현재 로그인 중인 관리자 본인 계정은 삭제할 수 없습니다.";
+    public static final String MEMBER_DELETE_ADMIN_DENIED = "관리자 계정은 바로 삭제할 수 없습니다. 먼저 USER 권한으로 전환한 뒤 처리해 주세요.";
     public static final String MEMBER_DELETE_NOT_FOUND = "삭제할 회원을 찾을 수 없습니다.";
     public static final String MEMBER_DELETE_NO_RESULT = "삭제된 회원이 없습니다. 현재 로그인 중인 관리자 본인은 삭제할 수 없습니다.";
 
     public static final String MEMBER_ROLE_SELF_DENIED = "현재 로그인 중인 관리자 본인의 권한은 변경할 수 없습니다.";
+    public static final String MEMBER_ROLE_BANNED_DENIED = "정지된 회원에게는 ADMIN 권한을 부여할 수 없습니다. 먼저 정지를 해제해 주세요.";
     public static final String MEMBER_ROLE_CHANGE_FAILED = "회원 권한 변경에 실패했습니다.";
     public static final String MEMBER_BAN_SELF_DENIED = "현재 로그인 중인 관리자 본인 계정은 정지할 수 없습니다.";
+    public static final String MEMBER_BAN_ADMIN_DENIED = "관리자 계정은 바로 정지할 수 없습니다. 먼저 USER 권한으로 전환한 뒤 처리해 주세요.";
     public static final String MEMBER_BAN_FAILED = "회원 정지 처리에 실패했습니다.";
     public static final String MEMBER_UNBAN_FAILED = "회원 정지 해제에 실패했습니다.";
 

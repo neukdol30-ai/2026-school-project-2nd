@@ -1,7 +1,9 @@
 package com.siyan1234.itproject2nd.cookie.interceptor;
 
+import com.siyan1234.itproject2nd.config.security.LoginMemberResolver;
 import com.siyan1234.itproject2nd.config.security.SecurityPaths;
 import com.siyan1234.itproject2nd.cookie.service.CookieConsentService;
+import com.siyan1234.itproject2nd.member.dto.MemberDto;
 import com.siyan1234.itproject2nd.cookie.service.VisitLogService;
 import com.siyan1234.itproject2nd.cookie.support.VisitLogRequestFactory;
 import jakarta.servlet.http.HttpServletRequest;
@@ -23,6 +25,7 @@ public class VisitLogInterceptor implements HandlerInterceptor {
     private final CookieConsentService cookieConsentService;
     private final VisitLogRequestFactory visitLogRequestFactory;
     private final VisitLogService visitLogService;
+    private final LoginMemberResolver loginMemberResolver;
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) {
@@ -36,6 +39,16 @@ public class VisitLogInterceptor implements HandlerInterceptor {
 
     private boolean shouldSkip(HttpServletRequest request) {
         return !cookieConsentService.isAnalyticsAllowed(request)
-                || !SecurityPaths.isVisitLogTarget(request);
+                || !SecurityPaths.isVisitLogTarget(request)
+                || isAdminVisit(request);
+    }
+
+    private boolean isAdminVisit(HttpServletRequest request) {
+        if (SecurityPaths.isAdminArea(request)) {
+            return true;
+        }
+
+        MemberDto loginMember = loginMemberResolver.getCurrentMember();
+        return loginMemberResolver.isAdmin(loginMember);
     }
 }

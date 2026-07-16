@@ -33,4 +33,19 @@
         )
     </insert>
 
+
+    <!-- 오늘 같은 IP가 이미 방문 기록으로 저장되었는지 확인합니다. -->
+    <select id="countTodayByIp" resultType="int">
+        SELECT COUNT(*)
+        FROM visit_log v
+        WHERE v.ip_address = #{ipAddress, jdbcType=VARCHAR}
+        AND v.created_date &gt;= TRUNC(SYSDATE)
+        AND NOT EXISTS (
+            SELECT 1
+            FROM member m
+            WHERE m.no = v.member_no
+            AND m.role = 'ADMIN'
+        )
+    </select>
+
 </mapper>

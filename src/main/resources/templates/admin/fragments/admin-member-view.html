@@ -56,8 +56,8 @@
                                 <input type="checkbox"
                                        class="member-row-checkbox"
                                        th:value="${member.no}"
-                                       th:disabled="${loginAdmin != null and loginAdmin.no == member.no}"
-                                       th:title="${loginAdmin != null and loginAdmin.no == member.no} ? '현재 로그인 중인 관리자 본인은 삭제할 수 없습니다.' : '회원 선택'"
+                                       th:disabled="${(loginAdmin != null and loginAdmin.no == member.no) or member.role == 'ADMIN'}"
+                                       th:title="${loginAdmin != null and loginAdmin.no == member.no ? '현재 로그인 중인 관리자 본인은 삭제할 수 없습니다.' : (member.role == 'ADMIN' ? '관리자 계정은 USER 전환 후 삭제할 수 있습니다.' : '회원 선택')}"
                                        aria-label="회원 선택">
                             </td>
                             <td th:text="${member.no}">1</td>
@@ -99,9 +99,12 @@
 
                                     <button type="button"
                                             class="table-action promote-action button-like"
-                                            th:if="${member.role != 'ADMIN' and (loginAdmin == null or loginAdmin.no != member.no)}"
+                                            th:if="${member.role != 'ADMIN' and member.banYn != 'Y' and (loginAdmin == null or loginAdmin.no != member.no)}"
                                             data-member-promote-button
                                             th:attr="data-member-no=${member.no}, data-member-id=${member.memberId}">관리자 지정</button>
+
+                                    <span class="table-muted-action"
+                                          th:if="${member.role != 'ADMIN' and member.banYn == 'Y' and (loginAdmin == null or loginAdmin.no != member.no)}">정지 회원 권한부여 불가</span>
 
                                     <button type="button"
                                             class="table-action warning-action button-like"
@@ -111,9 +114,12 @@
 
                                     <button type="button"
                                             class="table-action warning-action button-like"
-                                            th:if="${member.banYn != 'Y' and (loginAdmin == null or loginAdmin.no != member.no)}"
+                                            th:if="${member.banYn != 'Y' and member.role != 'ADMIN' and (loginAdmin == null or loginAdmin.no != member.no)}"
                                             data-member-ban-button
                                             th:attr="data-member-no=${member.no}, data-member-id=${member.memberId}">정지</button>
+
+                                    <span class="table-muted-action"
+                                          th:if="${member.role == 'ADMIN' and member.banYn != 'Y' and (loginAdmin == null or loginAdmin.no != member.no)}">USER 전환 후 정지</span>
 
                                     <button type="button"
                                             class="table-action button-like"
@@ -121,10 +127,13 @@
                                             data-member-unban-button
                                             th:attr="data-member-no=${member.no}, data-member-id=${member.memberId}">정지 해제</button>
 
+                                    <span class="table-muted-action"
+                                          th:if="${member.role == 'ADMIN' and (loginAdmin == null or loginAdmin.no != member.no)}">USER 전환 후 삭제</span>
+
                                     <button type="button"
                                             class="table-action danger-action button-like"
                                             data-member-delete-button
-                                            th:if="${loginAdmin == null or loginAdmin.no != member.no}"
+                                            th:if="${member.role != 'ADMIN' and (loginAdmin == null or loginAdmin.no != member.no)}"
                                             th:attr="data-member-no=${member.no}, data-member-id=${member.memberId}">삭제</button>
                                     <span class="table-muted-action" th:if="${loginAdmin != null and loginAdmin.no == member.no}">본인 계정</span>
                                 </div>

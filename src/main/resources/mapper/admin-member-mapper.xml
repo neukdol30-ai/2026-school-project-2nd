@@ -65,11 +65,21 @@
         <include refid="adminMemberSearchWhere" />
     </select>
 
+
+    <!-- 관리자 콘솔 회원관리: 정지 회원 여부 확인 -->
+    <select id="countBannedMember" resultType="int">
+        SELECT COUNT(*)
+        FROM member
+        WHERE no = #{memberNo, jdbcType=NUMERIC}
+        AND ban_yn = 'Y'
+    </select>
+
     <!-- 관리자 콘솔 회원관리: 권한 변경 -->
     <update id="updateRole">
         UPDATE member
         SET role = #{role}
         WHERE no = #{memberNo, jdbcType=NUMERIC}
+        AND NVL(ban_yn, 'N') = 'N'
     </update>
 
     <!-- 관리자 콘솔 회원관리: 회원 정지 -->

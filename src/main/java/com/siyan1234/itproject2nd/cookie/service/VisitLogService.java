@@ -22,11 +22,15 @@ public class VisitLogService {
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void saveVisitLog(VisitLogDto visitLogDto) {
-        if (visitLogDto == null) {
+        if (visitLogDto == null || visitLogDto.getIpAddress() == null || visitLogDto.getIpAddress().isBlank()) {
             return;
         }
 
         try {
+            if (visitLogDao.countTodayByIp(visitLogDto.getIpAddress()) > 0) {
+                return;
+            }
+
             visitLogDao.insert(visitLogDto);
         } catch (Exception e) {
             log.warn("방문 기록 저장 실패. visit_log 테이블 생성 여부를 확인하세요.", e);

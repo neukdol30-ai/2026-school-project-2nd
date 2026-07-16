@@ -181,3 +181,73 @@
         box-shadow: none;
     }
 }
+
+/* 관리자 상담 브라우저 알림 버튼입니다. */
+.notification-toggle {
+    border: 0;
+    cursor: pointer;
+}
+
+.notification-toggle.enabled {
+    color: #047857;
+    background: #ecfdf3;
+}
+
+.notification-toggle.blocked,
+.notification-toggle.disabled {
+    color: #667085;
+    background: #f2f4f7;
+    cursor: not-allowed;
+}
+
+/* 관리자 콘솔 내부 토스트 알림입니다. 브라우저 알림 권한이 없어도 화면 안에서 알림을 보여줍니다. */
+.admin-toast-container {
+    position: fixed;
+    top: 22px;
+    right: 22px;
+    z-index: 9999;
+    display: grid;
+    gap: 10px;
+    max-width: min(360px, calc(100vw - 32px));
+    pointer-events: none;
+}
+
+.admin-toast {
+    transform: translateY(-8px);
+    opacity: 0;
+    padding: 14px 16px;
+    border-radius: 16px;
+    color: #344054;
+    background: #ffffff;
+    border: 1px solid #eaecf0;
+    box-shadow: 0 18px 44px rgba(16, 24, 40, 0.18);
+    font-size: 13px;
+    font-weight: 900;
+    transition: opacity 0.22s ease, transform 0.22s ease;
+}
+
+.admin-toast.show {
+    transform: translateY(0);
+    opacity: 1;
+}
+
+.admin-toast.success {
+    color: #047857;
+    background: #ecfdf3;
+    border-color: #a6f4c5;
+}
+
+.admin-toast.error {
+    color: #b42318;
+    background: #fef3f2;
+    border-color: #fecdca;
+}
+
+@media (max-width: 760px) {
+    .admin-toast-container {
+        top: 14px;
+        right: 14px;
+        left: 14px;
+        max-width: none;
+    }
+}

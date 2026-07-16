@@ -68,11 +68,18 @@
         AND m.read_yn = 'N'
     </select>
 
-    <!-- 오늘 방문 기록 수: 분석 쿠키 동의 사용자만 visit_log에 저장됩니다. -->
+    <!-- 오늘 방문자 수: 분석 쿠키 동의 사용자 중 IP 기준 1일 1회만 집계합니다. -->
     <select id="countTodayVisits" resultType="long">
-        SELECT COUNT(*)
-        FROM visit_log
-        WHERE created_date &gt;= TRUNC(SYSDATE)
+        SELECT COUNT(DISTINCT v.ip_address)
+        FROM visit_log v
+        WHERE v.created_date &gt;= TRUNC(SYSDATE)
+        AND v.ip_address IS NOT NULL
+        AND NOT EXISTS (
+            SELECT 1
+            FROM member m
+            WHERE m.no = v.member_no
+            AND m.role = 'ADMIN'
+        )
     </select>
 
     <!-- 상담 카테고리별 통계: 상담이 0건이어도 모든 카테고리를 표시합니다. -->

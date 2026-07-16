@@ -18,6 +18,8 @@ public interface AdminMemberDao {
 
     Long countAdminMembers(@Param("keyword") String keyword);
 
+    int countBannedMember(@Param("memberNo") Integer memberNo);
+
     int updateRole(
             @Param("memberNo") Integer memberNo,
             @Param("role") String role

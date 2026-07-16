@@ -44,6 +44,7 @@
 
             setChatLiveStatus("syncing", "새 상담 반영 중");
             setRealtimeMessage("새 상담 또는 새 메시지가 도착해 목록을 갱신합니다.");
+            Admin.BrowserNotification?.notifyChatEvent(data.roomNo);
             scheduleAdminChatRefresh();
         };
 
