@@ -1,0 +1,10 @@
+/* 모바일 반응형: 2:1 구조를 1열 구조로 변경 */
+@media (max-width: 900px) {
+    .dashboard-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .widget-header {
+        flex-direction: column;
+    }
+}

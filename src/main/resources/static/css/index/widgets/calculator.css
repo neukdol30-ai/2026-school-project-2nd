@@ -1,0 +1,17 @@
+/* 계산기 표시창 */
+.calculator-display {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    font-size: 20px;
+    text-align: right;
+    margin-bottom: 10px;
+}
+
+/* 계산기 버튼 영역 */
+.calculator-buttons {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 6px;
+}

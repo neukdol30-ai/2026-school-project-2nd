@@ -1,0 +1,17 @@
+/* 메모 입력창 */
+textarea {
+    width: 100%;
+    height: 120px;
+    resize: vertical;
+    padding: 12px;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    font-family: inherit;
+}
+
+/* 메모 글자 수 */
+.memo-count {
+    margin-top: 8px;
+    color: #666;
+    font-size: 14px;
+}

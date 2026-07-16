@@ -105,6 +105,9 @@ function renderWidgetContent(widget) {
     if (widget.type === "memo") {
         return renderMemo();
     }
+    if (widget.type === "currentTime") {
+        return renderCurrentTimeWidget();
+    }
 
     return "";
 }

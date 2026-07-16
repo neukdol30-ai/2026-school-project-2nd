@@ -15,6 +15,10 @@ const state = {
     weatherLoading: false,
     weatherError: "",
     dayNames: ["월", "화", "수", "목", "금", "토", "일"],
+    sunTime: {
+        sunrise: "--:--",
+        sunset: "--:--"
+    },
 
     stockItems: [
         {
@@ -168,6 +172,18 @@ const state = {
             visible: true,
             collapsed: false,
             orderNo: 4
+        },
+        {
+            id: 9,
+            zone: "side",
+            type: "currentTime",
+            title: "현재시간",
+            icon: "🕒",
+            description: "현재 시간과 일출·일몰 정보를 표시합니다.",
+            visible: true,
+            collapsed: false,
+            orderNo: 5,
         }
+
     ]
 };

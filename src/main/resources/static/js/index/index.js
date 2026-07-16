@@ -43,6 +43,8 @@ function render() {
 }
 
 render();
+startCurrentTimeClock();
+fetchSunTime();
 fetchNews();
 fetchStocks();
 fetchWeather();
