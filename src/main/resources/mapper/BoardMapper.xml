@@ -11,13 +11,19 @@
         b.no,
         b.writer_no,
         b.category,
+        b.answer_status,
         b.title,
         b.content,
         b.view_count,
         b.created_date,
         b.modified_date,
         m.name AS writer_name,
-        m.nickname AS writer_nickname
+        m.nickname AS writer_nickname,
+        (
+             SELECT COUNT(*)
+             FROM board_comment bc
+             WHERE bc.board_no = b.no
+            ) AS answer_count
         FROM board b
         LEFT JOIN member m
         ON b.writer_no = m.no
@@ -29,13 +35,19 @@
         b.no,
         b.writer_no,
         b.category,
+        b.answer_status,
         b.title,
         b.content,
         b.view_count,
         b.created_date,
         b.modified_date,
         m.name AS writer_name,
-        m.nickname AS writer_nickname
+        m.nickname AS writer_nickname,
+            (
+              SELECT COUNT(*)
+              FROM board_comment bc
+              WHERE bc.board_no = b.no
+            ) AS answer_count
         FROM board b
         LEFT JOIN member m
         ON b.writer_no = m.no
@@ -62,13 +74,19 @@
         b.no,
         b.writer_no,
         b.category,
+        b.answer_status,
         b.title,
         b.content,
         b.view_count,
         b.created_date,
         b.modified_date,
         m.name AS writer_name,
-        m.nickname AS writer_nickname
+        m.nickname AS writer_nickname,
+            (
+              SELECT COUNT(*)
+              FROM board_comment bc
+              WHERE bc.board_no = b.no
+            ) AS answer_count
         FROM board b
         LEFT JOIN member m
         ON b.writer_no = m.no
@@ -76,34 +94,26 @@
         ORDER BY b.no DESC
     </select>
 
-    <!-- ========================= -->
+
     <!-- 게시글 검색 -->
-    <!-- ========================= -->
-
-    <!--
-        BoardDao.search(String keyword) 와 연결됨
-
-        제목(title)
-        내용(content)
-        작성자 닉네임(nickname)
-
-        세 가지 중 하나라도 검색어가 포함되면 조회
-
-        LIKE '%' || #{keyword} || '%'
-        → Oracle 문자열 검색
-    -->
     <select id="search" parameterType="string" resultType="BoardDto">
         SELECT
         b.no,
         b.writer_no,
         b.category,
+        b.answer_status,
         b.title,
         b.content,
         b.view_count,
         b.created_date,
         b.modified_date,
         m.name AS writer_name,
-        m.nickname AS writer_nickname
+        m.nickname AS writer_nickname,
+            (
+              SELECT COUNT(*)
+              FROM board_comment bc
+              WHERE bc.board_no = b.no
+            ) AS answer_count
         FROM board b
         LEFT JOIN member m
         ON b.writer_no = m.no
@@ -113,37 +123,66 @@
     </select>
 
 
-    <!-- ========================= -->
+    <!-- 카테고리별 게시글 개수 조회 -->
+    <select id="countByCategory"
+            parameterType="string"
+            resultType="int">
+
+        SELECT COUNT(*)
+        FROM board
+        WHERE category = #{category}
+
+    </select>
+
+    <!-- 카테고리별 게시글 페이징 조회 -->
+    <select id="findPageByCategory"
+            resultType="BoardDto">
+
+        SELECT *
+        FROM (
+        SELECT
+        ROWNUM AS rn,
+        board_data.*
+        FROM (
+        SELECT
+        b.no,
+        b.writer_no,
+        b.category,
+        b.answer_status,
+        b.title,
+        b.content,
+        b.view_count,
+        b.created_date,
+        b.modified_date,
+        m.name AS writer_name,
+        m.nickname AS writer_nickname,
+            (
+              SELECT COUNT(*)
+              FROM board_comment bc
+              WHERE bc.board_no = b.no
+            ) AS answer_count
+        FROM board b
+        LEFT JOIN member m
+        ON b.writer_no = m.no
+        WHERE b.category = #{category}
+        ORDER BY b.no DESC
+        ) board_data
+        WHERE ROWNUM &lt;= #{endRow}
+        )
+        WHERE rn &gt;= #{startRow}
+
+    </select>
+
+
+
     <!-- 게시글 전체 개수 조회 -->
-    <!-- ========================= -->
-
-    <!--
-        BoardDao.countAll() 과 연결
-
-        board 테이블의
-        전체 게시글 개수를 조회
-
-        페이지 개수 계산에 사용
-    -->
     <select id="countAll" resultType="int">
         SELECT COUNT(*)
         FROM board
     </select>
 
-    <!-- ========================= -->
+
     <!-- 게시글 페이징 조회 -->
-    <!-- ========================= -->
-
-    <!--
-        BoardDao.findPage() 와 연결
-
-        Oracle의 ROWNUM을 이용한 페이징
-
-        startRow ~ endRow 사이의
-        게시글만 조회
-
-        최신글부터 출력
-    -->
     <select id="findPage" resultType="BoardDto">
         SELECT *
         FROM (
@@ -155,13 +194,19 @@
         b.no,
         b.writer_no,
         b.category,
+        b.answer_status,
         b.title,
         b.content,
         b.view_count,
         b.created_date,
         b.modified_date,
         m.name AS writer_name,
-        m.nickname AS writer_nickname
+        m.nickname AS writer_nickname,
+            (
+              SELECT COUNT(*)
+              FROM board_comment bc
+              WHERE bc.board_no = b.no
+            ) AS answer_count
         FROM board b
         LEFT JOIN member m
         ON b.writer_no = m.no

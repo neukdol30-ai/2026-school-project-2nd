@@ -6,7 +6,7 @@
 
 <mapper namespace="com.siyan1234.itproject2nd.board.dao.BoardCommentDao">
 
-    <!-- 댓글 목록 조회 -->
+    <!-- 답변 목록 조회 -->
     <select id="findByBoardNo"
             parameterType="long"
             resultType="BoardCommentDto">
@@ -16,6 +16,7 @@
         bc.board_no,
         bc.writer_no,
         bc.content,
+        bc.accepted_yn,
         bc.created_date,
         bc.modified_date,
         m.nickname AS writer_nickname
@@ -27,7 +28,7 @@
 
     </select>
 
-    <!-- 댓글 1개 조회 -->
+    <!-- 답변 1개 조회 -->
     <select id="findByNo"
             parameterType="long"
             resultType="BoardCommentDto">
@@ -45,7 +46,7 @@
     </select>
 
 
-    <!-- 댓글 등록 -->
+    <!-- 답변 등록 -->
     <insert id="insert"
             parameterType="BoardCommentDto">
 
@@ -62,7 +63,7 @@
 
     </insert>
 
-    <!-- 댓글 수정 -->
+    <!-- 답변 수정 -->
     <update id="update"
             parameterType="BoardCommentDto">
 
@@ -74,7 +75,7 @@
 
     </update>
 
-    <!-- 댓글 삭제 -->
+    <!-- 답변 삭제 -->
     <delete id="delete"
             parameterType="long">
 

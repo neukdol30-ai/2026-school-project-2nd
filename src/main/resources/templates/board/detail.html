@@ -1,147 +1,718 @@
 <!DOCTYPE html>
-<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
     <title>게시글 상세</title>
-    <link rel="stylesheet" href="https://uicdn.toast.com/editor/latest/toastui-editor.min.css">
-    <script src="https://uicdn.toast.com/editor/latest/toastui-editor-viewer.min.js"></script>
+
+    <!-- 공통 CSS -->
+    <link rel="stylesheet"
+          th:href="@{/css/main.css}">
+
+    <!-- 게시판 전용 CSS -->
+    <link rel="stylesheet"
+          th:href="@{/css/board.css}">
+
+    <!-- TOAST UI Editor CSS -->
+    <link rel="stylesheet"
+          href="https://uicdn.toast.com/editor/latest/toastui-editor.min.css">
+
+    <!-- TOAST UI Editor JS -->
+    <script src="https://uicdn.toast.com/editor/latest/toastui-editor-all.min.js"></script>
+    <script src="https://uicdn.toast.com/editor/latest/i18n/ko-kr.js"></script>
+
 </head>
+
 <body>
 
-<h1 th:text="${board.title}"></h1>
-
-<p>
-    카테고리:
-    <span th:text="${board.category}"></span>
-</p>
-
-<p>
-    작성자:
-    <span th:text="${board.writerNickname != null ? board.writerNickname : '탈퇴회원'}"></span>
-</p>
-
-<p>
-    조회수:
-    <span th:text="${board.viewCount}"></span>
-</p>
-
-<hr>
-
-<div th:utext="${board.content}"></div>
-
-<hr>
-
-<a href="/board/list">목록</a>
-<a th:href="@{/board/update/{no}(no=${board.no})}">수정</a>
-<a th:href="@{/board/delete/{no}(no=${board.no})}">삭제</a>
+<main class="board-page">
 
 
-<div th:if="${board.category != 'NOTICE'}">
+    <!-- 게시글 상세 카드 -->
+    <article class="board-detail-box">
 
-    <hr>
+        <!-- 게시글 상단 -->
+        <header class="board-detail-header">
 
-    <h2>댓글</h2>
+            <!-- 카테고리 -->
+            <div class="board-detail-category">
 
-    <div th:if="${#lists.isEmpty(commentList)}">
-        <p>아직 댓글이 없습니다.</p>
-    </div>
+                <span th:if="${board.category == 'NOTICE'}"
+                      class="board-badge board-badge-notice">
+                    공지
+                </span>
 
-    <div th:each="comment : ${commentList}">
+                <span th:if="${board.category == 'QUESTION'}"
+                      class="board-badge board-badge-question">
+                    문의
+                </span>
 
-        <p>
-            <strong th:text="${comment.writerNickname != null ? comment.writerNickname : '탈퇴회원'}"></strong>
-            :
-            <span th:id="'comment-text-' + ${comment.no}"
-                  th:text="${comment.content}"></span>
-        </p>
+                <!-- 문의글이며 답변이 없는 경우 -->
+                <span th:if="${board.category == 'QUESTION'
+                        and (board.answerCount == null or board.answerCount == 0)}"
+                      class="board-status-badge board-status-waiting">
+                    답변대기
+                </span>
 
-        <div th:if="${session.loginMember != null and session.loginMember.no == comment.writerNo}">
+                <!-- 문의글이며 답변이 한 개 이상인 경우 -->
+                <span th:if="${board.category == 'QUESTION'
+                        and board.answerCount != null
+                        and board.answerCount > 0}"
+                      class="board-status-badge board-status-answered">
+                    답변완료
+                </span>
 
-            <button type="button"
-                    th:onclick="'showEditForm(' + ${comment.no} + ')'">
-                   수정
-            </button>
 
-            <a th:href="@{/board/comment/delete/{no}(no=${comment.no})}">
-                삭제
+                <span class="board-detail-number"
+                      th:text="'게시글 #' + ${board.no}">
+                </span>
+
+            </div>
+
+            <div class="question-detail-label">
+                Q
+            </div>
+
+            <!-- 제목 -->
+            <h1 class="board-detail-title"
+                th:text="${board.title}">
+                게시글 제목
+            </h1>
+
+            <!-- 작성자 및 게시글 정보 -->
+            <div class="board-detail-meta">
+
+                <span>
+                    작성자
+                    <strong th:text="${board.writerNickname != null
+                        ? board.writerNickname
+                        : '탈퇴회원'}">
+                    </strong>
+                </span>
+
+                <span class="board-meta-divider">
+                    ·
+                </span>
+
+                <span>
+                    조회수
+                    <strong th:text="${board.viewCount}">
+                    </strong>
+                </span>
+
+                <span th:if="${board.createdDate != null}"
+                      class="board-meta-divider">
+                    ·
+                </span>
+
+                <span th:if="${board.createdDate != null}"
+                      th:text="${#temporals.format(
+                        board.createdDate,
+                        'yyyy-MM-dd HH:mm'
+                      )}">
+                </span>
+
+            </div>
+
+        </header>
+
+        <!-- 게시글 본문 -->
+        <section class="board-detail-content"
+                 th:utext="${board.content}">
+        </section>
+
+        <!-- 게시글 하단 버튼 -->
+        <footer class="board-detail-actions">
+
+            <a th:href="@{/board/list}"
+               class="board-button board-button-secondary">
+                목록
             </a>
 
-            <form th:id="'comment-edit-form-' + ${comment.no}"
-                th:action="@{/board/comment/update/{no}(no=${comment.no})}"
-                method="post"
-                style="display:none; margin-top:10px;">
+            <!-- 작성자에게만 수정/삭제 표시 -->
+            <div sec:authorize="isAuthenticated()"
+                 th:if="${#authentication.principal.memberDto.no.equals(board.writerNo)}"
+                 class="board-owner-actions">
 
-                <textarea name="content"
-                        rows="3"
-                        cols="50"
-                        th:text="${comment.content}"></textarea>
+                <a th:href="@{/board/update/{no}(no=${board.no})}"
+                   class="board-button board-button-edit">
+                    수정
+                </a>
 
-                <br>
+                <form th:action="@{/board/delete/{no}(no=${board.no})}"
+                      method="post"
+                      class="board-inline-form">
 
-                <button type="submit">저장</button>
+                    <button type="submit"
+                            class="board-button board-button-delete"
+                            onclick="return confirm('게시글을 삭제하시겠습니까?');">
+                        삭제
+                    </button>
 
-                <button type="button"
-                        th:onclick="'hideEditForm(' + ${comment.no} + ')'">
-                    취소
-                </button>
-            </form>
-        </div>
+                </form>
+
+            </div>
+
+        </footer>
+
+    </article>
+
+    <!-- 답변 버튼 -->
+    <div th:if="${board.category == 'QUESTION'}"
+         class="question-answer-toolbar">
+
+        <button type="button"
+                class="question-answer-button"
+                onclick="openAnswerForm()">
+
+            ✎ 답변하기
+
+        </button>
 
     </div>
 
-    <!-- ========================= -->
-    <!-- 댓글 작성 -->
-    <!-- ========================= -->
+
+    <!-- 답변 영역 -->
+    <!-- 공지사항에서는 전체 영역 숨김 -->
+    <section th:if="${board.category != 'NOTICE'}"
+             id="comments"
+             class="board-comment-box">
+
+        <header class="board-comment-header">
+
+            <div>
+                <h2 class="board-comment-title">
+
+                    답변
+
+                    <span class="board-answer-count">
+                        <strong th:text="${board.answerCount != null
+                            ? board.answerCount
+                            : 0}">
+                            0
+                        </strong>
+                        개
+                    </span>
+
+                </h2>
+
+                <p class="board-comment-description">
+                    문의 내용에 대한 답변을 확인하거나 새 답변을 남겨보세요.
+                </p>
+            </div>
+
+        </header>
+
+        <!-- 답변 오류 메시지 -->
+        <p th:if="${commentError}"
+           th:text="${commentError}"
+           class="board-error-message">
+        </p>
+
+        <!-- 답변이 없을 때 -->
+        <div th:if="${#lists.isEmpty(commentList)}"
+             class="board-comment-empty">
+
+            아직 작성된 답변이 없습니다.
+
+        </div>
+
+        <!-- 답변 목록 -->
+        <div th:unless="${#lists.isEmpty(commentList)}"
+             class="board-comment-list">
+
+            <article th:each="comment : ${commentList}"
+                     class="board-comment-item">
+
+                <!-- A 표시 -->
+                <div class="answer-label">
+                    A
+                </div>
+
+                <!-- 답변 내용 -->
+                <div class="answer-body">
+                    <div class="board-comment-info">
+
+                        <strong th:text="${comment.writerNickname != null
+                            ? comment.writerNickname
+                            : '탈퇴회원'}">
+                        </strong>
+
+                        <span th:if="${comment.createdDate != null}"
+                              th:text="${#temporals.format(
+                                comment.createdDate,
+                                'yyyy-MM-dd HH:mm'
+                                )}">
+                        </span>
+
+                    </div>
+
+                    <!-- 답변 내용 -->
+                    <div th:id="'comment-text-' + ${comment.no}"
+                         th:utext="${comment.content}"
+                         class="board-comment-content">
+                    </div>
+
+                    <!-- 본인 답변 수정/삭제 -->
+                    <div sec:authorize="isAuthenticated()"
+                        th:if="${#authentication.principal.memberDto.no.equals(comment.writerNo)}"
+                        class="board-comment-actions">
+
+                        <button type="button"
+                                class="board-comment-action-button"
+                                th:onclick="'showEditForm(' + ${comment.no} + ')'">
+                            수정
+                        </button>
+
+                        <form th:action="@{/board/comment/delete/{no}(no=${comment.no})}"
+                            method="post"
+                            class="board-inline-form">
+
+                            <button type="submit"
+                                    class="board-comment-action-button board-comment-delete-button"
+                                    onclick="return confirm('답변을 삭제하시겠습니까?');">
+                                삭제
+                            </button>
+
+                        </form>
+
+                        <!-- 답변 수정 폼 -->
+                        <form th:id="'comment-edit-form-' + ${comment.no}"
+                              th:action="@{/board/comment/update/{no}(no=${comment.no})}"
+                              method="post"
+                              class="board-comment-edit-form"
+                              style="display:none;">
+
+                            <!-- TOAST UI 수정 에디터가 생성될 영역 -->
+                            <div th:id="'comment-edit-editor-' + ${comment.no}"
+                                 class="comment-edit-editor">
+                            </div>
+
+                            <!-- 기존 답변 HTML 보관 -->
+                            <input type="hidden"
+                                   th:id="'comment-original-content-' + ${comment.no}"
+                                   th:value="${comment.content}">
+
+                            <!-- 수정 완료 시 서버로 전송되는 값 -->
+                            <input type="hidden"
+                                   name="content"
+                                   th:id="'comment-edit-content-' + ${comment.no}">
+
+                            <!-- 빈 답변 오류 -->
+                            <p th:id="'comment-edit-error-' + ${comment.no}"
+                               class="board-form-error"
+                               style="display:none;">
+                                답변 내용을 입력해주세요.
+                            </p>
+
+                            <div class="board-comment-edit-actions">
+
+                                <button type="submit"
+                                        class="board-small-button board-small-save">
+                                    저장
+                                </button>
+
+                                <button type="button"
+                                        class="board-small-button board-small-cancel"
+                                        th:onclick="'hideEditForm(' + ${comment.no} + ')'">
+                                    취소
+                                </button>
+
+                            </div>
+
+                        </form>
+
+                    </div>
+
+                </div>
+
+            </article>
+
+        </div>
+        <!-- 답변 등록 후 이동할 답변 목록 맨 아래 위치 -->
+        <div id="comments-bottom"></div>
 
 
+        <!-- 답변 작성 열기 버튼 -->
+        <section class="answer-write-area">
 
-        <hr>
-
-        <h3>댓글 작성</h3>
-
-        <form action="/board/comment/write" method="post">
-
-            <input type="hidden"
-                    name="boardNo"
-                    th:value="${board.no}">
-
-            <textarea name="content"
-                        rows="3"
-                        cols="50"
-                        placeholder="댓글을 입력하세요"></textarea>
-
-            <br>
-
-            <button type="submit">
-            댓글 등록
+            <button type="button"
+                    id="answer-open-button"
+                    class="answer-open-button"
+                    onclick="openAnswerForm()">
+                답변하기
             </button>
 
-        </form>
+            <!-- 답변 작성창 -->
+            <div id="answer-form-box"
+                 class="answer-form-box"
+                 style="display:none;">
 
-</div>
+                <div class="answer-form-header">
+
+                    <div>
+                        <h3 class="board-comment-write-title">
+                            답변 작성
+                        </h3>
+
+                        <p class="answer-form-description">
+                            질문에 도움이 되는 답변을 작성해주세요.
+                        </p>
+                    </div>
+
+                    <button type="button"
+                            class="answer-close-button"
+                            onclick="closeAnswerForm()">
+                        닫기
+                    </button>
+
+                </div>
+
+                <form id="answer-write-form"
+                      th:action="@{/board/comment/write}"
+                      method="post">
+
+                    <input type="hidden"
+                           name="boardNo"
+                           th:value="${board.no}">
+
+                    <!-- TOAST UI가 표시될 영역 -->
+                    <div id="answer-editor"
+                         class="answer-editor">
+                    </div>
+
+                    <!-- 실제 서버로 전송될 답변 내용 -->
+                    <input type="hidden"
+                           id="answer-content"
+                           name="content">
+
+                    <p id="answer-error"
+                       class="board-form-error"
+                       style="display:none;">
+                        답변 내용을 입력해주세요.
+                    </p>
+
+                    <div class="board-comment-submit-area">
+
+                        <button type="button"
+                                class="board-button board-button-secondary"
+                                onclick="closeAnswerForm()">
+                            취소
+                        </button>
+
+                        <button type="submit"
+                                class="board-button board-button-primary">
+                            답변 등록
+                        </button>
+
+                    </div>
+
+                </form>
+
+            </div>
+
+        </section>
+
+    </section>
+
+</main>
 
 <script>
+    // 댓글 번호별 TOAST UI 수정 에디터 보관
+    const commentEditEditors = {};
+
+    // 답변 수정창 열기
     function showEditForm(commentNo) {
-        const form = document.getElementById("comment-edit-form-" + commentNo);
-        const textarea = form.querySelector("textarea");
+        const form =
+            document.getElementById(
+                "comment-edit-form-" + commentNo
+            );
+
+        const editorElement =
+            document.getElementById(
+                "comment-edit-editor-" + commentNo
+            );
+
+        const originalContentInput =
+            document.getElementById(
+                "comment-original-content-" + commentNo
+            );
 
         form.style.display = "block";
-        textarea.focus();
 
-        textarea.selectionStart = textarea.value.length;
-        textarea.selectionEnd = textarea.value.length;
+        // 해당 답변의 에디터가 아직 없다면 한 번만 생성
+        if (!commentEditEditors[commentNo]) {
+            commentEditEditors[commentNo] =
+                new toastui.Editor({
+                    el: editorElement,
+                    height: "360px",
+                    initialEditType: "wysiwyg",
+                    previewStyle: "vertical",
+                    language: "ko-KR",
+                    initialValue:
+                        originalContentInput.value || "",
+
+                    hooks: {
+                        // 수정 중 이미지 업로드
+                        addImageBlobHook: async function (
+                            blob,
+                            callback
+                        ) {
+                            const formData = new FormData();
+                            formData.append("image", blob);
+
+                            try {
+                                const response = await fetch(
+                                    "/board/image/upload",
+                                    {
+                                        method: "POST",
+                                        body: formData
+                                    }
+                                );
+
+                                const result =
+                                    await response.json();
+
+                                if (!response.ok) {
+                                    throw new Error(
+                                        result.message ||
+                                        "이미지 업로드에 실패했습니다."
+                                    );
+                                }
+
+                                callback(
+                                    result.imageUrl,
+                                    blob.name || "답변 이미지"
+                                );
+
+                            } catch (error) {
+                                alert(error.message);
+                            }
+                        }
+                    }
+                });
+        }
+
+        setTimeout(function () {
+            commentEditEditors[commentNo].focus();
+        }, 100);
+
+        form.scrollIntoView({
+            behavior: "smooth",
+            block: "center"
+        });
     }
 
+    // 답변 수정창 닫기
     function hideEditForm(commentNo) {
-        const form = document.getElementById("comment-edit-form-" + commentNo);
+        const form =
+            document.getElementById(
+                "comment-edit-form-" + commentNo
+            );
+
+        const errorMessage =
+            document.getElementById(
+                "comment-edit-error-" + commentNo
+            );
+
         form.style.display = "none";
+
+        if (errorMessage) {
+            errorMessage.style.display = "none";
+        }
     }
+
+    // 페이지 안의 모든 답변 수정 폼에 제출 이벤트 등록
+    document.querySelectorAll(".board-comment-edit-form")
+        .forEach(function (form) {
+
+            form.addEventListener(
+                "submit",
+                function (event) {
+
+                    // form id 예: comment-edit-form-15
+                    const commentNo =
+                        form.id.replace(
+                            "comment-edit-form-",
+                            ""
+                        );
+
+                    const editor =
+                        commentEditEditors[commentNo];
+
+                    if (!editor) {
+                        event.preventDefault();
+                        return;
+                    }
+
+                    const htmlContent =
+                        editor.getHTML();
+
+                    const plainText = htmlContent
+                        .replace(/<[^>]*>/g, "")
+                        .replace(/&nbsp;/g, "")
+                        .replace(/&#160;/g, "")
+                        .trim();
+
+                    const hasImage =
+                        /<img\s[^>]*src=/i.test(
+                            htmlContent
+                        );
+
+                    const errorMessage =
+                        document.getElementById(
+                            "comment-edit-error-" +
+                            commentNo
+                        );
+
+                    // 글자와 이미지가 모두 없으면 전송 중지
+                    if (!plainText && !hasImage) {
+                        event.preventDefault();
+
+                        errorMessage.style.display =
+                            "block";
+
+                        editor.focus();
+                        return;
+                    }
+
+                    errorMessage.style.display = "none";
+
+                    // 서버로 전송될 hidden input에 HTML 저장
+                    document.getElementById(
+                        "comment-edit-content-" +
+                        commentNo
+                    ).value = htmlContent;
+                }
+            );
+        });
+
+
+    let answerEditor = null;
+
+    // 답변 작성창 열기
+    function openAnswerForm() {
+        const formBox =
+            document.getElementById("answer-form-box");
+
+        const openButton =
+            document.getElementById("answer-open-button");
+
+        formBox.style.display = "block";
+        openButton.style.display = "none";
+
+        // 작성창을 처음 열었을 때만 에디터 생성
+        if (answerEditor === null) {
+            answerEditor = new toastui.Editor({
+                el: document.querySelector("#answer-editor"),
+                height: "420px",
+                initialEditType: "wysiwyg",
+                previewStyle: "vertical",
+                language: "ko-KR",
+                placeholder: "답변을 입력해주세요.",
+
+                hooks: {
+                    addImageBlobHook: async function (blob, callback) {
+                        const formData = new FormData();
+                        formData.append("image", blob);
+
+                        try {
+                            const response = await fetch(
+                                "/board/image/upload",
+                                {
+                                    method: "POST",
+                                    body: formData
+                                }
+                            );
+
+                            const result = await response.json();
+
+                            if (!response.ok) {
+                                throw new Error(
+                                    result.message ||
+                                    "이미지 업로드에 실패했습니다."
+                                );
+                            }
+
+                            callback(
+                                result.imageUrl,
+                                blob.name || "답변 이미지"
+                            );
+
+                        } catch (error) {
+                            alert(error.message);
+                        }
+                    }
+                }
+            });
+        }
+
+        setTimeout(function () {
+            answerEditor.focus();
+        }, 100);
+
+        formBox.scrollIntoView({
+            behavior: "smooth",
+            block: "start"
+        });
+    }
+
+    // 답변 작성창 닫기
+    function closeAnswerForm() {
+        const formBox =
+            document.getElementById("answer-form-box");
+
+        const openButton =
+            document.getElementById("answer-open-button");
+
+        formBox.style.display = "none";
+        openButton.style.display = "flex";
+    }
+
+    // 답변 등록 처리
+    const answerForm =
+        document.getElementById("answer-write-form");
+
+    if (answerForm) {
+        answerForm.addEventListener("submit", function (event) {
+            const htmlContent =
+                answerEditor ? answerEditor.getHTML() : "";
+
+            const plainText = htmlContent
+                .replace(/<[^>]*>/g, "")
+                .replace(/&nbsp;/g, "")
+                .trim();
+
+            const hasImage =
+                /<img\s[^>]*src=/i.test(htmlContent);
+
+            // 글자도 없고 이미지도 없으면 등록 중지
+            if (!plainText && !hasImage) {
+                event.preventDefault();
+
+                const errorMessage =
+                    document.getElementById("answer-error");
+
+                errorMessage.style.display = "block";
+
+                if (answerEditor) {
+                    answerEditor.focus();
+                }
+
+                return;
+            }
+
+            document.getElementById("answer-content").value =
+                htmlContent;
+        });
+    }
+
 </script>
-
-
-
-
-
 
 </body>
 </html>

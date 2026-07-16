@@ -23,8 +23,10 @@ public class SecurityConfig {
                                 "/member/signup", // 회원가입 화면
                                 "/kakao/authorize", //카카오 동의
                                 "/kakao/callback", //카카오 인가 코드 토큰발급
-                                "/css/**", "/js/**", "/images/**" // 정적 파일
+                                "/css/**", "/js/**", "/images/**", // 정적 파일
+                                "/uploads/board-images/**"   //업로드된 이미지 보는 주소 허용(이미지삽입)
                         ).permitAll()
+                        .requestMatchers("/board/image/upload").authenticated() //로그인 사용자만 이미지 업로드가능(이미지삽입)
                         .requestMatchers("/kakao/test-message").hasRole("ADMIN")
                         .requestMatchers("/chat/admin/**").hasRole("ADMIN")
                         .requestMatchers("/chat/**").authenticated()
