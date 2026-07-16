@@ -136,10 +136,11 @@ COMMIT;
 -- [3] 관리자 권한 승격용 선택 SQL
 -- 1. 회원가입 화면에서 계정을 먼저 생성
 -- 2. 아래 '승격할_ID'를 실제 회원 아이디로 변경
+-- 3. 주석 해제 후 실행할 것
 -- ════════════════════════════════════════════════════════════
 
-UPDATE member
-SET role = 'ADMIN'
-WHERE member_id = '승격할_ID';
+-- UPDATE member
+-- SET role = 'ADMIN'
+-- WHERE member_id = '승격할_ID';
 
-COMMIT;
+-- COMMIT;
