@@ -1,0 +1,36 @@
+/* 전체 페이지 가운데 정렬용 컨테이너 */
+.container {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 32px 20px;
+}
+
+/* 2:1 메인 레이아웃 */
+.dashboard-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 2fr) minmax(280px, 1fr);
+    gap: 24px;
+    align-items: start;
+}
+
+/* 왼쪽/오른쪽 컬럼 공통 */
+.widget-column {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+/* 각 영역 제목 */
+.column-title {
+    font-size: 18px;
+    font-weight: bold;
+    margin: 0 0 4px;
+    color: #444;
+}
+
+/* 위젯 목록을 세로 방향으로 배치하고, 위젯 사이 간격을 유지 */
+.widget-list {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}

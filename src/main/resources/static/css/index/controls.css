@@ -1,0 +1,43 @@
+/* 위젯 표시/숨김 관리 박스 */
+.control-box {
+    background: #fff;
+    padding: 20px;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    margin-bottom: 24px;
+    box-shadow: none;
+}
+
+/* 위젯 관리 버튼 묶음 */
+.control-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+/* 모든 버튼 기본 스타일 */
+button {
+    border: none;
+    border-radius: 8px;
+    padding: 8px 12px;
+    cursor: pointer;
+    background: #e5e7eb;
+}
+
+/* 활성화된 위젯 버튼 */
+button.active {
+    background: #2563eb;
+    color: white;
+}
+
+/* 숨김 버튼 */
+button.danger {
+    background: #ef4444;
+    color: white;
+}
+
+/* 비활성화된 이동 버튼 */
+button:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}

@@ -31,7 +31,7 @@ function renderWeatherWidget() {
     </div>
 
     <ul class="weather-weekly">
-        ${(state.weather.weekly ?? []).slice(1, 6).map((day) => `
+        ${(state.weather.weekly ?? []).map((day) => `
             <li class="weather-day">
                 <strong>${escapeHtml(day.day)}</strong>
                 <span class="weather-icon">${getWeatherIcon(day.weatherText)}</span>

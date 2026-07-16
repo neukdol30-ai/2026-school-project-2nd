@@ -1,0 +1,38 @@
+/* 로그인/회원가입 고정 카드 */
+.auth-widget {
+    border: 1px solid #dbeafe;
+}
+
+/* 로그인 영역 내부 정렬 */
+.auth-content {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+/* 로그인 입력창 */
+.auth-input {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    font-family: inherit;
+}
+
+/* 로그인 버튼 */
+.auth-login-button {
+    background: #2563eb;
+    color: white;
+}
+
+/* 회원가입 버튼 */
+.auth-register-button {
+    background: #e5e7eb;
+    color: #222;
+}
+
+/* 로그인 사용자 표시 */
+.auth-user {
+    margin: 0;
+    font-weight: bold;
+}

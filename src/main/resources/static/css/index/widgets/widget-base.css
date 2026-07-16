@@ -1,0 +1,47 @@
+/* 위젯 박스 공통 스타일 */
+.widget {
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: none;
+}
+
+/* 넓은 영역 위젯 */
+.widget.main-widget {
+    min-height: 100px;
+}
+
+/* 좁은 영역 위젯 */
+.widget.side-widget {
+    min-height: 100px;
+}
+
+/* 위젯 상단 제목/버튼 영역 */
+.widget-header {
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 16px;
+}
+
+/* 위젯 제목 */
+.widget-title {
+    font-size: 20px;
+    font-weight: bold;
+    margin-bottom: 4px;
+}
+
+/* 위젯 설명 */
+.widget-desc {
+    font-size: 14px;
+    color: #666;
+}
+
+/* 위젯 이동/숨김/접기 버튼 묶음 */
+.widget-actions {
+    display: flex;
+    align-items: flex-start;
+    gap: 4px;
+    white-space: nowrap;
+}

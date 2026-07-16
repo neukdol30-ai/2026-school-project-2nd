@@ -1,0 +1,42 @@
+/* 현재시간 위젯 */
+.current-time-widget {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 0;
+}
+
+.current-time-date {
+    font-size: 13px;
+    color: #6b7280;
+}
+
+.current-time-clock {
+    font-family: "Courier New", monospace;
+    font-size: 32px;
+    font-weight: 700;
+    line-height: 1;
+    color: #111827;
+}
+
+.sun-time-list {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    width: 100%;
+    gap: 8px;
+}
+
+.sun-time-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 10px;
+    border: 1px solid #e5e7eb;
+    border-radius: 6px;
+    font-size: 13px;
+    color: #6b7280;
+}
+
+.sun-time-item strong {
+    color: #374151;
+}
