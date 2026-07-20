@@ -10,7 +10,6 @@ import com.siyan1234.itproject2nd.member.dto.MemberDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -178,16 +177,11 @@ public class AdminMemberController {
     @GetMapping("/{no}/edit")
     public String memberEditForm(
             @PathVariable("no") Integer no,
-            Model model
+            RedirectAttributes redirectAttributes
     ) {
-        MemberDto member = adminMemberService.findByNo(no);
-
-        if (member == null) {
-            return AdminRoutes.ADMIN_MEMBERS;
-        }
-
-        model.addAttribute("member", member);
-        return "admin/member-edit";
+        redirectAttributes.addAttribute("view", "memberEdit");
+        redirectAttributes.addAttribute("editMemberNo", no);
+        return AdminRoutes.ADMIN_HOME;
     }
 
     @PostMapping("/{no}/edit")

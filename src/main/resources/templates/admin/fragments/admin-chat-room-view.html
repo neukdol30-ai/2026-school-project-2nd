@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<body>
+<section th:fragment="chatRoomView" class="admin-view" th:classappend="${activeView == 'chatRoom'} ? ' active' : ''" id="chatRoomView">
+    <article class="panel full-panel" th:if="${chatRoom != null}">
+        <div class="panel-head with-actions">
+            <div>
+                <span class="eyebrow">Chat Room</span>
+                <h2>상담 상세 #<b th:text="${chatRoom.roomNo}">0</b></h2>
+                <p>관리자 콘솔 안에서 사용자 문의를 실시간으로 응대합니다.</p>
+            </div>
+            <div class="panel-actions">
+                <a th:href="@{/admin(view='chats')}" class="small-link">상담 목록</a>
+                <a th:href="@{/admin(view='dashboard')}" class="small-link">대시보드</a>
+            </div>
+        </div>
+
+        <div class="embedded-chat-room">
+            <aside class="embedded-chat-side">
+                <div class="side-title">
+                    <span th:text="${chatRoom.categoryIcon}">💬</span>
+                    <div>
+                        <h3>상담방 #<b th:text="${chatRoom.roomNo}">0</b></h3>
+                        <p th:text="${chatRoom.categoryName}">기타 문의</p>
+                    </div>
+                </div>
+
+                <div class="info-stack">
+                    <div class="info-card">
+                        <span>사용자 번호</span>
+                        <strong th:text="${chatRoom.userNo != null ? chatRoom.userNo : '탈퇴 회원'}">1</strong>
+                    </div>
+                    <div class="info-card">
+                        <span>담당 관리자</span>
+                        <strong th:text="${chatRoom.adminNo != null ? chatRoom.adminNo : '미배정'}">미배정</strong>
+                    </div>
+                    <div class="info-card">
+                        <span>상담 상태</span>
+                        <strong th:classappend="${chatRoom.status == 'OPEN'} ? ' status-open' : ' status-closed'"
+                                th:text="${chatRoom.status == 'OPEN'} ? '진행 중' : '종료'">진행 중</strong>
+                    </div>
+                    <div class="info-card">
+                        <span>생성 시간</span>
+                        <strong th:text="${chatRoom.createdDate != null ? #temporals.format(chatRoom.createdDate, 'MM-dd HH:mm') : '-'}">-</strong>
+                    </div>
+                </div>
+
+                <div class="side-actions">
+                    <form th:if="${chatRoom.status == 'OPEN'}" th:action="@{/admin/chats/{roomNo}/close(roomNo=${chatRoom.roomNo})}" method="post" onsubmit="return confirm('상담을 종료하시겠습니까? 종료 후에는 메시지를 보낼 수 없습니다.');">
+                        <button type="submit" class="close-btn">상담 종료</button>
+                    </form>
+
+                    <form th:if="${chatRoom.status == 'CLOSED'}" th:action="@{/admin/chats/{roomNo}/delete(roomNo=${chatRoom.roomNo})}" method="post" onsubmit="return confirm('상담방과 메시지가 모두 삭제됩니다. 정말 삭제하시겠습니까?');">
+                        <button type="submit" class="delete-btn">상담방 삭제</button>
+                    </form>
+                </div>
+            </aside>
+
+            <section class="embedded-chat-panel">
+                <header class="chat-header">
+                    <div>
+                        <span class="eyebrow">Admin Reply</span>
+                        <h3>사용자 문의 응대</h3>
+                        <p>왼쪽은 사용자 메시지, 오른쪽은 관리자 답변입니다.</p>
+                    </div>
+                    <span class="category-chip">
+                        <span th:text="${chatRoom.categoryIcon}">💬</span>
+                        <b th:text="${chatRoom.categoryName}">기타 문의</b>
+                    </span>
+                </header>
+
+                <div class="notice-bar">상담 종료 전까지 실시간 답변이 가능합니다. 종료 후에는 입력창이 자동 비활성화됩니다.</div>
+                <div id="chatBody" class="chat-body"></div>
+
+                <div class="chat-input-box">
+                    <input type="text" id="messageInput" th:placeholder="${chatRoom.status == 'CLOSED'} ? '상담이 종료되었습니다.' : '답변을 입력하세요'" th:disabled="${chatRoom.status == 'CLOSED'}">
+                    <button type="button" id="sendBtn" th:disabled="${chatRoom.status == 'CLOSED'}">전송</button>
+                </div>
+            </section>
+        </div>
+    </article>
+</section>
+</body>
+</html>

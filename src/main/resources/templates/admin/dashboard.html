@@ -17,8 +17,12 @@
         <th:block th:replace="~{admin/fragments/admin-topbar :: topbar}"></th:block>
         <th:block th:replace="~{admin/fragments/admin-flash :: flash}"></th:block>
         <th:block th:replace="~{admin/fragments/admin-dashboard-view :: dashboardView}"></th:block>
-        <th:block th:replace="~{admin/fragments/admin-chat-view :: chatManageView}"></th:block>
         <th:block th:replace="~{admin/fragments/admin-member-view :: memberManageView}"></th:block>
+        <th:block th:replace="~{admin/fragments/admin-member-edit-view :: memberEditView}"></th:block>
+        <th:block th:replace="~{admin/fragments/admin-chat-view :: chatManageView}"></th:block>
+        <th:block th:replace="~{admin/fragments/admin-chat-room-view :: chatRoomView}"></th:block>
+        <th:block th:replace="~{admin/fragments/admin-board-view :: boardManageView}"></th:block>
+        <th:block th:replace="~{admin/fragments/admin-visit-view :: visitManageView}"></th:block>
         <th:block th:replace="~{admin/fragments/admin-service-view :: serviceManageView}"></th:block>
     </main>
 </div>
@@ -36,6 +40,14 @@
 <script th:src="@{/js/admin/admin-browser-notification.js}"></script>
 <script th:src="@{/js/admin/admin-chat-realtime.js}"></script>
 <script th:src="@{/js/admin-dashboard.js}"></script>
+<script th:if="${activeView == 'chatRoom' and chatRoom != null}" th:inline="javascript">
+    const roomNo = /*[[${chatRoom.roomNo}]]*/ 0;
+    const senderNo = /*[[${loginUser.no}]]*/ 0;
+    const loginRole = /*[[${loginUser.role}]]*/ "ADMIN";
+    const roomUserNo = /*[[${chatRoom.userNo}]]*/ 0;
+    const roomStatus = /*[[${chatRoom.status}]]*/ "OPEN";
+</script>
+<script th:if="${activeView == 'chatRoom' and chatRoom != null}" th:src="@{/js/chat.js}"></script>
 <script th:src="@{/js/cookie-consent.js}"></script>
 </body>
 </html>

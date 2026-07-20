@@ -20,11 +20,15 @@ public final class AdminFlashMessage {
     public static final String MEMBER_ROLE_SELF_DENIED = "현재 로그인 중인 관리자 본인의 권한은 변경할 수 없습니다.";
     public static final String MEMBER_ROLE_BANNED_DENIED = "정지된 회원에게는 ADMIN 권한을 부여할 수 없습니다. 먼저 정지를 해제해 주세요.";
     public static final String MEMBER_ROLE_CHANGE_FAILED = "회원 권한 변경에 실패했습니다.";
-    public static final String MEMBER_ROLE_LAST_ADMIN_DENIED = "마지막 남은 관리자 계정은 USER 권한으로 변경할 수 없습니다.";
+    public static final String MEMBER_ROLE_LAST_ADMIN_DENIED = "마지막 남은 활성 관리자 계정은 USER로 변경할 수 없습니다.";
     public static final String MEMBER_BAN_SELF_DENIED = "현재 로그인 중인 관리자 본인 계정은 정지할 수 없습니다.";
     public static final String MEMBER_BAN_ADMIN_DENIED = "관리자 계정은 바로 정지할 수 없습니다. 먼저 USER 권한으로 전환한 뒤 처리해 주세요.";
     public static final String MEMBER_BAN_FAILED = "회원 정지 처리에 실패했습니다.";
     public static final String MEMBER_UNBAN_FAILED = "회원 정지 해제에 실패했습니다.";
+
+    public static final String BOARD_DELETE_NOT_SELECTED = "삭제할 게시글을 선택해 주세요.";
+    public static final String BOARD_DELETE_NOT_FOUND = "삭제할 게시글을 찾을 수 없습니다.";
+    public static final String BOARD_DELETE_NO_RESULT = "삭제된 게시글이 없습니다.";
 
     private AdminFlashMessage() {
     }
@@ -65,6 +69,15 @@ public final class AdminFlashMessage {
 
     public static String memberUnbanned(Integer memberNo) {
         return "회원 #" + memberNo + "번의 정지를 해제했습니다.";
+    }
+
+    public static String boardDeleted(Long boardNo) {
+        return "게시글 #" + boardNo + "번을 삭제했습니다.";
+    }
+
+    public static String selectedBoardsDeleted(AdminDeleteResultDto result) {
+        return "게시글 " + result.getDeletedCount() + "건을 삭제했습니다."
+                + skippedSuffix(result, " 제외된 게시글 ", "건이 있습니다.");
     }
 
     private static String skippedSuffix(AdminDeleteResultDto result, String prefix, String suffix) {

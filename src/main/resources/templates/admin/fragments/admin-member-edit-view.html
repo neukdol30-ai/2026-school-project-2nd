@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<body>
+<section th:fragment="memberEditView" class="admin-view" th:classappend="${activeView == 'memberEdit'} ? ' active' : ''" id="memberEditView">
+    <article class="panel full-panel" th:if="${editMember != null}">
+        <div class="panel-head with-actions">
+            <div>
+                <span class="eyebrow">Member Edit</span>
+                <h2>회원 정보 수정</h2>
+                <p>관리자 콘솔 안에서 회원 기본 정보를 수정합니다. 권한과 정지는 회원 관리 목록에서 처리합니다.</p>
+            </div>
+            <a th:href="@{/admin(view='members')}" class="small-link">회원 목록</a>
+        </div>
+
+        <form class="admin-edit-form" th:action="@{/admin/members/{no}/edit(no=${editMember.no})}" th:object="${editMember}" method="post">
+            <div class="edit-summary-card">
+                <div class="modal-avatar" th:text="${editMember.nickname != null and !#strings.isEmpty(editMember.nickname) ? #strings.substring(editMember.nickname, 0, 1) : 'U'}">U</div>
+                <div>
+                    <strong th:text="${editMember.memberId}">user01</strong>
+                    <span th:text="${editMember.email != null and !#strings.isEmpty(editMember.email) ? editMember.email : '이메일 미등록'}">email</span>
+                </div>
+            </div>
+
+            <div class="admin-form-grid">
+                <label>
+                    <span>회원번호</span>
+                    <input type="text" th:value="${editMember.no}" readonly>
+                </label>
+                <label>
+                    <span>아이디</span>
+                    <input type="text" th:value="${editMember.memberId}" readonly>
+                </label>
+                <label>
+                    <span>권한</span>
+                    <input type="text" th:value="${editMember.role}" readonly>
+                </label>
+                <label>
+                    <span>이름</span>
+                    <input type="text" th:field="*{name}">
+                </label>
+                <label>
+                    <span>닉네임</span>
+                    <input type="text" th:field="*{nickname}">
+                </label>
+                <label>
+                    <span>이메일</span>
+                    <input type="email" th:field="*{email}">
+                </label>
+                <label>
+                    <span>전화번호</span>
+                    <input type="text" th:field="*{phone}">
+                </label>
+                <label>
+                    <span>우편번호</span>
+                    <input type="text" th:field="*{postcode}">
+                </label>
+                <label class="wide-field">
+                    <span>주소</span>
+                    <input type="text" th:field="*{address}">
+                </label>
+                <label class="wide-field">
+                    <span>상세주소</span>
+                    <input type="text" th:field="*{detailAddress}">
+                </label>
+                <label>
+                    <span>성별</span>
+                    <select th:field="*{gender}">
+                        <option value="">선택 안 함</option>
+                        <option value="M">남성</option>
+                        <option value="F">여성</option>
+                    </select>
+                </label>
+            </div>
+
+            <div class="form-actions-row">
+                <a th:href="@{/admin(view='members')}" class="ghost-button form-link-button">취소</a>
+                <button type="submit" class="primary-button">수정 저장</button>
+            </div>
+        </form>
+    </article>
+</section>
+</body>
+</html>

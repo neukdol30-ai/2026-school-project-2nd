@@ -9,8 +9,10 @@
         document.addEventListener("click", function (event) {
             const deleteSelectedMembersButton = event.target.closest("#deleteSelectedMembers");
             const deleteSelectedChatsButton = event.target.closest("#deleteSelectedChats");
+            const deleteSelectedBoardsButton = event.target.closest("#deleteSelectedBoards");
             const memberDeleteButton = event.target.closest("[data-member-delete-button]");
             const chatDeleteButton = event.target.closest("[data-chat-delete-button]");
+            const boardDeleteButton = event.target.closest("[data-board-delete-button]");
 
             if (deleteSelectedMembersButton) {
                 handleDeleteSelectedMembers();
@@ -22,6 +24,11 @@
                 return;
             }
 
+            if (deleteSelectedBoardsButton) {
+                handleDeleteSelectedBoards();
+                return;
+            }
+
             if (memberDeleteButton) {
                 handleDeleteOneMember(memberDeleteButton);
                 return;
@@ -29,6 +36,11 @@
 
             if (chatDeleteButton) {
                 handleDeleteOneChat(chatDeleteButton);
+                return;
+            }
+
+            if (boardDeleteButton) {
+                handleDeleteOneBoard(boardDeleteButton);
             }
         });
     }
@@ -63,6 +75,22 @@
         Admin.submitPostForm("/admin/chats/delete", "roomNoList", selectedValues);
     }
 
+
+    function handleDeleteSelectedBoards() {
+        const selectedValues = Admin.getCheckedValues(".board-row-checkbox");
+
+        if (selectedValues.length === 0) {
+            alert("삭제할 게시글을 선택해 주세요.");
+            return;
+        }
+
+        if (!confirm("선택한 게시글 " + selectedValues.length + "건을 삭제하시겠습니까?")) {
+            return;
+        }
+
+        Admin.submitPostForm("/admin/boards/delete", "boardNoList", selectedValues);
+    }
+
     function handleDeleteOneMember(button) {
         const memberNo = button.dataset.memberNo;
         const memberId = button.dataset.memberId || memberNo;
@@ -90,6 +118,21 @@
         }
 
         Admin.submitPostForm("/admin/chats/" + encodeURIComponent(roomNo) + "/delete");
+    }
+
+
+    function handleDeleteOneBoard(button) {
+        const boardNo = button.dataset.boardNo;
+
+        if (!boardNo) {
+            return;
+        }
+
+        if (!confirm("게시글 #" + boardNo + "번을 삭제하시겠습니까?")) {
+            return;
+        }
+
+        Admin.submitPostForm("/admin/boards/" + encodeURIComponent(boardNo) + "/delete");
     }
 
     Admin.Delete = {

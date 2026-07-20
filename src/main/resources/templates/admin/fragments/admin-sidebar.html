@@ -60,34 +60,30 @@
                 <span>🏠</span>
                 <em>대시보드</em>
             </a>
-            <a th:href="@{/admin(view='chats')}"
-               class="menu-item"
-               th:classappend="${activeView == 'chats'} ? ' active' : ''">
-                <span>💬</span>
-                <em>상담 관리</em>
-            </a>
+            <p class="menu-label">DB 데이터 관리형</p>
             <a th:href="@{/admin(view='members')}"
                class="menu-item"
-               th:classappend="${activeView == 'members'} ? ' active' : ''">
+               th:classappend="${activeView == 'members' or activeView == 'memberEdit'} ? ' active' : ''">
                 <span>👥</span>
                 <em>회원 관리</em>
             </a>
-
-            <p class="menu-label">DB 데이터 관리형</p>
-            <a href="#" class="menu-item disabled" title="다음 단계에서 관리자 URL로 연결 예정입니다.">
+            <a th:href="@{/admin(view='chats')}"
+               class="menu-item"
+               th:classappend="${activeView == 'chats' or activeView == 'chatRoom'} ? ' active' : ''">
+                <span>💬</span>
+                <em>상담 관리</em>
+            </a>
+            <a th:href="@{/admin(view='boards')}"
+               class="menu-item"
+               th:classappend="${activeView == 'boards'} ? ' active' : ''">
                 <span>📝</span>
                 <em>게시글 관리</em>
-                <small>예정</small>
             </a>
-            <a href="#" class="menu-item disabled" title="상담 만족도 기능 추가 후 활성화 예정입니다.">
-                <span>⭐</span>
-                <em>만족도 관리</em>
-                <small>예정</small>
-            </a>
-            <a href="#" class="menu-item disabled" title="방문 기록 목록/통계는 다음 단계에서 연결 예정입니다.">
+            <a th:href="@{/admin(view='visits')}"
+               class="menu-item"
+               th:classappend="${activeView == 'visits'} ? ' active' : ''">
                 <span>📊</span>
                 <em>방문 기록</em>
-                <small>예정</small>
             </a>
 
             <p class="menu-label">외부 서비스 상태</p>
