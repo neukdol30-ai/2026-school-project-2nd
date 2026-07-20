@@ -5,6 +5,9 @@ import com.siyan1234.itproject2nd.admin.dto.AdminBoardDto;
 import com.siyan1234.itproject2nd.admin.dto.AdminDeleteResultDto;
 import com.siyan1234.itproject2nd.admin.support.AdminFlashMessage;
 import com.siyan1234.itproject2nd.admin.support.AdminPagingHelper;
+
+import com.siyan1234.itproject2nd.board.dto.BoardCommentDto;
+import com.siyan1234.itproject2nd.board.service.BoardCommentService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,6 +25,7 @@ public class AdminBoardService {
     private static final String ANSWER_ANSWERED = "ANSWERED";
 
     private final AdminBoardDao adminBoardDao;
+    private final BoardCommentService boardCommentService;
 
     @Transactional(readOnly = true)
     public List<AdminBoardDto> findBoards(String category, String keyword, int page, int size) {
@@ -67,6 +71,62 @@ public class AdminBoardService {
         return adminBoardDao.updateBoard(boardDto);
     }
 
+
+    @Transactional
+    public int createAnswer(Long boardNo, BoardCommentDto commentDto, Integer writerNo) {
+        AdminBoardDto board = validateAnswerTarget(boardNo);
+
+        if (commentDto == null) {
+            throw new IllegalArgumentException(AdminFlashMessage.BOARD_ANSWER_CONTENT_REQUIRED);
+        }
+
+        commentDto.setBoardNo(board.getNo());
+        commentDto.setWriterNo(writerNo);
+
+        int insertedCount = boardCommentService.insert(commentDto);
+        if (insertedCount > 0) {
+            adminBoardDao.updateAnswerStatus(boardNo, ANSWER_ANSWERED);
+        }
+        return insertedCount;
+    }
+
+    @Transactional
+    public int updateAnswer(Long boardNo, Long answerNo, BoardCommentDto commentDto) {
+        validateAnswerTarget(boardNo);
+
+        BoardCommentDto origin = boardCommentService.findByNo(answerNo);
+        if (origin == null || !boardNo.equals(origin.getBoardNo())) {
+            return 0;
+        }
+
+        commentDto.setNo(answerNo);
+        commentDto.setBoardNo(boardNo);
+        commentDto.setWriterNo(origin.getWriterNo());
+
+        int updatedCount = boardCommentService.update(commentDto);
+        if (updatedCount > 0) {
+            adminBoardDao.updateAnswerStatus(boardNo, ANSWER_ANSWERED);
+        }
+        return updatedCount;
+    }
+
+    @Transactional
+    public int deleteAnswer(Long boardNo, Long answerNo) {
+        validateAnswerTarget(boardNo);
+
+        BoardCommentDto origin = boardCommentService.findByNo(answerNo);
+        if (origin == null || !boardNo.equals(origin.getBoardNo())) {
+            return 0;
+        }
+
+        int deletedCount = boardCommentService.delete(answerNo);
+        if (deletedCount > 0) {
+            long answerCount = adminBoardDao.countBoardAnswers(boardNo);
+            adminBoardDao.updateAnswerStatus(boardNo, answerCount > 0 ? ANSWER_ANSWERED : ANSWER_WAITING);
+        }
+        return deletedCount;
+    }
+
     @Transactional
     public int deleteBoard(Long boardNo) {
         if (boardNo == null) {
@@ -86,6 +146,25 @@ public class AdminBoardService {
             deletedCount += deleteBoard(boardNo);
         }
         return new AdminDeleteResultDto(boardNoList.size(), deletedCount, boardNoList.size() - deletedCount);
+    }
+
+
+
+    private AdminBoardDto validateAnswerTarget(Long boardNo) {
+        if (boardNo == null) {
+            throw new IllegalArgumentException(AdminFlashMessage.BOARD_ANSWER_TARGET_NOT_FOUND);
+        }
+
+        AdminBoardDto board = adminBoardDao.findByNo(boardNo);
+        if (board == null) {
+            throw new IllegalArgumentException(AdminFlashMessage.BOARD_ANSWER_TARGET_NOT_FOUND);
+        }
+
+        if (CATEGORY_NOTICE.equalsIgnoreCase(board.getCategory())) {
+            throw new IllegalArgumentException(AdminFlashMessage.BOARD_ANSWER_NOTICE_DENIED);
+        }
+
+        return board;
     }
 
     private void prepareForSave(AdminBoardDto boardDto) {

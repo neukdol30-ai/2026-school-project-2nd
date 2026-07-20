@@ -512,3 +512,114 @@
     font-size: 12px;
     font-weight: 800;
 }
+
+/* 관리자 문의 답변 등록/수정 */
+.admin-answer-form {
+    display: grid;
+    gap: 14px;
+    margin-bottom: 18px;
+    padding: 20px;
+    border: 1px solid rgba(79, 99, 246, 0.18);
+    border-radius: 20px;
+    background: linear-gradient(135deg, #f8fbff, #f7f8ff);
+}
+
+.answer-form-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+}
+
+.answer-form-head strong {
+    display: block;
+    color: var(--admin-text);
+    font-size: 18px;
+    font-weight: 900;
+}
+
+.answer-form-head span {
+    display: block;
+    margin-top: 4px;
+    color: var(--admin-muted);
+    font-size: 13px;
+    font-weight: 800;
+}
+
+.admin-answer-form textarea,
+.answer-edit-box textarea {
+    width: 100%;
+    padding: 14px;
+    border: 1px solid var(--admin-line);
+    border-radius: 14px;
+    color: var(--admin-text);
+    background: #ffffff;
+    font: inherit;
+    font-weight: 700;
+    line-height: 1.7;
+    resize: vertical;
+    outline: none;
+}
+
+.admin-answer-form textarea:focus,
+.answer-edit-box textarea:focus {
+    border-color: rgba(79, 99, 246, 0.58);
+    box-shadow: 0 0 0 4px rgba(79, 99, 246, 0.10);
+}
+
+.answer-action-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    margin-top: 16px;
+    padding-top: 14px;
+    border-top: 1px solid var(--admin-line);
+}
+
+.answer-edit-box {
+    flex: 1;
+    border: 1px solid var(--admin-line);
+    border-radius: 14px;
+    background: #f8fafc;
+}
+
+.answer-edit-box summary {
+    padding: 12px 14px;
+    color: var(--admin-primary);
+    font-size: 13px;
+    font-weight: 900;
+    cursor: pointer;
+}
+
+.answer-edit-box form {
+    display: grid;
+    gap: 10px;
+    padding: 0 14px 14px;
+}
+
+.answer-edit-actions {
+    display: flex;
+    justify-content: flex-end;
+}
+
+.inline-delete-form {
+    margin: 0;
+}
+
+.answer-action-row .danger-button {
+    min-height: 42px;
+    white-space: nowrap;
+}
+
+@media (max-width: 760px) {
+    .answer-form-head,
+    .answer-action-row {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .answer-form-head .primary-button,
+    .answer-action-row .danger-button {
+        width: 100%;
+    }
+}

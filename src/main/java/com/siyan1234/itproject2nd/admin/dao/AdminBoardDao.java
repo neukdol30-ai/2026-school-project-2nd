@@ -28,5 +28,12 @@ public interface AdminBoardDao {
 
     int updateBoard(AdminBoardDto boardDto);
 
+    int updateAnswerStatus(
+            @Param("boardNo") Long boardNo,
+            @Param("answerStatus") String answerStatus
+    );
+
+    long countBoardAnswers(@Param("boardNo") Long boardNo);
+
     int deleteBoard(@Param("boardNo") Long boardNo);
 }

@@ -111,6 +111,21 @@
         WHERE no = #{no, jdbcType=BIGINT}
     </update>
 
+
+    <update id="updateAnswerStatus">
+        UPDATE board
+        SET
+            answer_status = #{answerStatus, jdbcType=VARCHAR},
+            modified_date = SYSTIMESTAMP
+        WHERE no = #{boardNo, jdbcType=BIGINT}
+    </update>
+
+    <select id="countBoardAnswers" resultType="long">
+        SELECT COUNT(*)
+        FROM board_comment
+        WHERE board_no = #{boardNo, jdbcType=BIGINT}
+    </select>
+
     <delete id="deleteBoard">
         DELETE FROM board
         WHERE no = #{boardNo}

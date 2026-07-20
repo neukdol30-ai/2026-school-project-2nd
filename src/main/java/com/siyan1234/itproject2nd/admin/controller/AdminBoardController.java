@@ -5,6 +5,7 @@ import com.siyan1234.itproject2nd.admin.dto.AdminDeleteResultDto;
 import com.siyan1234.itproject2nd.admin.service.AdminBoardService;
 import com.siyan1234.itproject2nd.admin.support.AdminFlashMessage;
 import com.siyan1234.itproject2nd.admin.support.AdminRoutes;
+import com.siyan1234.itproject2nd.board.dto.BoardCommentDto;
 import com.siyan1234.itproject2nd.member.dto.CustomUserDetails;
 import com.siyan1234.itproject2nd.member.dto.MemberDto;
 import lombok.RequiredArgsConstructor;
@@ -107,6 +108,72 @@ public class AdminBoardController {
             redirectAttributes.addFlashAttribute("adminErrorMessage", e.getMessage());
             return AdminRoutes.boardEdit(boardNo);
         }
+    }
+
+
+    @PostMapping("/{boardNo}/answers")
+    public String createAnswer(
+            @PathVariable("boardNo") Long boardNo,
+            @ModelAttribute BoardCommentDto commentDto,
+            @AuthenticationPrincipal CustomUserDetails customUserDetails,
+            RedirectAttributes redirectAttributes
+    ) {
+        MemberDto loginAdmin = customUserDetails == null ? null : customUserDetails.getMemberDto();
+        Integer writerNo = loginAdmin == null ? null : loginAdmin.getNo();
+
+        try {
+            int insertedCount = adminBoardService.createAnswer(boardNo, commentDto, writerNo);
+            if (insertedCount == 0) {
+                redirectAttributes.addFlashAttribute("adminErrorMessage", AdminFlashMessage.BOARD_ANSWER_SAVE_FAILED);
+            } else {
+                redirectAttributes.addFlashAttribute("adminMessage", AdminFlashMessage.boardAnswerCreated(boardNo));
+            }
+        } catch (IllegalArgumentException e) {
+            redirectAttributes.addFlashAttribute("adminErrorMessage", e.getMessage());
+        }
+
+        return AdminRoutes.boardDetail(boardNo);
+    }
+
+    @PostMapping("/{boardNo}/answers/{answerNo}/edit")
+    public String updateAnswer(
+            @PathVariable("boardNo") Long boardNo,
+            @PathVariable("answerNo") Long answerNo,
+            @ModelAttribute BoardCommentDto commentDto,
+            RedirectAttributes redirectAttributes
+    ) {
+        try {
+            int updatedCount = adminBoardService.updateAnswer(boardNo, answerNo, commentDto);
+            if (updatedCount == 0) {
+                redirectAttributes.addFlashAttribute("adminErrorMessage", AdminFlashMessage.BOARD_ANSWER_NOT_FOUND);
+            } else {
+                redirectAttributes.addFlashAttribute("adminMessage", AdminFlashMessage.boardAnswerUpdated(answerNo));
+            }
+        } catch (IllegalArgumentException e) {
+            redirectAttributes.addFlashAttribute("adminErrorMessage", e.getMessage());
+        }
+
+        return AdminRoutes.boardDetail(boardNo);
+    }
+
+    @PostMapping("/{boardNo}/answers/{answerNo}/delete")
+    public String deleteAnswer(
+            @PathVariable("boardNo") Long boardNo,
+            @PathVariable("answerNo") Long answerNo,
+            RedirectAttributes redirectAttributes
+    ) {
+        try {
+            int deletedCount = adminBoardService.deleteAnswer(boardNo, answerNo);
+            if (deletedCount == 0) {
+                redirectAttributes.addFlashAttribute("adminErrorMessage", AdminFlashMessage.BOARD_ANSWER_NOT_FOUND);
+            } else {
+                redirectAttributes.addFlashAttribute("adminMessage", AdminFlashMessage.boardAnswerDeleted(answerNo));
+            }
+        } catch (IllegalArgumentException e) {
+            redirectAttributes.addFlashAttribute("adminErrorMessage", e.getMessage());
+        }
+
+        return AdminRoutes.boardDetail(boardNo);
     }
 
     @PostMapping("/{boardNo}/delete")

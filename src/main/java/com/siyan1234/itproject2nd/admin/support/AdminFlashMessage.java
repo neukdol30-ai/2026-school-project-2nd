@@ -33,6 +33,11 @@ public final class AdminFlashMessage {
     public static final String BOARD_SAVE_CONTENT_REQUIRED = "게시글 내용을 입력해 주세요.";
     public static final String BOARD_SAVE_FAILED = "게시글 저장에 실패했습니다.";
     public static final String BOARD_UPDATE_NOT_FOUND = "수정할 게시글을 찾을 수 없습니다.";
+    public static final String BOARD_ANSWER_TARGET_NOT_FOUND = "답변을 등록할 게시글을 찾을 수 없습니다.";
+    public static final String BOARD_ANSWER_NOTICE_DENIED = "공지사항에는 답변을 등록할 수 없습니다.";
+    public static final String BOARD_ANSWER_CONTENT_REQUIRED = "답변 내용을 입력해 주세요.";
+    public static final String BOARD_ANSWER_SAVE_FAILED = "답변 등록에 실패했습니다.";
+    public static final String BOARD_ANSWER_NOT_FOUND = "답변을 찾을 수 없습니다.";
 
     private AdminFlashMessage() {
     }
@@ -90,6 +95,18 @@ public final class AdminFlashMessage {
     public static String selectedBoardsDeleted(AdminDeleteResultDto result) {
         return "게시글 " + result.getDeletedCount() + "건을 삭제했습니다."
                 + skippedSuffix(result, " 제외된 게시글 ", "건이 있습니다.");
+    }
+
+    public static String boardAnswerCreated(Long boardNo) {
+        return "게시글 #" + boardNo + "번에 답변을 등록했습니다.";
+    }
+
+    public static String boardAnswerUpdated(Long answerNo) {
+        return "답변 #" + answerNo + "번을 수정했습니다.";
+    }
+
+    public static String boardAnswerDeleted(Long answerNo) {
+        return "답변 #" + answerNo + "번을 삭제했습니다.";
     }
 
     private static String skippedSuffix(AdminDeleteResultDto result, String prefix, String suffix) {
