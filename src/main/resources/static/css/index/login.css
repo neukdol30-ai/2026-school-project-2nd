@@ -1,38 +1,56 @@
-/* 로그인/회원가입 고정 카드 */
+/* 상단 우측 로그인 카드 */
 .auth-widget {
-    border: 1px solid #dbeafe;
+    border: 1px solid #e5e7eb;
 }
 
-/* 로그인 영역 내부 정렬 */
-.auth-content {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
+/* 비로그인 상태 로그인 카드 */
+.auth-logged-out {
+    display: grid;
+    grid-template-rows: 1fr auto 1fr;
+    align-items: center;
+    min-height: 140px;
+    padding: 16px;
+    box-sizing: border-box;
+    row-gap: 10px;
 }
 
-/* 로그인 입력창 */
-.auth-input {
-    width: 100%;
-    padding: 10px 12px;
-    border: 1px solid #ddd;
-    border-radius: 10px;
-    font-family: inherit;
-}
-
-/* 로그인 버튼 */
-.auth-login-button {
-    background: #2563eb;
-    color: white;
-}
-
-/* 회원가입 버튼 */
-.auth-register-button {
-    background: #e5e7eb;
-    color: #222;
-}
-
-/* 로그인 사용자 표시 */
-.auth-user {
+/* 로그인 안내 문구 */
+.auth-message {
     margin: 0;
+    color: #6b7280;
+    font-size: 12px;
+    text-align: center;
+}
+
+/* 중앙 로그인 버튼 */
+.auth-login-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    min-height: 42px;
+    background: #14b4ff;
+    border-radius: 6px;
+    color: #ffffff;
     font-weight: bold;
+    text-decoration: none;
+}
+
+/* 아이디 찾기 / 비밀번호 찾기 / 회원가입 링크 */
+.auth-links {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    row-gap: 6px;
+}
+
+.auth-links a {
+    padding: 0 10px;
+    color: #6b7280;
+    font-size: 11px;
+    text-decoration: none;
+}
+
+.auth-links a + a {
+    border-left: 1px solid #d1d5db;
 }

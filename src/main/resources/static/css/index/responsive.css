@@ -8,3 +8,30 @@
         flex-direction: column;
     }
 }
+
+/* 상단 영역: 중간 화면에서는 로고를 첫 줄 전체로 배치 */
+@media (max-width: 1000px) {
+    .dashboard-header {
+        grid-template-columns: 300px 300px;
+        grid-template-areas:
+            "logo logo"
+            "widget auth";
+        justify-content: space-between;
+    }
+
+    .header-logo-slot {
+        min-height: 80px;
+    }
+}
+
+/* 작은 화면에서는 상단 영역을 한 줄씩 배치 */
+@media (max-width: 650px) {
+    .dashboard-header {
+        grid-template-columns: minmax(0, 300px);
+        grid-template-areas:
+            "logo"
+            "widget"
+            "auth";
+        justify-content: center;
+    }
+}
