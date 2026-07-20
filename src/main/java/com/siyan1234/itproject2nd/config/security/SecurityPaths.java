@@ -25,6 +25,12 @@ public final class SecurityPaths {
             "/member/signup", // 회원가입 화면
             "/member/exists", // 아이디 중복 확인
             "/member/exists-nickname", // 닉네임 중복 확인(회원가입 중 = 로그인 전에도 호출) 없으면 403
+            // 비로그인 사용자 요청 -> Spring Security 필터 검사 -> PUBLIC_MATCHERS에 포함된 주소면 통과 -> 이후 MemberController가 요청 처리
+            "/member/find-id", // 아이디 찾기 화면에 비로그인 사용자 접근 허용
+            "/member/find-id/**", // 아이디 찾기 인증번호 발송·확인·결과 주소 접근 허용
+            "/member/find-password", // 비밀번호 찾기 화면에 비로그인 사용자 접근 허용
+            "/member/find-password/**", // 비밀번호 찾기 인증번호 발송·확인 주소 접근 허용
+            "/member/reset-password", // 새 비밀번호 입력 화면과 변경 요청 접근 허용
             "/admin/login", // 관리자 로그인 화면
             "/kakao/authorize", // 카카오 동의
             "/kakao/callback", // 카카오 인가 코드 토큰발급

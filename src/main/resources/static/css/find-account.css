@@ -1,0 +1,130 @@
+/* src/main/resources/static/css/find-account.css */
+/* find-id.html, find-id-result.html, find-password.html, reset-password.html 이 파일이 공용으로 사용 */
+/* login.css와 같은 색상·폰트·여백 값을 그대로 맞춰서, 화면이 바뀌어도 같은 사이트처럼 보이게 함 */
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    min-height: 100vh;
+    font-family: Arial, "Noto Sans KR", sans-serif;
+    background-color: #f4f6f8;
+    color: #222;
+}
+
+.page-wrap { /* 박스를 화면 가운데로 밀어주는 바깥 div */
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 40px 16px;
+}
+
+.find-box { /* 흰색 카드 박스 */
+    width: 100%;
+    max-width: 420px;
+    background-color: #fff;
+    border: 1px solid #ddd;
+    border-radius: 12px;
+    padding: 32px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+}
+
+.page-title {
+    margin: 0 0 12px;
+    text-align: center;
+    font-size: 28px;
+    font-weight: 700;
+}
+
+.page-desc {
+    margin: 0 0 28px;
+    text-align: center;
+    font-size: 14px;
+    color: #666;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-label {
+    display: block;
+    margin-bottom: 8px;
+    font-size: 14px;
+    font-weight: 700;
+}
+
+.input-row {
+    display: flex;
+    gap: 8px;
+}
+
+.form-input {
+    flex: 1;
+    height: 44px;
+    padding: 0 12px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 15px;
+    outline: none;
+}
+
+.side-button {
+    flex-shrink: 0;
+    height: 44px;
+    padding: 0 16px;
+    border: none;
+    border-radius: 6px;
+    background-color: #222;
+    color: #fff;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    white-space: nowrap;
+}
+
+.side-button:hover {
+    background-color: #444;
+}
+
+.side-button:disabled {
+    background-color: #aaa;
+    cursor: not-allowed;
+}
+
+.check-msg {
+    display: block;
+    margin-top: 6px;
+    font-size: 13px;
+}
+
+.check-ok {
+    color: #176b35;
+}
+
+.check-fail {
+    color: #b42318;
+}
+
+.check-hint {
+    color: #888;
+}
+
+.bottom-link {
+    margin-top: 24px;
+    text-align: center;
+    font-size: 14px;
+}
+
+.bottom-link a {
+    color: #222;
+    font-weight: 700;
+    text-decoration: none;
+}
+
+.bottom-link a:hover {
+    text-decoration: underline;
+}
