@@ -14,6 +14,7 @@ const verifyMsg = document.getElementById('verifyMsg');
 
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
+// 1단계 : 인증번호 발송 버튼
 sendBtn.addEventListener('click', function () {
     const email = emailInput.value.trim();
 
@@ -49,6 +50,7 @@ sendBtn.addEventListener('click', function () {
         });
 });
 
+// 2단계 : 인증번호 확인 버튼
 verifyBtn.addEventListener('click', function () {
     const email = emailInput.value.trim();
     const code = codeInput.value.trim();

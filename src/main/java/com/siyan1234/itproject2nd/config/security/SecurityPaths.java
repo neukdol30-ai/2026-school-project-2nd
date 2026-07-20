@@ -37,6 +37,7 @@ public final class SecurityPaths {
             "/css/**",
             "/js/**",
             "/images/**",
+            "/favicon.ico", // 브라우저가 탭 아이콘용으로 자동 요청하는 주소. 우리가 링크한 적 없어도 매 페이지마다 요청됨. 없으면 비로그인 상태에서 302로 로그인 화면에 튕겨 요청 2건이 낭비되고 탭 아이콘도 안 뜸
             "/api/**",
             "/oauth2/**",
             "/login/oauth2/**",

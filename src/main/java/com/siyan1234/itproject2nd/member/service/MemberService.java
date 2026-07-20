@@ -1,5 +1,6 @@
 package com.siyan1234.itproject2nd.member.service;
 
+import com.siyan1234.itproject2nd.config.security.PasswordPolicy;
 import com.siyan1234.itproject2nd.member.dao.MemberDao;
 import com.siyan1234.itproject2nd.member.dto.MemberDto;
 import com.siyan1234.itproject2nd.member.dto.SignupDto;
@@ -19,7 +20,7 @@ public class MemberService {
 
     private final PasswordEncoder passwordEncoder; // BCrypt 암호화 담당
 
-    private static final String PASSWORD_PATTERN = "(?=.*[a-z])(?=.*[A-Z])(?=.*\\d).{8,20}"; // 비밀번호 재설정 규칙 정규식.
+    private static final String PASSWORD_PATTERN = PasswordPolicy.PASSWORD_REGEX;
 
     //  회원가입 검증 오류 확인
     public boolean hasSignupErrors(SignupDto signupDto, BindingResult bindingResult) {

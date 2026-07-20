@@ -1,6 +1,7 @@
 package com.siyan1234.itproject2nd.member.controller;
 
 import com.siyan1234.itproject2nd.config.handler.CustomLoginFailureHandler;
+import com.siyan1234.itproject2nd.config.security.PasswordPolicy;
 import com.siyan1234.itproject2nd.member.dto.CustomUserDetails;
 import com.siyan1234.itproject2nd.member.dto.MemberDto;
 import com.siyan1234.itproject2nd.member.dto.SignupDto;
@@ -267,7 +268,7 @@ public class MemberController {
         // 통과해야만 실제 UPDATE 실행. 규칙 위반이면 DB 접근 없이 false만 반환
 
         if (!updated) {
-            model.addAttribute("resetPasswordError", "비밀번호는 영문 대문자·소문자·숫자를 모두 포함해 8~20자로 입력하세요.");
+            model.addAttribute("resetPasswordError", PasswordPolicy.PASSWORD_MESSAGE);
             return "member/reset-password";
         }
 
