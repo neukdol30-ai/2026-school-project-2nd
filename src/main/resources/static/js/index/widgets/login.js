@@ -2,43 +2,27 @@
 function renderAuthWidget() {
     if (!state.currentUser) {
         return `
-            <article class="widget side-widget auth-widget">
-                <div class="widget-header">
-                    <div>
-                        <div class="widget-title">🔐 계정</div>
-                        <div class="widget-desc">
-                            로그인하면 사용자 설정이 적용됩니다.
-                        </div>
-                    </div>
-                </div>
+    <article class="widget side-widget auth-widget">
+        <div class="auth-content auth-logged-out">
+            <p class="auth-message">
+                로그인 하셔서 여러 서비스를 즐기세요.
+            </p>
 
-                <div class="auth-content">
-                    <input
-                        id="loginUsername"
-                        class="auth-input"
-                        type="text"
-                        value="${state.loginForm.username}"
-                        placeholder="아이디"
-                    >
+            <a
+                class="auth-login-button"
+                href="/login"
+            >
+                로그인
+            </a>
 
-                    <input
-                        id="loginPassword"
-                        class="auth-input"
-                        type="password"
-                        value="${state.loginForm.password}"
-                        placeholder="비밀번호"
-                    >
-
-                    <button class="auth-login-button" data-action="login">
-                        로그인
-                    </button>
-
-                    <button class="auth-register-button">
-                        회원가입
-                    </button>
-                </div>
-            </article>
-        `;
+            <nav class="auth-links" aria-label="계정 메뉴">
+                <a href="/member/find-id">아이디 찾기</a>
+                <a href="/member/find-password">비밀번호 찾기</a>
+                <a href="/member/signup">회원가입</a>
+            </nav>
+        </div>
+    </article>
+`;
     }
 
     return `
