@@ -1,0 +1,418 @@
+body.mypage-open {
+    overflow: hidden;
+}
+
+.auth-user-button {
+    width: 100%;
+    padding: 12px 14px;
+    border: 1px solid #dbeafe;
+    border-radius: 12px;
+    background: #eff6ff;
+    color: #1d4ed8;
+    font-weight: 800;
+    cursor: pointer;
+    transition: 0.2s ease;
+}
+
+.auth-user-button:hover {
+    background: #dbeafe;
+    transform: translateY(-1px);
+}
+
+.auth-sub-text {
+    margin: 8px 0 12px;
+    color: #6b7280;
+    font-size: 12px;
+    text-align: center;
+}
+
+.auth-logout-form {
+    margin: 0;
+}
+
+.auth-logout-button {
+    width: 100%;
+    min-height: 38px;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    background: #ffffff;
+    color: #374151;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.auth-logout-button:hover {
+    background: #f9fafb;
+}
+
+.mypage-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 2000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    background: rgba(15, 23, 42, 0.48);
+    backdrop-filter: blur(4px);
+}
+
+.mypage-modal {
+    position: relative;
+    width: min(920px, 100%);
+    max-height: 86vh;
+    overflow-y: auto;
+    border-radius: 28px;
+    background: #ffffff;
+    box-shadow: 0 26px 80px rgba(15, 23, 42, 0.24);
+}
+
+.mypage-close {
+    position: absolute;
+    top: 18px;
+    right: 20px;
+    width: 36px;
+    height: 36px;
+    border: 0;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.9);
+    color: #334155;
+    font-size: 24px;
+    cursor: pointer;
+}
+
+.mypage-profile-header {
+    display: flex;
+    gap: 18px;
+    align-items: center;
+    padding: 30px 34px;
+    background: linear-gradient(135deg, #0ea5e9, #2563eb);
+    color: #ffffff;
+}
+
+.mypage-avatar-wrap {
+    width: 76px;
+    height: 76px;
+    flex: 0 0 76px;
+}
+
+.mypage-avatar-text,
+.mypage-avatar-img {
+    width: 76px;
+    height: 76px;
+    border-radius: 24px;
+    border: 3px solid rgba(255, 255, 255, 0.75);
+    object-fit: cover;
+}
+
+.mypage-avatar-text {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.2);
+    color: #ffffff;
+    font-size: 32px;
+    font-weight: 900;
+}
+
+.mypage-profile-main h2 {
+    margin: 0 0 8px;
+    font-size: 25px;
+}
+
+.mypage-profile-main p,
+.mypage-profile-main span {
+    display: block;
+    margin: 0;
+    color: rgba(255, 255, 255, 0.86);
+    font-size: 13px;
+}
+
+.mypage-tabs {
+    display: flex;
+    gap: 8px;
+    padding: 18px 28px 0;
+    border-bottom: 1px solid #e5e7eb;
+    background: #ffffff;
+}
+
+.mypage-tab {
+    padding: 12px 14px;
+    border: 0;
+    border-bottom: 3px solid transparent;
+    background: transparent;
+    color: #64748b;
+    font-weight: 800;
+    cursor: pointer;
+}
+
+.mypage-tab.active {
+    color: #2563eb;
+    border-bottom-color: #2563eb;
+}
+
+.mypage-message {
+    margin: 18px 28px 0;
+    padding: 12px 14px;
+    border-radius: 12px;
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.mypage-message.success {
+    background: #ecfdf5;
+    color: #047857;
+}
+
+.mypage-message.error {
+    background: #fef2f2;
+    color: #b91c1c;
+}
+
+.mypage-panels {
+    padding: 26px 28px 30px;
+}
+
+.mypage-panel {
+    display: none;
+}
+
+.mypage-panel.active {
+    display: block;
+}
+
+.mypage-form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+}
+
+.mypage-field {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+    color: #334155;
+    font-size: 13px;
+    font-weight: 800;
+}
+
+.mypage-field input,
+.mypage-field select,
+.mypage-field textarea {
+    width: 100%;
+    min-height: 42px;
+    box-sizing: border-box;
+    border: 1px solid #dbe3ef;
+    border-radius: 12px;
+    padding: 10px 12px;
+    background: #ffffff;
+    color: #0f172a;
+    font: inherit;
+    font-weight: 500;
+}
+
+.mypage-field textarea {
+    resize: vertical;
+}
+
+.mypage-field input[readonly] {
+    background: #f8fafc;
+    color: #64748b;
+}
+
+.mypage-full-field {
+    grid-column: 1 / -1;
+}
+
+.mypage-form-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 22px;
+}
+
+.mypage-primary-btn,
+.mypage-secondary-btn,
+.mypage-danger-btn {
+    min-width: 110px;
+    min-height: 42px;
+    border: 0;
+    border-radius: 12px;
+    padding: 0 16px;
+    font-weight: 900;
+    cursor: pointer;
+}
+
+.mypage-primary-btn {
+    background: #2563eb;
+    color: #ffffff;
+}
+
+.mypage-secondary-btn {
+    background: #f1f5f9;
+    color: #334155;
+}
+
+.mypage-danger-btn {
+    background: #ef4444;
+    color: #ffffff;
+}
+
+.mypage-narrow-form {
+    max-width: 520px;
+}
+
+.mypage-guide {
+    margin: 0 0 18px;
+    padding: 14px;
+    border-radius: 14px;
+    background: #f8fafc;
+    color: #64748b;
+    font-size: 13px;
+}
+
+.mypage-activity-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 12px;
+    margin-bottom: 24px;
+}
+
+.mypage-activity-card {
+    padding: 16px;
+    border: 1px solid #e5e7eb;
+    border-radius: 18px;
+    background: #f8fafc;
+}
+
+.mypage-activity-card span {
+    display: block;
+    color: #64748b;
+    font-size: 12px;
+    font-weight: 800;
+}
+
+.mypage-activity-card strong {
+    display: block;
+    margin-top: 8px;
+    color: #0f172a;
+    font-size: 25px;
+}
+
+.mypage-section-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+}
+
+.mypage-list-section {
+    min-height: 180px;
+    padding: 18px;
+    border: 1px solid #e5e7eb;
+    border-radius: 20px;
+}
+
+.mypage-section-title {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 12px;
+}
+
+.mypage-section-title h3 {
+    margin: 0;
+    color: #0f172a;
+    font-size: 16px;
+}
+
+.mypage-section-title a {
+    color: #2563eb;
+    font-size: 12px;
+    font-weight: 800;
+    text-decoration: none;
+}
+
+.mypage-simple-list {
+    display: grid;
+    gap: 12px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.mypage-simple-list li {
+    display: grid;
+    gap: 4px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.mypage-simple-list li:last-child {
+    padding-bottom: 0;
+    border-bottom: 0;
+}
+
+.mypage-simple-list a {
+    color: #0f172a;
+    font-weight: 900;
+    text-decoration: none;
+}
+
+.mypage-simple-list span,
+.mypage-simple-list small,
+.mypage-empty {
+    color: #64748b;
+    font-size: 12px;
+}
+
+.mypage-danger-box {
+    margin-bottom: 16px;
+    padding: 18px;
+    border: 1px solid #fecaca;
+    border-radius: 18px;
+    background: #fef2f2;
+    color: #991b1b;
+}
+
+.mypage-danger-box h3 {
+    margin: 0 0 8px;
+}
+
+.mypage-danger-box p {
+    margin: 0;
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+@media (max-width: 780px) {
+    .mypage-overlay {
+        align-items: flex-end;
+        padding: 0;
+    }
+
+    .mypage-modal {
+        width: 100%;
+        max-height: 92vh;
+        border-radius: 24px 24px 0 0;
+    }
+
+    .mypage-profile-header {
+        padding: 26px 22px;
+    }
+
+    .mypage-tabs {
+        overflow-x: auto;
+        padding-inline: 18px;
+    }
+
+    .mypage-panels {
+        padding: 22px 18px 26px;
+    }
+
+    .mypage-form-grid,
+    .mypage-activity-grid,
+    .mypage-section-grid {
+        grid-template-columns: 1fr;
+    }
+}

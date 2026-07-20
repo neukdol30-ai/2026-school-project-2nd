@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.siyan1234.itproject2nd.mypage.dao.MyPageDao">
+
+    <select id="findProfileByNo" resultType="com.siyan1234.itproject2nd.mypage.dto.MyPageProfileDto">
+        SELECT
+            no,
+            member_id,
+            name,
+            nickname,
+            email,
+            phone,
+            birth_date,
+            gender,
+            postcode,
+            address,
+            detail_address,
+            role,
+            profile_image,
+            last_login_date,
+            regdate
+        FROM member
+        WHERE no = #{memberNo, jdbcType=NUMERIC}
+    </select>
+
+    <update id="updateProfile">
+        UPDATE member
+        SET
+            name = #{profile.name, jdbcType=VARCHAR},
+            nickname = #{profile.nickname, jdbcType=VARCHAR},
+            email = #{profile.email, jdbcType=VARCHAR},
+            phone = #{profile.phone, jdbcType=VARCHAR},
+            birth_date = #{profile.birthDate, jdbcType=DATE},
+            gender = #{profile.gender, jdbcType=VARCHAR},
+            postcode = #{profile.postcode, jdbcType=VARCHAR},
+            address = #{profile.address, jdbcType=VARCHAR},
+            detail_address = #{profile.detailAddress, jdbcType=VARCHAR},
+            profile_image = #{profile.profileImage, jdbcType=VARCHAR}
+        WHERE no = #{memberNo, jdbcType=NUMERIC}
+    </update>
+
+    <update id="updatePassword">
+        UPDATE member
+        SET password = #{password, jdbcType=VARCHAR}
+        WHERE no = #{memberNo, jdbcType=NUMERIC}
+    </update>
+
+    <delete id="deleteMe">
+        DELETE FROM member
+        WHERE no = #{memberNo, jdbcType=NUMERIC}
+        AND role = 'USER'
+    </delete>
+
+    <select id="countNicknameDuplicateExceptMe" resultType="int">
+        SELECT COUNT(*)
+        FROM member
+        WHERE nickname = #{nickname, jdbcType=VARCHAR}
+        AND no != #{memberNo, jdbcType=NUMERIC}
+    </select>
+
+    <select id="countEmailDuplicateExceptMe" resultType="int">
+        SELECT COUNT(*)
+        FROM member
+        WHERE email = #{email, jdbcType=VARCHAR}
+        AND no != #{memberNo, jdbcType=NUMERIC}
+    </select>
+
+    <select id="findActivityByMemberNo" resultType="com.siyan1234.itproject2nd.mypage.dto.MyPageActivityDto">
+        SELECT
+            (SELECT COUNT(*)
+             FROM board
+             WHERE writer_no = #{memberNo, jdbcType=NUMERIC}) AS board_count,
+            (SELECT COUNT(*)
+             FROM board
+             WHERE writer_no = #{memberNo, jdbcType=NUMERIC}
+             AND category = 'QUESTION'
+             AND answer_status = 'WAITING') AS waiting_question_count,
+            (SELECT COUNT(*)
+             FROM chat_room
+             WHERE user_no = #{memberNo, jdbcType=NUMERIC}) AS chat_count,
+            (SELECT COUNT(*)
+             FROM chat_room
+             WHERE user_no = #{memberNo, jdbcType=NUMERIC}
+             AND status = 'OPEN') AS open_chat_count
+        FROM dual
+    </select>
+
+    <select id="findRecentBoards" resultType="com.siyan1234.itproject2nd.mypage.dto.MyPageRecentBoardDto">
+        SELECT
+            no,
+            category,
+            answer_status,
+            title,
+            created_date
+        FROM board
+        WHERE writer_no = #{memberNo, jdbcType=NUMERIC}
+        ORDER BY created_date DESC
+        FETCH FIRST 3 ROWS ONLY
+    </select>
+
+    <select id="findRecentChats" resultType="com.siyan1234.itproject2nd.mypage.dto.MyPageRecentChatDto">
+        SELECT
+            room_no,
+            category,
+            status,
+            last_message,
+            last_message_date,
+            created_date
+        FROM chat_room
+        WHERE user_no = #{memberNo, jdbcType=NUMERIC}
+        ORDER BY
+            CASE status
+                WHEN 'OPEN' THEN 1
+                WHEN 'CLOSED' THEN 2
+                ELSE 3
+            END,
+            last_message_date DESC NULLS LAST,
+            created_date DESC
+        FETCH FIRST 3 ROWS ONLY
+    </select>
+
+</mapper>

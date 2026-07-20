@@ -4,6 +4,7 @@ const state = {
     memoText: "",
     calculatorText: "",
     currentUser: null,
+    myPage: null,
     loginForm: {
         username: "",
         password: ""

@@ -116,6 +116,11 @@ function render() {
 }
 
 renderInitialPage();
+
+if (typeof initializeMyPage === "function") {
+    initializeMyPage();
+}
+
 startCurrentTimeClock();
 fetchSunTime();
 fetchNews();
