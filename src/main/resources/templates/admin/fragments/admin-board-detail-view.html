@@ -11,6 +11,7 @@
             </div>
             <div class="toolbar-actions">
                 <a th:href="@{/admin(view='boards')}" class="small-link">목록으로</a>
+                <a th:href="@{/admin/boards/{no}/edit(no=${boardDetail.no})}" class="small-link">수정하기</a>
                 <button type="button"
                         class="danger-button"
                         data-board-delete-button

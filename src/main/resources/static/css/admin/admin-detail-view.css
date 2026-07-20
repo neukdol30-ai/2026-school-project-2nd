@@ -475,3 +475,40 @@
     line-height: 1.7;
     word-break: break-word;
 }
+
+/* 관리자 게시글 등록/수정 폼 */
+.small-primary-button {
+    min-height: 38px;
+    padding: 0 14px;
+    border-radius: 12px;
+    font-size: 13px;
+    text-decoration: none;
+}
+
+.admin-board-form .admin-form-grid textarea {
+    width: 100%;
+    min-height: 360px;
+    padding: 14px;
+    border: 1px solid var(--admin-line);
+    border-radius: 14px;
+    color: var(--admin-text);
+    background: #ffffff;
+    font: inherit;
+    font-weight: 700;
+    line-height: 1.7;
+    resize: vertical;
+    outline: none;
+}
+
+.admin-board-form .admin-form-grid textarea:focus,
+.admin-board-form .admin-form-grid input:focus,
+.admin-board-form .admin-form-grid select:focus {
+    border-color: rgba(79, 99, 246, 0.58);
+    box-shadow: 0 0 0 4px rgba(79, 99, 246, 0.10);
+}
+
+.board-content-field small {
+    color: var(--admin-muted);
+    font-size: 12px;
+    font-weight: 800;
+}

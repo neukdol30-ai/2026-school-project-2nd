@@ -1,12 +1,17 @@
 package com.siyan1234.itproject2nd.admin.controller;
 
+import com.siyan1234.itproject2nd.admin.dto.AdminBoardDto;
 import com.siyan1234.itproject2nd.admin.dto.AdminDeleteResultDto;
 import com.siyan1234.itproject2nd.admin.service.AdminBoardService;
 import com.siyan1234.itproject2nd.admin.support.AdminFlashMessage;
 import com.siyan1234.itproject2nd.admin.support.AdminRoutes;
+import com.siyan1234.itproject2nd.member.dto.CustomUserDetails;
+import com.siyan1234.itproject2nd.member.dto.MemberDto;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -28,12 +33,80 @@ public class AdminBoardController {
         return AdminRoutes.ADMIN_BOARDS;
     }
 
-    @GetMapping("/{boardNo}")
-    public String boardDetail(
-            @PathVariable("boardNo") Long boardNo,
+    @GetMapping("/new")
+    public String boardCreateForm() {
+        return AdminRoutes.boardCreate();
+    }
+
+    @PostMapping("/new")
+    public String createBoard(
+            @ModelAttribute AdminBoardDto boardDto,
+            @AuthenticationPrincipal CustomUserDetails customUserDetails,
             RedirectAttributes redirectAttributes
     ) {
+        MemberDto loginAdmin = customUserDetails == null ? null : customUserDetails.getMemberDto();
+        Integer writerNo = loginAdmin == null ? null : loginAdmin.getNo();
+
+        try {
+            int insertedCount = adminBoardService.createBoard(boardDto, writerNo);
+            if (insertedCount == 0) {
+                redirectAttributes.addFlashAttribute("adminErrorMessage", AdminFlashMessage.BOARD_SAVE_FAILED);
+                return AdminRoutes.boardCreate();
+            }
+            redirectAttributes.addFlashAttribute("adminMessage", AdminFlashMessage.boardCreated());
+            return AdminRoutes.ADMIN_BOARDS;
+        } catch (IllegalArgumentException e) {
+            redirectAttributes.addFlashAttribute("adminErrorMessage", e.getMessage());
+            return AdminRoutes.boardCreate();
+        }
+    }
+
+    @PostMapping("/save")
+    public String saveBoard(
+            @ModelAttribute AdminBoardDto boardDto,
+            @AuthenticationPrincipal CustomUserDetails customUserDetails,
+            RedirectAttributes redirectAttributes
+    ) {
+        if (boardDto.getNo() == null) {
+            return createBoard(boardDto, customUserDetails, redirectAttributes);
+        }
+        return updateBoard(boardDto.getNo(), boardDto, redirectAttributes);
+    }
+
+    @GetMapping("/{boardNo}")
+    public String boardDetail(
+            @PathVariable("boardNo") Long boardNo
+    ) {
         return AdminRoutes.boardDetail(boardNo);
+    }
+
+    @GetMapping("/{boardNo}/edit")
+    public String boardEditForm(
+            @PathVariable("boardNo") Long boardNo
+    ) {
+        return AdminRoutes.boardEdit(boardNo);
+    }
+
+    @PostMapping("/{boardNo}/edit")
+    public String updateBoard(
+            @PathVariable("boardNo") Long boardNo,
+            @ModelAttribute AdminBoardDto boardDto,
+            RedirectAttributes redirectAttributes
+    ) {
+        boardDto.setNo(boardNo);
+
+        try {
+            int updatedCount = adminBoardService.updateBoard(boardDto);
+            if (updatedCount == 0) {
+                redirectAttributes.addFlashAttribute("adminErrorMessage", AdminFlashMessage.BOARD_UPDATE_NOT_FOUND);
+                return AdminRoutes.ADMIN_BOARDS;
+            }
+            redirectAttributes.addFlashAttribute("adminMessage", AdminFlashMessage.boardUpdated(boardNo));
+            return AdminRoutes.boardDetail(boardNo);
+        } catch (IllegalArgumentException e) {
+            redirectAttributes.addFlashAttribute("adminErrorMessage", e.getMessage());
+            return AdminRoutes.boardEdit(boardNo);
+        }
     }
 
     @PostMapping("/{boardNo}/delete")

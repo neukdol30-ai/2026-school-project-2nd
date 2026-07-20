@@ -67,7 +67,7 @@
             </a>
             <a th:href="@{/admin(view='boards')}"
                class="menu-item"
-               th:classappend="${activeView == 'boards'} ? ' active' : ''">
+               th:classappend="${activeView == 'boards' or activeView == 'boardCreate' or activeView == 'boardEdit' or activeView == 'boardDetail'} ? ' active' : ''">
                 <span>📝</span>
                 <em>게시글 관리</em>
             </a>

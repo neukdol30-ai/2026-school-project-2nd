@@ -21,6 +21,14 @@ public final class AdminRoutes {
         return "redirect:/admin?view=chatRoom&roomNo=" + roomNo;
     }
 
+    public static String boardCreate() {
+        return "redirect:/admin?view=boardCreate";
+    }
+
+    public static String boardEdit(Long boardNo) {
+        return "redirect:/admin?view=boardEdit&boardNo=" + boardNo;
+    }
+
     public static String boardDetail(Long boardNo) {
         return "redirect:/admin?view=boardDetail&boardNo=" + boardNo;
     }

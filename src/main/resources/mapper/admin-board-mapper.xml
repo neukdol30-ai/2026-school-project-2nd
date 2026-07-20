@@ -83,6 +83,34 @@
         WHERE b.no = #{boardNo}
     </select>
 
+    <insert id="insertBoard" parameterType="AdminBoardDto">
+        INSERT INTO board (
+            writer_no,
+            category,
+            answer_status,
+            title,
+            content
+        )
+        VALUES (
+            #{writerNo, jdbcType=INTEGER},
+            #{category, jdbcType=VARCHAR},
+            #{answerStatus, jdbcType=VARCHAR},
+            #{title, jdbcType=VARCHAR},
+            #{content, jdbcType=CLOB}
+        )
+    </insert>
+
+    <update id="updateBoard" parameterType="AdminBoardDto">
+        UPDATE board
+        SET
+            category = #{category, jdbcType=VARCHAR},
+            answer_status = #{answerStatus, jdbcType=VARCHAR},
+            title = #{title, jdbcType=VARCHAR},
+            content = #{content, jdbcType=CLOB},
+            modified_date = SYSTIMESTAMP
+        WHERE no = #{no, jdbcType=BIGINT}
+    </update>
+
     <delete id="deleteBoard">
         DELETE FROM board
         WHERE no = #{boardNo}

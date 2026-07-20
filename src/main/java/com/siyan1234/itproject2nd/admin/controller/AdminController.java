@@ -149,6 +149,7 @@ public class AdminController {
         MemberDto editMember = resolveEditMember(activeView, editMemberNo);
         ChatRoomDto activeChatRoom = resolveActiveChatRoom(activeView, roomNo, loginAdmin);
         AdminBoardDto activeBoard = resolveActiveBoard(activeView, boardNo);
+        AdminBoardDto boardForm = resolveBoardForm(activeView, activeBoard);
         List<BoardCommentDto> activeBoardCommentList = resolveActiveBoardComments(activeView, activeBoard);
 
         if (activeView == AdminView.MEMBER_EDIT && editMember == null) {
@@ -159,7 +160,7 @@ public class AdminController {
             activeView = AdminView.CHATS;
         }
 
-        if (activeView == AdminView.BOARD_DETAIL && activeBoard == null) {
+        if ((activeView == AdminView.BOARD_DETAIL || activeView == AdminView.BOARD_EDIT) && activeBoard == null) {
             activeView = AdminView.BOARDS;
         }
 
@@ -196,6 +197,7 @@ public class AdminController {
         model.addAttribute("boardTotalCount", boardTotalCount);
         model.addAttribute("boardTotalPages", AdminPagingHelper.calculateTotalPages(boardTotalCount, boardSize));
         model.addAttribute("boardDetail", activeBoard);
+        model.addAttribute("boardForm", boardForm);
         model.addAttribute("boardCommentList", activeBoardCommentList);
 
         model.addAttribute("adminVisitSummaryList", adminVisitSummaryList);
@@ -223,10 +225,25 @@ public class AdminController {
     }
 
     private AdminBoardDto resolveActiveBoard(AdminView activeView, Long boardNo) {
-        if (activeView != AdminView.BOARD_DETAIL || boardNo == null) {
+        if ((activeView != AdminView.BOARD_DETAIL && activeView != AdminView.BOARD_EDIT) || boardNo == null) {
             return null;
         }
         return adminBoardService.findByNo(boardNo);
+    }
+
+    private AdminBoardDto resolveBoardForm(AdminView activeView, AdminBoardDto activeBoard) {
+        if (activeView == AdminView.BOARD_CREATE) {
+            AdminBoardDto boardForm = new AdminBoardDto();
+            boardForm.setCategory("QUESTION");
+            boardForm.setAnswerStatus("WAITING");
+            return boardForm;
+        }
+
+        if (activeView == AdminView.BOARD_EDIT) {
+            return activeBoard;
+        }
+
+        return null;
     }
 
     private List<BoardCommentDto> resolveActiveBoardComments(AdminView activeView, AdminBoardDto activeBoard) {

@@ -20,5 +20,6 @@
         Admin.SessionGuard?.init();
         Admin.BrowserNotification?.init();
         Admin.ChatRealtime?.init();
+        Admin.SidebarState?.init();
     });
 })(window);

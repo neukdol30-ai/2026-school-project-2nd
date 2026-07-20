@@ -13,6 +13,8 @@ public enum AdminView {
     CHATS("chats", "Chat Management", "상담 관리"),
     CHAT_ROOM("chatRoom", "Chat Room", "상담 상세"),
     BOARDS("boards", "Board Management", "게시글 관리"),
+    BOARD_CREATE("boardCreate", "Board Create", "게시글 등록"),
+    BOARD_EDIT("boardEdit", "Board Edit", "게시글 수정"),
     BOARD_DETAIL("boardDetail", "Board Detail", "게시글 상세"),
     VISITS("visits", "Visit Log", "방문 기록"),
     SERVICES("services", "Service Status", "외부 서비스 상태");

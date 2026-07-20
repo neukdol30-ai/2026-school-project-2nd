@@ -24,5 +24,9 @@ public interface AdminBoardDao {
 
     AdminBoardDto findByNo(@Param("boardNo") Long boardNo);
 
+    int insertBoard(AdminBoardDto boardDto);
+
+    int updateBoard(AdminBoardDto boardDto);
+
     int deleteBoard(@Param("boardNo") Long boardNo);
 }

@@ -29,6 +29,10 @@ public final class AdminFlashMessage {
     public static final String BOARD_DELETE_NOT_SELECTED = "삭제할 게시글을 선택해 주세요.";
     public static final String BOARD_DELETE_NOT_FOUND = "삭제할 게시글을 찾을 수 없습니다.";
     public static final String BOARD_DELETE_NO_RESULT = "삭제된 게시글이 없습니다.";
+    public static final String BOARD_SAVE_TITLE_REQUIRED = "게시글 제목을 입력해 주세요.";
+    public static final String BOARD_SAVE_CONTENT_REQUIRED = "게시글 내용을 입력해 주세요.";
+    public static final String BOARD_SAVE_FAILED = "게시글 저장에 실패했습니다.";
+    public static final String BOARD_UPDATE_NOT_FOUND = "수정할 게시글을 찾을 수 없습니다.";
 
     private AdminFlashMessage() {
     }
@@ -69,6 +73,14 @@ public final class AdminFlashMessage {
 
     public static String memberUnbanned(Integer memberNo) {
         return "회원 #" + memberNo + "번의 정지를 해제했습니다.";
+    }
+
+    public static String boardCreated() {
+        return "게시글을 등록했습니다.";
+    }
+
+    public static String boardUpdated(Long boardNo) {
+        return "게시글 #" + boardNo + "번을 수정했습니다.";
     }
 
     public static String boardDeleted(Long boardNo) {
