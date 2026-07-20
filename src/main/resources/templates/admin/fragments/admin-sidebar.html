@@ -4,14 +4,6 @@
       xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <body>
 <aside th:fragment="sidebar" class="admin-sidebar">
-        <div class="brand-box">
-            <a th:href="@{/admin}" class="brand-logo">S</a>
-            <div>
-                <strong>SecondPro</strong>
-                <span>관리자 콘솔</span>
-            </div>
-        </div>
-
         <!-- 접속한 관리자 프로필 카드입니다. 내 정보 보기는 페이지 이동이 아니라 모달로 표시합니다. -->
         <section class="admin-profile-panel">
             <div class="profile-main">
@@ -95,11 +87,16 @@
             </a>
         </nav>
 
-        <div class="sidebar-card">
-            <strong>운영 팁</strong>
-            <p>관리자 콘솔 안에서 대시보드, 상담관리, 회원관리를 한 번에 처리합니다.</p>
-            <a th:href="@{/admin(view='chats')}">상담 확인하기</a>
-        </div>
+        <details class="sidebar-card sidebar-tip-card" open>
+            <summary>
+                <strong>운영 팁</strong>
+                <span>접기/펼치기</span>
+            </summary>
+            <div class="sidebar-tip-body">
+                <p>관리자 콘솔 안에서 대시보드, 회원관리, 상담관리, 게시글, 방문 기록을 한 번에 처리합니다.</p>
+                <a th:href="@{/admin(view='chats')}">상담 확인하기</a>
+            </div>
+        </details>
     </aside>
 </body>
 </html>

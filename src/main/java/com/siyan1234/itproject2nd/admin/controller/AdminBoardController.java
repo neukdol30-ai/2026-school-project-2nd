@@ -33,9 +33,7 @@ public class AdminBoardController {
             @PathVariable("boardNo") Long boardNo,
             RedirectAttributes redirectAttributes
     ) {
-        redirectAttributes.addAttribute("view", "boards");
-        redirectAttributes.addAttribute("focusBoardNo", boardNo);
-        return AdminRoutes.ADMIN_HOME;
+        return AdminRoutes.boardDetail(boardNo);
     }
 
     @PostMapping("/{boardNo}/delete")

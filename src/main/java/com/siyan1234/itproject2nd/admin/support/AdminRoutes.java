@@ -20,4 +20,8 @@ public final class AdminRoutes {
     public static String chatRoom(Integer roomNo) {
         return "redirect:/admin?view=chatRoom&roomNo=" + roomNo;
     }
+
+    public static String boardDetail(Long boardNo) {
+        return "redirect:/admin?view=boardDetail&boardNo=" + boardNo;
+    }
 }

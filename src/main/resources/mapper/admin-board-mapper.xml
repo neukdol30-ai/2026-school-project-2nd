@@ -66,6 +66,7 @@
             b.category,
             b.answer_status,
             b.title,
+            b.content,
             b.view_count,
             b.created_date,
             b.modified_date,

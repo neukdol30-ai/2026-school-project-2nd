@@ -364,3 +364,114 @@
         width: 100%;
     }
 }
+
+/* 관리자 콘솔 게시글 상세 */
+.admin-board-detail-card {
+    padding: 24px;
+    border: 1px solid var(--admin-line);
+    border-radius: 22px;
+    background: linear-gradient(180deg, #ffffff, #fbfdff);
+}
+
+.admin-board-detail-meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    color: var(--admin-muted);
+    font-size: 12px;
+    font-weight: 900;
+}
+
+.admin-board-detail-card h3 {
+    margin: 18px 0 12px;
+    color: var(--admin-text);
+    font-size: 28px;
+    letter-spacing: -0.05em;
+}
+
+.admin-board-writer {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    margin-bottom: 22px;
+    color: var(--admin-muted);
+    font-size: 13px;
+}
+
+.admin-board-writer strong {
+    color: var(--admin-text);
+}
+
+.admin-board-content {
+    min-height: 260px;
+    padding: 24px;
+    border-radius: 18px;
+    background: #f8fafc;
+    color: #111827;
+    line-height: 1.8;
+    word-break: break-word;
+}
+
+.admin-board-content img,
+.comment-content img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 12px;
+}
+
+.admin-board-comment-section {
+    margin-top: 22px;
+}
+
+.compact-head {
+    margin-bottom: 14px;
+}
+
+.admin-board-comment-list {
+    display: grid;
+    gap: 12px;
+}
+
+.admin-board-comment-card {
+    display: flex;
+    gap: 14px;
+    padding: 18px;
+    border: 1px solid var(--admin-line);
+    border-radius: 18px;
+    background: #ffffff;
+}
+
+.comment-avatar {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 auto;
+    width: 42px;
+    height: 42px;
+    border-radius: 14px;
+    color: #ffffff;
+    background: var(--admin-primary);
+    font-weight: 900;
+}
+
+.comment-body {
+    min-width: 0;
+    flex: 1;
+}
+
+.comment-meta {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 10px;
+    color: var(--admin-muted);
+    font-size: 12px;
+    font-weight: 900;
+}
+
+.comment-content {
+    color: #111827;
+    line-height: 1.7;
+    word-break: break-word;
+}

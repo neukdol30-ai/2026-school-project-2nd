@@ -11,6 +11,8 @@ import com.siyan1234.itproject2nd.admin.service.AdminMemberService;
 import com.siyan1234.itproject2nd.admin.service.AdminVisitService;
 import com.siyan1234.itproject2nd.admin.support.AdminPagingHelper;
 import com.siyan1234.itproject2nd.admin.support.AdminView;
+import com.siyan1234.itproject2nd.board.dto.BoardCommentDto;
+import com.siyan1234.itproject2nd.board.service.BoardCommentService;
 import com.siyan1234.itproject2nd.chat.dto.ChatRoomDto;
 import com.siyan1234.itproject2nd.config.security.LoginMemberResolver;
 import com.siyan1234.itproject2nd.member.dto.CustomUserDetails;
@@ -46,6 +48,7 @@ public class AdminController {
     private final AdminChatService adminChatService;
     private final AdminBoardService adminBoardService;
     private final AdminVisitService adminVisitService;
+    private final BoardCommentService boardCommentService;
     private final LoginMemberResolver loginMemberResolver;
 
     @GetMapping({"", "/", "/dashboard"})
@@ -68,6 +71,7 @@ public class AdminController {
             @RequestParam(value = "boardKeyword", required = false) String boardKeyword,
             @RequestParam(value = "boardPage", defaultValue = "1") int boardPage,
             @RequestParam(value = "boardSize", defaultValue = "10") int boardSize,
+            @RequestParam(value = "boardNo", required = false) Long boardNo,
 
             @RequestParam(value = "visitKeyword", required = false) String visitKeyword,
             @RequestParam(value = "visitPage", defaultValue = "1") int visitPage,
@@ -144,6 +148,8 @@ public class AdminController {
 
         MemberDto editMember = resolveEditMember(activeView, editMemberNo);
         ChatRoomDto activeChatRoom = resolveActiveChatRoom(activeView, roomNo, loginAdmin);
+        AdminBoardDto activeBoard = resolveActiveBoard(activeView, boardNo);
+        List<BoardCommentDto> activeBoardCommentList = resolveActiveBoardComments(activeView, activeBoard);
 
         if (activeView == AdminView.MEMBER_EDIT && editMember == null) {
             activeView = AdminView.MEMBERS;
@@ -151,6 +157,10 @@ public class AdminController {
 
         if (activeView == AdminView.CHAT_ROOM && activeChatRoom == null) {
             activeView = AdminView.CHATS;
+        }
+
+        if (activeView == AdminView.BOARD_DETAIL && activeBoard == null) {
+            activeView = AdminView.BOARDS;
         }
 
         model.addAttribute("dashboard", dashboard);
@@ -185,6 +195,8 @@ public class AdminController {
         model.addAttribute("boardSize", boardSize);
         model.addAttribute("boardTotalCount", boardTotalCount);
         model.addAttribute("boardTotalPages", AdminPagingHelper.calculateTotalPages(boardTotalCount, boardSize));
+        model.addAttribute("boardDetail", activeBoard);
+        model.addAttribute("boardCommentList", activeBoardCommentList);
 
         model.addAttribute("adminVisitSummaryList", adminVisitSummaryList);
         model.addAttribute("visitKeyword", cleanVisitKeyword);
@@ -208,5 +220,19 @@ public class AdminController {
             return null;
         }
         return adminChatService.assignAdminIfEmpty(roomNo, loginAdmin.getNo());
+    }
+
+    private AdminBoardDto resolveActiveBoard(AdminView activeView, Long boardNo) {
+        if (activeView != AdminView.BOARD_DETAIL || boardNo == null) {
+            return null;
+        }
+        return adminBoardService.findByNo(boardNo);
+    }
+
+    private List<BoardCommentDto> resolveActiveBoardComments(AdminView activeView, AdminBoardDto activeBoard) {
+        if (activeView != AdminView.BOARD_DETAIL || activeBoard == null || activeBoard.getNo() == null) {
+            return List.of();
+        }
+        return boardCommentService.findByBoardNo(activeBoard.getNo());
     }
 }

@@ -15,6 +15,7 @@ public class AdminBoardDto {
     private String category;
     private String answerStatus;
     private String title;
+    private String content;
     private Long viewCount;
     private LocalDateTime createdDate;
     private LocalDateTime modifiedDate;
