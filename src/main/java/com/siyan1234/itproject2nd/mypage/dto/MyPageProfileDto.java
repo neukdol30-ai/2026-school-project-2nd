@@ -26,6 +26,13 @@ public class MyPageProfileDto {
     private LocalDateTime lastLoginDate;
     private LocalDateTime regdate;
 
+    /**
+     * social_account 연결 여부입니다.
+     * Oracle/MyBatis 매핑 안정성을 위해 Y/N 문자열로 받고, JSON 응답용 boolean getter를 별도로 제공합니다.
+     */
+    private String socialLoginYn;
+    private String socialProviders;
+
     public String getDisplayName() {
         if (nickname != null && !nickname.isBlank()) {
             return nickname;
@@ -46,5 +53,21 @@ public class MyPageProfileDto {
         }
 
         return displayName.substring(0, 1).toUpperCase();
+    }
+
+    public boolean isSocialLoginUser() {
+        return "Y".equalsIgnoreCase(socialLoginYn);
+    }
+
+    public String getLoginMethodLabel() {
+        if (!isSocialLoginUser()) {
+            return "일반 로그인";
+        }
+
+        if (socialProviders == null || socialProviders.isBlank()) {
+            return "소셜 로그인";
+        }
+
+        return socialProviders + " 소셜 로그인";
     }
 }

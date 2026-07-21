@@ -6,23 +6,36 @@
 
     <select id="findProfileByNo" resultType="com.siyan1234.itproject2nd.mypage.dto.MyPageProfileDto">
         SELECT
-            no,
-            member_id,
-            name,
-            nickname,
-            email,
-            phone,
-            birth_date,
-            gender,
-            postcode,
-            address,
-            detail_address,
-            role,
-            profile_image,
-            last_login_date,
-            regdate
-        FROM member
-        WHERE no = #{memberNo, jdbcType=NUMERIC}
+            m.no,
+            m.member_id,
+            m.name,
+            m.nickname,
+            m.email,
+            m.phone,
+            m.birth_date,
+            m.gender,
+            m.postcode,
+            m.address,
+            m.detail_address,
+            m.role,
+            m.profile_image,
+            m.last_login_date,
+            m.regdate,
+            CASE
+                WHEN EXISTS (
+                    SELECT 1
+                    FROM social_account sa
+                    WHERE sa.member_no = m.no
+                ) THEN 'Y'
+                ELSE 'N'
+            END AS social_login_yn,
+            (
+                SELECT LISTAGG(UPPER(sa.provider), ', ') WITHIN GROUP (ORDER BY sa.provider)
+                FROM social_account sa
+                WHERE sa.member_no = m.no
+            ) AS social_providers
+        FROM member m
+        WHERE m.no = #{memberNo, jdbcType=NUMERIC}
     </select>
 
     <update id="updateProfile">

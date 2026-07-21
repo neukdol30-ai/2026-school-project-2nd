@@ -24,6 +24,7 @@ public class MyPageService {
     private static final String PASSWORD_PATTERN = "(?=.*[a-z])(?=.*[A-Z])(?=.*\\d).{8,20}";
     private static final String EMAIL_PATTERN = "^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$";
     private static final String PHONE_PATTERN = "^010-[0-9]{4}-[0-9]{4}$";
+    private static final String WITHDRAW_CONFIRM_TEXT = "회원탈퇴";
 
     private final MyPageDao myPageDao;
     private final MemberDao memberDao;
@@ -81,6 +82,10 @@ public class MyPageService {
             return MyPageActionResponseDto.fail("회원 정보를 찾을 수 없습니다.");
         }
 
+        if (isSocialLoginUser(memberNo)) {
+            return MyPageActionResponseDto.fail("소셜 로그인 계정은 사이트에서 비밀번호를 변경할 수 없습니다. 카카오/네이버 계정 설정에서 관리해 주세요.");
+        }
+
         if (isBlank(passwordDto.getCurrentPassword())) {
             return MyPageActionResponseDto.fail("현재 비밀번호를 입력해 주세요.");
         }
@@ -122,16 +127,27 @@ public class MyPageService {
             return MyPageActionResponseDto.fail("관리자 계정은 마이페이지에서 탈퇴할 수 없습니다. 관리자 콘솔에서 관리해 주세요.");
         }
 
-        if (isBlank(withdrawDto.getPassword())) {
-            return MyPageActionResponseDto.fail("회원 탈퇴를 위해 현재 비밀번호를 입력해 주세요.");
+        if (!WITHDRAW_CONFIRM_TEXT.equals(withdrawDto.getConfirmText())) {
+            return MyPageActionResponseDto.fail("회원 탈퇴를 진행하려면 확인 문구에 '회원탈퇴'를 정확히 입력해 주세요.");
         }
 
-        if (!passwordEncoder.matches(withdrawDto.getPassword(), member.getPassword())) {
-            return MyPageActionResponseDto.fail("현재 비밀번호가 일치하지 않습니다.");
+        if (!isSocialLoginUser(memberNo)) {
+            if (isBlank(withdrawDto.getPassword())) {
+                return MyPageActionResponseDto.fail("회원 탈퇴를 위해 현재 비밀번호를 입력해 주세요.");
+            }
+
+            if (!passwordEncoder.matches(withdrawDto.getPassword(), member.getPassword())) {
+                return MyPageActionResponseDto.fail("현재 비밀번호가 일치하지 않습니다.");
+            }
         }
 
         myPageDao.deleteMe(memberNo);
         return MyPageActionResponseDto.successWithRedirect("회원 탈퇴가 완료되었습니다.", "/");
+    }
+
+    private boolean isSocialLoginUser(Integer memberNo) {
+        MyPageProfileDto profile = myPageDao.findProfileByNo(memberNo);
+        return profile != null && profile.isSocialLoginUser();
     }
 
     private void normalizeProfile(MyPageUpdateDto updateDto) {

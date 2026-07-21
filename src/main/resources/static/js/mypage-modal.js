@@ -8,6 +8,7 @@
 
     const MODAL_ID = "myPageModal";
     const PHONE_PATTERN = /^010-[0-9]{4}-[0-9]{4}$/;
+    const WITHDRAW_CONFIRM_TEXT = "회원탈퇴";
     let initialized = false;
 
     window.initializeMyPage = function initializeMyPage() {
@@ -82,6 +83,13 @@
             if (tabButton) {
                 event.preventDefault();
                 activateMyPageTab(tabButton.dataset.mypageTab);
+                return;
+            }
+
+            const passwordToggle = event.target.closest("[data-mypage-password-toggle]");
+            if (passwordToggle) {
+                event.preventDefault();
+                togglePasswordVisibility(passwordToggle);
                 return;
             }
 
@@ -230,6 +238,11 @@
 
     async function submitWithdrawForm(form) {
         const payload = formToObject(form);
+        const clientMessage = validateWithdrawPayload(payload);
+        if (clientMessage) {
+            showMyPageMessage({ success: false, message: clientMessage });
+            return;
+        }
 
         if (!confirm("회원 탈퇴를 진행하시겠습니까? 탈퇴 후에는 계정 복구가 어렵습니다.")) {
             return;
@@ -320,8 +333,24 @@
     }
 
     function validatePasswordPayload(payload) {
-        if (payload.currentPassword && payload.newPassword && payload.currentPassword === payload.newPassword) {
+        if (!payload.currentPassword || !payload.newPassword || !payload.newPasswordCheck) {
+            return "현재 비밀번호, 새 비밀번호, 새 비밀번호 확인을 모두 입력해 주세요.";
+        }
+
+        if (payload.newPassword !== payload.newPasswordCheck) {
+            return "새 비밀번호 확인이 일치하지 않습니다.";
+        }
+
+        if (payload.currentPassword === payload.newPassword) {
             return "현재 사용 중인 비밀번호와 같은 비밀번호로는 변경할 수 없습니다.";
+        }
+
+        return null;
+    }
+
+    function validateWithdrawPayload(payload) {
+        if (payload.confirmText !== WITHDRAW_CONFIRM_TEXT) {
+            return "회원 탈퇴를 진행하려면 확인 문구에 '회원탈퇴'를 정확히 입력해 주세요.";
         }
 
         return null;
@@ -368,7 +397,7 @@
                     </section>
 
                     <section class="mypage-panel ${activeTab === "security" ? "active" : ""}" data-mypage-panel="security">
-                        ${renderPasswordForm()}
+                        ${renderPasswordForm(profile)}
                     </section>
 
                     <section class="mypage-panel ${activeTab === "activity" ? "active" : ""}" data-mypage-panel="activity">
@@ -376,7 +405,7 @@
                     </section>
 
                     <section class="mypage-panel ${activeTab === "withdraw" ? "active" : ""}" data-mypage-panel="withdraw">
-                        ${renderWithdrawPanel(isAdmin)}
+                        ${renderWithdrawPanel(isAdmin, profile)}
                     </section>
                 </div>
             </section>
@@ -420,13 +449,23 @@
         `;
     }
 
-    function renderPasswordForm() {
+    function renderPasswordForm(profile) {
+        if (profile.socialLoginUser) {
+            return `
+                <div class="mypage-info-box">
+                    <h3>소셜 로그인 계정입니다</h3>
+                    <p>${html(profile.loginMethodLabel || "소셜 로그인")} 계정은 사이트에서 비밀번호를 관리하지 않습니다.</p>
+                    <p>비밀번호 변경은 카카오/네이버 계정 설정에서 진행해 주세요.</p>
+                </div>
+            `;
+        }
+
         return `
             <form id="myPagePasswordForm" class="mypage-form mypage-narrow-form">
                 <p class="mypage-guide">비밀번호는 대문자, 소문자, 숫자를 포함한 8~20자로 입력해 주세요.</p>
-                ${input("현재 비밀번호", "currentPassword", "", true, "password")}
-                ${input("새 비밀번호", "newPassword", "", true, "password")}
-                ${input("새 비밀번호 확인", "newPasswordCheck", "", true, "password")}
+                ${passwordInput("현재 비밀번호", "currentPassword", true)}
+                ${passwordInput("새 비밀번호", "newPassword", true)}
+                ${passwordInput("새 비밀번호 확인", "newPasswordCheck", true)}
                 <div class="mypage-form-footer">
                     <button type="submit" class="mypage-primary-btn">비밀번호 변경</button>
                 </div>
@@ -463,7 +502,7 @@
         `;
     }
 
-    function renderWithdrawPanel(isAdmin) {
+    function renderWithdrawPanel(isAdmin, profile) {
         if (isAdmin) {
             return `
                 <div class="mypage-danger-box">
@@ -473,13 +512,19 @@
             `;
         }
 
+        const isSocialUser = Boolean(profile.socialLoginUser);
+
         return `
             <form id="myPageWithdrawForm" class="mypage-form mypage-narrow-form">
                 <div class="mypage-danger-box">
                     <h3>회원 탈퇴</h3>
                     <p>탈퇴 후 계정 정보와 일부 이용 기록이 삭제되거나 작성자 없음으로 처리될 수 있습니다.</p>
+                    ${isSocialUser ? `
+                        <p>현재 계정은 ${html(profile.loginMethodLabel || "소셜 로그인")} 계정이므로 사이트 비밀번호 입력 없이 현재 로그인 세션과 확인 문구로 탈퇴를 진행합니다.</p>
+                    ` : ""}
                 </div>
-                ${input("현재 비밀번호", "password", "", true, "password")}
+                ${isSocialUser ? "" : passwordInput("현재 비밀번호", "password", true)}
+                ${input("확인 문구", "confirmText", "", true, "text", "회원탈퇴")}
                 <label class="mypage-field mypage-full-field">
                     <span>탈퇴 사유</span>
                     <textarea name="reason" rows="3" placeholder="선택 입력"></textarea>
@@ -547,6 +592,41 @@
                        ${required ? "required" : ""}>
             </label>
         `;
+    }
+
+    function passwordInput(label, name, required) {
+        return `
+            <label class="mypage-field">
+                <span>${label}</span>
+                <div class="mypage-password-control">
+                    <input type="password"
+                           name="${name}"
+                           autocomplete="new-password"
+                           ${required ? "required" : ""}>
+                    <button type="button"
+                            class="mypage-password-toggle"
+                            data-mypage-password-toggle
+                            aria-label="비밀번호 표시">보기</button>
+                </div>
+            </label>
+        `;
+    }
+
+    function togglePasswordVisibility(button) {
+        const control = button.closest(".mypage-password-control");
+        if (!control) {
+            return;
+        }
+
+        const input = control.querySelector("input");
+        if (!input) {
+            return;
+        }
+
+        const shouldShow = input.type === "password";
+        input.type = shouldShow ? "text" : "password";
+        button.textContent = shouldShow ? "숨김" : "보기";
+        button.setAttribute("aria-label", shouldShow ? "비밀번호 숨기기" : "비밀번호 표시");
     }
 
     function readonlyInput(label, value) {

@@ -8,5 +8,6 @@ import lombok.Setter;
 public class MyPageWithdrawDto {
 
     private String password;
+    private String confirmText;
     private String reason;
 }
