@@ -1,17 +1,52 @@
+/* ==========================================================================
+   SecondPro MyPage Modal CSS
+   - 마이페이지 모달 전용 최종 정리본
+   - 중복 선언을 제거하고, 탭/폼/비밀번호/소셜 연결/반응형을 섹션별로 분리했습니다.
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   0. 공통 변수
+   -------------------------------------------------------------------------- */
+:root {
+    --mypage-blue: #2563eb;
+    --mypage-blue-dark: #1d4ed8;
+    --mypage-sky: #0ea5e9;
+    --mypage-text: #0f172a;
+    --mypage-muted: #64748b;
+    --mypage-border: #e5eaf3;
+    --mypage-border-strong: #d7e2f1;
+    --mypage-soft: #f8fafc;
+    --mypage-soft-blue: #eff6ff;
+    --mypage-danger: #ef4444;
+    --mypage-radius-sm: 12px;
+    --mypage-radius-md: 16px;
+    --mypage-radius-lg: 22px;
+    --mypage-shadow: 0 26px 80px rgba(15, 23, 42, 0.24);
+}
+
+/* 마이페이지가 열렸을 때 body 스크롤 방지 */
 body.mypage-open {
     overflow: hidden;
 }
 
+/* --------------------------------------------------------------------------
+   1. 메인 로그인 위젯
+   - static/index.html 우측 계정 카드에서 사용
+   -------------------------------------------------------------------------- */
 .auth-user-button {
     width: 100%;
+    min-height: 44px;
     padding: 12px 14px;
     border: 1px solid #dbeafe;
     border-radius: 12px;
-    background: #eff6ff;
-    color: #1d4ed8;
+    background: var(--mypage-soft-blue);
+    color: var(--mypage-blue-dark);
     font-weight: 800;
     cursor: pointer;
-    transition: 0.2s ease;
+    transition: background 0.2s ease, transform 0.2s ease;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .auth-user-button:hover {
@@ -24,6 +59,23 @@ body.mypage-open {
     color: #6b7280;
     font-size: 12px;
     text-align: center;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.auth-login-method {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    min-height: 24px;
+    margin: 8px 0 12px;
+    border-radius: 999px;
+    background: var(--mypage-soft);
+    color: var(--mypage-muted);
+    font-size: 12px;
+    font-weight: 800;
 }
 
 .auth-logout-form {
@@ -45,6 +97,9 @@ body.mypage-open {
     background: #f9fafb;
 }
 
+/* --------------------------------------------------------------------------
+   2. 모달 바깥 영역 / 모달 프레임
+   -------------------------------------------------------------------------- */
 .mypage-overlay {
     position: fixed;
     inset: 0;
@@ -61,18 +116,77 @@ body.mypage-open {
     position: relative;
     width: min(920px, 100%);
     max-height: 86vh;
-    overflow-y: auto;
+    overflow: hidden;
     border-radius: 28px;
     background: #ffffff;
-    box-shadow: 0 26px 80px rgba(15, 23, 42, 0.24);
+    box-shadow: var(--mypage-shadow);
 }
 
+/* 상단 그라데이션 여백 보조 효과 */
+.mypage-modal::before {
+    content: "";
+    position: absolute;
+    inset: 0 0 auto;
+    height: 120px;
+    pointer-events: none;
+    background: linear-gradient(135deg, rgba(14, 165, 233, 0.10), rgba(37, 99, 235, 0.10));
+}
+
+/* 닫기 버튼: 버튼 전체는 고정, hover 시 X 글자만 회전 */
+.mypage-close {
+    position: absolute;
+    top: 18px;
+    right: 20px;
+    z-index: 3;
+    width: 36px;
+    height: 36px;
+    padding: 0;
+    border: 0;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.92);
+    color: #334155;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0;
+    line-height: 1;
+    cursor: pointer;
+    appearance: none;
+    -webkit-appearance: none;
+    box-sizing: border-box;
+    transition: background 0.2s ease, box-shadow 0.2s ease;
+}
+
+.mypage-close::before {
+    content: "×";
+    display: block;
+    font-size: 24px;
+    font-weight: 600;
+    line-height: 1;
+    transform: translateY(-1px);
+    transition: transform 0.2s ease;
+}
+
+.mypage-close:hover {
+    background: #ffffff;
+    box-shadow: 0 8px 20px rgba(15, 23, 42, 0.18);
+}
+
+.mypage-close:hover::before {
+    transform: translateY(-1px) rotate(90deg);
+}
+
+/* --------------------------------------------------------------------------
+   3. 상단 프로필 헤더
+   -------------------------------------------------------------------------- */
 .mypage-profile-header {
+    position: relative;
+    z-index: 1;
     display: flex;
     gap: 18px;
     align-items: center;
     padding: 30px 34px;
-    background: linear-gradient(135deg, #0ea5e9, #2563eb);
+    background: linear-gradient(135deg, var(--mypage-sky), var(--mypage-blue));
     color: #ffffff;
 }
 
@@ -101,6 +215,10 @@ body.mypage-open {
     font-weight: 900;
 }
 
+.mypage-profile-main {
+    min-width: 0;
+}
+
 .mypage-profile-main h2 {
     margin: 0 0 8px;
     font-size: 25px;
@@ -114,29 +232,70 @@ body.mypage-open {
     font-size: 13px;
 }
 
+.mypage-profile-main h2,
+.mypage-profile-main p,
+.mypage-profile-main span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* --------------------------------------------------------------------------
+   4. 탭 메뉴
+   - 탭이 6개이므로 PC/모바일 모두 가로 스크롤 가능하게 구성
+   -------------------------------------------------------------------------- */
 .mypage-tabs {
+    position: relative;
+    z-index: 1;
     display: flex;
-    gap: 8px;
-    padding: 18px 28px 0;
-    border-bottom: 1px solid #e5e7eb;
+    flex-wrap: nowrap;
+    align-items: center;
+    gap: 10px;
+    overflow-x: auto;
+    padding: 18px 28px;
+    border-bottom: 1px solid #e2e8f0;
     background: #ffffff;
+    scrollbar-width: thin;
 }
 
 .mypage-tab {
-    padding: 12px 14px;
-    border: 0;
-    border-bottom: 3px solid transparent;
-    background: transparent;
-    color: #64748b;
+    flex: 0 0 auto;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    min-height: 44px;
+    padding: 0 16px;
+    border: 1px solid transparent;
+    border-radius: 14px;
+    background: var(--mypage-soft);
+    color: #475569;
     font-weight: 800;
+    white-space: nowrap;
     cursor: pointer;
+    transition: background 0.2s ease, color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.mypage-tab:hover {
+    background: #eef4ff;
+    color: var(--mypage-blue-dark);
 }
 
 .mypage-tab.active {
-    color: #2563eb;
-    border-bottom-color: #2563eb;
+    border-color: var(--mypage-blue);
+    background: linear-gradient(135deg, var(--mypage-blue), var(--mypage-blue-dark));
+    color: #ffffff;
+    box-shadow: 0 10px 24px rgba(37, 99, 235, 0.22);
 }
 
+.mypage-tab-icon {
+    font-size: 15px;
+    line-height: 1;
+}
+
+/* --------------------------------------------------------------------------
+   5. 메시지 / 패널
+   -------------------------------------------------------------------------- */
 .mypage-message {
     margin: 18px 28px 0;
     padding: 12px 14px;
@@ -156,6 +315,8 @@ body.mypage-open {
 }
 
 .mypage-panels {
+    max-height: calc(86vh - 180px);
+    overflow-y: auto;
     padding: 26px 28px 30px;
 }
 
@@ -167,47 +328,13 @@ body.mypage-open {
     display: block;
 }
 
+/* --------------------------------------------------------------------------
+   6. 공통 버튼 / 폼
+   -------------------------------------------------------------------------- */
 .mypage-form-grid {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 16px;
-}
-
-.mypage-field {
-    display: flex;
-    flex-direction: column;
-    gap: 7px;
-    color: #334155;
-    font-size: 13px;
-    font-weight: 800;
-}
-
-.mypage-field input,
-.mypage-field select,
-.mypage-field textarea {
-    width: 100%;
-    min-height: 42px;
-    box-sizing: border-box;
-    border: 1px solid #dbe3ef;
-    border-radius: 12px;
-    padding: 10px 12px;
-    background: #ffffff;
-    color: #0f172a;
-    font: inherit;
-    font-weight: 500;
-}
-
-.mypage-field textarea {
-    resize: vertical;
-}
-
-.mypage-field input[readonly] {
-    background: #f8fafc;
-    color: #64748b;
-}
-
-.mypage-full-field {
-    grid-column: 1 / -1;
 }
 
 .mypage-form-footer {
@@ -227,10 +354,11 @@ body.mypage-open {
     padding: 0 16px;
     font-weight: 900;
     cursor: pointer;
+    font-family: inherit;
 }
 
 .mypage-primary-btn {
-    background: #2563eb;
+    background: var(--mypage-blue);
     color: #ffffff;
 }
 
@@ -240,317 +368,120 @@ body.mypage-open {
 }
 
 .mypage-danger-btn {
-    background: #ef4444;
+    background: var(--mypage-danger);
     color: #ffffff;
+}
+
+.mypage-primary-btn:hover {
+    background: var(--mypage-blue-dark);
+}
+
+.mypage-secondary-btn:hover {
+    background: #e2e8f0;
+}
+
+.mypage-danger-btn:hover {
+    background: #dc2626;
 }
 
 .mypage-narrow-form {
     max-width: 520px;
 }
 
+.mypage-field {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+    color: #334155;
+    font-size: 13px;
+    font-weight: 800;
+}
+
+.mypage-field input,
+.mypage-field select,
+.mypage-field textarea {
+    width: 100%;
+    min-height: 46px;
+    box-sizing: border-box;
+    border: 1px solid var(--mypage-border-strong);
+    border-radius: 14px;
+    padding: 10px 12px;
+    background: #ffffff;
+    color: var(--mypage-text);
+    font: inherit;
+    font-weight: 500;
+    outline: none;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+}
+
+.mypage-field input:focus,
+.mypage-field select:focus,
+.mypage-field textarea:focus {
+    border-color: var(--mypage-blue);
+    box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.12);
+}
+
+.mypage-field input[readonly] {
+    border-color: var(--mypage-border);
+    background: var(--mypage-soft);
+    color: var(--mypage-muted);
+    cursor: default;
+}
+
+.mypage-field textarea {
+    resize: vertical;
+}
+
+/* select 기본 화살표를 통일된 CSS 화살표로 교체 */
+.mypage-field select {
+    appearance: none;
+    background-image:
+        linear-gradient(45deg, transparent 50%, #64748b 50%),
+        linear-gradient(135deg, #64748b 50%, transparent 50%);
+    background-position: calc(100% - 18px) 19px, calc(100% - 12px) 19px;
+    background-size: 6px 6px, 6px 6px;
+    background-repeat: no-repeat;
+    padding-right: 38px;
+}
+
+.mypage-full-field {
+    grid-column: 1 / -1;
+}
+
+.mypage-address-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 8px;
+}
+
+.mypage-address-row .mypage-secondary-btn {
+    min-width: 96px;
+}
+
+/* --------------------------------------------------------------------------
+   7. 안내 박스 / 섹션 헤더 / 읽기 전용 카드
+   -------------------------------------------------------------------------- */
 .mypage-guide {
     margin: 0 0 18px;
     padding: 14px;
     border-radius: 14px;
-    background: #f8fafc;
-    color: #64748b;
-    font-size: 13px;
-}
-
-.mypage-activity-grid {
-    display: grid;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-    gap: 12px;
-    margin-bottom: 24px;
-}
-
-.mypage-activity-card {
-    padding: 16px;
-    border: 1px solid #e5e7eb;
-    border-radius: 18px;
-    background: #f8fafc;
-}
-
-.mypage-activity-card span {
-    display: block;
-    color: #64748b;
-    font-size: 12px;
-    font-weight: 800;
-}
-
-.mypage-activity-card strong {
-    display: block;
-    margin-top: 8px;
-    color: #0f172a;
-    font-size: 25px;
-}
-
-.mypage-section-grid {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 16px;
-}
-
-.mypage-list-section {
-    min-height: 180px;
-    padding: 18px;
-    border: 1px solid #e5e7eb;
-    border-radius: 20px;
-}
-
-.mypage-section-title {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 10px;
-    margin-bottom: 12px;
-}
-
-.mypage-section-title h3 {
-    margin: 0;
-    color: #0f172a;
-    font-size: 16px;
-}
-
-.mypage-section-title a {
-    color: #2563eb;
-    font-size: 12px;
-    font-weight: 800;
-    text-decoration: none;
-}
-
-.mypage-simple-list {
-    display: grid;
-    gap: 12px;
-    margin: 0;
-    padding: 0;
-    list-style: none;
-}
-
-.mypage-simple-list li {
-    display: grid;
-    gap: 4px;
-    padding-bottom: 12px;
-    border-bottom: 1px solid #f1f5f9;
-}
-
-.mypage-simple-list li:last-child {
-    padding-bottom: 0;
-    border-bottom: 0;
-}
-
-.mypage-simple-list a {
-    color: #0f172a;
-    font-weight: 900;
-    text-decoration: none;
-}
-
-.mypage-simple-list span,
-.mypage-simple-list small,
-.mypage-empty {
-    color: #64748b;
-    font-size: 12px;
-}
-
-.mypage-danger-box {
-    margin-bottom: 16px;
-    padding: 18px;
-    border: 1px solid #fecaca;
-    border-radius: 18px;
-    background: #fef2f2;
-    color: #991b1b;
-}
-
-.mypage-danger-box h3 {
-    margin: 0 0 8px;
-}
-
-.mypage-danger-box p {
-    margin: 0;
+    background: var(--mypage-soft);
+    color: var(--mypage-muted);
     font-size: 13px;
     line-height: 1.5;
-}
-
-@media (max-width: 780px) {
-    .mypage-overlay {
-        align-items: flex-end;
-        padding: 0;
-    }
-
-    .mypage-modal {
-        width: 100%;
-        max-height: 92vh;
-        border-radius: 24px 24px 0 0;
-    }
-
-    .mypage-profile-header {
-        padding: 26px 22px;
-    }
-
-    .mypage-tabs {
-        overflow-x: auto;
-        padding-inline: 18px;
-    }
-
-    .mypage-panels {
-        padding: 22px 18px 26px;
-    }
-
-    .mypage-form-grid,
-    .mypage-activity-grid,
-    .mypage-section-grid {
-        grid-template-columns: 1fr;
-    }
-}
-
-/* mypage polish patch: 탭 선택 상태와 닫기 버튼 정렬 보정 */
-.mypage-close {
-    position: absolute;
-    top: 18px;
-    right: 20px;
-    z-index: 3;
-
-    width: 36px;
-    height: 36px;
-    padding: 0;
-    border: 0;
-    border-radius: 999px;
-
-    background: rgba(255, 255, 255, 0.92);
-    color: #334155;
-
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-
-    font-size: 0;
-    line-height: 1;
-    cursor: pointer;
-
-    appearance: none;
-    -webkit-appearance: none;
-    box-sizing: border-box;
-
-    transition: background 0.2s ease, box-shadow 0.2s ease;
-}
-
-.mypage-close::before {
-    content: "×";
-    display: block;
-
-    font-size: 24px;
-    font-weight: 600;
-    line-height: 1;
-
-    transform: translateY(-1px);
-    transition: transform 0.2s ease;
-}
-
-.mypage-close:hover {
-    background: #ffffff;
-    box-shadow: 0 8px 20px rgba(15, 23, 42, 0.18);
-}
-
-.mypage-close:hover::before {
-    transform: translateY(-1px) rotate(90deg);
-}
-
-.mypage-tabs {
-    align-items: center;
-    gap: 10px;
-    padding: 18px 28px;
-}
-
-.mypage-tabs .mypage-tab {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 7px;
-    min-width: 112px;
-    min-height: 44px;
-    padding: 0 16px;
-    border: 1px solid transparent;
-    border-radius: 14px;
-    background: #f8fafc;
-    color: #475569;
-    box-shadow: none;
-    transition: background 0.2s ease, color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
-}
-
-.mypage-tabs .mypage-tab:hover {
-    background: #eef4ff;
-    color: #1d4ed8;
-}
-
-.mypage-tabs .mypage-tab.active {
-    border-color: #2563eb;
-    background: linear-gradient(135deg, #2563eb, #1d4ed8);
-    color: #ffffff;
-    box-shadow: 0 10px 24px rgba(37, 99, 235, 0.22);
-}
-
-.mypage-tabs .mypage-tab.active .mypage-tab-icon {
-    filter: saturate(1.15);
-}
-
-.mypage-tab-icon {
-    font-size: 15px;
-    line-height: 1;
-}
-
-.mypage-field input:invalid {
-    border-color: #fca5a5;
-}
-
-@media (max-width: 780px) {
-    .mypage-tabs .mypage-tab {
-        min-width: 104px;
-        flex: 0 0 auto;
-    }
-}
-
-/* social/password patch: 비밀번호 보기 버튼과 소셜 로그인 안내 */
-.mypage-password-control {
-    display: grid;
-    grid-template-columns: 1fr auto;
-    align-items: center;
-    gap: 8px;
-    width: 100%;
-}
-
-.mypage-password-control input {
-    min-width: 0;
-}
-
-.mypage-password-toggle {
-    height: 42px;
-    padding: 0 12px;
-    border: 1px solid #d8e2f2;
-    border-radius: 12px;
-    background: #f8fafc;
-    color: #334155;
-    font-weight: 800;
-    cursor: pointer;
-    transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
-}
-
-.mypage-password-toggle:hover {
-    border-color: #2563eb;
-    background: #eef4ff;
-    color: #1d4ed8;
 }
 
 .mypage-info-box {
     padding: 24px;
     border: 1px solid #dbeafe;
     border-radius: 20px;
-    background: linear-gradient(135deg, #eff6ff, #ffffff);
+    background: linear-gradient(135deg, var(--mypage-soft-blue), #ffffff);
     color: #334155;
 }
 
 .mypage-info-box h3 {
     margin: 0 0 10px;
-    color: #0f172a;
+    color: var(--mypage-text);
     font-size: 18px;
 }
 
@@ -559,70 +490,17 @@ body.mypage-open {
     line-height: 1.6;
 }
 
-/* mypage privacy/edit-mode patch */
-.auth-user-button,
-.auth-sub-text {
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-}
-
-.auth-login-method {
+.mypage-info-badge {
     display: inline-flex;
     align-items: center;
-    justify-content: center;
-    width: 100%;
-    min-height: 24px;
-    margin: 8px 0 12px;
+    min-height: 26px;
+    margin-bottom: 10px;
+    padding: 0 10px;
     border-radius: 999px;
-    background: #f8fafc;
-    color: #64748b;
-    font-weight: 800;
-}
-
-.mypage-modal {
-    overflow: hidden;
-}
-
-.mypage-modal::before {
-    content: "";
-    position: absolute;
-    inset: 0 0 auto;
-    height: 120px;
-    pointer-events: none;
-    background: linear-gradient(135deg, rgba(14, 165, 233, 0.10), rgba(37, 99, 235, 0.10));
-}
-
-.mypage-profile-header {
-    position: relative;
-    z-index: 1;
-}
-
-.mypage-profile-main {
-    min-width: 0;
-}
-
-.mypage-profile-main h2,
-.mypage-profile-main p,
-.mypage-profile-main span {
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-}
-
-.mypage-tabs {
-    position: relative;
-    z-index: 1;
-    border-bottom: 1px solid #e2e8f0;
-}
-
-.mypage-tab {
-    flex: 0 0 auto;
-}
-
-.mypage-panels {
-    max-height: calc(86vh - 180px);
-    overflow-y: auto;
+    background: #dbeafe;
+    color: var(--mypage-blue-dark);
+    font-size: 12px;
+    font-weight: 900;
 }
 
 .mypage-section-head {
@@ -635,14 +513,14 @@ body.mypage-open {
 
 .mypage-section-head h3 {
     margin: 0;
-    color: #0f172a;
+    color: var(--mypage-text);
     font-size: 18px;
 }
 
 .mypage-section-head p,
 .mypage-caption {
     margin: 6px 0 0;
-    color: #64748b;
+    color: var(--mypage-muted);
     font-size: 13px;
     line-height: 1.5;
 }
@@ -663,15 +541,15 @@ body.mypage-open {
 .mypage-read-item {
     min-height: 76px;
     padding: 16px;
-    border: 1px solid #e5eaf3;
+    border: 1px solid var(--mypage-border);
     border-radius: 16px;
-    background: #f8fafc;
+    background: var(--mypage-soft);
 }
 
 .mypage-read-item span {
     display: block;
     margin-bottom: 8px;
-    color: #64748b;
+    color: var(--mypage-muted);
     font-size: 12px;
     font-weight: 900;
 }
@@ -679,264 +557,57 @@ body.mypage-open {
 .mypage-read-item strong {
     display: block;
     overflow: hidden;
-    color: #0f172a;
+    color: var(--mypage-text);
     font-size: 15px;
     font-weight: 900;
     text-overflow: ellipsis;
     white-space: nowrap;
 }
 
-.mypage-field input,
-.mypage-field select,
-.mypage-field textarea {
-    min-height: 46px;
-    border-color: #d7e2f1;
-    border-radius: 14px;
-    outline: none;
-    transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
-}
-
-.mypage-field input:focus,
-.mypage-field select:focus,
-.mypage-field textarea:focus {
-    border-color: #2563eb;
-    box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.12);
-}
-
-.mypage-field select {
-    appearance: none;
-    background-image: linear-gradient(45deg, transparent 50%, #64748b 50%), linear-gradient(135deg, #64748b 50%, transparent 50%);
-    background-position: calc(100% - 18px) 19px, calc(100% - 12px) 19px;
-    background-size: 6px 6px, 6px 6px;
-    background-repeat: no-repeat;
-    padding-right: 38px;
-}
-
-.mypage-field input[readonly] {
-    border-color: #e5eaf3;
-    background: #f8fafc;
-    color: #64748b;
-    cursor: default;
-}
-
-.mypage-address-row {
-    display: grid;
-    grid-template-columns: 1fr auto;
-    gap: 8px;
-}
-
-.mypage-address-row .mypage-secondary-btn {
-    min-width: 96px;
-}
-
-.mypage-social-grid {
-    display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 12px;
-}
-
-.mypage-social-card {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 12px;
-    padding: 16px;
-    border: 1px solid #e5eaf3;
-    border-radius: 16px;
-    background: #ffffff;
-}
-
-.mypage-social-card.connected {
-    border-color: #bfdbfe;
-    background: #eff6ff;
-}
-
-.mypage-social-card strong,
-.mypage-social-card span {
-    display: block;
-}
-
-.mypage-social-card strong {
-    color: #0f172a;
-    font-size: 15px;
-}
-
-.mypage-social-card span {
-    margin-top: 4px;
-    color: #64748b;
-    font-size: 12px;
-    font-weight: 800;
-}
-
-.mypage-social-card button:disabled {
-    opacity: 0.72;
-    cursor: not-allowed;
-}
-
-.mypage-section-links {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-
-.mypage-section-links a {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    min-height: 32px;
-    padding: 0 10px;
-    border-radius: 999px;
-    background: #eff6ff;
-    color: #1d4ed8;
-}
-
-@media (max-width: 780px) {
-    .mypage-panels {
-        max-height: calc(92vh - 180px);
-    }
-
-    .mypage-section-head,
-    .mypage-social-card {
-        align-items: stretch;
-        flex-direction: column;
-    }
-
-    .mypage-read-grid,
-    .mypage-social-grid {
-        grid-template-columns: 1fr;
-    }
-
-    .mypage-address-row {
-        grid-template-columns: 1fr;
-    }
-}
-
-/* mypage password cleanup patch: 비밀번호 변경 UI 정리 */
-.mypage-password-section {
-    max-width: 720px;
-}
-
-.mypage-password-head {
-    margin-bottom: 12px;
-}
-
-.mypage-password-form {
-    width: 100%;
-    max-width: 680px;
-}
-
-.mypage-password-card {
+/* --------------------------------------------------------------------------
+   8. 비밀번호 변경 탭
+   -------------------------------------------------------------------------- */
+.mypage-password-page {
     display: grid;
     gap: 18px;
-    padding: 22px;
-    border: 1px solid #e5eaf3;
-    border-radius: 22px;
-    background: linear-gradient(135deg, #ffffff, #f8fbff);
-    box-shadow: 0 14px 34px rgba(15, 23, 42, 0.06);
 }
 
-.mypage-password-card .mypage-guide {
+.mypage-password-page-head {
+    display: grid;
+    gap: 6px;
+    padding: 4px 2px 0;
+}
+
+.mypage-password-page-head h3 {
     margin: 0;
-    padding: 14px 16px;
-    border: 1px solid #edf2f7;
-    background: #f8fafc;
-    line-height: 1.5;
-    word-break: keep-all;
-}
-
-.mypage-password-field-list {
-    display: grid;
-    gap: 14px;
-}
-
-.mypage-password-field-list .mypage-field {
-    gap: 8px;
-}
-
-.mypage-password-control {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) 64px;
-    align-items: stretch;
-    gap: 10px;
-    width: 100%;
-}
-
-.mypage-password-control input {
-    width: 100%;
-    min-width: 0;
-    min-height: 48px;
-}
-
-.mypage-password-toggle {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 64px;
-    min-width: 64px;
-    height: 48px;
-    padding: 0;
-    white-space: nowrap;
-}
-
-.mypage-password-footer {
-    margin-top: 2px;
-}
-
-.mypage-social-password-box {
-    max-width: 680px;
-}
-
-.mypage-info-badge {
-    display: inline-flex;
-    align-items: center;
-    min-height: 26px;
-    margin-bottom: 10px;
-    padding: 0 10px;
-    border-radius: 999px;
-    background: #dbeafe;
-    color: #1d4ed8;
-    font-size: 12px;
+    color: var(--mypage-text);
+    font-size: 22px;
     font-weight: 900;
 }
 
-@media (max-width: 780px) {
-    .mypage-password-section,
-    .mypage-password-form,
-    .mypage-social-password-box {
-        max-width: none;
-    }
-
-    .mypage-password-card {
-        padding: 18px;
-    }
-
-    .mypage-password-control {
-        grid-template-columns: minmax(0, 1fr) 58px;
-        gap: 8px;
-    }
-
-    .mypage-password-toggle {
-        width: 58px;
-        min-width: 58px;
-    }
+.mypage-password-page-head p {
+    margin: 0;
+    color: var(--mypage-muted);
+    font-size: 14px;
+    line-height: 1.5;
 }
 
-/* mypage password step patch: 비밀번호 변경은 버튼 클릭 후 별도 변경 화면으로 표시 */
 .mypage-setting-row {
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: 18px;
     width: 100%;
+    max-width: 680px;
     padding: 18px 20px;
-    border: 1px solid #e5eaf3;
+    border: 1px solid var(--mypage-border);
     border-radius: 18px;
     background: #ffffff;
     box-shadow: 0 10px 24px rgba(15, 23, 42, 0.04);
 }
 
 .mypage-setting-row.disabled {
-    background: #f8fafc;
+    background: var(--mypage-soft);
 }
 
 .mypage-setting-info {
@@ -954,21 +625,21 @@ body.mypage-open {
     width: 42px;
     height: 42px;
     border-radius: 14px;
-    background: #eff6ff;
+    background: var(--mypage-soft-blue);
     font-size: 20px;
 }
 
 .mypage-setting-info strong {
     display: block;
     margin-bottom: 5px;
-    color: #0f172a;
+    color: var(--mypage-text);
     font-size: 16px;
     font-weight: 900;
 }
 
 .mypage-setting-info p {
     margin: 0;
-    color: #64748b;
+    color: var(--mypage-muted);
     font-size: 13px;
     line-height: 1.45;
 }
@@ -987,7 +658,7 @@ body.mypage-open {
     padding: 0 14px;
     border-radius: 999px;
     background: #eef2f7;
-    color: #64748b;
+    color: var(--mypage-muted);
     font-size: 13px;
     font-weight: 900;
 }
@@ -995,7 +666,7 @@ body.mypage-open {
 .mypage-password-change-layout {
     display: grid;
     gap: 18px;
-    max-width: 620px;
+    max-width: 640px;
     padding: 24px;
     border: 1px solid #e2e8f0;
     border-radius: 22px;
@@ -1012,14 +683,14 @@ body.mypage-open {
 
 .mypage-password-change-header h3 {
     margin: 0 0 6px;
-    color: #0f172a;
+    color: var(--mypage-text);
     font-size: 22px;
     font-weight: 900;
 }
 
 .mypage-password-change-header p {
     margin: 0;
-    color: #64748b;
+    color: var(--mypage-muted);
     font-size: 14px;
 }
 
@@ -1034,7 +705,7 @@ body.mypage-open {
 .mypage-password-rules li {
     position: relative;
     padding-left: 16px;
-    color: #ef4444;
+    color: var(--mypage-danger);
     font-size: 13px;
     line-height: 1.5;
 }
@@ -1046,11 +717,14 @@ body.mypage-open {
     top: 0;
 }
 
-.mypage-password-change-layout .mypage-password-form {
+.mypage-password-form {
+    width: 100%;
     max-width: none;
 }
 
-.mypage-password-change-layout .mypage-password-card {
+.mypage-password-card {
+    display: grid;
+    gap: 18px;
     padding: 0;
     border: 0;
     border-radius: 0;
@@ -1058,37 +732,69 @@ body.mypage-open {
     box-shadow: none;
 }
 
-.mypage-password-change-layout .mypage-password-field-list {
+.mypage-password-field-list {
+    display: grid;
     gap: 10px;
 }
 
-.mypage-password-change-layout .mypage-field {
-    gap: 0;
+.mypage-password-field-list .mypage-field {
+    gap: 8px;
 }
 
-.mypage-password-change-layout .mypage-field > span {
-    margin-bottom: 8px;
-}
-
-.mypage-password-change-layout .mypage-password-control {
+.mypage-password-control {
+    display: grid;
     grid-template-columns: minmax(0, 1fr) 68px;
+    align-items: stretch;
     gap: 10px;
+    width: 100%;
 }
 
-.mypage-password-change-layout .mypage-password-control input,
-.mypage-password-change-layout .mypage-password-toggle {
+.mypage-password-control input {
+    width: 100%;
+    min-width: 0;
     height: 52px;
     min-height: 52px;
 }
 
-.mypage-password-change-layout .mypage-password-footer {
+.mypage-password-toggle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 68px;
+    min-width: 68px;
+    height: 52px;
+    min-height: 52px;
+    padding: 0;
+    border: 1px solid #d8e2f2;
+    border-radius: 12px;
+    background: var(--mypage-soft);
+    color: #334155;
+    font-weight: 800;
+    white-space: nowrap;
+    cursor: pointer;
+    transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+}
+
+.mypage-password-toggle:hover {
+    border-color: var(--mypage-blue);
+    background: #eef4ff;
+    color: var(--mypage-blue-dark);
+}
+
+.mypage-password-footer {
+    display: flex;
     justify-content: stretch;
+    gap: 10px;
     margin-top: 8px;
 }
 
-.mypage-password-change-layout .mypage-password-footer button {
+.mypage-password-footer button {
     flex: 1 1 0;
     min-height: 48px;
+}
+
+.mypage-social-password-box {
+    max-width: 680px;
 }
 
 .mypage-social-password-box.compact {
@@ -1096,89 +802,9 @@ body.mypage-open {
     padding: 18px;
 }
 
-@media (max-width: 780px) {
-    .mypage-setting-row,
-    .mypage-password-change-header {
-        align-items: stretch;
-        flex-direction: column;
-    }
-
-    .mypage-setting-action {
-        width: 100%;
-    }
-
-    .mypage-password-change-layout {
-        max-width: none;
-        padding: 18px;
-    }
-
-    .mypage-password-change-layout .mypage-password-control {
-        grid-template-columns: minmax(0, 1fr) 58px;
-    }
-}
-
-/* mypage password tab patch: 비밀번호 변경을 보안 설정에서 분리 */
-.mypage-tabs {
-    flex-wrap: nowrap;
-    overflow-x: auto;
-    scrollbar-width: thin;
-}
-
-.mypage-tabs .mypage-tab {
-    flex: 0 0 auto;
-    min-width: auto;
-    white-space: nowrap;
-}
-
-.mypage-password-page {
-    display: grid;
-    gap: 18px;
-}
-
-.mypage-password-page-head {
-    display: grid;
-    gap: 6px;
-    padding: 4px 2px 0;
-}
-
-.mypage-password-page-head h3 {
-    margin: 0;
-    color: #0f172a;
-    font-size: 22px;
-    font-weight: 900;
-}
-
-.mypage-password-page-head p {
-    margin: 0;
-    color: #64748b;
-    font-size: 14px;
-    line-height: 1.5;
-}
-
-.mypage-password-page .mypage-setting-row {
-    max-width: 680px;
-}
-
-.mypage-password-page .mypage-password-change-layout {
-    max-width: 640px;
-}
-
-@media (max-width: 780px) {
-    .mypage-tabs {
-        padding-inline: 18px;
-        padding-bottom: 14px;
-    }
-
-    .mypage-tabs .mypage-tab {
-        min-width: 104px;
-    }
-
-    .mypage-password-page-head h3 {
-        font-size: 20px;
-    }
-}
-
-/* mypage social tab patch: 소셜 계정 연결을 별도 탭으로 분리 */
+/* --------------------------------------------------------------------------
+   9. 소셜 연결 탭
+   -------------------------------------------------------------------------- */
 .mypage-social-page {
     display: grid;
     gap: 18px;
@@ -1192,7 +818,7 @@ body.mypage-open {
 
 .mypage-social-page-head h3 {
     margin: 0;
-    color: #0f172a;
+    color: var(--mypage-text);
     font-size: 22px;
     font-weight: 900;
 }
@@ -1200,7 +826,7 @@ body.mypage-open {
 .mypage-social-page-head p {
     max-width: 720px;
     margin: 0;
-    color: #64748b;
+    color: var(--mypage-muted);
     font-size: 14px;
     line-height: 1.6;
     word-break: keep-all;
@@ -1237,20 +863,20 @@ body.mypage-open {
 }
 
 .mypage-social-provider-icon {
+    position: relative;
     flex: 0 0 44px;
     width: 44px;
     height: 44px;
-    border-radius: 14px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    position: relative;
     overflow: hidden;
+    border-radius: 14px;
     font-size: 0;
     line-height: 0;
 }
 
-/* 카카오 */
+/* 카카오 말풍선 아이콘 */
 .mypage-social-provider-icon.kakao {
     background: #facc15;
 }
@@ -1258,57 +884,51 @@ body.mypage-open {
 .mypage-social-provider-icon.kakao::before {
     content: "";
     position: absolute;
+    top: 13px;
+    left: 11px;
     width: 22px;
     height: 16px;
     border-radius: 50%;
     background: #111827;
-    top: 13px;
-    left: 11px;
 }
 
 .mypage-social-provider-icon.kakao::after {
     content: "";
     position: absolute;
-    width: 7px;
-    height: 7px;
-    background: #111827;
     left: 18px;
     bottom: 11px;
-    transform: rotate(35deg);
+    width: 7px;
+    height: 7px;
     border-radius: 0 0 7px 0;
+    background: #111827;
+    transform: rotate(35deg);
 }
 
-/* 네이버 */
+/* 네이버 N 아이콘: 글자 content를 쓰지 않고 도형으로 처리 */
 .mypage-social-provider-icon.naver {
-    position: relative;
-    overflow: hidden;
     background: #03c75a;
 }
 
-/* 기존 naver::before 완전 교체 */
 .mypage-social-provider-icon.naver::before {
     content: "";
     position: absolute;
     top: 50%;
     left: 50%;
-
-    width: 24px;
-    height: 22px;
-
+    width: 21px;
+    height: 20px;
     background: #ffffff;
     transform: translate(-50%, -50%);
-
     clip-path: polygon(
-            0 0,
-            32% 0,
-            68% 52%,
-            68% 0,
-            100% 0,
-            100% 100%,
-            68% 100%,
-            32% 48%,
-            32% 100%,
-            0 100%
+        0 0,
+        32% 0,
+        68% 52%,
+        68% 0,
+        100% 0,
+        100% 100%,
+        68% 100%,
+        32% 48%,
+        32% 100%,
+        0 100%
     );
 }
 
@@ -1318,7 +938,7 @@ body.mypage-open {
 
 .mypage-social-provider-text strong {
     display: block;
-    color: #0f172a;
+    color: var(--mypage-text);
     font-size: 16px;
     font-weight: 900;
 }
@@ -1326,7 +946,7 @@ body.mypage-open {
 .mypage-social-provider-text p {
     margin: 4px 0 0;
     overflow-wrap: anywhere;
-    color: #64748b;
+    color: var(--mypage-muted);
     font-size: 13px;
     line-height: 1.5;
 }
@@ -1339,50 +959,264 @@ body.mypage-open {
     gap: 10px;
 }
 
+/* 상태/버튼 칩은 span과 button이 같은 높이·정렬을 갖도록 하나의 규격으로 통일 */
 .mypage-social-status,
 .mypage-social-provider-action .mypage-secondary-btn {
     display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
     width: auto;
     min-width: 96px;
     height: 38px;
     min-height: 38px;
-    align-items: center;
-    justify-content: center;
-    box-sizing: border-box;
+    margin: 0;
+    padding: 0 16px;
     border: 0;
     border-radius: 999px;
-    padding: 0 16px;
+    font-family: inherit;
     font-size: 13px;
     font-weight: 900;
     line-height: 1;
+    text-align: center;
     white-space: nowrap;
     vertical-align: middle;
 }
 
-.mypage-social-provider-action .mypage-secondary-btn {
+.mypage-social-provider-action .mypage-secondary-btn,
+.mypage-social-provider-action .mypage-secondary-btn:disabled {
     appearance: none;
     -webkit-appearance: none;
-    margin: 0;
+    opacity: 1;
     cursor: default;
 }
 
 .mypage-social-status.connected {
     background: #dbeafe;
-    color: #1d4ed8;
+    color: var(--mypage-blue-dark);
 }
 
 .mypage-social-status.waiting,
 .mypage-social-provider-action .mypage-secondary-btn {
     background: #f1f5f9;
-    color: #64748b;
+    color: var(--mypage-muted);
 }
 
 .mypage-social-guide-box {
     max-width: 760px;
 }
 
+/* --------------------------------------------------------------------------
+   10. 내 활동
+   -------------------------------------------------------------------------- */
+.mypage-activity-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 12px;
+    margin-bottom: 24px;
+}
+
+.mypage-activity-card {
+    padding: 16px;
+    border: 1px solid #e5e7eb;
+    border-radius: 18px;
+    background: var(--mypage-soft);
+}
+
+.mypage-activity-card span {
+    display: block;
+    color: var(--mypage-muted);
+    font-size: 12px;
+    font-weight: 800;
+}
+
+.mypage-activity-card strong {
+    display: block;
+    margin-top: 8px;
+    color: var(--mypage-text);
+    font-size: 25px;
+}
+
+.mypage-section-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+}
+
+.mypage-list-section {
+    min-height: 180px;
+    padding: 18px;
+    border: 1px solid #e5e7eb;
+    border-radius: 20px;
+}
+
+.mypage-section-title {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 12px;
+}
+
+.mypage-section-title h3 {
+    margin: 0;
+    color: var(--mypage-text);
+    font-size: 16px;
+}
+
+.mypage-section-title a,
+.mypage-section-links a {
+    color: var(--mypage-blue);
+    font-size: 12px;
+    font-weight: 800;
+    text-decoration: none;
+}
+
+.mypage-section-links {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.mypage-section-links a {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 32px;
+    padding: 0 10px;
+    border-radius: 999px;
+    background: var(--mypage-soft-blue);
+    color: var(--mypage-blue-dark);
+}
+
+.mypage-simple-list {
+    display: grid;
+    gap: 12px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.mypage-simple-list li {
+    display: grid;
+    gap: 4px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.mypage-simple-list li:last-child {
+    padding-bottom: 0;
+    border-bottom: 0;
+}
+
+.mypage-simple-list a {
+    color: var(--mypage-text);
+    font-weight: 900;
+    text-decoration: none;
+}
+
+.mypage-simple-list span,
+.mypage-simple-list small,
+.mypage-empty {
+    color: var(--mypage-muted);
+    font-size: 12px;
+}
+
+/* --------------------------------------------------------------------------
+   11. 회원 탈퇴
+   -------------------------------------------------------------------------- */
+.mypage-danger-box {
+    margin-bottom: 16px;
+    padding: 18px;
+    border: 1px solid #fecaca;
+    border-radius: 18px;
+    background: #fef2f2;
+    color: #991b1b;
+}
+
+.mypage-danger-box h3 {
+    margin: 0 0 8px;
+}
+
+.mypage-danger-box p {
+    margin: 0;
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+/* --------------------------------------------------------------------------
+   12. 반응형
+   - 780px 이하: bottom sheet 스타일
+   - 480px 이하: 탭/소셜 버튼/폼을 1열 중심으로 정리
+   -------------------------------------------------------------------------- */
 @media (max-width: 780px) {
-    .mypage-social-page-head h3 {
+    .mypage-overlay {
+        align-items: flex-end;
+        padding: 0;
+    }
+
+    .mypage-modal {
+        width: 100%;
+        max-height: 92vh;
+        border-radius: 24px 24px 0 0;
+    }
+
+    .mypage-profile-header {
+        padding: 26px 22px;
+    }
+
+    .mypage-tabs {
+        padding: 18px 18px 14px;
+    }
+
+    .mypage-tab {
+        min-width: 104px;
+    }
+
+    .mypage-panels {
+        max-height: calc(92vh - 180px);
+        padding: 22px 18px 26px;
+    }
+
+    .mypage-form-grid,
+    .mypage-read-grid,
+    .mypage-activity-grid,
+    .mypage-section-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .mypage-section-head,
+    .mypage-setting-row,
+    .mypage-password-change-header {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .mypage-address-row {
+        grid-template-columns: 1fr;
+    }
+
+    .mypage-setting-action {
+        width: 100%;
+    }
+
+    .mypage-password-change-layout {
+        max-width: none;
+        padding: 18px;
+    }
+
+    .mypage-password-control {
+        grid-template-columns: minmax(0, 1fr) 58px;
+        gap: 8px;
+    }
+
+    .mypage-password-toggle {
+        width: 58px;
+        min-width: 58px;
+    }
+
+    .mypage-social-page-head h3,
+    .mypage-password-page-head h3 {
         font-size: 20px;
     }
 
@@ -1404,6 +1238,27 @@ body.mypage-open {
 }
 
 @media (max-width: 480px) {
+    .mypage-profile-header {
+        gap: 14px;
+    }
+
+    .mypage-avatar-wrap,
+    .mypage-avatar-text,
+    .mypage-avatar-img {
+        width: 64px;
+        height: 64px;
+        flex-basis: 64px;
+    }
+
+    .mypage-avatar-text {
+        border-radius: 20px;
+        font-size: 28px;
+    }
+
+    .mypage-profile-main h2 {
+        font-size: 20px;
+    }
+
     .mypage-social-provider-main {
         align-items: flex-start;
     }
@@ -1418,79 +1273,15 @@ body.mypage-open {
         width: 100%;
         min-width: 0;
     }
-}
 
-/* mypage social chip final align fix: 기존 .mypage-social-card span 광역 스타일 보정 */
-.mypage-social-card .mypage-social-provider-action {
-    display: flex;
-    align-items: center;
-    justify-content: flex-end;
-    gap: 10px;
-}
-
-.mypage-social-card .mypage-social-provider-action .mypage-social-status,
-.mypage-social-card .mypage-social-provider-action .mypage-secondary-btn {
-    display: inline-flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    box-sizing: border-box !important;
-    width: auto !important;
-    min-width: 96px !important;
-    height: 38px !important;
-    min-height: 38px !important;
-    margin: 0 !important;
-    padding: 0 16px !important;
-    border: 0 !important;
-    border-radius: 999px !important;
-    font-family: inherit !important;
-    font-size: 13px !important;
-    font-weight: 900 !important;
-    line-height: 1 !important;
-    text-align: center !important;
-    white-space: nowrap !important;
-    vertical-align: middle !important;
-}
-
-.mypage-social-card .mypage-social-provider-action .mypage-social-status.connected {
-    background: #dbeafe !important;
-    color: #1d4ed8 !important;
-}
-
-.mypage-social-card .mypage-social-provider-action .mypage-social-status.waiting,
-.mypage-social-card .mypage-social-provider-action .mypage-secondary-btn {
-    background: #f1f5f9 !important;
-    color: #64748b !important;
-}
-
-.mypage-social-card .mypage-social-provider-action .mypage-secondary-btn,
-.mypage-social-card .mypage-social-provider-action .mypage-secondary-btn:disabled {
-    appearance: none !important;
-    -webkit-appearance: none !important;
-    opacity: 1 !important;
-    cursor: default !important;
-}
-
-@media (max-width: 780px) {
-    .mypage-social-card .mypage-social-provider-action {
-        justify-content: flex-start;
-        gap: 8px;
-    }
-
-    .mypage-social-card .mypage-social-provider-action .mypage-social-status,
-    .mypage-social-card .mypage-social-provider-action .mypage-secondary-btn {
-        min-width: 112px !important;
-    }
-}
-
-@media (max-width: 480px) {
-    .mypage-social-card .mypage-social-provider-action {
+    .mypage-form-footer,
+    .mypage-password-footer {
         flex-direction: column;
-        align-items: stretch;
     }
 
-    .mypage-social-card .mypage-social-provider-action .mypage-social-status,
-    .mypage-social-card .mypage-social-provider-action .mypage-secondary-btn {
-        width: 100% !important;
-        min-width: 0 !important;
+    .mypage-primary-btn,
+    .mypage-secondary-btn,
+    .mypage-danger-btn {
+        width: 100%;
     }
 }
