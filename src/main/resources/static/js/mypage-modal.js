@@ -721,7 +721,7 @@
         return `
             <article class="mypage-social-card ${connected ? "connected" : ""}">
                 <div class="mypage-social-provider-main">
-                    <span class="mypage-social-provider-icon ${provider}">${label.substring(0, 1)}</span>
+                    <span class="mypage-social-provider-icon ${provider}" aria-hidden="true"></span>
                     <div class="mypage-social-provider-text">
                         <strong>${label}</strong>
                         <p>${description}</p>

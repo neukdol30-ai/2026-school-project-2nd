@@ -67,20 +67,6 @@ body.mypage-open {
     box-shadow: 0 26px 80px rgba(15, 23, 42, 0.24);
 }
 
-.mypage-close {
-    position: absolute;
-    top: 18px;
-    right: 20px;
-    width: 36px;
-    height: 36px;
-    border: 0;
-    border-radius: 999px;
-    background: rgba(255, 255, 255, 0.9);
-    color: #334155;
-    font-size: 24px;
-    cursor: pointer;
-}
-
 .mypage-profile-header {
     display: flex;
     gap: 18px;
@@ -419,19 +405,54 @@ body.mypage-open {
 
 /* mypage polish patch: 탭 선택 상태와 닫기 버튼 정렬 보정 */
 .mypage-close {
+    position: absolute;
+    top: 18px;
+    right: 20px;
+    z-index: 3;
+
+    width: 36px;
+    height: 36px;
+    padding: 0;
+    border: 0;
+    border-radius: 999px;
+
+    background: rgba(255, 255, 255, 0.92);
+    color: #334155;
+
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    line-height: 1;
+
     font-size: 0;
+    line-height: 1;
+    cursor: pointer;
+
+    appearance: none;
+    -webkit-appearance: none;
+    box-sizing: border-box;
+
+    transition: background 0.2s ease, box-shadow 0.2s ease;
 }
 
 .mypage-close::before {
     content: "×";
     display: block;
-    transform: translateY(-1px);
+
     font-size: 24px;
+    font-weight: 600;
     line-height: 1;
+
+    transform: translateY(-1px);
+    transition: transform 0.2s ease;
+}
+
+.mypage-close:hover {
+    background: #ffffff;
+    box-shadow: 0 8px 20px rgba(15, 23, 42, 0.18);
+}
+
+.mypage-close:hover::before {
+    transform: translateY(-1px) rotate(90deg);
 }
 
 .mypage-tabs {
@@ -570,27 +591,6 @@ body.mypage-open {
     height: 120px;
     pointer-events: none;
     background: linear-gradient(135deg, rgba(14, 165, 233, 0.10), rgba(37, 99, 235, 0.10));
-}
-
-.mypage-close {
-    top: 17px;
-    right: 18px;
-    z-index: 3;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 0;
-    line-height: 1;
-    transition: background 0.2s ease, transform 0.2s ease;
-}
-
-.mypage-close:hover {
-    background: #ffffff;
-    transform: rotate(90deg);
-}
-
-.mypage-close::before {
-    transform: translateY(-1px);
 }
 
 .mypage-profile-header {
@@ -1237,24 +1237,79 @@ body.mypage-open {
 }
 
 .mypage-social-provider-icon {
-    display: inline-flex;
+    flex: 0 0 44px;
     width: 44px;
     height: 44px;
-    flex: 0 0 44px;
+    border-radius: 14px;
+    display: inline-flex;
     align-items: center;
     justify-content: center;
-    border-radius: 14px;
-    color: #ffffff;
-    font-weight: 900;
+    position: relative;
+    overflow: hidden;
+    font-size: 0;
+    line-height: 0;
 }
 
+/* 카카오 */
 .mypage-social-provider-icon.kakao {
     background: #facc15;
-    color: #111827;
 }
 
+.mypage-social-provider-icon.kakao::before {
+    content: "";
+    position: absolute;
+    width: 22px;
+    height: 16px;
+    border-radius: 50%;
+    background: #111827;
+    top: 13px;
+    left: 11px;
+}
+
+.mypage-social-provider-icon.kakao::after {
+    content: "";
+    position: absolute;
+    width: 7px;
+    height: 7px;
+    background: #111827;
+    left: 18px;
+    bottom: 11px;
+    transform: rotate(35deg);
+    border-radius: 0 0 7px 0;
+}
+
+/* 네이버 */
 .mypage-social-provider-icon.naver {
-    background: #10b981;
+    position: relative;
+    overflow: hidden;
+    background: #03c75a;
+}
+
+/* 기존 naver::before 완전 교체 */
+.mypage-social-provider-icon.naver::before {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+
+    width: 24px;
+    height: 22px;
+
+    background: #ffffff;
+    transform: translate(-50%, -50%);
+
+    clip-path: polygon(
+            0 0,
+            32% 0,
+            68% 52%,
+            68% 0,
+            100% 0,
+            100% 100%,
+            68% 100%,
+            32% 48%,
+            32% 100%,
+            0 100%
+    );
 }
 
 .mypage-social-provider-text {
@@ -1280,20 +1335,35 @@ body.mypage-open {
     display: flex;
     flex: 0 0 auto;
     align-items: center;
+    justify-content: flex-end;
     gap: 10px;
 }
 
-.mypage-social-status {
+.mypage-social-status,
+.mypage-social-provider-action .mypage-secondary-btn {
     display: inline-flex;
-    min-width: 82px;
-    min-height: 34px;
+    width: auto;
+    min-width: 96px;
+    height: 38px;
+    min-height: 38px;
     align-items: center;
     justify-content: center;
+    box-sizing: border-box;
+    border: 0;
     border-radius: 999px;
-    padding: 0 12px;
-    font-size: 12px;
+    padding: 0 16px;
+    font-size: 13px;
     font-weight: 900;
+    line-height: 1;
     white-space: nowrap;
+    vertical-align: middle;
+}
+
+.mypage-social-provider-action .mypage-secondary-btn {
+    appearance: none;
+    -webkit-appearance: none;
+    margin: 0;
+    cursor: default;
 }
 
 .mypage-social-status.connected {
@@ -1301,7 +1371,8 @@ body.mypage-open {
     color: #1d4ed8;
 }
 
-.mypage-social-status.waiting {
+.mypage-social-status.waiting,
+.mypage-social-provider-action .mypage-secondary-btn {
     background: #f1f5f9;
     color: #64748b;
 }
@@ -1322,13 +1393,13 @@ body.mypage-open {
     }
 
     .mypage-social-provider-action {
-        justify-content: space-between;
+        justify-content: flex-start;
         gap: 8px;
     }
 
+    .mypage-social-status,
     .mypage-social-provider-action .mypage-secondary-btn {
-        min-width: 0;
-        flex: 1;
+        min-width: 112px;
     }
 }
 
@@ -1345,5 +1416,81 @@ body.mypage-open {
     .mypage-social-status,
     .mypage-social-provider-action .mypage-secondary-btn {
         width: 100%;
+        min-width: 0;
+    }
+}
+
+/* mypage social chip final align fix: 기존 .mypage-social-card span 광역 스타일 보정 */
+.mypage-social-card .mypage-social-provider-action {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 10px;
+}
+
+.mypage-social-card .mypage-social-provider-action .mypage-social-status,
+.mypage-social-card .mypage-social-provider-action .mypage-secondary-btn {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    box-sizing: border-box !important;
+    width: auto !important;
+    min-width: 96px !important;
+    height: 38px !important;
+    min-height: 38px !important;
+    margin: 0 !important;
+    padding: 0 16px !important;
+    border: 0 !important;
+    border-radius: 999px !important;
+    font-family: inherit !important;
+    font-size: 13px !important;
+    font-weight: 900 !important;
+    line-height: 1 !important;
+    text-align: center !important;
+    white-space: nowrap !important;
+    vertical-align: middle !important;
+}
+
+.mypage-social-card .mypage-social-provider-action .mypage-social-status.connected {
+    background: #dbeafe !important;
+    color: #1d4ed8 !important;
+}
+
+.mypage-social-card .mypage-social-provider-action .mypage-social-status.waiting,
+.mypage-social-card .mypage-social-provider-action .mypage-secondary-btn {
+    background: #f1f5f9 !important;
+    color: #64748b !important;
+}
+
+.mypage-social-card .mypage-social-provider-action .mypage-secondary-btn,
+.mypage-social-card .mypage-social-provider-action .mypage-secondary-btn:disabled {
+    appearance: none !important;
+    -webkit-appearance: none !important;
+    opacity: 1 !important;
+    cursor: default !important;
+}
+
+@media (max-width: 780px) {
+    .mypage-social-card .mypage-social-provider-action {
+        justify-content: flex-start;
+        gap: 8px;
+    }
+
+    .mypage-social-card .mypage-social-provider-action .mypage-social-status,
+    .mypage-social-card .mypage-social-provider-action .mypage-secondary-btn {
+        min-width: 112px !important;
+    }
+}
+
+@media (max-width: 480px) {
+    .mypage-social-card .mypage-social-provider-action {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .mypage-social-card .mypage-social-provider-action .mypage-social-status,
+    .mypage-social-card .mypage-social-provider-action .mypage-secondary-btn {
+        width: 100% !important;
+        min-width: 0 !important;
     }
 }
