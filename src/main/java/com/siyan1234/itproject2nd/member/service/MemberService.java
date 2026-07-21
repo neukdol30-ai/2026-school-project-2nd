@@ -60,9 +60,15 @@ public class MemberService {
                 return true;
             }
 
+            LocalDate oldestAllowed = today.minusYears(120); // (2) 과거 하한선 : today.minusYears(14)와 같은 방식(자동으로 매년 기준이 밀림)
+            if (signupDto.getBirthDate().isBefore(oldestAllowed)) { // 하한선보다 더 과거 날짜면 차단
+                bindingResult.rejectValue("birthDate", "tooOldBirthDate", "올바른 생년월일을 입력해 주세요,");
+                return true;
+            }
+
             LocalDate fourteenYearsAgo = today.minusYears(14);
 
-            if (signupDto.getBirthDate().isAfter(fourteenYearsAgo)) { // (2) 만 14세 미만 차단
+            if (signupDto.getBirthDate().isAfter(fourteenYearsAgo)) { // (3) 만 14세 미만 차단
                 bindingResult.rejectValue("birthDate", "underAge", "만 14세 미만은 가입할 수 없습니다.");
                 return true;
             }
