@@ -16,6 +16,7 @@
     let profileEditMode = false;
     let securityEditMode = false;
     let securityUnlocked = false;
+    let passwordChangeMode = false;
 
     window.initializeMyPage = function initializeMyPage() {
         if (initialized) {
@@ -124,6 +125,22 @@
                 return;
             }
 
+            const editPasswordButton = event.target.closest("[data-mypage-password-edit]");
+            if (editPasswordButton) {
+                event.preventDefault();
+                passwordChangeMode = true;
+                renderCurrentMyPage("password");
+                return;
+            }
+
+            const cancelPasswordButton = event.target.closest("[data-mypage-password-cancel]");
+            if (cancelPasswordButton) {
+                event.preventDefault();
+                passwordChangeMode = false;
+                renderCurrentMyPage("password");
+                return;
+            }
+
             const passwordToggle = event.target.closest("[data-mypage-password-toggle]");
             if (passwordToggle) {
                 event.preventDefault();
@@ -209,6 +226,7 @@
             profileEditMode = false;
             securityEditMode = false;
             securityUnlocked = Boolean(data.profile.socialLoginUser);
+            passwordChangeMode = false;
             safeUpdateAuthWidget();
             renderMyPageModal(data, "profile");
         } catch (error) {
@@ -304,6 +322,7 @@
             state.myPage = result.myPage;
             securityUnlocked = true;
             securityEditMode = false;
+            passwordChangeMode = false;
             renderMyPageModal(result.myPage, "security");
             showMyPageMessage(result);
         }
@@ -342,7 +361,13 @@
         showMyPageMessage(result);
 
         if (result.success) {
-            form.reset();
+            passwordChangeMode = false;
+            if (state.myPage) {
+                renderMyPageModal(state.myPage, "password");
+                showMyPageMessage(result);
+            } else {
+                form.reset();
+            }
         }
     }
 
@@ -508,6 +533,8 @@
                 <nav class="mypage-tabs" aria-label="마이페이지 메뉴">
                     ${renderTab("profile", "👤", "내 정보", activeTab)}
                     ${renderTab("security", "🔒", "보안 설정", activeTab)}
+                    ${renderTab("password", "🔑", "비밀번호 변경", activeTab)}
+                    ${renderTab("social", "🔗", "소셜 연결", activeTab)}
                     ${renderTab("activity", "💬", "내 활동", activeTab)}
                     ${renderTab("withdraw", "⚠️", "회원 탈퇴", activeTab)}
                 </nav>
@@ -521,6 +548,14 @@
 
                     <section class="mypage-panel ${activeTab === "security" ? "active" : ""}" data-mypage-panel="security">
                         ${renderSecurityPanel(profile)}
+                    </section>
+
+                    <section class="mypage-panel ${activeTab === "password" ? "active" : ""}" data-mypage-panel="password">
+                        ${renderPasswordPanel(profile)}
+                    </section>
+
+                    <section class="mypage-panel ${activeTab === "social" ? "active" : ""}" data-mypage-panel="social">
+                        ${renderSocialPanel(profile)}
                     </section>
 
                     <section class="mypage-panel ${activeTab === "activity" ? "active" : ""}" data-mypage-panel="activity">
@@ -605,8 +640,6 @@
 
         return `
             ${renderSecurityProfileForm(profile)}
-            ${renderSocialAccountBox(profile)}
-            ${renderPasswordForm(profile)}
         `;
     }
 
@@ -659,74 +692,125 @@
         `;
     }
 
-    function renderSocialAccountBox(profile) {
+    function renderSocialPanel(profile) {
         const kakaoConnected = Boolean(profile.kakaoConnected) || hasProvider(profile, "KAKAO");
         const naverConnected = Boolean(profile.naverConnected) || hasProvider(profile, "NAVER");
 
         return `
-            <section class="mypage-security-section">
-                <div class="mypage-section-head">
-                    <div>
-                        <h3>소셜 계정 연결</h3>
-                        <p>연결된 소셜 계정은 로그인 수단으로 사용할 수 있습니다.</p>
-                    </div>
+            <section class="mypage-social-page">
+                <div class="mypage-social-page-head">
+                    <h3>소셜 계정 연결</h3>
+                    <p>카카오와 네이버 계정을 연결하면 다음 로그인부터 소셜 계정으로 간편하게 접속할 수 있습니다.</p>
                 </div>
-                <div class="mypage-social-grid">
-                    ${socialProviderCard("kakao", "카카오", kakaoConnected)}
-                    ${socialProviderCard("naver", "네이버", naverConnected)}
+
+                <div class="mypage-social-list">
+                    ${socialProviderCard("kakao", "카카오", kakaoConnected, "카카오 계정으로 로그인할 수 있습니다.")}
+                    ${socialProviderCard("naver", "네이버", naverConnected, "네이버 계정으로 로그인할 수 있습니다.")}
                 </div>
-                <p class="mypage-caption">소셜 계정 연결/해제는 OAuth2 연동 정책 확정 후 별도 API로 확장하는 것을 권장합니다.</p>
+
+                <div class="mypage-info-box mypage-social-guide-box">
+                    <h3>소셜 연결 안내</h3>
+                    <p>현재 화면은 연결 상태 확인용입니다. 실제 연결/해제는 OAuth2 정책과 예외처리 확정 후 별도 API로 확장하는 것을 권장합니다.</p>
+                    <p>실서비스에서는 이미 다른 회원에게 연결된 소셜 계정 차단, 마지막 로그인 수단 보호, 재인증 처리를 함께 적용합니다.</p>
+                </div>
             </section>
         `;
     }
 
-    function socialProviderCard(provider, label, connected) {
+    function socialProviderCard(provider, label, connected, description) {
         return `
-            <div class="mypage-social-card ${connected ? "connected" : ""}">
-                <div>
-                    <strong>${label}</strong>
-                    <span>${connected ? "연결됨" : "연결 안 됨"}</span>
+            <article class="mypage-social-card ${connected ? "connected" : ""}">
+                <div class="mypage-social-provider-main">
+                    <span class="mypage-social-provider-icon ${provider}">${label.substring(0, 1)}</span>
+                    <div class="mypage-social-provider-text">
+                        <strong>${label}</strong>
+                        <p>${description}</p>
+                    </div>
                 </div>
-                <button type="button" class="mypage-secondary-btn" disabled>${connected ? "연결됨" : "연결 준비 중"}</button>
-            </div>
+                <div class="mypage-social-provider-action">
+                    <span class="mypage-social-status ${connected ? "connected" : "waiting"}">${connected ? "연결됨" : "연결 안 됨"}</span>
+                    <button type="button" class="mypage-secondary-btn" disabled>${connected ? "연결 해제 준비 중" : "연결 준비 중"}</button>
+                </div>
+            </article>
         `;
     }
 
-    function renderPasswordForm(profile) {
+    function renderPasswordPanel(profile) {
         if (profile.socialLoginUser) {
             return `
-                <section class="mypage-security-section mypage-password-section">
-                    <div class="mypage-info-box mypage-social-password-box">
-                        <span class="mypage-info-badge">소셜 로그인</span>
-                        <h3>비밀번호 변경 불가</h3>
-                        <p>${html(getLoginMethodLabel(profile))} 계정은 사이트에서 비밀번호를 관리하지 않습니다.</p>
+                <section class="mypage-password-page">
+                    <div class="mypage-password-page-head">
+                        <h3>비밀번호 변경</h3>
+                        <p>소셜 로그인 계정은 사이트에서 비밀번호를 직접 관리하지 않습니다.</p>
+                    </div>
+                    <div class="mypage-setting-row disabled">
+                        <div class="mypage-setting-info">
+                            <span class="mypage-setting-icon">🔐</span>
+                            <div>
+                                <strong>비밀번호</strong>
+                                <p>${html(getLoginMethodLabel(profile))} 계정은 사이트에서 비밀번호를 관리하지 않습니다.</p>
+                            </div>
+                        </div>
+                        <span class="mypage-status-pill">변경 불가</span>
+                    </div>
+                    <div class="mypage-info-box mypage-social-password-box compact">
+                        <h3>소셜 계정 비밀번호 안내</h3>
                         <p>비밀번호 변경은 카카오/네이버 계정 설정에서 진행해 주세요.</p>
                     </div>
                 </section>
             `;
         }
 
-        return `
-            <section class="mypage-security-section mypage-password-section">
-                <div class="mypage-section-head mypage-password-head">
-                    <div>
+        if (!passwordChangeMode) {
+            return `
+                <section class="mypage-password-page">
+                    <div class="mypage-password-page-head">
                         <h3>비밀번호 변경</h3>
-                        <p>현재 비밀번호 확인 후 새 비밀번호로 변경합니다.</p>
+                        <p>현재 비밀번호 확인 후 새 비밀번호로 변경할 수 있습니다.</p>
                     </div>
+                    <div class="mypage-setting-row">
+                        <div class="mypage-setting-info">
+                            <span class="mypage-setting-icon">🔐</span>
+                            <div>
+                                <strong>비밀번호</strong>
+                                <p>계정 보호를 위해 주기적으로 비밀번호를 변경해 주세요.</p>
+                            </div>
+                        </div>
+                        <button type="button" class="mypage-secondary-btn mypage-setting-action" data-mypage-password-edit>비밀번호 변경</button>
+                    </div>
+                </section>
+            `;
+        }
+
+        return `
+            <section class="mypage-password-page">
+                <div class="mypage-password-change-layout">
+                    <div class="mypage-password-change-header">
+                        <div>
+                            <h3>비밀번호 변경</h3>
+                            <p>안전한 비밀번호로 내 정보를 보호하세요.</p>
+                        </div>
+                        <button type="button" class="mypage-secondary-btn" data-mypage-password-cancel>취소</button>
+                    </div>
+                    <ul class="mypage-password-rules">
+                        <li>다른 사이트에서 사용하지 않은 비밀번호를 권장합니다.</li>
+                        <li>이전에 사용한 적 없는 비밀번호가 안전합니다.</li>
+                        <li>대문자, 소문자, 숫자를 포함한 8~20자로 입력해 주세요.</li>
+                    </ul>
+                    <form id="myPagePasswordForm" class="mypage-form mypage-password-form">
+                        <div class="mypage-password-card">
+                            <div class="mypage-password-field-list">
+                                ${passwordInput("현재 비밀번호", "currentPassword", true, "current-password")}
+                                ${passwordInput("새 비밀번호", "newPassword", true, "new-password")}
+                                ${passwordInput("새 비밀번호 확인", "newPasswordCheck", true, "new-password")}
+                            </div>
+                            <div class="mypage-form-footer mypage-password-footer">
+                                <button type="submit" class="mypage-primary-btn">확인</button>
+                                <button type="button" class="mypage-secondary-btn" data-mypage-password-cancel>취소</button>
+                            </div>
+                        </div>
+                    </form>
                 </div>
-                <form id="myPagePasswordForm" class="mypage-form mypage-password-form">
-                    <div class="mypage-password-card">
-                        <p class="mypage-guide">비밀번호는 대문자, 소문자, 숫자를 포함한 8~20자로 입력해 주세요.</p>
-                        <div class="mypage-password-field-list">
-                            ${passwordInput("현재 비밀번호", "currentPassword", true, "current-password")}
-                            ${passwordInput("새 비밀번호", "newPassword", true, "new-password")}
-                            ${passwordInput("새 비밀번호 확인", "newPasswordCheck", true, "new-password")}
-                        </div>
-                        <div class="mypage-form-footer mypage-password-footer">
-                            <button type="submit" class="mypage-primary-btn">비밀번호 변경</button>
-                        </div>
-                    </div>
-                </form>
             </section>
         `;
     }
