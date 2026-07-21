@@ -141,30 +141,3 @@ resetForm.addEventListener('submit', function (event) {
     submitBtn.textContent = '변경 중입니다...';
 
 });
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

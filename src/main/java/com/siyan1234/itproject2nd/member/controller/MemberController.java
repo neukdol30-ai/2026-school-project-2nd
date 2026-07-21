@@ -132,8 +132,16 @@ public class MemberController {
             return "가입된 회원 정보와 일치하지 않는 이메일입니다."; // 메일 발송 자체를 하지 않고 바로 안내
         }
 
-        mailService.sendAuthCode(email, MailService.MailPurpose.FIND_ID);
-        // 같은 이메일이라도 비밀번호 찾기(RESET_PW)의 인증번호와 절대 섞이지 않게 함.
+        try {
+            mailService.sendAuthCode(email, MailService.MailPurpose.FIND_ID);
+        } catch (MailService.MailCooldownException e) {
+            // 더 구체적인 예외를 먼저 catch해야 함. - 순서 바꾸면 컴파일 오류
+            return e.getMessage();
+        } catch (RuntimeException e) {
+            // SMTP 접속 실패 등 그 외 모든 예상치 못한 발송 실패
+            log.error("아이디 찾기 인증번호 발송 실패 email={}", email, e); // 콘솔에 원인 스택트레이스까지 기록(개발자용)
+            return "메일 발송에 실패했습니다. 잠시 후 다시 시도해 주세요."; // 화면에는 원인 대신 안내 문구만(사용자용)
+        }
 
         return "인증번호를 발송했습니다.";
     }
@@ -205,8 +213,16 @@ public class MemberController {
             return "아이디와 이메일이 일치하는 회원이 없습니다."; // 발송 안 함.
         }
 
-        mailService.sendAuthCode(email, MailService.MailPurpose.RESET_PW);
-        // MailPurpose.RESET_PW: Redis 키가 "mail:auth:resetPw:이메일"로 만들어져 FIND_ID와 분리됨
+
+        // find-id/send와 동일한 이유
+        try {
+            mailService.sendAuthCode(email, MailService.MailPurpose.RESET_PW);
+        } catch (MailService.MailCooldownException e) {
+            return e.getMessage();
+        } catch (RuntimeException e) {
+            log.error("비밀번호 찾기 인증번호 발송 실패 email={}", email, e);
+            return "메일 발송에 실패했습니다. 잠시 후 다시 시도해 주세요.";
+        }
 
         return "인증번호를 발송했습니다.";
     }
@@ -274,7 +290,6 @@ public class MemberController {
 
         mailService.clearVerified(verifiedEmail, MailService.MailPurpose.RESET_PW);
         // 인증 완료 상태(Redis)를 지워서, 같은 인증으로 비밀번호를 두 번 바꾸지 못하게 막음
-
         session.removeAttribute(RESET_PW_EMAIL_SESSION_KEY); // 세션 쪽 인증 표시도 함께 제거
 
         redirectAttributes.addFlashAttribute("toastMessage", "비밀번호가 변경되었습니다. 다시 로그인해 주세요.");

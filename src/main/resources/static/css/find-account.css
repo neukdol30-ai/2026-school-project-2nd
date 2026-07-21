@@ -240,7 +240,7 @@ body {
     margin: 0 0 24px;
     padding: 24px 16px;
     border: 1px solid #ddd;
-    border-right: 8px;
+    border-radius: 8px;
     background-color: #f9fafb;
     text-align: center;
 }
@@ -267,4 +267,24 @@ a.submit-button {
     align-items: center;
     justify-content: center;
     text-decoration: none; /* <a> 태그의 밑줄 제거 */
+}
+
+/* "이메일을 잘못 입력했나요? 다시 입력하기" 보조 링크 */
+/* find-id.js / find-password.js가 발송 성공 시 style.display='inline'으로 켜고, 다시 입력하기 클릭 시 'none'으로 끔 */
+.change-email-link {
+    display: inline-block;
+    margin-top: 6px;
+    font-size: 13px;
+    color: #666;
+    text-decoration: underline;
+    cursor: pointer;
+}
+
+.change-email-link:hover {
+    color: #222;
+}
+
+/* 한국어 줄바꿈 보정 */
+body {
+    word-break: keep-all;
 }
