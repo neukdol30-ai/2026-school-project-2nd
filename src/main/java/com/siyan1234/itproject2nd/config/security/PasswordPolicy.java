@@ -8,7 +8,7 @@ package com.siyan1234.itproject2nd.config.security;
  * */
 public final class PasswordPolicy {
 
-    public static final String PASSWORD_REGEX = "(?=.*[a-z])(?=.*[A-Z])(?=.*\\d).{8, 20}";
+    public static final String PASSWORD_REGEX = "(?=.*[a-z])(?=.*[A-Z])(?=.*\\d).{8,20}";
 
     public static final String PASSWORD_MESSAGE = "비밀번호는 영문 대문자·소문자·숫자를 모두 포함해 8~20자로 입력하세요.";
 
