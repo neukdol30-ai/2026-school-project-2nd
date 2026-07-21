@@ -14,6 +14,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
+
 @Service
 @RequiredArgsConstructor
 public class MyPageService {
@@ -21,6 +23,7 @@ public class MyPageService {
     private static final String ADMIN_ROLE = "ADMIN";
     private static final String PASSWORD_PATTERN = "(?=.*[a-z])(?=.*[A-Z])(?=.*\\d).{8,20}";
     private static final String EMAIL_PATTERN = "^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$";
+    private static final String PHONE_PATTERN = "^010-[0-9]{4}-[0-9]{4}$";
 
     private final MyPageDao myPageDao;
     private final MemberDao memberDao;
@@ -94,6 +97,10 @@ public class MyPageService {
             return MyPageActionResponseDto.fail("새 비밀번호 확인이 일치하지 않습니다.");
         }
 
+        if (passwordEncoder.matches(passwordDto.getNewPassword(), member.getPassword())) {
+            return MyPageActionResponseDto.fail("현재 사용 중인 비밀번호와 같은 비밀번호로는 변경할 수 없습니다.");
+        }
+
         String encodedPassword = passwordEncoder.encode(passwordDto.getNewPassword());
         myPageDao.updatePassword(memberNo, encodedPassword);
 
@@ -160,6 +167,20 @@ public class MyPageService {
             if (myPageDao.countEmailDuplicateExceptMe(memberNo, updateDto.getEmail()) > 0) {
                 return "이미 사용 중인 이메일입니다.";
             }
+        }
+
+        if (!isBlank(updateDto.getPhone()) && !updateDto.getPhone().matches(PHONE_PATTERN)) {
+            return "전화번호는 010-0000-0000 형식으로 입력해 주세요.";
+        }
+
+        if (updateDto.getBirthDate() != null && updateDto.getBirthDate().isAfter(LocalDate.now())) {
+            return "생년월일은 오늘 이후 날짜로 설정할 수 없습니다.";
+        }
+
+        if (!isBlank(updateDto.getGender())
+                && !"M".equalsIgnoreCase(updateDto.getGender())
+                && !"F".equalsIgnoreCase(updateDto.getGender())) {
+            return "성별 값이 올바르지 않습니다.";
         }
 
         return null;

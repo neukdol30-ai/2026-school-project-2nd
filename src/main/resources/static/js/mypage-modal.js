@@ -7,6 +7,7 @@
     };
 
     const MODAL_ID = "myPageModal";
+    const PHONE_PATTERN = /^010-[0-9]{4}-[0-9]{4}$/;
     let initialized = false;
 
     window.initializeMyPage = function initializeMyPage() {
@@ -87,6 +88,14 @@
             const modal = document.getElementById(MODAL_ID);
             if (modal && event.target === modal) {
                 closeMyPageModal();
+            }
+        });
+
+        document.addEventListener("input", function (event) {
+            const phoneInput = event.target.closest("[data-mypage-phone]");
+            if (phoneInput) {
+                phoneInput.value = formatPhoneValue(phoneInput.value);
+                return;
             }
         });
 
@@ -185,6 +194,12 @@
 
     async function submitProfileForm(form) {
         const payload = formToObject(form);
+        const clientMessage = validateProfilePayload(payload);
+        if (clientMessage) {
+            showMyPageMessage({ success: false, message: clientMessage });
+            return;
+        }
+
         const result = await postJson(API.profile, payload);
         showMyPageMessage(result);
 
@@ -199,6 +214,12 @@
 
     async function submitPasswordForm(form) {
         const payload = formToObject(form);
+        const clientMessage = validatePasswordPayload(payload);
+        if (clientMessage) {
+            showMyPageMessage({ success: false, message: clientMessage });
+            return;
+        }
+
         const result = await postJson(API.password, payload);
         showMyPageMessage(result);
 
@@ -283,6 +304,27 @@
         messageBox.textContent = result.message || "";
         messageBox.className = "mypage-message " + (result.success ? "success" : "error");
         messageBox.hidden = false;
+        messageBox.scrollIntoView({ block: "nearest", behavior: "smooth" });
+    }
+
+    function validateProfilePayload(payload) {
+        if (payload.phone && !PHONE_PATTERN.test(payload.phone)) {
+            return "전화번호는 010-0000-0000 형식으로 입력해 주세요.";
+        }
+
+        if (payload.birthDate && payload.birthDate > todayDateInput()) {
+            return "생년월일은 오늘 이후 날짜로 설정할 수 없습니다.";
+        }
+
+        return null;
+    }
+
+    function validatePasswordPayload(payload) {
+        if (payload.currentPassword && payload.newPassword && payload.currentPassword === payload.newPassword) {
+            return "현재 사용 중인 비밀번호와 같은 비밀번호로는 변경할 수 없습니다.";
+        }
+
+        return null;
     }
 
     function renderModalContent(data, activeTab) {
@@ -312,10 +354,10 @@
                 </header>
 
                 <nav class="mypage-tabs" aria-label="마이페이지 메뉴">
-                    ${renderTab("profile", "내 정보", activeTab)}
-                    ${renderTab("security", "보안 설정", activeTab)}
-                    ${renderTab("activity", "내 활동", activeTab)}
-                    ${renderTab("withdraw", "회원 탈퇴", activeTab)}
+                    ${renderTab("profile", "👤", "내 정보", activeTab)}
+                    ${renderTab("security", "🔒", "보안 설정", activeTab)}
+                    ${renderTab("activity", "📊", "내 활동", activeTab)}
+                    ${renderTab("withdraw", "⚠️", "회원 탈퇴", activeTab)}
                 </nav>
 
                 <div class="mypage-message" data-mypage-message hidden></div>
@@ -341,12 +383,14 @@
         `;
     }
 
-    function renderTab(tabName, label, activeTab) {
+    function renderTab(tabName, icon, label, activeTab) {
         return `
             <button type="button"
                     class="mypage-tab ${activeTab === tabName ? "active" : ""}"
-                    data-mypage-tab="${tabName}">
-                ${label}
+                    data-mypage-tab="${tabName}"
+                    aria-selected="${activeTab === tabName}">
+                <span class="mypage-tab-icon">${icon}</span>
+                <span>${label}</span>
             </button>
         `;
     }
@@ -360,8 +404,8 @@
                     ${input("이름", "name", profile.name)}
                     ${input("닉네임", "nickname", profile.nickname, true)}
                     ${input("이메일", "email", profile.email, false, "email")}
-                    ${input("전화번호", "phone", profile.phone)}
-                    ${input("생년월일", "birthDate", toDateInput(profile.birthDate), false, "date")}
+                    ${input("전화번호", "phone", profile.phone, false, "tel", "010-0000-0000", "data-mypage-phone inputmode=\"numeric\" maxlength=\"13\"")}
+                    ${input("생년월일", "birthDate", toDateInput(profile.birthDate), false, "date", "", `max=\"${todayDateInput()}\"`)}
                     ${selectGender(profile.gender)}
                     ${input("우편번호", "postcode", profile.postcode)}
                     ${input("주소", "address", profile.address)}
@@ -411,7 +455,7 @@
                 <section class="mypage-list-section">
                     <div class="mypage-section-title">
                         <h3>최근 상담</h3>
-                        <a href="/chat/history">상담 내역</a>
+                        <a href="/chat/history?from=mypage">상담 내역</a>
                     </div>
                     ${renderRecentChats(recentChats)}
                 </section>
@@ -491,13 +535,15 @@
         `;
     }
 
-    function input(label, name, value, required, type) {
+    function input(label, name, value, required, type, placeholder, extraAttributes) {
         return `
             <label class="mypage-field">
                 <span>${label}</span>
                 <input type="${type || "text"}"
                        name="${name}"
                        value="${html(value || "")}"
+                       ${placeholder ? `placeholder="${html(placeholder)}"` : ""}
+                       ${extraAttributes || ""}
                        ${required ? "required" : ""}>
             </label>
         `;
@@ -524,6 +570,26 @@
                 </select>
             </label>
         `;
+    }
+
+    function formatPhoneValue(value) {
+        const digits = String(value || "").replace(/[^0-9]/g, "").slice(0, 11);
+
+        if (digits.length <= 3) {
+            return digits;
+        }
+
+        if (digits.length <= 7) {
+            return `${digits.slice(0, 3)}-${digits.slice(3)}`;
+        }
+
+        return `${digits.slice(0, 3)}-${digits.slice(3, 7)}-${digits.slice(7)}`;
+    }
+
+    function todayDateInput() {
+        const today = new Date();
+        const offsetDate = new Date(today.getTime() - today.getTimezoneOffset() * 60000);
+        return offsetDate.toISOString().slice(0, 10);
     }
 
     function toDateInput(value) {

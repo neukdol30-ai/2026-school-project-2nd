@@ -416,3 +416,74 @@ body.mypage-open {
         grid-template-columns: 1fr;
     }
 }
+
+/* mypage polish patch: 탭 선택 상태와 닫기 버튼 정렬 보정 */
+.mypage-close {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+    font-size: 0;
+}
+
+.mypage-close::before {
+    content: "×";
+    display: block;
+    transform: translateY(-1px);
+    font-size: 24px;
+    line-height: 1;
+}
+
+.mypage-tabs {
+    align-items: center;
+    gap: 10px;
+    padding: 18px 28px;
+}
+
+.mypage-tabs .mypage-tab {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    min-width: 112px;
+    min-height: 44px;
+    padding: 0 16px;
+    border: 1px solid transparent;
+    border-radius: 14px;
+    background: #f8fafc;
+    color: #475569;
+    box-shadow: none;
+    transition: background 0.2s ease, color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.mypage-tabs .mypage-tab:hover {
+    background: #eef4ff;
+    color: #1d4ed8;
+}
+
+.mypage-tabs .mypage-tab.active {
+    border-color: #2563eb;
+    background: linear-gradient(135deg, #2563eb, #1d4ed8);
+    color: #ffffff;
+    box-shadow: 0 10px 24px rgba(37, 99, 235, 0.22);
+}
+
+.mypage-tabs .mypage-tab.active .mypage-tab-icon {
+    filter: saturate(1.15);
+}
+
+.mypage-tab-icon {
+    font-size: 15px;
+    line-height: 1;
+}
+
+.mypage-field input:invalid {
+    border-color: #fca5a5;
+}
+
+@media (max-width: 780px) {
+    .mypage-tabs .mypage-tab {
+        min-width: 104px;
+        flex: 0 0 auto;
+    }
+}
