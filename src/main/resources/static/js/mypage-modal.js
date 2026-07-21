@@ -695,8 +695,9 @@
     function renderPasswordForm(profile) {
         if (profile.socialLoginUser) {
             return `
-                <section class="mypage-security-section">
-                    <div class="mypage-info-box">
+                <section class="mypage-security-section mypage-password-section">
+                    <div class="mypage-info-box mypage-social-password-box">
+                        <span class="mypage-info-badge">소셜 로그인</span>
                         <h3>비밀번호 변경 불가</h3>
                         <p>${html(getLoginMethodLabel(profile))} 계정은 사이트에서 비밀번호를 관리하지 않습니다.</p>
                         <p>비밀번호 변경은 카카오/네이버 계정 설정에서 진행해 주세요.</p>
@@ -706,20 +707,24 @@
         }
 
         return `
-            <section class="mypage-security-section">
-                <div class="mypage-section-head">
+            <section class="mypage-security-section mypage-password-section">
+                <div class="mypage-section-head mypage-password-head">
                     <div>
                         <h3>비밀번호 변경</h3>
                         <p>현재 비밀번호 확인 후 새 비밀번호로 변경합니다.</p>
                     </div>
                 </div>
-                <form id="myPagePasswordForm" class="mypage-form mypage-narrow-form">
-                    <p class="mypage-guide">비밀번호는 대문자, 소문자, 숫자를 포함한 8~20자로 입력해 주세요.</p>
-                    ${passwordInput("현재 비밀번호", "currentPassword", true, "current-password")}
-                    ${passwordInput("새 비밀번호", "newPassword", true, "new-password")}
-                    ${passwordInput("새 비밀번호 확인", "newPasswordCheck", true, "new-password")}
-                    <div class="mypage-form-footer">
-                        <button type="submit" class="mypage-primary-btn">비밀번호 변경</button>
+                <form id="myPagePasswordForm" class="mypage-form mypage-password-form">
+                    <div class="mypage-password-card">
+                        <p class="mypage-guide">비밀번호는 대문자, 소문자, 숫자를 포함한 8~20자로 입력해 주세요.</p>
+                        <div class="mypage-password-field-list">
+                            ${passwordInput("현재 비밀번호", "currentPassword", true, "current-password")}
+                            ${passwordInput("새 비밀번호", "newPassword", true, "new-password")}
+                            ${passwordInput("새 비밀번호 확인", "newPasswordCheck", true, "new-password")}
+                        </div>
+                        <div class="mypage-form-footer mypage-password-footer">
+                            <button type="submit" class="mypage-primary-btn">비밀번호 변경</button>
+                        </div>
                     </div>
                 </form>
             </section>

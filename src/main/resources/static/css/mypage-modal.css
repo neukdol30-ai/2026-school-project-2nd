@@ -810,3 +810,113 @@ body.mypage-open {
         grid-template-columns: 1fr;
     }
 }
+
+/* mypage password cleanup patch: 비밀번호 변경 UI 정리 */
+.mypage-password-section {
+    max-width: 720px;
+}
+
+.mypage-password-head {
+    margin-bottom: 12px;
+}
+
+.mypage-password-form {
+    width: 100%;
+    max-width: 680px;
+}
+
+.mypage-password-card {
+    display: grid;
+    gap: 18px;
+    padding: 22px;
+    border: 1px solid #e5eaf3;
+    border-radius: 22px;
+    background: linear-gradient(135deg, #ffffff, #f8fbff);
+    box-shadow: 0 14px 34px rgba(15, 23, 42, 0.06);
+}
+
+.mypage-password-card .mypage-guide {
+    margin: 0;
+    padding: 14px 16px;
+    border: 1px solid #edf2f7;
+    background: #f8fafc;
+    line-height: 1.5;
+    word-break: keep-all;
+}
+
+.mypage-password-field-list {
+    display: grid;
+    gap: 14px;
+}
+
+.mypage-password-field-list .mypage-field {
+    gap: 8px;
+}
+
+.mypage-password-control {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 64px;
+    align-items: stretch;
+    gap: 10px;
+    width: 100%;
+}
+
+.mypage-password-control input {
+    width: 100%;
+    min-width: 0;
+    min-height: 48px;
+}
+
+.mypage-password-toggle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 64px;
+    min-width: 64px;
+    height: 48px;
+    padding: 0;
+    white-space: nowrap;
+}
+
+.mypage-password-footer {
+    margin-top: 2px;
+}
+
+.mypage-social-password-box {
+    max-width: 680px;
+}
+
+.mypage-info-badge {
+    display: inline-flex;
+    align-items: center;
+    min-height: 26px;
+    margin-bottom: 10px;
+    padding: 0 10px;
+    border-radius: 999px;
+    background: #dbeafe;
+    color: #1d4ed8;
+    font-size: 12px;
+    font-weight: 900;
+}
+
+@media (max-width: 780px) {
+    .mypage-password-section,
+    .mypage-password-form,
+    .mypage-social-password-box {
+        max-width: none;
+    }
+
+    .mypage-password-card {
+        padding: 18px;
+    }
+
+    .mypage-password-control {
+        grid-template-columns: minmax(0, 1fr) 58px;
+        gap: 8px;
+    }
+
+    .mypage-password-toggle {
+        width: 58px;
+        min-width: 58px;
+    }
+}
