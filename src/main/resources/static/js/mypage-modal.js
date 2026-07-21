@@ -1,34 +1,97 @@
+/**
+ * SecondPro 마이페이지 모달 스크립트
+ * ------------------------------------------------------------
+ * 담당 역할
+ * 1. 메인 계정 위젯의 로그인 상태 동기화
+ * 2. 마이페이지 모달 열기/닫기
+ * 3. 탭 전환 및 각 탭 화면 렌더링
+ * 4. 내 정보, 개인정보, 비밀번호, 회원 탈퇴 요청 처리
+ * 5. 전화번호/날짜/비밀번호/탈퇴 확인 문구 1차 검증
+ *
+ * 주의사항
+ * - 실제 보안 검증은 서버에서도 반드시 수행되어야 합니다.
+ * - 이 파일 하나만 사용합니다. /js/index/mypage-modal.js는 삭제된 상태를 기준으로 합니다.
+ */
 (function () {
-    const API = {
+    "use strict";
+
+    /* =========================================================
+     * 1. 상수
+     * ======================================================= */
+    const API = Object.freeze({
         me: "/mypage/me",
         profile: "/mypage/profile",
         verifyPassword: "/mypage/verify-password",
         security: "/mypage/security",
         password: "/mypage/password",
         withdraw: "/mypage/withdraw"
-    };
+    });
+
+    const TAB = Object.freeze({
+        profile: "profile",
+        security: "security",
+        password: "password",
+        social: "social",
+        activity: "activity",
+        withdraw: "withdraw"
+    });
 
     const MODAL_ID = "myPageModal";
     const PHONE_PATTERN = /^010-[0-9]{4}-[0-9]{4}$/;
     const WITHDRAW_CONFIRM_TEXT = "회원탈퇴";
 
-    let initialized = false;
-    let profileEditMode = false;
-    let securityEditMode = false;
-    let securityUnlocked = false;
-    let passwordChangeMode = false;
+    /**
+     * 모달 내부 화면 상태입니다.
+     * 서버 데이터가 아니라 UI 전환 상태만 보관합니다.
+     */
+    const viewState = {
+        initialized: false,
+        profileEditMode: false,
+        securityEditMode: false,
+        securityUnlocked: false,
+        passwordChangeMode: false
+    };
 
+    /* =========================================================
+     * 2. 초기화
+     * ======================================================= */
     window.initializeMyPage = function initializeMyPage() {
-        if (initialized) {
+        if (viewState.initialized) {
             return;
         }
 
-        initialized = true;
+        viewState.initialized = true;
         bindMyPageEvents();
         loadCurrentLoginUser();
     };
 
+    function startMyPageWhenReady() {
+        if (typeof state === "undefined" || typeof renderAuthWidget !== "function") {
+            setTimeout(startMyPageWhenReady, 30);
+            return;
+        }
+
+        window.initializeMyPage();
+    }
+
+    startMyPageWhenReady();
+
+    /* =========================================================
+     * 3. 로그인 상태 조회 및 메인 계정 위젯 동기화
+     * ======================================================= */
     async function loadCurrentLoginUser() {
+        const data = await fetchMyPage();
+
+        if (!data || !data.loggedIn || !data.profile) {
+            clearCurrentUser();
+            return;
+        }
+
+        applyMyPageData(data);
+        safeUpdateAuthWidget();
+    }
+
+    async function fetchMyPage() {
         try {
             const response = await fetch(API.me, {
                 credentials: "same-origin",
@@ -40,22 +103,18 @@
             });
 
             if (!response.ok) {
-                clearCurrentUser();
-                return;
+                return null;
             }
 
-            const data = await readJson(response);
-            if (!data || !data.loggedIn || !data.profile) {
-                clearCurrentUser();
-                return;
-            }
-
-            state.currentUser = data.profile;
-            state.myPage = data;
-            safeUpdateAuthWidget();
+            return await readJson(response);
         } catch (error) {
-            clearCurrentUser();
+            return null;
         }
+    }
+
+    function applyMyPageData(data) {
+        state.currentUser = data.profile;
+        state.myPage = data;
     }
 
     function clearCurrentUser() {
@@ -70,175 +129,179 @@
         }
     }
 
+    /* =========================================================
+     * 4. 이벤트 바인딩
+     * ======================================================= */
     function bindMyPageEvents() {
-        document.addEventListener("click", function (event) {
-            const openButton = event.target.closest("[data-mypage-open]");
-            if (openButton) {
-                event.preventDefault();
-                openMyPageModal();
-                return;
-            }
-
-            const closeButton = event.target.closest("[data-mypage-close]");
-            if (closeButton) {
-                event.preventDefault();
-                closeMyPageModal();
-                return;
-            }
-
-            const tabButton = event.target.closest("[data-mypage-tab]");
-            if (tabButton) {
-                event.preventDefault();
-                activateMyPageTab(tabButton.dataset.mypageTab);
-                return;
-            }
-
-            const editProfileButton = event.target.closest("[data-mypage-profile-edit]");
-            if (editProfileButton) {
-                event.preventDefault();
-                profileEditMode = true;
-                renderCurrentMyPage("profile");
-                return;
-            }
-
-            const cancelProfileButton = event.target.closest("[data-mypage-profile-cancel]");
-            if (cancelProfileButton) {
-                event.preventDefault();
-                profileEditMode = false;
-                renderCurrentMyPage("profile");
-                return;
-            }
-
-            const editSecurityButton = event.target.closest("[data-mypage-security-edit]");
-            if (editSecurityButton) {
-                event.preventDefault();
-                securityEditMode = true;
-                renderCurrentMyPage("security");
-                return;
-            }
-
-            const cancelSecurityButton = event.target.closest("[data-mypage-security-cancel]");
-            if (cancelSecurityButton) {
-                event.preventDefault();
-                securityEditMode = false;
-                renderCurrentMyPage("security");
-                return;
-            }
-
-            const editPasswordButton = event.target.closest("[data-mypage-password-edit]");
-            if (editPasswordButton) {
-                event.preventDefault();
-                passwordChangeMode = true;
-                renderCurrentMyPage("password");
-                return;
-            }
-
-            const cancelPasswordButton = event.target.closest("[data-mypage-password-cancel]");
-            if (cancelPasswordButton) {
-                event.preventDefault();
-                passwordChangeMode = false;
-                renderCurrentMyPage("password");
-                return;
-            }
-
-            const passwordToggle = event.target.closest("[data-mypage-password-toggle]");
-            if (passwordToggle) {
-                event.preventDefault();
-                togglePasswordVisibility(passwordToggle);
-                return;
-            }
-
-            const modal = document.getElementById(MODAL_ID);
-            if (modal && event.target === modal) {
-                closeMyPageModal();
-            }
-        });
-
-        document.addEventListener("input", function (event) {
-            const phoneInput = event.target.closest("[data-mypage-phone]");
-            if (phoneInput) {
-                phoneInput.value = formatPhoneValue(phoneInput.value);
-            }
-        });
-
-        document.addEventListener("submit", function (event) {
-            const profileForm = event.target.closest("#myPageProfileForm");
-            if (profileForm) {
-                event.preventDefault();
-                submitProfileForm(profileForm);
-                return;
-            }
-
-            const verifyForm = event.target.closest("#myPageSecurityVerifyForm");
-            if (verifyForm) {
-                event.preventDefault();
-                submitSecurityVerifyForm(verifyForm);
-                return;
-            }
-
-            const securityForm = event.target.closest("#myPageSecurityProfileForm");
-            if (securityForm) {
-                event.preventDefault();
-                submitSecurityProfileForm(securityForm);
-                return;
-            }
-
-            const passwordForm = event.target.closest("#myPagePasswordForm");
-            if (passwordForm) {
-                event.preventDefault();
-                submitPasswordForm(passwordForm);
-                return;
-            }
-
-            const withdrawForm = event.target.closest("#myPageWithdrawForm");
-            if (withdrawForm) {
-                event.preventDefault();
-                submitWithdrawForm(withdrawForm);
-            }
-        });
-
-        document.addEventListener("keydown", function (event) {
-            if (event.key === "Escape") {
-                closeMyPageModal();
-            }
-        });
+        document.addEventListener("click", handleMyPageClick);
+        document.addEventListener("input", handleMyPageInput);
+        document.addEventListener("submit", handleMyPageSubmit);
+        document.addEventListener("keydown", handleMyPageKeydown);
     }
 
-    async function openMyPageModal() {
-        try {
-            const response = await fetch(API.me, {
-                credentials: "same-origin",
-                cache: "no-store",
-                headers: {
-                    "Accept": "application/json",
-                    "X-Requested-With": "XMLHttpRequest"
-                }
-            });
-
-            const data = await readJson(response);
-            if (!data || !data.loggedIn || !data.profile) {
-                location.href = "/member/login";
-                return;
-            }
-
-            state.currentUser = data.profile;
-            state.myPage = data;
-            profileEditMode = false;
-            securityEditMode = false;
-            securityUnlocked = Boolean(data.profile.socialLoginUser);
-            passwordChangeMode = false;
-            safeUpdateAuthWidget();
-            renderMyPageModal(data, "profile");
-        } catch (error) {
-            alert("마이페이지 정보를 불러오지 못했습니다. 다시 시도해 주세요.");
+    function handleMyPageClick(event) {
+        const openButton = event.target.closest("[data-mypage-open]");
+        if (openButton) {
+            event.preventDefault();
+            openMyPageModal();
+            return;
         }
+
+        const closeButton = event.target.closest("[data-mypage-close]");
+        if (closeButton) {
+            event.preventDefault();
+            closeMyPageModal();
+            return;
+        }
+
+        const tabButton = event.target.closest("[data-mypage-tab]");
+        if (tabButton) {
+            event.preventDefault();
+            activateMyPageTab(tabButton.dataset.mypageTab);
+            return;
+        }
+
+        const editProfileButton = event.target.closest("[data-mypage-profile-edit]");
+        if (editProfileButton) {
+            event.preventDefault();
+            viewState.profileEditMode = true;
+            renderCurrentMyPage(TAB.profile);
+            return;
+        }
+
+        const cancelProfileButton = event.target.closest("[data-mypage-profile-cancel]");
+        if (cancelProfileButton) {
+            event.preventDefault();
+            viewState.profileEditMode = false;
+            renderCurrentMyPage(TAB.profile);
+            return;
+        }
+
+        const editSecurityButton = event.target.closest("[data-mypage-security-edit]");
+        if (editSecurityButton) {
+            event.preventDefault();
+            viewState.securityEditMode = true;
+            renderCurrentMyPage(TAB.security);
+            return;
+        }
+
+        const cancelSecurityButton = event.target.closest("[data-mypage-security-cancel]");
+        if (cancelSecurityButton) {
+            event.preventDefault();
+            viewState.securityEditMode = false;
+            renderCurrentMyPage(TAB.security);
+            return;
+        }
+
+        const editPasswordButton = event.target.closest("[data-mypage-password-edit]");
+        if (editPasswordButton) {
+            event.preventDefault();
+            viewState.passwordChangeMode = true;
+            renderCurrentMyPage(TAB.password);
+            return;
+        }
+
+        const cancelPasswordButton = event.target.closest("[data-mypage-password-cancel]");
+        if (cancelPasswordButton) {
+            event.preventDefault();
+            viewState.passwordChangeMode = false;
+            renderCurrentMyPage(TAB.password);
+            return;
+        }
+
+        const passwordToggle = event.target.closest("[data-mypage-password-toggle]");
+        if (passwordToggle) {
+            event.preventDefault();
+            togglePasswordVisibility(passwordToggle);
+            return;
+        }
+
+        closeWhenOverlayClicked(event);
+    }
+
+    function handleMyPageInput(event) {
+        const phoneInput = event.target.closest("[data-mypage-phone]");
+        if (phoneInput) {
+            phoneInput.value = formatPhoneValue(phoneInput.value);
+        }
+    }
+
+    function handleMyPageSubmit(event) {
+        const form = event.target;
+
+        if (form.matches("#myPageProfileForm")) {
+            event.preventDefault();
+            submitProfileForm(form);
+            return;
+        }
+
+        if (form.matches("#myPageSecurityVerifyForm")) {
+            event.preventDefault();
+            submitSecurityVerifyForm(form);
+            return;
+        }
+
+        if (form.matches("#myPageSecurityProfileForm")) {
+            event.preventDefault();
+            submitSecurityProfileForm(form);
+            return;
+        }
+
+        if (form.matches("#myPagePasswordForm")) {
+            event.preventDefault();
+            submitPasswordForm(form);
+            return;
+        }
+
+        if (form.matches("#myPageWithdrawForm")) {
+            event.preventDefault();
+            submitWithdrawForm(form);
+        }
+    }
+
+    function handleMyPageKeydown(event) {
+        if (event.key === "Escape") {
+            closeMyPageModal();
+        }
+    }
+
+    function closeWhenOverlayClicked(event) {
+        const modal = document.getElementById(MODAL_ID);
+        if (modal && event.target === modal) {
+            closeMyPageModal();
+        }
+    }
+
+    /* =========================================================
+     * 5. 모달 열기/닫기/탭 전환
+     * ======================================================= */
+    async function openMyPageModal() {
+        const data = await fetchMyPage();
+
+        if (!data || !data.loggedIn || !data.profile) {
+            location.href = "/member/login";
+            return;
+        }
+
+        applyMyPageData(data);
+        resetModalViewModes(data.profile);
+        safeUpdateAuthWidget();
+        renderMyPageModal(data, TAB.profile);
+    }
+
+    function resetModalViewModes(profile) {
+        viewState.profileEditMode = false;
+        viewState.securityEditMode = false;
+        viewState.securityUnlocked = Boolean(profile && profile.socialLoginUser);
+        viewState.passwordChangeMode = false;
     }
 
     function renderCurrentMyPage(activeTab) {
         if (!state.myPage) {
             return;
         }
-        renderMyPageModal(state.myPage, activeTab || getActiveTabName() || "profile");
+
+        renderMyPageModal(state.myPage, activeTab || getActiveTabName() || TAB.profile);
     }
 
     function renderMyPageModal(data, activeTab) {
@@ -247,7 +310,7 @@
         const modal = document.createElement("div");
         modal.id = MODAL_ID;
         modal.className = "mypage-overlay";
-        modal.innerHTML = renderModalContent(data, activeTab || "profile");
+        modal.innerHTML = renderModalContent(data, activeTab || TAB.profile);
         document.body.appendChild(modal);
         document.body.classList.add("mypage-open");
     }
@@ -286,96 +349,102 @@
         return active ? active.dataset.mypageTab : null;
     }
 
+    /* =========================================================
+     * 6. Form submit 처리
+     * ======================================================= */
     async function submitProfileForm(form) {
         const payload = formToObject(form);
         const clientMessage = validateBasicProfilePayload(payload);
         if (clientMessage) {
-            showMyPageMessage({ success: false, message: clientMessage });
+            showError(clientMessage);
             return;
         }
 
         const result = await postJson(API.profile, payload);
-        showMyPageMessage(result);
-
-        if (result.success && result.myPage) {
-            state.currentUser = result.myPage.profile;
-            state.myPage = result.myPage;
-            profileEditMode = false;
-            safeUpdateAuthWidget();
-            renderMyPageModal(result.myPage, "profile");
+        if (!result.success || !result.myPage) {
             showMyPageMessage(result);
+            return;
         }
+
+        applyMyPageData(result.myPage);
+        viewState.profileEditMode = false;
+        safeUpdateAuthWidget();
+        renderMyPageModal(result.myPage, TAB.profile);
+        showMyPageMessage(result);
     }
 
     async function submitSecurityVerifyForm(form) {
         const payload = formToObject(form);
         if (!payload.currentPassword) {
-            showMyPageMessage({ success: false, message: "현재 비밀번호를 입력해 주세요." });
+            showError("현재 비밀번호를 입력해 주세요.");
             return;
         }
 
         const result = await postJson(API.verifyPassword, payload);
-        showMyPageMessage(result);
-
-        if (result.success && result.myPage) {
-            state.currentUser = result.myPage.profile;
-            state.myPage = result.myPage;
-            securityUnlocked = true;
-            securityEditMode = false;
-            passwordChangeMode = false;
-            renderMyPageModal(result.myPage, "security");
+        if (!result.success || !result.myPage) {
             showMyPageMessage(result);
+            return;
         }
+
+        applyMyPageData(result.myPage);
+        viewState.securityUnlocked = true;
+        viewState.securityEditMode = false;
+        viewState.passwordChangeMode = false;
+        renderMyPageModal(result.myPage, TAB.security);
+        showMyPageMessage(result);
     }
 
     async function submitSecurityProfileForm(form) {
         const payload = formToObject(form);
         const clientMessage = validateSecurityProfilePayload(payload);
         if (clientMessage) {
-            showMyPageMessage({ success: false, message: clientMessage });
+            showError(clientMessage);
             return;
         }
 
         const result = await postJson(API.security, payload);
-        showMyPageMessage(result);
-
-        if (result.success && result.myPage) {
-            state.currentUser = result.myPage.profile;
-            state.myPage = result.myPage;
-            securityEditMode = false;
-            safeUpdateAuthWidget();
-            renderMyPageModal(result.myPage, "security");
+        if (!result.success || !result.myPage) {
             showMyPageMessage(result);
+            return;
         }
+
+        applyMyPageData(result.myPage);
+        viewState.securityEditMode = false;
+        safeUpdateAuthWidget();
+        renderMyPageModal(result.myPage, TAB.security);
+        showMyPageMessage(result);
     }
 
     async function submitPasswordForm(form) {
         const payload = formToObject(form);
         const clientMessage = validatePasswordPayload(payload);
         if (clientMessage) {
-            showMyPageMessage({ success: false, message: clientMessage });
+            showError(clientMessage);
             return;
         }
 
         const result = await postJson(API.password, payload);
-        showMyPageMessage(result);
-
-        if (result.success) {
-            passwordChangeMode = false;
-            if (state.myPage) {
-                renderMyPageModal(state.myPage, "password");
-                showMyPageMessage(result);
-            } else {
-                form.reset();
-            }
+        if (!result.success) {
+            showMyPageMessage(result);
+            return;
         }
+
+        viewState.passwordChangeMode = false;
+        if (state.myPage) {
+            renderMyPageModal(state.myPage, TAB.password);
+            showMyPageMessage(result);
+            return;
+        }
+
+        form.reset();
+        showMyPageMessage(result);
     }
 
     async function submitWithdrawForm(form) {
         const payload = formToObject(form);
         const clientMessage = validateWithdrawPayload(payload);
         if (clientMessage) {
-            showMyPageMessage({ success: false, message: clientMessage });
+            showError(clientMessage);
             return;
         }
 
@@ -392,6 +461,9 @@
         }
     }
 
+    /* =========================================================
+     * 7. API / Form 유틸
+     * ======================================================= */
     async function postJson(url, payload) {
         try {
             const response = await fetch(url, {
@@ -426,6 +498,15 @@
         }
     }
 
+    async function readJson(response) {
+        const contentType = response.headers.get("content-type") || "";
+        if (!contentType.includes("application/json")) {
+            return null;
+        }
+
+        return await response.json();
+    }
+
     function formToObject(form) {
         const formData = new FormData(form);
         const payload = {};
@@ -441,6 +522,13 @@
         });
 
         return payload;
+    }
+
+    /* =========================================================
+     * 8. 검증 / 메시지
+     * ======================================================= */
+    function showError(message) {
+        showMyPageMessage({ success: false, message });
     }
 
     function showMyPageMessage(result) {
@@ -507,6 +595,9 @@
         return null;
     }
 
+    /* =========================================================
+     * 9. 모달 전체 렌더링
+     * ======================================================= */
     function renderModalContent(data, activeTab) {
         const profile = data.profile;
         const activity = data.activity || {};
@@ -531,38 +622,38 @@
                 </header>
 
                 <nav class="mypage-tabs" aria-label="마이페이지 메뉴">
-                    ${renderTab("profile", "👤", "내 정보", activeTab)}
-                    ${renderTab("security", "🔒", "보안 설정", activeTab)}
-                    ${renderTab("password", "🔑", "비밀번호 변경", activeTab)}
-                    ${renderTab("social", "🔗", "소셜 연결", activeTab)}
-                    ${renderTab("activity", "💬", "내 활동", activeTab)}
-                    ${renderTab("withdraw", "⚠️", "회원 탈퇴", activeTab)}
+                    ${renderTab(TAB.profile, "👤", "내 정보", activeTab)}
+                    ${renderTab(TAB.security, "🔒", "보안 설정", activeTab)}
+                    ${renderTab(TAB.password, "🔑", "비밀번호 변경", activeTab)}
+                    ${renderTab(TAB.social, "🔗", "소셜 연결", activeTab)}
+                    ${renderTab(TAB.activity, "💬", "내 활동", activeTab)}
+                    ${renderTab(TAB.withdraw, "⚠️", "회원 탈퇴", activeTab)}
                 </nav>
 
                 <div class="mypage-message" data-mypage-message hidden></div>
 
                 <div class="mypage-panels">
-                    <section class="mypage-panel ${activeTab === "profile" ? "active" : ""}" data-mypage-panel="profile">
+                    <section class="mypage-panel ${activeTab === TAB.profile ? "active" : ""}" data-mypage-panel="${TAB.profile}">
                         ${renderProfilePanel(profile)}
                     </section>
 
-                    <section class="mypage-panel ${activeTab === "security" ? "active" : ""}" data-mypage-panel="security">
+                    <section class="mypage-panel ${activeTab === TAB.security ? "active" : ""}" data-mypage-panel="${TAB.security}">
                         ${renderSecurityPanel(profile)}
                     </section>
 
-                    <section class="mypage-panel ${activeTab === "password" ? "active" : ""}" data-mypage-panel="password">
+                    <section class="mypage-panel ${activeTab === TAB.password ? "active" : ""}" data-mypage-panel="${TAB.password}">
                         ${renderPasswordPanel(profile)}
                     </section>
 
-                    <section class="mypage-panel ${activeTab === "social" ? "active" : ""}" data-mypage-panel="social">
+                    <section class="mypage-panel ${activeTab === TAB.social ? "active" : ""}" data-mypage-panel="${TAB.social}">
                         ${renderSocialPanel(profile)}
                     </section>
 
-                    <section class="mypage-panel ${activeTab === "activity" ? "active" : ""}" data-mypage-panel="activity">
+                    <section class="mypage-panel ${activeTab === TAB.activity ? "active" : ""}" data-mypage-panel="${TAB.activity}">
                         ${renderActivityPanel(activity, recentBoards, recentChats)}
                     </section>
 
-                    <section class="mypage-panel ${activeTab === "withdraw" ? "active" : ""}" data-mypage-panel="withdraw">
+                    <section class="mypage-panel ${activeTab === TAB.withdraw ? "active" : ""}" data-mypage-panel="${TAB.withdraw}">
                         ${renderWithdrawPanel(isAdmin, profile)}
                     </section>
                 </div>
@@ -582,8 +673,11 @@
         `;
     }
 
+    /* =========================================================
+     * 10. 탭 패널 렌더링
+     * ======================================================= */
     function renderProfilePanel(profile) {
-        if (!profileEditMode) {
+        if (!viewState.profileEditMode) {
             return `
                 <div class="mypage-read-card">
                     <div class="mypage-read-grid">
@@ -618,10 +712,10 @@
     function renderSecurityPanel(profile) {
         const isSocialUser = Boolean(profile.socialLoginUser);
         if (isSocialUser) {
-            securityUnlocked = true;
+            viewState.securityUnlocked = true;
         }
 
-        if (!securityUnlocked) {
+        if (!viewState.securityUnlocked) {
             return `
                 <div class="mypage-lock-layout">
                     <div class="mypage-info-box">
@@ -638,13 +732,11 @@
             `;
         }
 
-        return `
-            ${renderSecurityProfileForm(profile)}
-        `;
+        return renderSecurityProfileForm(profile);
     }
 
     function renderSecurityProfileForm(profile) {
-        if (!securityEditMode) {
+        if (!viewState.securityEditMode) {
             return `
                 <section class="mypage-security-section">
                     <div class="mypage-section-head">
@@ -692,49 +784,6 @@
         `;
     }
 
-    function renderSocialPanel(profile) {
-        const kakaoConnected = Boolean(profile.kakaoConnected) || hasProvider(profile, "KAKAO");
-        const naverConnected = Boolean(profile.naverConnected) || hasProvider(profile, "NAVER");
-
-        return `
-            <section class="mypage-social-page">
-                <div class="mypage-social-page-head">
-                    <h3>소셜 계정 연결</h3>
-                    <p>카카오와 네이버 계정을 연결하면 다음 로그인부터 소셜 계정으로 간편하게 접속할 수 있습니다.</p>
-                </div>
-
-                <div class="mypage-social-list">
-                    ${socialProviderCard("kakao", "카카오", kakaoConnected, "카카오 계정으로 로그인할 수 있습니다.")}
-                    ${socialProviderCard("naver", "네이버", naverConnected, "네이버 계정으로 로그인할 수 있습니다.")}
-                </div>
-
-                <div class="mypage-info-box mypage-social-guide-box">
-                    <h3>소셜 연결 안내</h3>
-                    <p>현재 화면은 연결 상태 확인용입니다. 실제 연결/해제는 OAuth2 정책과 예외처리 확정 후 별도 API로 확장하는 것을 권장합니다.</p>
-                    <p>실서비스에서는 이미 다른 회원에게 연결된 소셜 계정 차단, 마지막 로그인 수단 보호, 재인증 처리를 함께 적용합니다.</p>
-                </div>
-            </section>
-        `;
-    }
-
-    function socialProviderCard(provider, label, connected, description) {
-        return `
-            <article class="mypage-social-card ${connected ? "connected" : ""}">
-                <div class="mypage-social-provider-main">
-                    <span class="mypage-social-provider-icon ${provider}" aria-hidden="true"></span>
-                    <div class="mypage-social-provider-text">
-                        <strong>${label}</strong>
-                        <p>${description}</p>
-                    </div>
-                </div>
-                <div class="mypage-social-provider-action">
-                    <span class="mypage-social-status ${connected ? "connected" : "waiting"}">${connected ? "연결됨" : "연결 안 됨"}</span>
-                    <button type="button" class="mypage-secondary-btn" disabled>${connected ? "연결 해제 준비 중" : "연결 준비 중"}</button>
-                </div>
-            </article>
-        `;
-    }
-
     function renderPasswordPanel(profile) {
         if (profile.socialLoginUser) {
             return `
@@ -761,7 +810,7 @@
             `;
         }
 
-        if (!passwordChangeMode) {
+        if (!viewState.passwordChangeMode) {
             return `
                 <section class="mypage-password-page">
                     <div class="mypage-password-page-head">
@@ -812,6 +861,49 @@
                     </form>
                 </div>
             </section>
+        `;
+    }
+
+    function renderSocialPanel(profile) {
+        const kakaoConnected = Boolean(profile.kakaoConnected) || hasProvider(profile, "KAKAO");
+        const naverConnected = Boolean(profile.naverConnected) || hasProvider(profile, "NAVER");
+
+        return `
+            <section class="mypage-social-page">
+                <div class="mypage-social-page-head">
+                    <h3>소셜 계정 연결</h3>
+                    <p>카카오와 네이버 계정을 연결하면 다음 로그인부터 소셜 계정으로 간편하게 접속할 수 있습니다.</p>
+                </div>
+
+                <div class="mypage-social-list">
+                    ${socialProviderCard("kakao", "카카오", kakaoConnected, "카카오 계정으로 로그인할 수 있습니다.")}
+                    ${socialProviderCard("naver", "네이버", naverConnected, "네이버 계정으로 로그인할 수 있습니다.")}
+                </div>
+
+                <div class="mypage-info-box mypage-social-guide-box">
+                    <h3>소셜 연결 안내</h3>
+                    <p>현재 화면은 연결 상태 확인용입니다. 실제 연결/해제는 OAuth2 정책과 예외처리 확정 후 별도 API로 확장하는 것을 권장합니다.</p>
+                    <p>실서비스에서는 이미 다른 회원에게 연결된 소셜 계정 차단, 마지막 로그인 수단 보호, 재인증 처리를 함께 적용합니다.</p>
+                </div>
+            </section>
+        `;
+    }
+
+    function socialProviderCard(provider, label, connected, description) {
+        return `
+            <article class="mypage-social-card ${connected ? "connected" : ""}">
+                <div class="mypage-social-provider-main">
+                    <span class="mypage-social-provider-icon ${provider}" aria-hidden="true"></span>
+                    <div class="mypage-social-provider-text">
+                        <strong>${label}</strong>
+                        <p>${description}</p>
+                    </div>
+                </div>
+                <div class="mypage-social-provider-action">
+                    <span class="mypage-social-status ${connected ? "connected" : "waiting"}">${connected ? "연결됨" : "연결 안 됨"}</span>
+                    <button type="button" class="mypage-secondary-btn" disabled>${connected ? "연결 해제 준비 중" : "연결 준비 중"}</button>
+                </div>
+            </article>
         `;
     }
 
@@ -881,6 +973,9 @@
         `;
     }
 
+    /* =========================================================
+     * 11. 작은 렌더링 유틸
+     * ======================================================= */
     function renderRecentBoards(items) {
         if (items.length === 0) {
             return `<p class="mypage-empty">최근 작성한 게시글이 없습니다.</p>`;
@@ -939,6 +1034,24 @@
         `;
     }
 
+    function readonlyInput(label, value) {
+        return `
+            <label class="mypage-field">
+                <span>${label}</span>
+                <input type="text" value="${html(value || "-")}" readonly>
+            </label>
+        `;
+    }
+
+    function readItem(label, value) {
+        return `
+            <div class="mypage-read-item">
+                <span>${label}</span>
+                <strong>${html(value || "-")}</strong>
+            </div>
+        `;
+    }
+
     function addressInputs(profile) {
         return `
             <label class="mypage-field">
@@ -982,6 +1095,20 @@
         `;
     }
 
+    function selectGender(value) {
+        const current = value || "";
+        return `
+            <label class="mypage-field">
+                <span>성별</span>
+                <select name="gender">
+                    <option value="" ${current === "" ? "selected" : ""}>선택 안 함</option>
+                    <option value="M" ${current === "M" ? "selected" : ""}>남성</option>
+                    <option value="F" ${current === "F" ? "selected" : ""}>여성</option>
+                </select>
+            </label>
+        `;
+    }
+
     function togglePasswordVisibility(button) {
         const control = button.closest(".mypage-password-control");
         if (!control) {
@@ -999,38 +1126,9 @@
         button.setAttribute("aria-label", shouldShow ? "비밀번호 숨기기" : "비밀번호 표시");
     }
 
-    function readonlyInput(label, value) {
-        return `
-            <label class="mypage-field">
-                <span>${label}</span>
-                <input type="text" value="${html(value || "-")}" readonly>
-            </label>
-        `;
-    }
-
-    function readItem(label, value) {
-        return `
-            <div class="mypage-read-item">
-                <span>${label}</span>
-                <strong>${html(value || "-")}</strong>
-            </div>
-        `;
-    }
-
-    function selectGender(value) {
-        const current = value || "";
-        return `
-            <label class="mypage-field">
-                <span>성별</span>
-                <select name="gender">
-                    <option value="" ${current === "" ? "selected" : ""}>선택 안 함</option>
-                    <option value="M" ${current === "M" ? "selected" : ""}>남성</option>
-                    <option value="F" ${current === "F" ? "selected" : ""}>여성</option>
-                </select>
-            </label>
-        `;
-    }
-
+    /* =========================================================
+     * 12. 표시값 변환 유틸
+     * ======================================================= */
     function formatPhoneValue(value) {
         const digits = String(value || "").replace(/[^0-9]/g, "").slice(0, 11);
 
@@ -1097,9 +1195,11 @@
         if (value === "M") {
             return "남성";
         }
+
         if (value === "F") {
             return "여성";
         }
+
         return "선택 안 함";
     }
 
@@ -1151,25 +1251,4 @@
             .replaceAll('"', "&quot;")
             .replaceAll("'", "&#039;");
     }
-
-    async function readJson(response) {
-        const contentType = response.headers.get("content-type") || "";
-        if (!contentType.includes("application/json")) {
-            return null;
-        }
-
-        return await response.json();
-    }
-
-    function startMyPageWhenReady() {
-        if (typeof state === "undefined" || typeof renderAuthWidget !== "function") {
-            setTimeout(startMyPageWhenReady, 30);
-            return;
-        }
-
-        window.initializeMyPage();
-    }
-
-    startMyPageWhenReady();
-
 })();
