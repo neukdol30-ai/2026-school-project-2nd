@@ -52,15 +52,23 @@
                 </label>
                 <label>
                     <span>우편번호</span>
-                    <input type="text" th:field="*{postcode}">
+                    <div class="admin-address-row">
+                        <input id="adminMemberPostcode" type="text" th:field="*{postcode}" readonly>
+                        <button type="button"
+                                class="ghost-button address-search-button"
+                                data-address-search
+                                data-postcode-target="#adminMemberPostcode"
+                                data-address-target="#adminMemberAddress"
+                                data-detail-target="#adminMemberDetailAddress">주소 검색</button>
+                    </div>
                 </label>
                 <label class="wide-field">
                     <span>주소</span>
-                    <input type="text" th:field="*{address}">
+                    <input id="adminMemberAddress" type="text" th:field="*{address}" readonly>
                 </label>
                 <label class="wide-field">
                     <span>상세주소</span>
-                    <input type="text" th:field="*{detailAddress}">
+                    <input id="adminMemberDetailAddress" type="text" th:field="*{detailAddress}">
                 </label>
                 <label>
                     <span>성별</span>

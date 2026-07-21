@@ -70,4 +70,17 @@ public class MyPageProfileDto {
 
         return socialProviders + " 소셜 로그인";
     }
+
+    public boolean isKakaoConnected() {
+        return hasProvider("KAKAO");
+    }
+
+    public boolean isNaverConnected() {
+        return hasProvider("NAVER");
+    }
+
+    private boolean hasProvider(String provider) {
+        return socialProviders != null
+                && socialProviders.toUpperCase().contains(provider);
+    }
 }

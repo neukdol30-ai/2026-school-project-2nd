@@ -6,6 +6,7 @@ import com.siyan1234.itproject2nd.member.dto.MemberDto;
 import com.siyan1234.itproject2nd.mypage.dto.MyPageActionResponseDto;
 import com.siyan1234.itproject2nd.mypage.dto.MyPageResponseDto;
 import com.siyan1234.itproject2nd.mypage.dto.MyPageUpdateDto;
+import com.siyan1234.itproject2nd.mypage.dto.MyPageVerifyPasswordDto;
 import com.siyan1234.itproject2nd.mypage.dto.MyPageWithdrawDto;
 import com.siyan1234.itproject2nd.mypage.dto.PasswordChangeDto;
 import com.siyan1234.itproject2nd.mypage.service.MyPageService;
@@ -28,6 +29,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class MyPageController {
 
     private static final String ANONYMOUS_USER = "anonymousUser";
+    private static final String SECURITY_VERIFIED_MEMBER_NO = "MYPAGE_SECURITY_VERIFIED_MEMBER_NO";
 
     private final MyPageService myPageService;
     private final MemberDao memberDao;
@@ -55,11 +57,51 @@ public class MyPageController {
         Integer memberNo = resolveMemberNo(customUserDetails, authentication);
 
         if (memberNo == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(MyPageActionResponseDto.fail("로그인이 필요합니다."));
+            return unauthorized();
         }
 
         MyPageActionResponseDto responseDto = myPageService.updateProfile(memberNo, updateDto);
+        return ResponseEntity.ok(responseDto);
+    }
+
+    @PostMapping("/verify-password")
+    public ResponseEntity<MyPageActionResponseDto> verifyPassword(
+            @AuthenticationPrincipal CustomUserDetails customUserDetails,
+            Authentication authentication,
+            @RequestBody MyPageVerifyPasswordDto verifyDto,
+            HttpSession session
+    ) {
+        Integer memberNo = resolveMemberNo(customUserDetails, authentication);
+
+        if (memberNo == null) {
+            return unauthorized();
+        }
+
+        MyPageActionResponseDto responseDto = myPageService.verifyPassword(memberNo, verifyDto);
+        if (responseDto.isSuccess()) {
+            session.setAttribute(SECURITY_VERIFIED_MEMBER_NO, memberNo);
+        }
+        return ResponseEntity.ok(responseDto);
+    }
+
+    @PostMapping("/security")
+    public ResponseEntity<MyPageActionResponseDto> updateSecurityProfile(
+            @AuthenticationPrincipal CustomUserDetails customUserDetails,
+            Authentication authentication,
+            @RequestBody MyPageUpdateDto updateDto,
+            HttpSession session
+    ) {
+        Integer memberNo = resolveMemberNo(customUserDetails, authentication);
+
+        if (memberNo == null) {
+            return unauthorized();
+        }
+
+        MyPageActionResponseDto responseDto = myPageService.updateSecurityProfile(
+                memberNo,
+                updateDto,
+                isSecurityVerified(session, memberNo)
+        );
         return ResponseEntity.ok(responseDto);
     }
 
@@ -72,8 +114,7 @@ public class MyPageController {
         Integer memberNo = resolveMemberNo(customUserDetails, authentication);
 
         if (memberNo == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(MyPageActionResponseDto.fail("로그인이 필요합니다."));
+            return unauthorized();
         }
 
         MyPageActionResponseDto responseDto = myPageService.changePassword(memberNo, passwordDto);
@@ -90,8 +131,7 @@ public class MyPageController {
         Integer memberNo = resolveMemberNo(customUserDetails, authentication);
 
         if (memberNo == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(MyPageActionResponseDto.fail("로그인이 필요합니다."));
+            return unauthorized();
         }
 
         MyPageActionResponseDto responseDto = myPageService.withdraw(memberNo, withdrawDto);
@@ -145,5 +185,15 @@ public class MyPageController {
 
         MemberDto memberDto = customUserDetails.getMemberDto();
         return memberDto == null ? null : memberDto.getNo();
+    }
+
+    private boolean isSecurityVerified(HttpSession session, Integer memberNo) {
+        Object verifiedMemberNo = session.getAttribute(SECURITY_VERIFIED_MEMBER_NO);
+        return memberNo != null && memberNo.equals(verifiedMemberNo);
+    }
+
+    private ResponseEntity<MyPageActionResponseDto> unauthorized() {
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                .body(MyPageActionResponseDto.fail("로그인이 필요합니다."));
     }
 }

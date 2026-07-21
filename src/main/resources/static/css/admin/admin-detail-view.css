@@ -623,3 +623,32 @@
         width: 100%;
     }
 }
+
+/* address-search common patch */
+.admin-address-row {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 8px;
+    align-items: center;
+}
+
+.admin-address-row .address-search-button {
+    min-height: 44px;
+    white-space: nowrap;
+}
+
+.admin-address-row input[readonly],
+.admin-form-grid input[readonly] {
+    background: #f8fafc;
+    cursor: default;
+}
+
+@media (max-width: 760px) {
+    .admin-address-row {
+        grid-template-columns: 1fr;
+    }
+
+    .admin-address-row .address-search-button {
+        width: 100%;
+    }
+}

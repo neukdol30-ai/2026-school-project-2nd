@@ -38,19 +38,24 @@
         WHERE m.no = #{memberNo, jdbcType=NUMERIC}
     </select>
 
-    <update id="updateProfile">
+    <update id="updateBasicProfile">
         UPDATE member
         SET
             name = #{profile.name, jdbcType=VARCHAR},
-            nickname = #{profile.nickname, jdbcType=VARCHAR},
+            nickname = #{profile.nickname, jdbcType=VARCHAR}
+        WHERE no = #{memberNo, jdbcType=NUMERIC}
+    </update>
+
+    <update id="updateSecurityProfile">
+        UPDATE member
+        SET
             email = #{profile.email, jdbcType=VARCHAR},
             phone = #{profile.phone, jdbcType=VARCHAR},
             birth_date = #{profile.birthDate, jdbcType=DATE},
             gender = #{profile.gender, jdbcType=VARCHAR},
             postcode = #{profile.postcode, jdbcType=VARCHAR},
             address = #{profile.address, jdbcType=VARCHAR},
-            detail_address = #{profile.detailAddress, jdbcType=VARCHAR},
-            profile_image = #{profile.profileImage, jdbcType=VARCHAR}
+            detail_address = #{profile.detailAddress, jdbcType=VARCHAR}
         WHERE no = #{memberNo, jdbcType=NUMERIC}
     </update>
 

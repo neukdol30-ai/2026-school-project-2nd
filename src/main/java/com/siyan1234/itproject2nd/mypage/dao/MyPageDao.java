@@ -15,8 +15,11 @@ public interface MyPageDao {
 
     MyPageProfileDto findProfileByNo(@Param("memberNo") Integer memberNo);
 
-    int updateProfile(@Param("memberNo") Integer memberNo,
-                      @Param("profile") MyPageUpdateDto profile);
+    int updateBasicProfile(@Param("memberNo") Integer memberNo,
+                           @Param("profile") MyPageUpdateDto profile);
+
+    int updateSecurityProfile(@Param("memberNo") Integer memberNo,
+                              @Param("profile") MyPageUpdateDto profile);
 
     int updatePassword(@Param("memberNo") Integer memberNo,
                        @Param("password") String password);
