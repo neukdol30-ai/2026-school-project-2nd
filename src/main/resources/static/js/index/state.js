@@ -1,6 +1,8 @@
 //기본 뼈대 생성
 const state = {
     isEditMode: false,
+    isSettingsOpen: false,
+    headerWidgetId: 9,
     memoText: "",
     calculatorText: "",
     currentUser: null,
@@ -11,6 +13,15 @@ const state = {
     newsItems: [],
     newsLoading: false,
     newsError: "",
+    newsCategory: "정치",
+    newsCategories: [
+        "정치",
+        "경제",
+        "엔터테인먼트",
+        "스포츠",
+        "사회",
+        "해외"
+    ],
     weather: null,
     weatherLoading: false,
     weatherError: "",
@@ -90,52 +101,33 @@ const state = {
             zone: "main",
             type: "news",
             title: "뉴스",
-            icon: "📰",
-            description: "주요 뉴스를 표시합니다.",
             visible: true,
             collapsed: false,
             orderNo: 1
-        },
-        {
-            id: 2,
-            zone: "main",
-            type: "issue",
-            title: "주요 이슈",
-            icon: "🔥",
-            description: "오늘의 이슈 키워드를 표시합니다.",
-            visible: true,
-            collapsed: false,
-            orderNo: 2
         },
         {
             id: 3,
             zone: "main",
             type: "schedule",
             title: "오늘 일정",
-            icon: "📌",
-            description: "오늘의 주요 일정을 표시합니다.",
             visible: true,
             collapsed: false,
-            orderNo: 3
+            orderNo: 2
         },
         {
             id: 4,
             zone: "main",
             type: "stock",
             title: "증권",
-            icon: "📈",
-            description: "관심 종목과 차트를 표시합니다.",
             visible: true,
             collapsed: false,
-            orderNo: 4
+            orderNo: 3
         },
         {
             id: 5,
             zone: "side",
             type: "weather",
             title: "날씨",
-            icon: "🌤️",
-            description: "현재 날씨를 간단히 표시합니다.",
             visible: true,
             collapsed: false,
             orderNo: 1
@@ -145,8 +137,6 @@ const state = {
             zone: "side",
             type: "calculator",
             title: "계산기",
-            icon: "🧮",
-            description: "간단한 계산을 수행합니다.",
             visible: true,
             collapsed: false,
             orderNo: 2
@@ -156,8 +146,6 @@ const state = {
             zone: "side",
             type: "miniCalendar",
             title: "미니 캘린더",
-            icon: "📅",
-            description: "이번 달 날짜를 표시합니다.",
             visible: true,
             collapsed: false,
             orderNo: 3
@@ -167,8 +155,6 @@ const state = {
             zone: "side",
             type: "memo",
             title: "메모",
-            icon: "📝",
-            description: "간단한 메모를 작성합니다.",
             visible: true,
             collapsed: false,
             orderNo: 4
@@ -178,8 +164,6 @@ const state = {
             zone: "side",
             type: "currentTime",
             title: "현재시간",
-            icon: "🕒",
-            description: "현재 시간과 일출·일몰 정보를 표시합니다.",
             visible: true,
             collapsed: false,
             orderNo: 5,
