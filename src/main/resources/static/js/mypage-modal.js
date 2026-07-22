@@ -36,6 +36,19 @@
         withdraw: "withdraw"
     });
 
+    /**
+     * 탭 순서를 한 곳에서 관리합니다.
+     * 마우스 클릭뿐 아니라 키보드 방향키 이동에서도 같은 순서를 사용합니다.
+     */
+    const TAB_ORDER = Object.freeze([
+        TAB.profile,
+        TAB.security,
+        TAB.password,
+        TAB.social,
+        TAB.activity,
+        TAB.withdraw
+    ]);
+
     const MODAL_ID = "myPageModal";
     const PHONE_PATTERN = /^010-[0-9]{4}-[0-9]{4}$/;
     const WITHDRAW_CONFIRM_TEXT = "회원탈퇴";
@@ -267,6 +280,10 @@
             return;
         }
 
+        if (handleMyPageTabKeydown(event)) {
+            return;
+        }
+
         if (event.key === "Escape") {
             event.preventDefault();
             closeMyPageModal();
@@ -326,7 +343,7 @@
         const modal = document.createElement("div");
         modal.id = MODAL_ID;
         modal.className = "mypage-overlay";
-        modal.innerHTML = renderModalContent(data, activeTab || TAB.profile);
+        modal.innerHTML = renderModalContent(data, normalizeTabName(activeTab));
         document.body.appendChild(modal);
         document.body.classList.add("mypage-open");
         focusMyPageDialog();
@@ -412,26 +429,83 @@
         }
     }
 
+    /**
+     * 탭 버튼에 초점이 있을 때 방향키/Home/End로 탭을 이동할 수 있게 합니다.
+     * 브라우저 기본 탭 이동(Tab 키)은 그대로 두고, 탭 목록 내부 이동만 보강합니다.
+     */
+    function handleMyPageTabKeydown(event) {
+        const tabButton = event.target.closest("[data-mypage-tab]");
+        if (!tabButton) {
+            return false;
+        }
+
+        const key = event.key;
+        if (!["ArrowLeft", "ArrowRight", "Home", "End"].includes(key)) {
+            return false;
+        }
+
+        const buttons = Array.from(document.querySelectorAll(`#${MODAL_ID} [data-mypage-tab]`));
+        if (buttons.length === 0) {
+            return false;
+        }
+
+        const currentIndex = Math.max(0, buttons.indexOf(tabButton));
+        let nextIndex = currentIndex;
+
+        if (key === "ArrowRight") {
+            nextIndex = (currentIndex + 1) % buttons.length;
+        }
+
+        if (key === "ArrowLeft") {
+            nextIndex = (currentIndex - 1 + buttons.length) % buttons.length;
+        }
+
+        if (key === "Home") {
+            nextIndex = 0;
+        }
+
+        if (key === "End") {
+            nextIndex = buttons.length - 1;
+        }
+
+        event.preventDefault();
+        const nextButton = buttons[nextIndex];
+        activateMyPageTab(nextButton.dataset.mypageTab);
+        nextButton.focus({ preventScroll: true });
+        return true;
+    }
+
     function activateMyPageTab(tabName) {
         const modal = document.getElementById(MODAL_ID);
+        const safeTabName = normalizeTabName(tabName);
         if (!modal) {
             return;
         }
 
         modal.querySelectorAll("[data-mypage-tab]").forEach((button) => {
-            const active = button.dataset.mypageTab === tabName;
+            const active = button.dataset.mypageTab === safeTabName;
             button.classList.toggle("active", active);
             button.setAttribute("aria-selected", String(active));
+            button.setAttribute("tabindex", active ? "0" : "-1");
         });
 
         modal.querySelectorAll("[data-mypage-panel]").forEach((panel) => {
-            panel.classList.toggle("active", panel.dataset.mypagePanel === tabName);
+            const active = panel.dataset.mypagePanel === safeTabName;
+            panel.classList.toggle("active", active);
+            panel.setAttribute("aria-hidden", String(!active));
         });
     }
 
     function getActiveTabName() {
         const active = document.querySelector("[data-mypage-tab].active");
         return active ? active.dataset.mypageTab : null;
+    }
+
+    /**
+     * 알 수 없는 탭 이름이 들어와도 첫 화면으로 안전하게 돌립니다.
+     */
+    function normalizeTabName(tabName) {
+        return TAB_ORDER.includes(tabName) ? tabName : TAB.profile;
     }
 
     /* =========================================================
@@ -735,6 +809,7 @@
         const recentChats = data.recentChats || [];
         const isAdmin = String(profile.role || "").toUpperCase() === "ADMIN";
         const loginMethodLabel = getLoginMethodLabel(profile);
+        const safeActiveTab = normalizeTabName(activeTab);
 
         return `
             <section class="mypage-modal" role="dialog" aria-modal="true" aria-labelledby="myPageTitle" tabindex="-1">
@@ -751,39 +826,39 @@
                     </div>
                 </header>
 
-                <nav class="mypage-tabs" aria-label="마이페이지 메뉴">
-                    ${renderTab(TAB.profile, "👤", "내 정보", activeTab)}
-                    ${renderTab(TAB.security, "🔒", "보안 설정", activeTab)}
-                    ${renderTab(TAB.password, "🔑", "비밀번호 변경", activeTab)}
-                    ${renderTab(TAB.social, "🔗", "소셜 연결", activeTab)}
-                    ${renderTab(TAB.activity, "💬", "내 활동", activeTab)}
-                    ${renderTab(TAB.withdraw, "⚠️", "회원 탈퇴", activeTab)}
+                <nav class="mypage-tabs" role="tablist" aria-label="마이페이지 메뉴">
+                    ${renderTab(TAB.profile, "👤", "내 정보", safeActiveTab)}
+                    ${renderTab(TAB.security, "🔒", "보안 설정", safeActiveTab)}
+                    ${renderTab(TAB.password, "🔑", "비밀번호 변경", safeActiveTab)}
+                    ${renderTab(TAB.social, "🔗", "소셜 연결", safeActiveTab)}
+                    ${renderTab(TAB.activity, "💬", "내 활동", safeActiveTab)}
+                    ${renderTab(TAB.withdraw, "⚠️", "회원 탈퇴", safeActiveTab)}
                 </nav>
 
-                <div class="mypage-message" data-mypage-message hidden></div>
+                <div class="mypage-message" data-mypage-message role="status" aria-live="polite" hidden></div>
 
                 <div class="mypage-panels">
-                    <section class="mypage-panel ${activeTab === TAB.profile ? "active" : ""}" data-mypage-panel="${TAB.profile}">
+                    <section id="myPagePanel-${TAB.profile}" class="mypage-panel ${safeActiveTab === TAB.profile ? "active" : ""}" data-mypage-panel="${TAB.profile}" role="tabpanel" aria-labelledby="myPageTab-${TAB.profile}" aria-hidden="${safeActiveTab !== TAB.profile}" tabindex="0">
                         ${renderProfilePanel(profile)}
                     </section>
 
-                    <section class="mypage-panel ${activeTab === TAB.security ? "active" : ""}" data-mypage-panel="${TAB.security}">
+                    <section id="myPagePanel-${TAB.security}" class="mypage-panel ${safeActiveTab === TAB.security ? "active" : ""}" data-mypage-panel="${TAB.security}" role="tabpanel" aria-labelledby="myPageTab-${TAB.security}" aria-hidden="${safeActiveTab !== TAB.security}" tabindex="0">
                         ${renderSecurityPanel(profile)}
                     </section>
 
-                    <section class="mypage-panel ${activeTab === TAB.password ? "active" : ""}" data-mypage-panel="${TAB.password}">
+                    <section id="myPagePanel-${TAB.password}" class="mypage-panel ${safeActiveTab === TAB.password ? "active" : ""}" data-mypage-panel="${TAB.password}" role="tabpanel" aria-labelledby="myPageTab-${TAB.password}" aria-hidden="${safeActiveTab !== TAB.password}" tabindex="0">
                         ${renderPasswordPanel(profile)}
                     </section>
 
-                    <section class="mypage-panel ${activeTab === TAB.social ? "active" : ""}" data-mypage-panel="${TAB.social}">
+                    <section id="myPagePanel-${TAB.social}" class="mypage-panel ${safeActiveTab === TAB.social ? "active" : ""}" data-mypage-panel="${TAB.social}" role="tabpanel" aria-labelledby="myPageTab-${TAB.social}" aria-hidden="${safeActiveTab !== TAB.social}" tabindex="0">
                         ${renderSocialPanel(profile)}
                     </section>
 
-                    <section class="mypage-panel ${activeTab === TAB.activity ? "active" : ""}" data-mypage-panel="${TAB.activity}">
+                    <section id="myPagePanel-${TAB.activity}" class="mypage-panel ${safeActiveTab === TAB.activity ? "active" : ""}" data-mypage-panel="${TAB.activity}" role="tabpanel" aria-labelledby="myPageTab-${TAB.activity}" aria-hidden="${safeActiveTab !== TAB.activity}" tabindex="0">
                         ${renderActivityPanel(activity, recentBoards, recentChats)}
                     </section>
 
-                    <section class="mypage-panel ${activeTab === TAB.withdraw ? "active" : ""}" data-mypage-panel="${TAB.withdraw}">
+                    <section id="myPagePanel-${TAB.withdraw}" class="mypage-panel ${safeActiveTab === TAB.withdraw ? "active" : ""}" data-mypage-panel="${TAB.withdraw}" role="tabpanel" aria-labelledby="myPageTab-${TAB.withdraw}" aria-hidden="${safeActiveTab !== TAB.withdraw}" tabindex="0">
                         ${renderWithdrawPanel(isAdmin, profile)}
                     </section>
                 </div>
@@ -792,12 +867,17 @@
     }
 
     function renderTab(tabName, icon, label, activeTab) {
+        const active = activeTab === tabName;
         return `
-            <button type="button"
-                    class="mypage-tab ${activeTab === tabName ? "active" : ""}"
+            <button id="myPageTab-${tabName}"
+                    type="button"
+                    role="tab"
+                    class="mypage-tab ${active ? "active" : ""}"
                     data-mypage-tab="${tabName}"
-                    aria-selected="${activeTab === tabName}">
-                <span class="mypage-tab-icon">${icon}</span>
+                    aria-selected="${active}"
+                    aria-controls="myPagePanel-${tabName}"
+                    tabindex="${active ? "0" : "-1"}">
+                <span class="mypage-tab-icon" aria-hidden="true">${icon}</span>
                 <span>${label}</span>
             </button>
         `;
