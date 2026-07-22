@@ -1,10 +1,68 @@
-/* 모바일 반응형: 2:1 구조를 1열 구조로 변경 */
-@media (max-width: 900px) {
-    .dashboard-layout {
-        grid-template-columns: 1fr;
-    }
+/*!* 모바일 반응형: 2:1 구조를 1열 구조로 변경 *!*/
+/*@media (max-width: 900px) {*/
 
-    .widget-header {
-        flex-direction: column;
-    }
-}
+/*    .widget-header {*/
+/*        flex-direction: column;*/
+/*    }*/
+/*}*/
+
+/*!* 좁은 화면: 상단과 본문이 같은 2칸 보드 폭을 공유 *!*/
+/*@media (max-width: 1000px) {*/
+/*    !* 두 영역 모두 300px + 24px + 300px 폭 *!*/
+/*    .dashboard-header,*/
+/*    .dashboard-layout {*/
+/*        width: var(--dashboard-min-width);*/
+/*        min-width: var(--dashboard-min-width);*/
+/*        margin-right: auto;*/
+/*        margin-left: auto;*/
+/*    }*/
+
+/*    !* 첫 줄 로고, 둘째 줄 상단 위젯 + 로그인 *!*/
+/*    .dashboard-header {*/
+/*        grid-template-columns: repeat(2, var(--side-widget-width));*/
+/*        grid-template-areas:*/
+/*            "logo logo"*/
+/*            "widget auth";*/
+/*        grid-template-rows: 80px auto;*/
+/*        column-gap: var(--layout-gap);*/
+/*        row-gap: 20px;*/
+/*    }*/
+
+/*    .header-logo-slot {*/
+/*        grid-area: logo;*/
+/*        min-height: 80px;*/
+/*    }*/
+
+/*    .header-widget-slot {*/
+/*        grid-area: widget;*/
+/*    }*/
+
+/*    .header-auth-slot {*/
+/*        grid-area: auth;*/
+/*    }*/
+
+/*    !* 아래도 동일한 2칸 보드 *!*/
+/*    .dashboard-layout {*/
+/*        grid-template-columns: repeat(2, var(--side-widget-width));*/
+/*        column-gap: var(--layout-gap);*/
+/*        row-gap: 20px;*/
+/*    }*/
+
+/*    !* 메인/보조 컬럼 박스를 없애고 개별 위젯을 보드에 배치 *!*/
+/*    .main-column,*/
+/*    .side-column,*/
+/*    .main-column .widget-list,*/
+/*    .side-column .widget-list {*/
+/*        display: contents;*/
+/*    }*/
+
+/*    !* 메인 위젯은 2칸 전체 *!*/
+/*    .main-column .widget {*/
+/*        grid-column: 1 / -1;*/
+/*    }*/
+
+/*    !* 보조 위젯은 한 칸씩, 최대 두 개가 한 줄 *!*/
+/*    .side-column .widget {*/
+/*        grid-column: span 1;*/
+/*    }*/
+/*}*/

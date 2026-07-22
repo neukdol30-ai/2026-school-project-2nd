@@ -3,6 +3,13 @@ function renderControlBox() {
     return `
         <section class="control-box">
             <h2>위젯 관리</h2>
+            
+            <button
+                class="settings-layout-button"
+                data-action="start-layout-edit"
+            >
+                위젯 배치 편집
+            </button>
 
             <div class="control-buttons">
                 ${state.widgets.map((widget) => `
@@ -11,7 +18,7 @@ function renderControlBox() {
                         data-action="toggle-widget"
                         data-id="${widget.id}"
                     >
-                        ${widget.icon} ${widget.title}
+                       ${widget.title}
                     </button>
                 `).join("")}
             </div>
@@ -19,55 +26,94 @@ function renderControlBox() {
     `;
 }
 
-//위젯 카드
-function renderWidget(widget, index, widgetCount) {
+// 위젯 공통 헤더
+function renderWidgetHeader(widget, index, widgetCount) {
     return `
-        <article class="widget ${widget.zone === "main" ? "main-widget" : "side-widget"}"
-        data-widget-id="${widget.id}">
-            <div class="widget-header">
-                <div>
-                    <div class="widget-title">
-                        ${widget.icon} ${widget.title}
-                    </div>
-                    <div class="widget-desc">
-                        ${widget.description}
-                    </div>
-                </div>
-                
-                 <div class="widget-actions">
-                    ${state.isEditMode ? `
-                        <button
-                            data-action="move-up"
-                            data-id="${widget.id}"
-                            ${index === 0 ? "disabled" : ""}
-                        >
-                            ↑
-                        </button>
-
-                        <button
-                            data-action="move-down"
-                            data-id="${widget.id}"
-                            ${index === widgetCount - 1 ? "disabled" : ""}
-                        >
-                            ↓
-                        </button>
-
-                        <button
-                            class="danger"
-                            data-action="toggle-widget"
-                            data-id="${widget.id}"
-                        >
-                            숨김
-                        </button>
-                    ` : ""}
+        <div class="widget-header">
+            <div>
+                <div class="widget-title">
+                     ${widget.title}
                 </div>
             </div>
 
+            <div class="widget-actions">
+                ${state.isEditMode ? `
+                    <span
+                        class="widget-drag-handle"
+                        draggable="true"
+                        data-drag-handle
+                        title="위젯 이동"
+                    >
+                        ↕
+                    </span>
+
+                    <button
+                        class="danger"
+                        data-action="toggle-widget"
+                        data-id="${widget.id}"
+                    >
+                        숨김
+                    </button>
+                ` : ""}
+            </div>
+        </div>
+    `;
+}
+
+// 위젯 카드
+function renderWidget(widget, index, widgetCount) {
+    return `
+        <article
+            class="widget ${widget.zone === "main" ? "main-widget" : "side-widget"}"
+            data-widget-id="${widget.id}"
+        >
+            ${renderWidgetHeader(widget, index, widgetCount)}
+
             ${widget.collapsed ? "" : `
-                <div class="widget-content">
+                <div class="widget-content" data-widget-content="${widget.id}">
                     ${renderWidgetContent(widget)}
                 </div>
             `}
+        </article>
+    `;
+}
+
+// 상단 좌측 고정 위젯 렌더링
+function renderHeaderWidget() {
+    const headerWidget = state.widgets.find(
+        (widget) => widget.id === state.headerWidgetId
+    );
+
+    // 설정에서 상단 위젯을 비우는 경우를 위한 임시 화면
+    if (!headerWidget || !headerWidget.visible) {
+        return `
+            <article class="widget header-widget">
+                <div class="widget-content">
+                    <p class="widget-desc">상단 위젯이 비어 있습니다.</p>
+                </div>
+            </article>
+        `;
+    }
+
+    return `
+        <article
+            class="widget header-widget"
+            data-header-widget-id="${headerWidget.id}"
+        >
+            <div class="widget-header">
+                <div>
+                    <div class="widget-title">
+                         ${headerWidget.title}
+                    </div>
+                </div>
+            </div>
+
+            <div
+                class="widget-content"
+                data-widget-content="${headerWidget.id}"
+            >
+                ${renderWidgetContent(headerWidget)}
+            </div>
         </article>
     `;
 }

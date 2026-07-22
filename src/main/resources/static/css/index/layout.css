@@ -1,16 +1,20 @@
-/* 전체 페이지 가운데 정렬용 컨테이너 */
-.container {
-    max-width: 1280px;
-    margin: 0 auto;
-    padding: 32px 20px;
+:root {
+    --main-widget-width: 830px;
+    --side-widget-width: 420px;
+    --header-widget-width: 380px;
+    --layout-gap: 30px;
+    --dashboard-width: 1280px;
+    --header-logo-width: 460px;
+    --global-banner-height: 54px;
 }
 
-/* 2:1 메인 레이아웃 */
-.dashboard-layout {
-    display: grid;
-    grid-template-columns: minmax(0, 2fr) minmax(280px, 1fr);
-    gap: 24px;
-    align-items: start;
+/* 전체 페이지 가운데 정렬용 컨테이너 */
+.container {
+    width: 100%;
+    min-width: var(--dashboard-width);
+    margin: 0;
+    padding: 32px 0;
+    position: relative;
 }
 
 /* 왼쪽/오른쪽 컬럼 공통 */
@@ -33,4 +37,63 @@
     display: flex;
     flex-direction: column;
     gap: 20px;
+}
+
+/* 상단 고정 영역: 좌측 위젯 / 중앙 로고 / 우측 로그인 */
+.dashboard-header {
+    display: grid;
+    grid-template-columns:
+        var(--header-widget-width)
+        var(--header-logo-width)
+        var(--header-widget-width);
+    gap: var(--layout-gap);
+    align-items: stretch;
+    width: var(--dashboard-width);
+    min-width: var(--dashboard-width);
+    margin: 0 auto 24px;
+}
+
+.dashboard-layout {
+    display: grid;
+    grid-template-columns:
+        var(--main-widget-width)
+        var(--side-widget-width);
+    gap: var(--layout-gap);
+    align-items: stretch;
+    width: var(--dashboard-width);
+    min-width: var(--dashboard-width);
+    margin: 0 auto;
+}
+
+/* 상단 각 영역이 내용 때문에 가로로 밀려나는 것을 방지 */
+.header-widget-slot,
+.header-logo-slot,
+.header-auth-slot {
+    min-width: 0;
+}
+
+/* 좌측 위젯과 중앙 로고의 최소 높이 확보 */
+.header-widget-slot,
+.header-logo-slot {
+    min-height: 140px;
+}
+
+/* 상단 좌측 더미 위젯이 슬롯 높이를 채우도록 설정 */
+.header-widget-slot > .header-widget {
+    height: 100%;
+    box-sizing: border-box;
+}
+
+/* 최상단 우측 환경설정 버튼 */
+.page-actions {
+    position: fixed;
+    top: calc(var(--global-banner-height) + 16px);
+    right: 16px;
+    z-index: 100;
+}
+
+/* 짧은 컬럼만 스크롤을 따라 이동 */
+.widget-column.is-follow-column > .widget-list {
+    position: sticky;
+    top: calc(var(--global-banner-height) + 20px);
 }

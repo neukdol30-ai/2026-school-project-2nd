@@ -29,7 +29,7 @@ function calculate() {
     try {
         if (!/^[0-9+\-*/.() ]+$/.test(state.calculatorText)) {
             state.calculatorText = "Error";
-            render();
+            refreshWidgetContent(6);
             return;
         }
 
@@ -39,5 +39,5 @@ function calculate() {
         state.calculatorText = "Error";
     }
 
-    render();
+    refreshWidgetContent(6);
 }

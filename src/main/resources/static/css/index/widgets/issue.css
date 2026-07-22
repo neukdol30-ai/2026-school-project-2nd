@@ -1,15 +1,41 @@
-/* 주요 이슈 태그 묶음 */
+/* 뉴스 카테고리 버튼 묶음 */
 .issue-tags {
     display: flex;
     flex-wrap: wrap;
     gap: 8px;
 }
 
-/* 주요 이슈 태그 */
+/* 뉴스 카테고리 버튼 */
 .issue-tag {
-    padding: 8px 12px;
-    border-radius: 999px;
-    background: #eef2ff;
-    color: #3730a3;
+    padding: 8px 14px;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    background: #ffffff;
+    color: #475569;
     font-size: 14px;
+    cursor: pointer;
+    transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+/* 선택한 뉴스 카테고리 */
+.issue-tag.active {
+    border-color: #0f766e;
+    background: #0f766e;
+    color: #ffffff;
+}
+
+/* 마우스를 올린 카테고리 */
+.issue-tag:hover {
+    border-color: #0f766e;
+    color: #0f766e;
+}
+
+/* 선택된 버튼은 hover 때도 흰 글씨 유지 */
+.issue-tag.active:hover {
+    color: #ffffff;
+}
+
+/* 버튼과 뉴스 목록 사이 간격 */
+.news-category-tabs {
+    margin-bottom: 18px;
 }

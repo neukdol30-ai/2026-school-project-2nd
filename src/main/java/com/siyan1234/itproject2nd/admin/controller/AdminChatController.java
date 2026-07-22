@@ -13,7 +13,6 @@ import com.siyan1234.itproject2nd.member.dto.MemberDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -75,27 +74,11 @@ public class AdminChatController {
     @GetMapping("/{roomNo}")
     public String adminChatRoom(
             @PathVariable("roomNo") Integer roomNo,
-            @AuthenticationPrincipal CustomUserDetails customUserDetails,
-            Model model,
             RedirectAttributes redirectAttributes
     ) {
-        MemberDto loginAdmin = loginMemberResolver.fromPrincipal(customUserDetails);
-
-        if (!loginMemberResolver.isAdmin(loginAdmin)) {
-            return AdminRoutes.ADMIN_LOGIN;
-        }
-
-        ChatRoomDto chatRoom = adminChatService.assignAdminIfEmpty(roomNo, loginAdmin.getNo());
-
-        if (chatRoom == null) {
-            redirectAttributes.addFlashAttribute("adminErrorMessage", AdminFlashMessage.CHAT_ROOM_NOT_FOUND);
-            return AdminRoutes.ADMIN_CHATS;
-        }
-
-        model.addAttribute("chatRoom", chatRoom);
-        model.addAttribute("loginUser", loginAdmin);
-
-        return "chat/admin/admin-chat-room";
+        redirectAttributes.addAttribute("view", "chatRoom");
+        redirectAttributes.addAttribute("roomNo", roomNo);
+        return AdminRoutes.ADMIN_HOME;
     }
 
     @PostMapping("/{roomNo}/close")

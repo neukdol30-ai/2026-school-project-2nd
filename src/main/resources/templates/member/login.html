@@ -12,6 +12,10 @@
     <div class="login-box">
         <h1 class="page-title">로그인</h1>
 
+        <div th:if="${toastMessage}" class="message-box message-success">
+            <span th:text="${toastMessage}">비밀번호가 변경되었습니다. 다시 로그인해 주세요.</span>
+        </div>
+
         <div th:if="${param.signup}" class="message-box message-success">
             회원가입이 완료되었습니다. 로그인하세요.
         </div>
@@ -24,7 +28,7 @@
         </div>
 
         <div th:if="${param.error != null and param.error[0] != 'banned'}" class="message-box message-error">
-            아이디 또는 비밀번호가 올바르지 않습니다.
+            아이디 또는 비밀번호가 일치하지 않습니다.
         </div>
 
         <div th:if="${param.logout}" class="message-box message-info">
@@ -71,6 +75,14 @@
         </div>
         <div class="bottom-link">
             <a th:href="@{/member/signup}">회원가입</a>
+
+            &nbsp;|&nbsp;
+
+            <a th:href="@{/member/find-id}">아이디 찾기</a>
+
+            &nbsp;|&nbsp;
+
+            <a th:href="@{/member/find-password}">비밀번호 찾기</a>
         </div>
     </div>
 </div>

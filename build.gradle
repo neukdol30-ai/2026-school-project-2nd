@@ -23,12 +23,14 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
     implementation 'org.springframework.boot:spring-boot-starter-validation'
     implementation 'org.springframework.boot:spring-boot-starter-webmvc'
+    implementation 'org.jsoup:jsoup:1.22.2'
     implementation 'org.springframework.boot:spring-boot-starter-websocket'
-    // ──── Redis 추가 ────
+    // 이메일 인증번호 발송에 사용하는 JavaMailSender 기능을 추가합니다.
+    implementation 'org.springframework.boot:spring-boot-starter-mail'
+    // 인증번호와 인증 완료 상태를 일정 시간 저장하기 위한 Redis 기능입니다.
     implementation 'org.springframework.boot:spring-boot-starter-data-redis'
     implementation 'org.mybatis.spring.boot:mybatis-spring-boot-starter:4.0.1'
     implementation 'org.thymeleaf.extras:thymeleaf-extras-springsecurity6'
-    implementation 'org.springframework.boot:spring-boot-starter-data-redis'
     compileOnly 'org.projectlombok:lombok'
     developmentOnly 'org.springframework.boot:spring-boot-devtools'
     runtimeOnly 'com.oracle.database.jdbc:ojdbc11'

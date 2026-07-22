@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<body>
+<section th:fragment="boardManageView" class="admin-view" th:classappend="${activeView == 'boards'} ? ' active' : ''" id="boardManageView">
+    <article class="panel full-panel">
+        <div class="panel-head with-actions">
+            <div>
+                <span class="eyebrow">Board Management</span>
+                <h2>게시글 관리</h2>
+                <p>공지사항과 문의게시글을 관리자 콘솔 안에서 등록, 조회, 수정, 삭제합니다.</p>
+            </div>
+            <div class="toolbar-actions">
+                <a th:href="@{/admin/boards/new}" class="primary-button small-primary-button">게시글 등록</a>
+                <a th:href="@{/admin(view='dashboard')}" class="small-link">대시보드</a>
+            </div>
+        </div>
+
+        <form class="admin-filter-form" th:action="@{/admin}" method="get">
+            <input type="hidden" name="view" value="boards">
+            <select name="boardCategory">
+                <option value="" th:selected="${#strings.isEmpty(boardCategory)}">전체 카테고리</option>
+                <option value="NOTICE" th:selected="${boardCategory == 'NOTICE'}">공지사항</option>
+                <option value="QUESTION" th:selected="${boardCategory == 'QUESTION'}">문의게시글</option>
+            </select>
+            <input type="text" name="boardKeyword" th:value="${boardKeyword}" placeholder="게시글 번호, 제목, 작성자 검색">
+            <button type="submit">검색</button>
+            <a th:href="@{/admin(view='boards')}" class="reset-link">초기화</a>
+        </form>
+
+        <div class="table-toolbar">
+            <div>
+                <strong th:text="'검색 결과 ' + ${boardTotalCount} + '건'">검색 결과 0건</strong>
+                <span id="selectedBoardCount">선택 0건</span>
+            </div>
+            <div class="toolbar-actions">
+                <button type="button" class="ghost-button" id="selectAllBoards">전체선택</button>
+                <button type="button" class="ghost-button" id="clearBoardSelection">선택해제</button>
+                <button type="button" class="danger-button" id="deleteSelectedBoards">선택 삭제</button>
+            </div>
+        </div>
+
+        <div class="admin-table-wrap">
+            <table class="admin-table selectable-table">
+                <thead>
+                <tr>
+                    <th><input type="checkbox" id="boardSelectAllCheckbox" aria-label="게시글 전체 선택"></th>
+                    <th>번호</th>
+                    <th>카테고리</th>
+                    <th>제목</th>
+                    <th>작성자</th>
+                    <th>답변</th>
+                    <th>조회수</th>
+                    <th>작성일</th>
+                    <th>관리</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="board : ${adminBoardList}">
+                    <td><input type="checkbox" class="board-row-checkbox" th:value="${board.no}" aria-label="게시글 선택"></td>
+                    <td th:text="${board.no}">1</td>
+                    <td><span class="status-tag" th:text="${board.categoryName}">문의게시글</span></td>
+                    <td class="ellipsis">
+                        <strong th:text="${board.title}">제목</strong>
+                    </td>
+                    <td th:text="${board.displayWriter}">작성자</td>
+                    <td>
+                        <span class="status-tag" th:classappend="${board.answerStatus == 'ANSWERED'} ? ' active' : ''" th:text="${board.answerStatusName}">답변 대기</span>
+                        <small th:text="'답변 ' + ${board.answerCount != null ? board.answerCount : 0} + '건'">답변 0건</small>
+                    </td>
+                    <td th:text="${board.viewCount}">0</td>
+                    <td th:text="${board.createdDate != null ? #temporals.format(board.createdDate, 'yyyy-MM-dd') : '-'}">2026-07-16</td>
+                    <td>
+                        <div class="table-actions-inline">
+                            <a class="table-action" th:href="@{/admin/boards/{no}(no=${board.no})}">보기</a>
+                            <a class="table-action" th:href="@{/admin/boards/{no}/edit(no=${board.no})}">수정</a>
+                            <button type="button"
+                                    class="table-action danger-action button-like"
+                                    data-board-delete-button
+                                    th:attr="data-board-no=${board.no}">삭제</button>
+                        </div>
+                    </td>
+                </tr>
+                <tr th:if="${adminBoardList == null or #lists.isEmpty(adminBoardList)}">
+                    <td colspan="9" class="empty-cell">조회된 게시글이 없습니다.</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="pagination" th:if="${boardTotalPages > 1}">
+            <a th:if="${boardPage > 1}"
+               th:href="@{/admin(view='boards', boardCategory=${boardCategory}, boardKeyword=${boardKeyword}, boardPage=${boardPage - 1})}">이전</a>
+            <span th:each="pageNo : ${#numbers.sequence(1, boardTotalPages)}">
+                <a th:href="@{/admin(view='boards', boardCategory=${boardCategory}, boardKeyword=${boardKeyword}, boardPage=${pageNo})}"
+                   th:text="${pageNo}"
+                   th:classappend="${pageNo == boardPage} ? ' active' : ''">1</a>
+            </span>
+            <a th:if="${boardPage < boardTotalPages}"
+               th:href="@{/admin(view='boards', boardCategory=${boardCategory}, boardKeyword=${boardKeyword}, boardPage=${boardPage + 1})}">다음</a>
+        </div>
+    </article>
+</section>
+</body>
+</html>

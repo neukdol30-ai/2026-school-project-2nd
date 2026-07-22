@@ -23,6 +23,15 @@
             countId: "selectedChatCount",
             label: "건"
         });
+
+        bindSelectionGroup({
+            rowSelector: ".board-row-checkbox",
+            headerId: "boardSelectAllCheckbox",
+            selectAllId: "selectAllBoards",
+            clearId: "clearBoardSelection",
+            countId: "selectedBoardCount",
+            label: "건"
+        });
     }
 
     function bindSelectionGroup(options) {

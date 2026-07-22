@@ -31,7 +31,7 @@
 
     <select id="findByMemberId" parameterType="String" resultType="MemberDto">
         SELECT
-        <include refid="memberColumns" />
+        <include refid="memberColumns"/>
         FROM member
         WHERE member_id = #{memberId}
         <!-- #{memberId}는 Dao에서 @Param("memberId")로 넘긴 값 -->
@@ -39,7 +39,7 @@
 
     <select id="findByEmail" parameterType="String" resultType="MemberDto"> <!-- 이메일 중복 확인용 -->
         SELECT
-        <include refid="memberColumns" />
+        <include refid="memberColumns"/>
         FROM member
         WHERE email = #{email}
         <!-- 이메일이 이미 존재하는지 확인 -->
@@ -48,7 +48,7 @@
     <!-- 닉네임 중복 확인용 findByEmail과 동일 구조 -->
     <select id="findByNickname" parameterType="String" resultType="MemberDto">
         SELECT
-        <include refid="memberColumns" />
+        <include refid="memberColumns"/>
         FROM member
         WHERE nickname = #{nickname}
         <!-- #{nickname} Dao에서 @Param("nickname")으로 넘긴 값 -->
@@ -93,7 +93,7 @@
     <!-- 관리자 회원 목록 조회용 / MemberDao의 findAllMembers()와 일치 -->
     <select id="findAllMembers" resultType="MemberDto">
         SELECT
-        <include refid="memberColumns" />
+        <include refid="memberColumns"/>
         FROM member
         ORDER BY no DESC
     </select>
@@ -101,7 +101,7 @@
     <!-- 관리자 회원 상세 조회용 / MemberDao - findByNo(Integer no)와 일치 -->
     <select id="findByNo" parameterType="int" resultType="MemberDto">
         SELECT
-        <include refid="memberColumns" />
+        <include refid="memberColumns"/>
         FROM member
         WHERE no = #{no}
         <!-- #{no}는 Dao에서 @Param("no")로 넘긴 회원 고유번호 값-->
@@ -146,10 +146,35 @@
         <!-- role/agree_*를 값으로 박은 이유: 셋 다 NOT NULL이라, 소셜 로그인 등 화면을 거쳤으므로 'Y'로 본다. -->
     </insert>
 
+    <!-- 로그인 성공 시 최근 로그인 시각 기록 // 영준-->
+    <update id="updateLastLoginDate">
+        UPDATE member
+        SET last_login_date = SYSTIMESTAMP
+        WHERE no = #{no, jdbcType=NUMERIC}
+    </update>
+
     <!-- 관리자 회원 삭제용 // 영준 -->
     <delete id="deleteMember">
         DELETE FROM member
         WHERE no = #{no, jdbcType=NUMERIC}
     </delete>
+
+    <!--아이디, 비밀번호 찾기 재작업-->
+
+    <!-- 비밀번호 찾기 : 아이디 + 이메일이 같은 한 명의 회원인지 본인 확인 -->
+    <select id="findByMemberIdAndEmail" resultType="MemberDto">
+        SELECT
+        <include refid="memberColumns" />
+        FROM member
+        WHERE member_id = #{memberId}
+        AND email = #{email}
+    </select>
+
+    <!-- 비밀번호 재설정 : 이메일 기준으로 비밀번호(이미 BCrypt 해싱된 값) 덮어쓰기 -->
+    <update id="updatePasswordByEmail">
+        UPDATE member
+        SET password = #{password}
+        WHERE email = #{email}
+    </update>
 
 </mapper>

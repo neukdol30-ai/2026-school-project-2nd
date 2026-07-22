@@ -25,12 +25,20 @@ public final class SecurityPaths {
             "/member/signup", // 회원가입 화면
             "/member/exists", // 아이디 중복 확인
             "/member/exists-nickname", // 닉네임 중복 확인(회원가입 중 = 로그인 전에도 호출) 없으면 403
+            // 비로그인 사용자 요청 -> Spring Security 필터 검사 -> PUBLIC_MATCHERS에 포함된 주소면 통과 -> 이후 MemberController가 요청 처리
+            "/member/find-id", // 아이디 찾기 화면에 비로그인 사용자 접근 허용
+            "/member/find-id/**", // 아이디 찾기 인증번호 발송·확인·결과 주소 접근 허용
+            "/member/find-password", // 비밀번호 찾기 화면에 비로그인 사용자 접근 허용
+            "/member/find-password/**", // 비밀번호 찾기 인증번호 발송·확인 주소 접근 허용
+            "/member/reset-password", // 새 비밀번호 입력 화면과 변경 요청 접근 허용
             "/admin/login", // 관리자 로그인 화면
+            "/mypage/me", // 메인 페이지 로그인 상태 확인용 공개 조회 API
             "/kakao/authorize", // 카카오 동의
             "/kakao/callback", // 카카오 인가 코드 토큰발급
             "/css/**",
             "/js/**",
             "/images/**",
+            "/favicon.ico", // 브라우저가 탭 아이콘용으로 자동 요청하는 주소. 우리가 링크한 적 없어도 매 페이지마다 요청됨. 없으면 비로그인 상태에서 302로 로그인 화면에 튕겨 요청 2건이 낭비되고 탭 아이콘도 안 뜸
             "/api/**",
             "/oauth2/**",
             "/login/oauth2/**",
