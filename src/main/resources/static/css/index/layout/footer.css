@@ -1,0 +1,81 @@
+/* 화면 전체 폭의 하단 정보 영역 */
+.global-footer {
+    width: 100%;
+    min-width: var(--dashboard-width);
+    margin-top: 48px;
+    background: #ffffff;
+    border-top: 1px solid #e5e7eb;
+}
+
+/* footer 내부 내용은 대시보드 폭에 맞춰 중앙 정렬 */
+.global-footer-inner {
+    width: var(--dashboard-width);
+    min-width: var(--dashboard-width);
+    margin: 0 auto;
+    padding: 28px 0 32px;
+    color: #6b7280;
+    font-size: 13px;
+}
+
+/* 공지사항 한 줄 */
+.footer-notice {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding-bottom: 18px;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.footer-notice strong {
+    color: #374151;
+}
+
+.footer-notice a {
+    color: #4b5563;
+    text-decoration: none;
+}
+
+.footer-notice a:hover {
+    text-decoration: underline;
+}
+
+/* 프로젝트 및 회사 정보 */
+.footer-company {
+    padding-top: 18px;
+    line-height: 1.7;
+}
+
+.footer-company p {
+    margin: 0;
+}
+
+/* footer 하단 링크 메뉴 */
+.footer-links {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    padding: 18px 0;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+/* 링크 사이의 세로 구분선 */
+.footer-links a + a {
+    margin-left: 12px;
+    padding-left: 12px;
+    border-left: 1px solid #d1d5db;
+}
+
+.footer-links a {
+    color: #6b7280;
+    font-size: 12px;
+    text-decoration: none;
+}
+
+.footer-links a:hover {
+    color: #374151;
+    text-decoration: underline;
+}
+
+.footer-links strong {
+    color: #374151;
+}
