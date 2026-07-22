@@ -10,6 +10,8 @@ import com.siyan1234.itproject2nd.mypage.dto.MyPageUpdateDto;
 import com.siyan1234.itproject2nd.mypage.dto.MyPageVerifyPasswordDto;
 import com.siyan1234.itproject2nd.mypage.dto.MyPageWithdrawDto;
 import com.siyan1234.itproject2nd.mypage.dto.PasswordChangeDto;
+import com.siyan1234.itproject2nd.mypage.support.MyPageMessages;
+import com.siyan1234.itproject2nd.mypage.support.MyPagePolicy;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -21,44 +23,37 @@ import java.time.LocalDate;
 @RequiredArgsConstructor
 public class MyPageService {
 
-    private static final String ADMIN_ROLE = "ADMIN";
-    private static final String PASSWORD_PATTERN = "(?=.*[a-z])(?=.*[A-Z])(?=.*\\d).{8,20}";
-    private static final String EMAIL_PATTERN = "^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$";
-    private static final String PHONE_PATTERN = "^010-[0-9]{4}-[0-9]{4}$";
-    private static final String WITHDRAW_CONFIRM_TEXT = "회원탈퇴";
-
     private final MyPageDao myPageDao;
     private final MemberDao memberDao;
     private final PasswordEncoder passwordEncoder;
 
+    /** 마이페이지 모달을 처음 열 때 필요한 모든 사용자 정보를 한 번에 조회합니다. */
     @Transactional(readOnly = true)
     public MyPageResponseDto getMyPage(Integer memberNo) {
-        MyPageProfileDto profile = myPageDao.findProfileByNo(memberNo);
-
-        MyPageResponseDto responseDto = new MyPageResponseDto();
-        responseDto.setLoggedIn(profile != null);
-
+        MyPageProfileDto profile = findProfile(memberNo);
         if (profile == null) {
-            return responseDto;
+            return MyPageResponseDto.anonymous();
         }
 
+        MyPageResponseDto responseDto = new MyPageResponseDto();
+        responseDto.setLoggedIn(true);
         responseDto.setProfile(profile);
         responseDto.setActivity(myPageDao.findActivityByMemberNo(memberNo));
         responseDto.setRecentBoards(myPageDao.findRecentBoards(memberNo));
         responseDto.setRecentChats(myPageDao.findRecentChats(memberNo));
-
         return responseDto;
     }
 
+    /** 내 정보 탭의 기본 정보 수정입니다. */
     @Transactional
     public MyPageActionResponseDto updateProfile(Integer memberNo, MyPageUpdateDto updateDto) {
-        if (memberNo == null) {
-            return MyPageActionResponseDto.fail("로그인 정보가 없습니다. 다시 로그인해 주세요.");
+        MyPageActionResponseDto readyCheck = checkMemberReady(memberNo);
+        if (readyCheck != null) {
+            return readyCheck;
         }
 
-        MyPageProfileDto currentProfile = myPageDao.findProfileByNo(memberNo);
-        if (currentProfile == null) {
-            return MyPageActionResponseDto.fail("회원 정보를 찾을 수 없습니다.");
+        if (updateDto == null) {
+            return MyPageActionResponseDto.fail(MyPageMessages.INVALID_REQUEST);
         }
 
         normalizeBasicProfile(updateDto);
@@ -69,48 +64,43 @@ public class MyPageService {
         }
 
         myPageDao.updateBasicProfile(memberNo, updateDto);
-        return MyPageActionResponseDto.success("내 정보가 수정되었습니다.", getMyPage(memberNo));
+        return successWithMyPage(MyPageMessages.PROFILE_UPDATED, memberNo);
     }
 
+    /** 보안 설정 탭의 개인정보 표시/수정 전 현재 비밀번호를 확인합니다. */
     @Transactional(readOnly = true)
     public MyPageActionResponseDto verifyPassword(Integer memberNo, MyPageVerifyPasswordDto verifyDto) {
-        if (memberNo == null) {
-            return MyPageActionResponseDto.fail("로그인 정보가 없습니다. 다시 로그인해 주세요.");
+        MemberDto member = findMember(memberNo);
+        if (member == null) {
+            return failByMemberNo(memberNo);
         }
 
         if (isSocialLoginUser(memberNo)) {
-            return MyPageActionResponseDto.fail("소셜 로그인 계정은 사이트 비밀번호 인증이 필요하지 않습니다.");
+            return MyPageActionResponseDto.fail(MyPageMessages.SOCIAL_PASSWORD_VERIFY_NOT_REQUIRED);
         }
 
-        MemberDto member = memberDao.findByNo(memberNo);
-        if (member == null) {
-            return MyPageActionResponseDto.fail("회원 정보를 찾을 수 없습니다.");
+        String passwordMessage = validateCurrentPassword(member, verifyDto == null ? null : verifyDto.getCurrentPassword());
+        if (passwordMessage != null) {
+            return MyPageActionResponseDto.fail(passwordMessage);
         }
 
-        if (verifyDto == null || isBlank(verifyDto.getCurrentPassword())) {
-            return MyPageActionResponseDto.fail("현재 비밀번호를 입력해 주세요.");
-        }
-
-        if (!passwordEncoder.matches(verifyDto.getCurrentPassword(), member.getPassword())) {
-            return MyPageActionResponseDto.fail("현재 비밀번호가 일치하지 않습니다.");
-        }
-
-        return MyPageActionResponseDto.success("본인 확인이 완료되었습니다.", getMyPage(memberNo));
+        return successWithMyPage(MyPageMessages.PASSWORD_VERIFIED, memberNo);
     }
 
+    /** 보안 설정 탭의 개인정보 수정입니다. */
     @Transactional
     public MyPageActionResponseDto updateSecurityProfile(Integer memberNo, MyPageUpdateDto updateDto, boolean securityVerified) {
-        if (memberNo == null) {
-            return MyPageActionResponseDto.fail("로그인 정보가 없습니다. 다시 로그인해 주세요.");
-        }
-
-        MyPageProfileDto currentProfile = myPageDao.findProfileByNo(memberNo);
+        MyPageProfileDto currentProfile = findProfile(memberNo);
         if (currentProfile == null) {
-            return MyPageActionResponseDto.fail("회원 정보를 찾을 수 없습니다.");
+            return failByMemberNo(memberNo);
         }
 
-        if (!currentProfile.isSocialLoginUser() && !securityVerified) {
-            return MyPageActionResponseDto.fail("개인정보 수정을 위해 현재 비밀번호 인증이 필요합니다.");
+        if (updateDto == null) {
+            return MyPageActionResponseDto.fail(MyPageMessages.INVALID_REQUEST);
+        }
+
+        if (requiresPasswordVerification(currentProfile, securityVerified)) {
+            return MyPageActionResponseDto.fail(MyPageMessages.SECURITY_PASSWORD_VERIFY_REQUIRED);
         }
 
         normalizeSecurityProfile(updateDto);
@@ -121,164 +111,214 @@ public class MyPageService {
         }
 
         myPageDao.updateSecurityProfile(memberNo, updateDto);
-        return MyPageActionResponseDto.success("개인정보가 수정되었습니다.", getMyPage(memberNo));
+        return successWithMyPage(MyPageMessages.SECURITY_PROFILE_UPDATED, memberNo);
     }
 
+    /** 비밀번호 변경 탭의 비밀번호 변경 처리입니다. */
     @Transactional
     public MyPageActionResponseDto changePassword(Integer memberNo, PasswordChangeDto passwordDto) {
-        if (memberNo == null) {
-            return MyPageActionResponseDto.fail("로그인 정보가 없습니다. 다시 로그인해 주세요.");
-        }
-
-        MemberDto member = memberDao.findByNo(memberNo);
+        MemberDto member = findMember(memberNo);
         if (member == null) {
-            return MyPageActionResponseDto.fail("회원 정보를 찾을 수 없습니다.");
+            return failByMemberNo(memberNo);
         }
 
         if (isSocialLoginUser(memberNo)) {
-            return MyPageActionResponseDto.fail("소셜 로그인 계정은 사이트에서 비밀번호를 변경할 수 없습니다. 카카오/네이버 계정 설정에서 관리해 주세요.");
+            return MyPageActionResponseDto.fail(MyPageMessages.SOCIAL_PASSWORD_CHANGE_NOT_ALLOWED);
         }
 
-        if (passwordDto == null || isBlank(passwordDto.getCurrentPassword())) {
-            return MyPageActionResponseDto.fail("현재 비밀번호를 입력해 주세요.");
-        }
-
-        if (!passwordEncoder.matches(passwordDto.getCurrentPassword(), member.getPassword())) {
-            return MyPageActionResponseDto.fail("현재 비밀번호가 일치하지 않습니다.");
-        }
-
-        if (!isValidPassword(passwordDto.getNewPassword())) {
-            return MyPageActionResponseDto.fail("새 비밀번호는 대문자, 소문자, 숫자를 포함한 8~20자로 입력해 주세요.");
-        }
-
-        if (!passwordDto.getNewPassword().equals(passwordDto.getNewPasswordCheck())) {
-            return MyPageActionResponseDto.fail("새 비밀번호 확인이 일치하지 않습니다.");
-        }
-
-        if (passwordEncoder.matches(passwordDto.getNewPassword(), member.getPassword())) {
-            return MyPageActionResponseDto.fail("현재 사용 중인 비밀번호와 같은 비밀번호로는 변경할 수 없습니다.");
+        String validationMessage = validatePasswordChange(member, passwordDto);
+        if (validationMessage != null) {
+            return MyPageActionResponseDto.fail(validationMessage);
         }
 
         String encodedPassword = passwordEncoder.encode(passwordDto.getNewPassword());
         myPageDao.updatePassword(memberNo, encodedPassword);
-
-        return MyPageActionResponseDto.success("비밀번호가 변경되었습니다.", getMyPage(memberNo));
+        return successWithMyPage(MyPageMessages.PASSWORD_CHANGED, memberNo);
     }
 
+    /** 회원 탈퇴 탭의 회원 탈퇴 처리입니다. */
     @Transactional
     public MyPageActionResponseDto withdraw(Integer memberNo, MyPageWithdrawDto withdrawDto) {
-        if (memberNo == null) {
-            return MyPageActionResponseDto.fail("로그인 정보가 없습니다. 다시 로그인해 주세요.");
-        }
-
-        MemberDto member = memberDao.findByNo(memberNo);
+        MemberDto member = findMember(memberNo);
         if (member == null) {
-            return MyPageActionResponseDto.fail("회원 정보를 찾을 수 없습니다.");
+            return failByMemberNo(memberNo);
         }
 
-        if (ADMIN_ROLE.equalsIgnoreCase(member.getRole())) {
-            return MyPageActionResponseDto.fail("관리자 계정은 마이페이지에서 탈퇴할 수 없습니다. 관리자 콘솔에서 관리해 주세요.");
-        }
-
-        if (withdrawDto == null || !WITHDRAW_CONFIRM_TEXT.equals(withdrawDto.getConfirmText())) {
-            return MyPageActionResponseDto.fail("회원 탈퇴를 진행하려면 확인 문구에 '회원탈퇴'를 정확히 입력해 주세요.");
-        }
-
-        if (!isSocialLoginUser(memberNo)) {
-            if (isBlank(withdrawDto.getPassword())) {
-                return MyPageActionResponseDto.fail("회원 탈퇴를 위해 현재 비밀번호를 입력해 주세요.");
-            }
-
-            if (!passwordEncoder.matches(withdrawDto.getPassword(), member.getPassword())) {
-                return MyPageActionResponseDto.fail("현재 비밀번호가 일치하지 않습니다.");
-            }
+        String validationMessage = validateWithdraw(memberNo, member, withdrawDto);
+        if (validationMessage != null) {
+            return MyPageActionResponseDto.fail(validationMessage);
         }
 
         myPageDao.deleteMe(memberNo);
-        return MyPageActionResponseDto.successWithRedirect("회원 탈퇴가 완료되었습니다.", "/");
+        return MyPageActionResponseDto.successWithRedirect(MyPageMessages.WITHDRAW_COMPLETED, "/");
+    }
+
+    private MyPageActionResponseDto checkMemberReady(Integer memberNo) {
+        if (memberNo == null) {
+            return MyPageActionResponseDto.fail(MyPageMessages.LOGIN_INFO_MISSING);
+        }
+
+        if (findProfile(memberNo) == null) {
+            return MyPageActionResponseDto.fail(MyPageMessages.MEMBER_NOT_FOUND);
+        }
+
+        return null;
+    }
+
+    private MyPageActionResponseDto failByMemberNo(Integer memberNo) {
+        if (memberNo == null) {
+            return MyPageActionResponseDto.fail(MyPageMessages.LOGIN_INFO_MISSING);
+        }
+
+        return MyPageActionResponseDto.fail(MyPageMessages.MEMBER_NOT_FOUND);
+    }
+
+    private MyPageActionResponseDto successWithMyPage(String message, Integer memberNo) {
+        return MyPageActionResponseDto.success(message, getMyPage(memberNo));
+    }
+
+    private MemberDto findMember(Integer memberNo) {
+        if (memberNo == null) {
+            return null;
+        }
+
+        return memberDao.findByNo(memberNo);
+    }
+
+    private MyPageProfileDto findProfile(Integer memberNo) {
+        if (memberNo == null) {
+            return null;
+        }
+
+        return myPageDao.findProfileByNo(memberNo);
     }
 
     private boolean isSocialLoginUser(Integer memberNo) {
-        MyPageProfileDto profile = myPageDao.findProfileByNo(memberNo);
+        MyPageProfileDto profile = findProfile(memberNo);
         return profile != null && profile.isSocialLoginUser();
     }
 
-    private void normalizeBasicProfile(MyPageUpdateDto updateDto) {
-        updateDto.setName(trimToNull(updateDto.getName()));
-        updateDto.setNickname(trimToNull(updateDto.getNickname()));
-    }
-
-    private void normalizeSecurityProfile(MyPageUpdateDto updateDto) {
-        updateDto.setEmail(trimToNull(updateDto.getEmail()));
-        updateDto.setPhone(trimToNull(updateDto.getPhone()));
-        updateDto.setGender(trimToNull(updateDto.getGender()));
-        updateDto.setPostcode(trimToNull(updateDto.getPostcode()));
-        updateDto.setAddress(trimToNull(updateDto.getAddress()));
-        updateDto.setDetailAddress(trimToNull(updateDto.getDetailAddress()));
+    private boolean requiresPasswordVerification(MyPageProfileDto profile, boolean securityVerified) {
+        return !profile.isSocialLoginUser() && !securityVerified;
     }
 
     private String validateBasicProfile(Integer memberNo, MyPageUpdateDto updateDto) {
-        if (isBlank(updateDto.getName())) {
-            return "이름을 입력해 주세요.";
+        if (MyPagePolicy.isBlank(updateDto.getName())) {
+            return MyPageMessages.NAME_REQUIRED;
         }
 
-        if (isBlank(updateDto.getNickname())) {
-            return "닉네임을 입력해 주세요.";
+        if (MyPagePolicy.isBlank(updateDto.getNickname())) {
+            return MyPageMessages.NICKNAME_REQUIRED;
         }
 
         if (updateDto.getNickname().length() < 2 || updateDto.getNickname().length() > 10) {
-            return "닉네임은 2~10자로 입력해 주세요.";
+            return MyPageMessages.NICKNAME_LENGTH_INVALID;
         }
 
         if (myPageDao.countNicknameDuplicateExceptMe(memberNo, updateDto.getNickname()) > 0) {
-            return "이미 사용 중인 닉네임입니다.";
+            return MyPageMessages.NICKNAME_DUPLICATED;
         }
 
         return null;
     }
 
     private String validateSecurityProfile(Integer memberNo, MyPageUpdateDto updateDto) {
-        if (!isBlank(updateDto.getEmail())) {
-            if (!updateDto.getEmail().matches(EMAIL_PATTERN)) {
-                return "이메일 형식이 올바르지 않습니다.";
+        if (!MyPagePolicy.isBlank(updateDto.getEmail())) {
+            if (!MyPagePolicy.isValidEmail(updateDto.getEmail())) {
+                return MyPageMessages.EMAIL_INVALID;
             }
 
             if (myPageDao.countEmailDuplicateExceptMe(memberNo, updateDto.getEmail()) > 0) {
-                return "이미 사용 중인 이메일입니다.";
+                return MyPageMessages.EMAIL_DUPLICATED;
             }
         }
 
-        if (!isBlank(updateDto.getPhone()) && !updateDto.getPhone().matches(PHONE_PATTERN)) {
-            return "전화번호는 010-0000-0000 형식으로 입력해 주세요.";
+        if (!MyPagePolicy.isBlank(updateDto.getPhone()) && !MyPagePolicy.isValidPhone(updateDto.getPhone())) {
+            return MyPageMessages.PHONE_INVALID;
         }
 
         if (updateDto.getBirthDate() != null && updateDto.getBirthDate().isAfter(LocalDate.now())) {
-            return "생년월일은 오늘 이후 날짜로 설정할 수 없습니다.";
+            return MyPageMessages.BIRTH_DATE_INVALID;
         }
 
-        if (!isBlank(updateDto.getGender())
-                && !"M".equalsIgnoreCase(updateDto.getGender())
-                && !"F".equalsIgnoreCase(updateDto.getGender())) {
-            return "성별 값이 올바르지 않습니다.";
+        if (!MyPagePolicy.isValidGender(updateDto.getGender())) {
+            return MyPageMessages.GENDER_INVALID;
         }
 
         return null;
     }
 
-    private boolean isValidPassword(String password) {
-        return password != null && password.matches(PASSWORD_PATTERN);
+    private String validatePasswordChange(MemberDto member, PasswordChangeDto passwordDto) {
+        String currentPasswordMessage = validateCurrentPassword(
+                member,
+                passwordDto == null ? null : passwordDto.getCurrentPassword()
+        );
+        if (currentPasswordMessage != null) {
+            return currentPasswordMessage;
+        }
+
+        if (!MyPagePolicy.isValidPassword(passwordDto.getNewPassword())) {
+            return MyPageMessages.NEW_PASSWORD_INVALID;
+        }
+
+        if (!passwordDto.getNewPassword().equals(passwordDto.getNewPasswordCheck())) {
+            return MyPageMessages.NEW_PASSWORD_CHECK_MISMATCH;
+        }
+
+        if (passwordEncoder.matches(passwordDto.getNewPassword(), member.getPassword())) {
+            return MyPageMessages.SAME_PASSWORD_NOT_ALLOWED;
+        }
+
+        return null;
     }
 
-    private boolean isBlank(String value) {
-        return value == null || value.isBlank();
+    private String validateCurrentPassword(MemberDto member, String currentPassword) {
+        if (MyPagePolicy.isBlank(currentPassword)) {
+            return MyPageMessages.CURRENT_PASSWORD_REQUIRED;
+        }
+
+        if (!passwordEncoder.matches(currentPassword, member.getPassword())) {
+            return MyPageMessages.CURRENT_PASSWORD_MISMATCH;
+        }
+
+        return null;
     }
 
-    private String trimToNull(String value) {
-        if (value == null) {
+    private String validateWithdraw(Integer memberNo, MemberDto member, MyPageWithdrawDto withdrawDto) {
+        if (MyPagePolicy.isAdminRole(member.getRole())) {
+            return MyPageMessages.ADMIN_WITHDRAW_NOT_ALLOWED;
+        }
+
+        if (withdrawDto == null || !MyPagePolicy.isWithdrawConfirmText(withdrawDto.getConfirmText())) {
+            return MyPageMessages.WITHDRAW_CONFIRM_REQUIRED;
+        }
+
+        if (isSocialLoginUser(memberNo)) {
             return null;
         }
 
-        String trimmed = value.trim();
-        return trimmed.isEmpty() ? null : trimmed;
+        if (MyPagePolicy.isBlank(withdrawDto.getPassword())) {
+            return MyPageMessages.WITHDRAW_PASSWORD_REQUIRED;
+        }
+
+        if (!passwordEncoder.matches(withdrawDto.getPassword(), member.getPassword())) {
+            return MyPageMessages.CURRENT_PASSWORD_MISMATCH;
+        }
+
+        return null;
+    }
+
+    private void normalizeBasicProfile(MyPageUpdateDto updateDto) {
+        updateDto.setName(MyPagePolicy.trimToNull(updateDto.getName()));
+        updateDto.setNickname(MyPagePolicy.trimToNull(updateDto.getNickname()));
+    }
+
+    private void normalizeSecurityProfile(MyPageUpdateDto updateDto) {
+        updateDto.setEmail(MyPagePolicy.trimToNull(updateDto.getEmail()));
+        updateDto.setPhone(MyPagePolicy.trimToNull(updateDto.getPhone()));
+        updateDto.setGender(MyPagePolicy.trimToNull(updateDto.getGender()));
+        updateDto.setPostcode(MyPagePolicy.trimToNull(updateDto.getPostcode()));
+        updateDto.setAddress(MyPagePolicy.trimToNull(updateDto.getAddress()));
+        updateDto.setDetailAddress(MyPagePolicy.trimToNull(updateDto.getDetailAddress()));
     }
 }

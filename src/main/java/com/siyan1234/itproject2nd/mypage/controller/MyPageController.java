@@ -1,8 +1,6 @@
 package com.siyan1234.itproject2nd.mypage.controller;
 
-import com.siyan1234.itproject2nd.member.dao.MemberDao;
 import com.siyan1234.itproject2nd.member.dto.CustomUserDetails;
-import com.siyan1234.itproject2nd.member.dto.MemberDto;
 import com.siyan1234.itproject2nd.mypage.dto.MyPageActionResponseDto;
 import com.siyan1234.itproject2nd.mypage.dto.MyPageResponseDto;
 import com.siyan1234.itproject2nd.mypage.dto.MyPageUpdateDto;
@@ -10,6 +8,9 @@ import com.siyan1234.itproject2nd.mypage.dto.MyPageVerifyPasswordDto;
 import com.siyan1234.itproject2nd.mypage.dto.MyPageWithdrawDto;
 import com.siyan1234.itproject2nd.mypage.dto.PasswordChangeDto;
 import com.siyan1234.itproject2nd.mypage.service.MyPageService;
+import com.siyan1234.itproject2nd.mypage.support.MyPageLoginUserResolver;
+import com.siyan1234.itproject2nd.mypage.support.MyPageMessages;
+import com.siyan1234.itproject2nd.mypage.support.MyPageSessionKeys;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -28,18 +29,19 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/mypage")
 public class MyPageController {
 
-    private static final String ANONYMOUS_USER = "anonymousUser";
-    private static final String SECURITY_VERIFIED_MEMBER_NO = "MYPAGE_SECURITY_VERIFIED_MEMBER_NO";
-
     private final MyPageService myPageService;
-    private final MemberDao memberDao;
+    private final MyPageLoginUserResolver loginUserResolver;
 
+    /**
+     * 메인 홈 계정 위젯과 마이페이지 모달에서 공통으로 사용하는 현재 로그인 회원 정보입니다.
+     * 비로그인 상태에서는 예외가 아니라 loggedIn=false 응답을 반환합니다.
+     */
     @GetMapping("/me")
     public MyPageResponseDto myPage(
             @AuthenticationPrincipal CustomUserDetails customUserDetails,
             Authentication authentication
     ) {
-        Integer memberNo = resolveMemberNo(customUserDetails, authentication);
+        Integer memberNo = loginUserResolver.resolveMemberNo(customUserDetails, authentication);
 
         if (memberNo == null) {
             return MyPageResponseDto.anonymous();
@@ -48,22 +50,28 @@ public class MyPageController {
         return myPageService.getMyPage(memberNo);
     }
 
+    /**
+     * 내 정보 탭의 공개성 낮은 기본 정보 수정입니다.
+     * 이름/닉네임처럼 별도 비밀번호 재확인이 필요하지 않은 항목만 처리합니다.
+     */
     @PostMapping("/profile")
     public ResponseEntity<MyPageActionResponseDto> updateProfile(
             @AuthenticationPrincipal CustomUserDetails customUserDetails,
             Authentication authentication,
             @RequestBody MyPageUpdateDto updateDto
     ) {
-        Integer memberNo = resolveMemberNo(customUserDetails, authentication);
-
+        Integer memberNo = loginUserResolver.resolveMemberNo(customUserDetails, authentication);
         if (memberNo == null) {
             return unauthorized();
         }
 
-        MyPageActionResponseDto responseDto = myPageService.updateProfile(memberNo, updateDto);
-        return ResponseEntity.ok(responseDto);
+        return ok(myPageService.updateProfile(memberNo, updateDto));
     }
 
+    /**
+     * 보안 설정 탭에서 개인정보를 표시/수정하기 전 일반 로그인 회원의 현재 비밀번호를 확인합니다.
+     * 소셜 로그인 회원은 사이트 비밀번호가 없으므로 Service에서 안내 메시지를 반환합니다.
+     */
     @PostMapping("/verify-password")
     public ResponseEntity<MyPageActionResponseDto> verifyPassword(
             @AuthenticationPrincipal CustomUserDetails customUserDetails,
@@ -71,19 +79,23 @@ public class MyPageController {
             @RequestBody MyPageVerifyPasswordDto verifyDto,
             HttpSession session
     ) {
-        Integer memberNo = resolveMemberNo(customUserDetails, authentication);
-
+        Integer memberNo = loginUserResolver.resolveMemberNo(customUserDetails, authentication);
         if (memberNo == null) {
             return unauthorized();
         }
 
         MyPageActionResponseDto responseDto = myPageService.verifyPassword(memberNo, verifyDto);
         if (responseDto.isSuccess()) {
-            session.setAttribute(SECURITY_VERIFIED_MEMBER_NO, memberNo);
+            session.setAttribute(MyPageSessionKeys.SECURITY_VERIFIED_MEMBER_NO, memberNo);
         }
-        return ResponseEntity.ok(responseDto);
+
+        return ok(responseDto);
     }
 
+    /**
+     * 보안 설정 탭의 개인정보 수정입니다.
+     * 일반 회원은 verify-password 성공 세션이 있어야 하고, 소셜 회원은 현재 로그인 세션 기준으로 수정합니다.
+     */
     @PostMapping("/security")
     public ResponseEntity<MyPageActionResponseDto> updateSecurityProfile(
             @AuthenticationPrincipal CustomUserDetails customUserDetails,
@@ -91,36 +103,37 @@ public class MyPageController {
             @RequestBody MyPageUpdateDto updateDto,
             HttpSession session
     ) {
-        Integer memberNo = resolveMemberNo(customUserDetails, authentication);
-
+        Integer memberNo = loginUserResolver.resolveMemberNo(customUserDetails, authentication);
         if (memberNo == null) {
             return unauthorized();
         }
 
-        MyPageActionResponseDto responseDto = myPageService.updateSecurityProfile(
-                memberNo,
-                updateDto,
-                isSecurityVerified(session, memberNo)
-        );
-        return ResponseEntity.ok(responseDto);
+        boolean securityVerified = isSecurityVerified(session, memberNo);
+        return ok(myPageService.updateSecurityProfile(memberNo, updateDto, securityVerified));
     }
 
+    /**
+     * 비밀번호 변경 탭 전용 요청입니다.
+     * 소셜 로그인 회원은 Service에서 차단하고 안내 메시지를 반환합니다.
+     */
     @PostMapping("/password")
     public ResponseEntity<MyPageActionResponseDto> changePassword(
             @AuthenticationPrincipal CustomUserDetails customUserDetails,
             Authentication authentication,
             @RequestBody PasswordChangeDto passwordDto
     ) {
-        Integer memberNo = resolveMemberNo(customUserDetails, authentication);
-
+        Integer memberNo = loginUserResolver.resolveMemberNo(customUserDetails, authentication);
         if (memberNo == null) {
             return unauthorized();
         }
 
-        MyPageActionResponseDto responseDto = myPageService.changePassword(memberNo, passwordDto);
-        return ResponseEntity.ok(responseDto);
+        return ok(myPageService.changePassword(memberNo, passwordDto));
     }
 
+    /**
+     * 회원 탈퇴 요청입니다.
+     * 탈퇴 성공 시 SecurityContext와 세션을 모두 정리해서 즉시 로그아웃 상태로 전환합니다.
+     */
     @PostMapping("/withdraw")
     public ResponseEntity<MyPageActionResponseDto> withdraw(
             @AuthenticationPrincipal CustomUserDetails customUserDetails,
@@ -128,72 +141,31 @@ public class MyPageController {
             @RequestBody MyPageWithdrawDto withdrawDto,
             HttpSession session
     ) {
-        Integer memberNo = resolveMemberNo(customUserDetails, authentication);
-
+        Integer memberNo = loginUserResolver.resolveMemberNo(customUserDetails, authentication);
         if (memberNo == null) {
             return unauthorized();
         }
 
         MyPageActionResponseDto responseDto = myPageService.withdraw(memberNo, withdrawDto);
-
         if (responseDto.isSuccess()) {
             SecurityContextHolder.clearContext();
             session.invalidate();
         }
 
-        return ResponseEntity.ok(responseDto);
-    }
-
-    /**
-     * 일반 폼 로그인과 소셜 로그인 모두 마이페이지에서 동일하게 처리하기 위한 로그인 회원번호 조회입니다.
-     *
-     * @AuthenticationPrincipal 이 null로 들어오는 경우에도 Authentication의 name(memberId)을 기준으로
-     * DB에서 한 번 더 조회해서 메인 화면 로그인 상태 표시가 누락되지 않도록 보강했습니다.
-     */
-    private Integer resolveMemberNo(CustomUserDetails customUserDetails, Authentication authentication) {
-        Integer memberNo = resolveFromCustomUserDetails(customUserDetails);
-        if (memberNo != null) {
-            return memberNo;
-        }
-
-        if (authentication == null || !authentication.isAuthenticated()) {
-            return null;
-        }
-
-        Object principal = authentication.getPrincipal();
-        if (principal instanceof String principalText && ANONYMOUS_USER.equals(principalText)) {
-            return null;
-        }
-
-        if (principal instanceof CustomUserDetails customPrincipal) {
-            return resolveFromCustomUserDetails(customPrincipal);
-        }
-
-        String memberId = authentication.getName();
-        if (memberId == null || memberId.isBlank() || ANONYMOUS_USER.equals(memberId)) {
-            return null;
-        }
-
-        MemberDto memberDto = memberDao.findByMemberId(memberId);
-        return memberDto == null ? null : memberDto.getNo();
-    }
-
-    private Integer resolveFromCustomUserDetails(CustomUserDetails customUserDetails) {
-        if (customUserDetails == null) {
-            return null;
-        }
-
-        MemberDto memberDto = customUserDetails.getMemberDto();
-        return memberDto == null ? null : memberDto.getNo();
+        return ok(responseDto);
     }
 
     private boolean isSecurityVerified(HttpSession session, Integer memberNo) {
-        Object verifiedMemberNo = session.getAttribute(SECURITY_VERIFIED_MEMBER_NO);
+        Object verifiedMemberNo = session.getAttribute(MyPageSessionKeys.SECURITY_VERIFIED_MEMBER_NO);
         return memberNo != null && memberNo.equals(verifiedMemberNo);
+    }
+
+    private ResponseEntity<MyPageActionResponseDto> ok(MyPageActionResponseDto responseDto) {
+        return ResponseEntity.ok(responseDto);
     }
 
     private ResponseEntity<MyPageActionResponseDto> unauthorized() {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                .body(MyPageActionResponseDto.fail("로그인이 필요합니다."));
+                .body(MyPageActionResponseDto.fail(MyPageMessages.LOGIN_REQUIRED));
     }
 }
