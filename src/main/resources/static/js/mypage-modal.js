@@ -331,6 +331,15 @@
         viewState.submitLocked = false;
     }
 
+    /**
+     * 비밀번호 변경 성공 후에는 서버의 보안 인증 세션이 제거됩니다.
+     * 화면 상태도 함께 잠가야 다음에 보안 설정 탭으로 이동했을 때 재인증 화면이 표시됩니다.
+     */
+    function resetSecurityVerificationView(profile) {
+        viewState.securityEditMode = false;
+        viewState.securityUnlocked = Boolean(profile && profile.socialLoginUser);
+    }
+
     function renderCurrentMyPage(activeTab) {
         if (!state.myPage) {
             return;
@@ -606,9 +615,16 @@
             return;
         }
 
+        const latestMyPage = result.myPage || state.myPage;
+        if (latestMyPage) {
+            applyMyPageData(latestMyPage);
+        }
+
         viewState.passwordChangeMode = false;
-        if (state.myPage) {
-            renderMyPageModal(state.myPage, TAB.password);
+        resetSecurityVerificationView(latestMyPage ? latestMyPage.profile : null);
+
+        if (latestMyPage) {
+            renderMyPageModal(latestMyPage, TAB.password);
             showMyPageMessage(result);
             return;
         }
