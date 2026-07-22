@@ -49,7 +49,9 @@
         profileEditMode: false,
         securityEditMode: false,
         securityUnlocked: false,
-        passwordChangeMode: false
+        passwordChangeMode: false,
+        submitLocked: false,
+        lastFocusedElement: null
     };
 
     /* =========================================================
@@ -231,37 +233,48 @@
 
         if (form.matches("#myPageProfileForm")) {
             event.preventDefault();
-            submitProfileForm(form);
+            runSubmitWithLock(form, () => submitProfileForm(form));
             return;
         }
 
         if (form.matches("#myPageSecurityVerifyForm")) {
             event.preventDefault();
-            submitSecurityVerifyForm(form);
+            runSubmitWithLock(form, () => submitSecurityVerifyForm(form));
             return;
         }
 
         if (form.matches("#myPageSecurityProfileForm")) {
             event.preventDefault();
-            submitSecurityProfileForm(form);
+            runSubmitWithLock(form, () => submitSecurityProfileForm(form));
             return;
         }
 
         if (form.matches("#myPagePasswordForm")) {
             event.preventDefault();
-            submitPasswordForm(form);
+            runSubmitWithLock(form, () => submitPasswordForm(form));
             return;
         }
 
         if (form.matches("#myPageWithdrawForm")) {
             event.preventDefault();
-            submitWithdrawForm(form);
+            runSubmitWithLock(form, () => submitWithdrawForm(form));
         }
     }
 
     function handleMyPageKeydown(event) {
+        const modal = document.getElementById(MODAL_ID);
+        if (!modal) {
+            return;
+        }
+
         if (event.key === "Escape") {
+            event.preventDefault();
             closeMyPageModal();
+            return;
+        }
+
+        if (event.key === "Tab") {
+            keepFocusInsideModal(event);
         }
     }
 
@@ -276,6 +289,8 @@
      * 5. 모달 열기/닫기/탭 전환
      * ======================================================= */
     async function openMyPageModal() {
+        rememberFocusedElement();
+
         const data = await fetchMyPage();
 
         if (!data || !data.loggedIn || !data.profile) {
@@ -294,6 +309,7 @@
         viewState.securityEditMode = false;
         viewState.securityUnlocked = Boolean(profile && profile.socialLoginUser);
         viewState.passwordChangeMode = false;
+        viewState.submitLocked = false;
     }
 
     function renderCurrentMyPage(activeTab) {
@@ -313,6 +329,7 @@
         modal.innerHTML = renderModalContent(data, activeTab || TAB.profile);
         document.body.appendChild(modal);
         document.body.classList.add("mypage-open");
+        focusMyPageDialog();
     }
 
     function removeExistingModal() {
@@ -325,6 +342,74 @@
     function closeMyPageModal() {
         removeExistingModal();
         document.body.classList.remove("mypage-open");
+        restoreRememberedFocus();
+    }
+
+    /**
+     * 모달을 닫았을 때 원래 눌렀던 계정 버튼으로 초점을 되돌리기 위해 저장합니다.
+     */
+    function rememberFocusedElement() {
+        viewState.lastFocusedElement = document.activeElement instanceof HTMLElement
+            ? document.activeElement
+            : null;
+    }
+
+    /**
+     * 모달이 열린 직후 키보드 사용자가 바로 모달 안에서 이동할 수 있게 합니다.
+     */
+    function focusMyPageDialog() {
+        const dialog = document.querySelector(`#${MODAL_ID} .mypage-modal`);
+        if (!dialog) {
+            return;
+        }
+
+        dialog.focus({ preventScroll: true });
+    }
+
+    /**
+     * 모달을 닫은 후 포커스를 이전 위치로 복원합니다.
+     */
+    function restoreRememberedFocus() {
+        const target = viewState.lastFocusedElement;
+        viewState.lastFocusedElement = null;
+
+        if (target && document.contains(target) && typeof target.focus === "function") {
+            target.focus({ preventScroll: true });
+        }
+    }
+
+    /**
+     * Tab 키가 모달 밖으로 빠져나가지 않도록 막습니다.
+     */
+    function keepFocusInsideModal(event) {
+        const dialog = document.querySelector(`#${MODAL_ID} .mypage-modal`);
+        if (!dialog) {
+            return;
+        }
+
+        const focusableElements = Array.from(dialog.querySelectorAll(
+            'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+        )).filter((element) => element.offsetParent !== null);
+
+        if (focusableElements.length === 0) {
+            event.preventDefault();
+            dialog.focus({ preventScroll: true });
+            return;
+        }
+
+        const first = focusableElements[0];
+        const last = focusableElements[focusableElements.length - 1];
+
+        if (event.shiftKey && document.activeElement === first) {
+            event.preventDefault();
+            last.focus();
+            return;
+        }
+
+        if (!event.shiftKey && document.activeElement === last) {
+            event.preventDefault();
+            first.focus();
+        }
     }
 
     function activateMyPageTab(tabName) {
@@ -486,6 +571,13 @@
             }
 
             const data = await readJson(response);
+            if (!response.ok) {
+                return data || {
+                    success: false,
+                    message: "요청 처리에 실패했습니다. 잠시 후 다시 시도해 주세요."
+                };
+            }
+
             return data || {
                 success: false,
                 message: "응답 형식이 올바르지 않습니다."
@@ -524,6 +616,39 @@
         return payload;
     }
 
+    /**
+     * 동일한 폼이 빠르게 여러 번 제출되어 중복 요청이 발생하는 것을 방지합니다.
+     */
+    async function runSubmitWithLock(form, submitTask) {
+        if (viewState.submitLocked) {
+            return;
+        }
+
+        viewState.submitLocked = true;
+        setFormBusy(form, true);
+
+        try {
+            await submitTask();
+        } finally {
+            viewState.submitLocked = false;
+            setFormBusy(form, false);
+        }
+    }
+
+    /**
+     * 요청 처리 중에는 폼 내부 버튼을 잠시 비활성화합니다.
+     */
+    function setFormBusy(form, busy) {
+        if (!form) {
+            return;
+        }
+
+        form.setAttribute("aria-busy", String(busy));
+        form.querySelectorAll("button").forEach((button) => {
+            button.disabled = busy;
+        });
+    }
+
     /* =========================================================
      * 8. 검증 / 메시지
      * ======================================================= */
@@ -532,13 +657,18 @@
     }
 
     function showMyPageMessage(result) {
+        const safeResult = result || {
+            success: false,
+            message: "처리 결과를 확인할 수 없습니다."
+        };
+
         const messageBox = document.querySelector("[data-mypage-message]");
         if (!messageBox) {
             return;
         }
 
-        messageBox.textContent = result.message || "";
-        messageBox.className = "mypage-message " + (result.success ? "success" : "error");
+        messageBox.textContent = safeResult.message || "";
+        messageBox.className = "mypage-message " + (safeResult.success ? "success" : "error");
         messageBox.hidden = false;
         messageBox.scrollIntoView({ block: "nearest", behavior: "smooth" });
     }
@@ -607,7 +737,7 @@
         const loginMethodLabel = getLoginMethodLabel(profile);
 
         return `
-            <section class="mypage-modal" role="dialog" aria-modal="true" aria-labelledby="myPageTitle">
+            <section class="mypage-modal" role="dialog" aria-modal="true" aria-labelledby="myPageTitle" tabindex="-1">
                 <button class="mypage-close" type="button" data-mypage-close aria-label="마이페이지 닫기">×</button>
 
                 <header class="mypage-profile-header">
