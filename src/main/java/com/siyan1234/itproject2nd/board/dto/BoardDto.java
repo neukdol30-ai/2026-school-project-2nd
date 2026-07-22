@@ -41,4 +41,14 @@ public class BoardDto {
     private String writerName;
 
     private String writerNickname;
+
+    // 비회원 작성자 번호
+    private Long guestAuthorNo;
+
+    // 목록/상세에서 출력할 비회원 이름
+    private String guestName;
+
+    // 비회원이 화면에서 입력하는 원본 비밀번호
+    // guest_author 테이블에는 직접 저장하지 않음
+    private String guestPassword;
 }

@@ -12,6 +12,9 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import org.springframework.security.access.prepost.PreAuthorize;
+
+
 @Controller
 @RequiredArgsConstructor
 @RequestMapping("/board/comment")
@@ -22,6 +25,7 @@ public class BoardCommentController {
 
     // 답변 등록 처리
     @PostMapping("/write")
+    @PreAuthorize("hasRole('ADMIN')")
     public String write(
             BoardCommentDto commentDto,
             @AuthenticationPrincipal CustomUserDetails loginUser,
@@ -79,6 +83,7 @@ public class BoardCommentController {
 
     // 답변 삭제 처리
     @PostMapping("/delete/{no}")
+    @PreAuthorize("hasRole('ADMIN')")
     public String delete(
             @PathVariable Long no,
             @AuthenticationPrincipal CustomUserDetails loginUser
@@ -118,6 +123,7 @@ public class BoardCommentController {
 
     // 답변 수정 처리
     @PostMapping("/update/{no}")
+    @PreAuthorize("hasRole('ADMIN')")
     public String updateProcess(
             @PathVariable Long no,
             BoardCommentDto commentDto,

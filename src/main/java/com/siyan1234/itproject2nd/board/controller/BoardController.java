@@ -15,6 +15,8 @@ import org.springframework.web.bind.annotation.*;
 import jakarta.validation.Valid;
 import org.springframework.validation.BindingResult;
 import com.siyan1234.itproject2nd.board.service.BoardCommentService;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+
 
 @Controller
 @RequiredArgsConstructor
@@ -71,11 +73,17 @@ public class BoardController {
             @AuthenticationPrincipal CustomUserDetails loginUser,
             Model model
     ) {
-        if (loginUser == null) {
-            return "redirect:/member/login";
+
+        BoardDto boardDto = new BoardDto();
+
+        // 로그인 회원이면 작성자 번호 저장
+        if (loginUser != null) {
+            boardDto.setWriterNo(
+                    loginUser.getMemberDto().getNo()
+            );
         }
 
-        model.addAttribute("boardDto", new BoardDto());
+        model.addAttribute("boardDto", boardDto);
 
         return "board/write";
     }
@@ -83,41 +91,143 @@ public class BoardController {
     // 글쓰기 처리
     @PostMapping("/write")
     public String writeProcess(
-            @Valid BoardDto boardDto,
+            @Valid @ModelAttribute("boardDto") BoardDto boardDto,
             BindingResult bindingResult,
             @AuthenticationPrincipal CustomUserDetails loginUser,
             Model model
     ) {
 
+        /*
+         * 로그인 회원 정보 가져오기
+         *
+         * 비로그인 사용자는 loginUser가 null
+         */
+        MemberDto loginMember = null;
+
+        if (loginUser != null) {
+            loginMember = loginUser.getMemberDto();
+        }
+
+        /*
+         * 공지사항은 관리자만 작성 가능
+         */
+        if ("NOTICE".equals(boardDto.getCategory())) {
+
+            if (loginMember == null
+                    || !"ADMIN".equals(loginMember.getRole())) {
+
+                bindingResult.rejectValue(
+                        "category",
+                        "forbidden",
+                        "공지사항은 관리자만 작성할 수 있습니다."
+                );
+            }
+        }
+
+        /*
+         * 비회원은 문의글만 작성 가능
+         */
+        if (loginMember == null
+                && !"QUESTION".equals(boardDto.getCategory())) {
+
+            bindingResult.rejectValue(
+                    "category",
+                    "forbidden",
+                    "비회원은 문의글만 작성할 수 있습니다."
+            );
+        }
+
+        /*
+         * 비회원 입력값 검사
+         */
+        if (loginMember == null) {
+
+            if (boardDto.getGuestName() == null
+                    || boardDto.getGuestName().trim().isEmpty()) {
+
+                bindingResult.rejectValue(
+                        "guestName",
+                        "required",
+                        "작성자 이름을 입력해주세요."
+                );
+            }
+
+            if (boardDto.getGuestPassword() == null
+                    || boardDto.getGuestPassword().trim().isEmpty()) {
+
+                bindingResult.rejectValue(
+                        "guestPassword",
+                        "required",
+                        "비밀번호를 입력해주세요."
+                );
+            }
+        }
+
+        /*
+         * Validation 오류가 있으면 글쓰기 화면으로 이동
+         */
         if (bindingResult.hasErrors()) {
+
+            model.addAttribute(
+                    "isLogin",
+                    loginMember != null
+            );
+
+            model.addAttribute(
+                    "isAdmin",
+                    loginMember != null
+                            && "ADMIN".equals(loginMember.getRole())
+            );
+
             return "board/write";
         }
 
-        // Spring Security 로그인 여부 확인
-        if (loginUser == null) {
-            return "redirect:/member/login";
+        /*
+         * 회원 작성
+         */
+        if (loginMember != null) {
+
+            boardDto.setWriterNo(
+                    loginMember.getNo()
+            );
+
+            boardDto.setGuestAuthorNo(null);
+            boardDto.setGuestName(null);
+            boardDto.setGuestPassword(null);
         }
 
-        // CustomUserDetails 안에서 실제 회원 정보 꺼내기
-        MemberDto loginMember = loginUser.getMemberDto();
+        /*
+         * 비회원 작성
+         */
+        else {
 
-        // 일반 회원은 공지사항 작성 불가
-        if ("NOTICE".equals(boardDto.getCategory())
-                && !"ADMIN".equals(loginMember.getRole())) {
+            boardDto.setWriterNo(null);
+            boardDto.setGuestAuthorNo(null);
 
-            return "redirect:/board/write";
+            // guestName과 guestPassword는
+            // HTML form에서 전달된 값을 그대로 사용
         }
-
-        // 게시글 작성자 번호 저장
-        boardDto.setWriterNo(loginMember.getNo());
 
         try {
+
             boardService.insert(boardDto);
+
         } catch (IllegalArgumentException e) {
 
             model.addAttribute(
                     "contentError",
                     e.getMessage()
+            );
+
+            model.addAttribute(
+                    "isLogin",
+                    loginMember != null
+            );
+
+            model.addAttribute(
+                    "isAdmin",
+                    loginMember != null
+                            && "ADMIN".equals(loginMember.getRole())
             );
 
             return "board/write";
@@ -204,7 +314,7 @@ public class BoardController {
     }
 
 
-    // 수정 화면
+    // 회원 수정 GET
     @GetMapping("/update/{no}")
     public String update(
             @PathVariable Long no,
@@ -216,26 +326,55 @@ public class BoardController {
             return "redirect:/member/login";
         }
 
-        MemberDto loginMember = loginUser.getMemberDto();
+        MemberDto loginMember =
+                loginUser.getMemberDto();
 
         // 수정 화면 조회는 조회수 증가 없음
-        BoardDto board = boardService.findByNo(no);
+        BoardDto board =
+                boardService.findByNo(no);
 
         if (board == null) {
             return "redirect:/board/list";
         }
 
-        // 작성자만 수정 가능
-        if (!loginMember.getNo().equals(board.getWriterNo())) {
+        /*
+         * 회원 게시글인지 먼저 확인한다.
+         * 비회원 글은 writerNo가 null이므로
+         * 바로 equals를 실행하지 않는다.
+         */
+        if (board.getWriterNo() == null) {
             return "redirect:/board/detail/" + no;
         }
 
-        model.addAttribute("board", board);
+        // 작성자만 수정 가능
+        if (!loginMember.getNo()
+                .equals(board.getWriterNo())) {
+
+            return "redirect:/board/detail/" + no;
+        }
+
+        // 기존 update.html에서 사용 중인 이름
+        model.addAttribute(
+                "board",
+                board
+        );
+
+        // 회원 수정 화면임을 구분
+        model.addAttribute(
+                "guestMode",
+                false
+        );
+
+        // 회원 수정 요청 주소
+        model.addAttribute(
+                "formAction",
+                "/board/update/" + no
+        );
 
         return "board/update";
     }
 
-    // 수정 처리
+    // 회원 수정 POST
     @PostMapping("/update/{no}")
     public String updateProcess(
             @PathVariable Long no,
@@ -248,7 +387,24 @@ public class BoardController {
         boardDto.setNo(no);
 
         if (bindingResult.hasErrors()) {
+
             boardDto.setNo(no);
+
+            model.addAttribute(
+                    "board",
+                    boardDto
+            );
+
+            model.addAttribute(
+                    "guestMode",
+                    false
+            );
+
+            model.addAttribute(
+                    "formAction",
+                    "/board/update/" + no
+            );
+
             return "board/update";
         }
 
@@ -265,7 +421,11 @@ public class BoardController {
         }
 
         // 작성자만 수정 가능
-        if (!loginMember.getNo().equals(originBoard.getWriterNo())) {
+        if (originBoard.getWriterNo() == null
+                || !loginMember.getNo().equals(
+                originBoard.getWriterNo()
+        )) {
+
             return "redirect:/board/detail/" + no;
         }
 
@@ -288,7 +448,20 @@ public class BoardController {
                     e.getMessage()
             );
 
-            model.addAttribute("board", boardDto);
+            model.addAttribute(
+                    "board",
+                    boardDto
+            );
+
+            model.addAttribute(
+                    "guestMode",
+                    false
+            );
+
+            model.addAttribute(
+                    "formAction",
+                    "/board/update/" + no
+            );
 
             return "board/update";
         }
@@ -297,7 +470,7 @@ public class BoardController {
     }
 
 
-    // 게시글 삭제 처리
+    // 회원 삭제 POST
     // GET이 아니라 POST로 처리하여
     // 주소 접속만으로 삭제되는 문제를 방지
     @PostMapping("/delete/{no}")
@@ -318,8 +491,12 @@ public class BoardController {
             return "redirect:/board/list";
         }
 
-        // 작성자만 삭제 가능
-        if (!loginMember.getNo().equals(board.getWriterNo())) {
+        // 비회원 글이거나 작성자가 아니면 삭제 불가
+        if (board.getWriterNo() == null
+                || !loginMember.getNo().equals(
+                board.getWriterNo()
+        )) {
+
             return "redirect:/board/detail/" + no;
         }
 
@@ -327,4 +504,404 @@ public class BoardController {
 
         return "redirect:/board/list";
     }
+    //
+    // 비회원 게시글
+    //
+    // 수정 비밀번호 입력
+    @GetMapping("/guest/update/{no}")
+    public String guestUpdatePasswordForm(
+            @PathVariable Long no,
+            Model model
+    ) {
+
+        BoardDto boardDto = boardService.findByNo(no);
+
+        if (boardDto == null) {
+            return "redirect:/board/list";
+        }
+
+        if (boardDto.getGuestAuthorNo() == null) {
+            return "redirect:/board/detail/" + no;
+        }
+
+        model.addAttribute("board", boardDto);
+
+        return "board/guest-update-password";
+    }
+
+
+
+    // 수정 비밀번호 확인
+    @PostMapping("/guest/update/{no}/verify")
+    public String verifyGuestUpdatePassword(
+            @PathVariable Long no,
+            @RequestParam String guestPassword,
+            HttpSession session,
+            Model model
+    ) {
+
+        BoardDto boardDto = boardService.findByNo(no);
+
+        if (boardDto == null) {
+            return "redirect:/board/list";
+        }
+
+        if (boardDto.getGuestAuthorNo() == null) {
+            return "redirect:/board/detail/" + no;
+        }
+
+        boolean passwordMatches =
+                boardService.checkGuestPassword(
+                        no,
+                        guestPassword
+                );
+
+        if (!passwordMatches) {
+            model.addAttribute("board", boardDto);
+
+            model.addAttribute(
+                    "passwordError",
+                    "비밀번호가 일치하지 않습니다."
+            );
+
+            return "board/guest-update-password";
+        }
+
+        /*
+         * 이 브라우저 세션에서 해당 게시글의
+         * 비밀번호 확인을 완료했다는 임시 정보
+         */
+        session.setAttribute(
+                "guestUpdateVerifiedBoardNo",
+                no
+        );
+
+        return "redirect:/board/guest/update/"
+                + no
+                + "/form";
+    }
+
+
+
+    // 수정 화면
+    @GetMapping("/guest/update/{no}/form")
+    public String guestUpdateForm(
+            @PathVariable Long no,
+            HttpSession session,
+            Model model
+    ) {
+
+        // 세션에 저장된 비밀번호 확인 게시글 번호
+        Object verifiedValue =
+                session.getAttribute(
+                        "guestUpdateVerifiedBoardNo"
+                );
+
+        /*
+         * 비밀번호 확인을 하지 않았거나,
+         * 다른 게시글의 비밀번호를 확인한 경우
+         */
+        if (!(verifiedValue instanceof Long verifiedBoardNo)
+                || !verifiedBoardNo.equals(no)) {
+
+            return "redirect:/board/guest/update/" + no;
+        }
+
+        BoardDto boardDto =
+                boardService.findByNo(no);
+
+        if (boardDto == null) {
+            return "redirect:/board/list";
+        }
+
+        // 회원 게시글은 비회원 수정 기능으로 접근할 수 없음
+        if (boardDto.getGuestAuthorNo() == null) {
+            return "redirect:/board/detail/" + no;
+        }
+
+        model.addAttribute(
+                "board",
+                boardDto
+        );
+
+        /*
+         * 기존 update.html에서 회원 수정인지
+         * 비회원 수정인지 구분하기 위한 값
+         */
+        model.addAttribute(
+                "guestMode",
+                true
+        );
+
+        model.addAttribute(
+                "formAction",
+                "/board/guest/update/" + no
+        );
+
+        return "board/update";
+    }
+
+
+    // 실제 수정
+    @PostMapping("/guest/update/{no}")
+    public String guestUpdateProcess(
+            @PathVariable Long no,
+            @Valid @ModelAttribute("board") BoardDto boardDto,
+            BindingResult bindingResult,
+            HttpSession session,
+            Model model
+    ) {
+
+        Object verifiedValue =
+                session.getAttribute(
+                        "guestUpdateVerifiedBoardNo"
+                );
+
+        /*
+         * 비밀번호 확인을 하지 않았거나
+         * 다른 게시글 번호로 수정 요청한 경우
+         */
+        if (!(verifiedValue instanceof Long verifiedBoardNo)
+                || !verifiedBoardNo.equals(no)) {
+
+            return "redirect:/board/guest/update/" + no;
+        }
+
+        BoardDto originBoard =
+                boardService.findByNo(no);
+
+        if (originBoard == null) {
+            return "redirect:/board/list";
+        }
+
+        // 비회원 게시글이 아닌 경우
+        if (originBoard.getGuestAuthorNo() == null) {
+            return "redirect:/board/detail/" + no;
+        }
+
+        boardDto.setNo(no);
+
+        /*
+         * 비회원은 문의 게시판만 사용 가능하므로
+         * category를 서버에서 강제로 지정
+         */
+        boardDto.setCategory("QUESTION");
+
+        if (bindingResult.hasErrors()) {
+
+            model.addAttribute(
+                    "board",
+                    boardDto
+            );
+
+            model.addAttribute(
+                    "guestMode",
+                    true
+            );
+
+            model.addAttribute(
+                    "formAction",
+                    "/board/guest/update/" + no
+            );
+
+            return "board/update";
+        }
+
+        try {
+
+            boardService.updateGuestBoard(
+                    boardDto
+            );
+
+        } catch (IllegalArgumentException e) {
+
+            model.addAttribute(
+                    "contentError",
+                    e.getMessage()
+            );
+
+            model.addAttribute(
+                    "board",
+                    boardDto
+            );
+
+            model.addAttribute(
+                    "guestMode",
+                    true
+            );
+
+            model.addAttribute(
+                    "formAction",
+                    "/board/guest/update/" + no
+            );
+
+            return "board/update";
+        }
+
+        /*
+         * 수정 완료 후 비밀번호 인증 정보 제거
+         */
+        session.removeAttribute(
+                "guestUpdateVerifiedBoardNo"
+        );
+
+        return "redirect:/board/detail/" + no;
+    }
+
+    // 삭제 비밀번호 입력
+    @GetMapping("/guest/delete/{no}")
+    public String guestDeletePasswordForm(
+            @PathVariable Long no,
+            Model model
+    ) {
+
+        BoardDto boardDto =
+                boardService.findByNo(no);
+
+        if (boardDto == null) {
+            return "redirect:/board/list";
+        }
+
+        // 회원 게시글은 비회원 삭제 기능 사용 불가
+        if (boardDto.getGuestAuthorNo() == null) {
+            return "redirect:/board/detail/" + no;
+        }
+
+        model.addAttribute(
+                "board",
+                boardDto
+        );
+
+        return "board/guest-delete-password";
+
+    }
+
+    //삭제 비밀번호 확인 POST
+    @PostMapping("/guest/delete/{no}/verify")
+    public String verifyGuestDeletePassword(
+            @PathVariable Long no,
+            @RequestParam String guestPassword,
+            HttpSession session,
+            Model model
+    ) {
+
+        BoardDto boardDto =
+                boardService.findByNo(no);
+
+        if (boardDto == null) {
+            return "redirect:/board/list";
+        }
+
+        if (boardDto.getGuestAuthorNo() == null) {
+            return "redirect:/board/detail/" + no;
+        }
+
+        boolean passwordMatches =
+                boardService.checkGuestPassword(
+                        no,
+                        guestPassword
+                );
+
+        if (!passwordMatches) {
+
+            model.addAttribute(
+                    "board",
+                    boardDto
+            );
+
+            model.addAttribute(
+                    "passwordError",
+                    "비밀번호가 일치하지 않습니다."
+            );
+
+            return "board/guest-delete-password";
+        }
+
+        session.setAttribute(
+                "guestDeleteVerifiedBoardNo",
+                no
+        );
+
+        return "redirect:/board/guest/delete/"
+                + no
+                + "/confirm";
+    }
+
+
+    //삭제 확인 화면
+    @GetMapping("/guest/delete/{no}/confirm")
+    public String guestDeleteConfirm(
+            @PathVariable Long no,
+            HttpSession session,
+            Model model
+    ) {
+
+        Object verifiedValue =
+                session.getAttribute(
+                        "guestDeleteVerifiedBoardNo"
+                );
+
+        if (!(verifiedValue instanceof Long verifiedBoardNo)
+                || !verifiedBoardNo.equals(no)) {
+
+            return "redirect:/board/guest/delete/" + no;
+        }
+
+        BoardDto boardDto =
+                boardService.findByNo(no);
+
+        if (boardDto == null) {
+            session.removeAttribute(
+                    "guestDeleteVerifiedBoardNo"
+            );
+
+            return "redirect:/board/list";
+        }
+
+        if (boardDto.getGuestAuthorNo() == null) {
+            session.removeAttribute(
+                    "guestDeleteVerifiedBoardNo"
+            );
+
+            return "redirect:/board/detail/" + no;
+        }
+
+        model.addAttribute(
+                "board",
+                boardDto
+        );
+
+        return "board/guest-delete-confirm";
+    }
+
+
+    // 비회원 게시글 실제 삭제
+    @PostMapping("/guest/delete/{no}")
+    public String deleteGuestBoard(
+            @PathVariable Long no,
+            HttpSession session,
+            RedirectAttributes redirectAttributes
+    ) {
+
+        Object verifiedValue =
+                session.getAttribute("guestDeleteVerifiedBoardNo");
+
+        if (!(verifiedValue instanceof Long verifiedBoardNo)
+                || !verifiedBoardNo.equals(no)) {
+
+            return "redirect:/board/guest/delete/" + no;
+        }
+
+        boardService.delete(no);
+
+        session.removeAttribute("guestDeleteVerifiedBoardNo");
+
+        redirectAttributes.addFlashAttribute(
+                "successMessage",
+                "게시글이 삭제되었습니다."
+        );
+
+        return "redirect:/board/list";
+    }
+
 }

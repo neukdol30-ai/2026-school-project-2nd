@@ -34,7 +34,17 @@ public final class SecurityPaths {
             "/api/**",
             "/oauth2/**",
             "/login/oauth2/**",
-            "/error" // 필수, 예외 발생 시 Spring Boot가 /error로 내부 포워딩. Security 6은 그 포워딩도 인가 재검사. 없으면 비로그인 상태 예외 -> 에러 화면 대신 로그인으로 302 (에러 은폐)
+            "/error", // 필수, 예외 발생 시 Spring Boot가 /error로 내부 포워딩. Security 6은 그 포워딩도 인가 재검사. 없으면 비로그인 상태 예외 -> 에러 화면 대신 로그인으로 302 (에러 은폐)
+            // 게시판 공개 주소
+            "/board/list",       // 전체 게시글 목록
+            "/board/notice",     // 공지사항 목록
+            "/board/question",   // 문의 게시판 목록
+            "/board/search",     // 게시글 검색
+            "/board/detail/**",  // 게시글 상세
+            "/board/write",      // 문의글 작성 화면 및 작성 처리
+            "/board/image/upload",
+            "/board/guest/update/**",
+            "/board/guest/delete/**"
     };
 
     public static final String[] VISIT_LOG_EXCLUDE_PATTERNS = {
