@@ -10,7 +10,7 @@ import com.siyan1234.itproject2nd.mypage.dto.PasswordChangeDto;
 import com.siyan1234.itproject2nd.mypage.service.MyPageService;
 import com.siyan1234.itproject2nd.mypage.support.MyPageLoginUserResolver;
 import com.siyan1234.itproject2nd.mypage.support.MyPageMessages;
-import com.siyan1234.itproject2nd.mypage.support.MyPageSessionKeys;
+import com.siyan1234.itproject2nd.mypage.support.MyPageSecurityVerification;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -86,7 +86,7 @@ public class MyPageController {
 
         MyPageActionResponseDto responseDto = myPageService.verifyPassword(memberNo, verifyDto);
         if (responseDto.isSuccess()) {
-            session.setAttribute(MyPageSessionKeys.SECURITY_VERIFIED_MEMBER_NO, memberNo);
+            MyPageSecurityVerification.markVerified(session, memberNo);
         }
 
         return ok(responseDto);
@@ -108,8 +108,9 @@ public class MyPageController {
             return unauthorized();
         }
 
-        boolean securityVerified = isSecurityVerified(session, memberNo);
-        return ok(myPageService.updateSecurityProfile(memberNo, updateDto, securityVerified));
+        String verificationFailureMessage = MyPageSecurityVerification.verificationFailureMessage(session, memberNo);
+        boolean securityVerified = verificationFailureMessage == null;
+        return ok(myPageService.updateSecurityProfile(memberNo, updateDto, securityVerified, verificationFailureMessage));
     }
 
     /**
@@ -120,14 +121,20 @@ public class MyPageController {
     public ResponseEntity<MyPageActionResponseDto> changePassword(
             @AuthenticationPrincipal CustomUserDetails customUserDetails,
             Authentication authentication,
-            @RequestBody PasswordChangeDto passwordDto
+            @RequestBody PasswordChangeDto passwordDto,
+            HttpSession session
     ) {
         Integer memberNo = loginUserResolver.resolveMemberNo(customUserDetails, authentication);
         if (memberNo == null) {
             return unauthorized();
         }
 
-        return ok(myPageService.changePassword(memberNo, passwordDto));
+        MyPageActionResponseDto responseDto = myPageService.changePassword(memberNo, passwordDto);
+        if (responseDto.isSuccess()) {
+            MyPageSecurityVerification.clear(session);
+        }
+
+        return ok(responseDto);
     }
 
     /**
@@ -153,11 +160,6 @@ public class MyPageController {
         }
 
         return ok(responseDto);
-    }
-
-    private boolean isSecurityVerified(HttpSession session, Integer memberNo) {
-        Object verifiedMemberNo = session.getAttribute(MyPageSessionKeys.SECURITY_VERIFIED_MEMBER_NO);
-        return memberNo != null && memberNo.equals(verifiedMemberNo);
     }
 
     private ResponseEntity<MyPageActionResponseDto> ok(MyPageActionResponseDto responseDto) {

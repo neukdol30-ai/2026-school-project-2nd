@@ -52,6 +52,8 @@
     const MODAL_ID = "myPageModal";
     const PHONE_PATTERN = /^010-[0-9]{4}-[0-9]{4}$/;
     const WITHDRAW_CONFIRM_TEXT = "회원탈퇴";
+    const SECURITY_VERIFY_REQUIRED_MESSAGE = "개인정보 수정을 위해 현재 비밀번호 인증이 필요합니다.";
+    const SECURITY_VERIFY_EXPIRED_MESSAGE = "본인 확인 시간이 만료되었습니다. 다시 현재 비밀번호를 인증해 주세요.";
 
     /**
      * 모달 내부 화면 상태입니다.
@@ -563,7 +565,7 @@
 
         const result = await postJson(API.security, payload);
         if (!result.success || !result.myPage) {
-            showMyPageMessage(result);
+            handleSecurityProfileFailure(result);
             return;
         }
 
@@ -572,6 +574,22 @@
         safeUpdateAuthWidget();
         renderMyPageModal(result.myPage, TAB.security);
         showMyPageMessage(result);
+    }
+
+    function handleSecurityProfileFailure(result) {
+        if (isSecurityVerificationFailure(result) && state.myPage) {
+            viewState.securityUnlocked = false;
+            viewState.securityEditMode = false;
+            renderMyPageModal(state.myPage, TAB.security);
+        }
+
+        showMyPageMessage(result);
+    }
+
+    function isSecurityVerificationFailure(result) {
+        const message = result && result.message;
+        return message === SECURITY_VERIFY_REQUIRED_MESSAGE
+                || message === SECURITY_VERIFY_EXPIRED_MESSAGE;
     }
 
     async function submitPasswordForm(form) {

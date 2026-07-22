@@ -5,6 +5,9 @@ public final class MyPagePolicy {
     public static final String ADMIN_ROLE = "ADMIN";
     public static final String WITHDRAW_CONFIRM_TEXT = "회원탈퇴";
 
+    /** 일반 로그인 회원이 보안 설정을 수정할 수 있는 본인 확인 유지 시간입니다. */
+    public static final long SECURITY_VERIFICATION_TIMEOUT_MILLIS = 10 * 60 * 1000L;
+
     private static final String PASSWORD_PATTERN = "(?=.*[a-z])(?=.*[A-Z])(?=.*\\d).{8,20}";
     private static final String EMAIL_PATTERN = "^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$";
     private static final String PHONE_PATTERN = "^010-[0-9]{4}-[0-9]{4}$";

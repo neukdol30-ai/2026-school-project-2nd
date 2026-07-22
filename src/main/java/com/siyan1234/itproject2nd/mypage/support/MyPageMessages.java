@@ -16,6 +16,7 @@ public final class MyPageMessages {
     public static final String SOCIAL_PASSWORD_VERIFY_NOT_REQUIRED = "소셜 로그인 계정은 사이트 비밀번호 인증이 필요하지 않습니다.";
     public static final String SOCIAL_PASSWORD_CHANGE_NOT_ALLOWED = "소셜 로그인 계정은 사이트에서 비밀번호를 변경할 수 없습니다. 카카오/네이버 계정 설정에서 관리해 주세요.";
     public static final String SECURITY_PASSWORD_VERIFY_REQUIRED = "개인정보 수정을 위해 현재 비밀번호 인증이 필요합니다.";
+    public static final String SECURITY_PASSWORD_VERIFY_EXPIRED = "본인 확인 시간이 만료되었습니다. 다시 현재 비밀번호를 인증해 주세요.";
 
     public static final String CURRENT_PASSWORD_REQUIRED = "현재 비밀번호를 입력해 주세요.";
     public static final String CURRENT_PASSWORD_MISMATCH = "현재 비밀번호가 일치하지 않습니다.";

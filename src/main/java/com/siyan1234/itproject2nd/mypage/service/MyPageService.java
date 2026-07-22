@@ -88,7 +88,12 @@ public class MyPageService {
 
     /** 보안 설정 탭의 개인정보 수정입니다. */
     @Transactional
-    public MyPageActionResponseDto updateSecurityProfile(Integer memberNo, MyPageUpdateDto updateDto, boolean securityVerified) {
+    public MyPageActionResponseDto updateSecurityProfile(
+            Integer memberNo,
+            MyPageUpdateDto updateDto,
+            boolean securityVerified,
+            String verificationFailureMessage
+    ) {
         MyPageProfileDto currentProfile = findProfile(memberNo);
         if (currentProfile == null) {
             return failByMemberNo(memberNo);
@@ -99,7 +104,10 @@ public class MyPageService {
         }
 
         if (requiresPasswordVerification(currentProfile, securityVerified)) {
-            return MyPageActionResponseDto.fail(MyPageMessages.SECURITY_PASSWORD_VERIFY_REQUIRED);
+            String message = verificationFailureMessage == null
+                    ? MyPageMessages.SECURITY_PASSWORD_VERIFY_REQUIRED
+                    : verificationFailureMessage;
+            return MyPageActionResponseDto.fail(message);
         }
 
         normalizeSecurityProfile(updateDto);
