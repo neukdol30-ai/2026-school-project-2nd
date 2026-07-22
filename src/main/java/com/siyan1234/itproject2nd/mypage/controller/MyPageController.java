@@ -18,6 +18,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -160,6 +162,26 @@ public class MyPageController {
         }
 
         return ok(responseDto);
+    }
+
+    /**
+     * JSON 형식이 깨졌거나 요청 본문을 읽을 수 없을 때 400 응답으로 정리합니다.
+     * 브라우저에는 스택 트레이스 대신 사용자가 이해할 수 있는 메시지만 내려줍니다.
+     */
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<MyPageActionResponseDto> handleBadRequest() {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(MyPageActionResponseDto.fail(MyPageMessages.INVALID_REQUEST));
+    }
+
+    /**
+     * 마이페이지 컨트롤러에서 예상하지 못한 오류가 발생했을 때 공통 500 응답으로 정리합니다.
+     * 실제 로그는 Spring Boot 기본 로깅으로 확인하고, 화면에는 공통 안내 문구만 노출합니다.
+     */
+    @ExceptionHandler(Exception.class)
+    public ResponseEntity<MyPageActionResponseDto> handleServerError() {
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(MyPageActionResponseDto.fail(MyPageMessages.SERVER_ERROR));
     }
 
     private ResponseEntity<MyPageActionResponseDto> ok(MyPageActionResponseDto responseDto) {

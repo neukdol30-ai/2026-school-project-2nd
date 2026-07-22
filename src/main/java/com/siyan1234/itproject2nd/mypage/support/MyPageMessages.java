@@ -6,6 +6,8 @@ public final class MyPageMessages {
     public static final String LOGIN_INFO_MISSING = "로그인 정보가 없습니다. 다시 로그인해 주세요.";
     public static final String MEMBER_NOT_FOUND = "회원 정보를 찾을 수 없습니다.";
     public static final String INVALID_REQUEST = "요청 정보가 올바르지 않습니다.";
+    public static final String ACCESS_DENIED = "접근 권한이 없습니다.";
+    public static final String SERVER_ERROR = "서버 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.";
 
     public static final String PROFILE_UPDATED = "내 정보가 수정되었습니다.";
     public static final String SECURITY_PROFILE_UPDATED = "개인정보가 수정되었습니다.";

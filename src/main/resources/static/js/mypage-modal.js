@@ -9,9 +9,7 @@
  * 5. 전화번호/날짜/비밀번호/탈퇴 확인 문구 1차 검증
  *
  * 주의사항
- * - 실제 보안 검증은 서버에서도 반드시 수행되어야 합니다.
- * - 이 파일 하나만 사용합니다. /js/index/mypage-modal.js는 삭제된 상태를 기준으로 합니다.
- */
+ * - 실제 보안 검증은 서버에서도 반드시 수행되어야 합니다.*/
 (function () {
     "use strict";
 
@@ -50,10 +48,22 @@
     ]);
 
     const MODAL_ID = "myPageModal";
+    const LOGIN_URL = "/member/login";
+    const SESSION_REDIRECT_DELAY_MS = 900;
     const PHONE_PATTERN = /^010-[0-9]{4}-[0-9]{4}$/;
     const WITHDRAW_CONFIRM_TEXT = "회원탈퇴";
     const SECURITY_VERIFY_REQUIRED_MESSAGE = "개인정보 수정을 위해 현재 비밀번호 인증이 필요합니다.";
     const SECURITY_VERIFY_EXPIRED_MESSAGE = "본인 확인 시간이 만료되었습니다. 다시 현재 비밀번호를 인증해 주세요.";
+
+    const ERROR_MESSAGE = Object.freeze({
+        loginExpired: "로그인이 만료되었습니다. 다시 로그인해 주세요.",
+        forbidden: "접근 권한이 없습니다.",
+        badRequest: "요청 정보가 올바르지 않습니다.",
+        server: "서버 오류가 발생했습니다. 잠시 후 다시 시도해 주세요.",
+        network: "네트워크 연결을 확인한 뒤 다시 시도해 주세요.",
+        invalidResponse: "응답 형식이 올바르지 않습니다.",
+        unknown: "처리 결과를 확인할 수 없습니다."
+    });
 
     /**
      * 모달 내부 화면 상태입니다.
@@ -313,7 +323,7 @@
         const data = await fetchMyPage();
 
         if (!data || !data.loggedIn || !data.profile) {
-            location.href = "/member/login";
+            location.href = LOGIN_URL;
             return;
         }
 
@@ -671,40 +681,131 @@
                 body: JSON.stringify(payload)
             });
 
-            if (response.status === 401) {
-                return {
-                    success: false,
-                    message: "로그인이 필요합니다. 다시 로그인해 주세요."
-                };
-            }
-
             const data = await readJson(response);
-            if (!response.ok) {
-                return data || {
-                    success: false,
-                    message: "요청 처리에 실패했습니다. 잠시 후 다시 시도해 주세요."
-                };
-            }
-
-            return data || {
-                success: false,
-                message: "응답 형식이 올바르지 않습니다."
-            };
+            return normalizeActionResponse(response, data);
         } catch (error) {
             return {
                 success: false,
-                message: "요청 처리 중 오류가 발생했습니다."
+                message: ERROR_MESSAGE.network
             };
         }
     }
 
-    async function readJson(response) {
+    /**
+     * HTTP 상태 코드와 서버 응답 본문을 마이페이지 화면에서 쓰기 쉬운 형태로 통일합니다.
+     *
+     * 주의
+     * - 다른 탭에서 로그아웃된 뒤 저장/변경 요청을 보내면 Spring Security가 401 JSON이 아니라
+     *   로그인 HTML 페이지로 redirect 응답을 돌려줄 수 있습니다.
+     * - fetch는 기본적으로 redirect를 따라가기 때문에 최종 응답이 200 + text/html 이 될 수 있습니다.
+     * - 마이페이지 API는 JSON만 정상 응답으로 보기 때문에, 로그인 페이지 HTML 응답도 세션 만료로 처리합니다.
+     */
+    function normalizeActionResponse(response, data) {
+        if (isSessionExpiredResponse(response, data)) {
+            return createSessionExpiredResult(data);
+        }
+
+        if (response.status === 403) {
+            return {
+                success: false,
+                message: data && data.message ? data.message : ERROR_MESSAGE.forbidden,
+                forbidden: true
+            };
+        }
+
+        if (response.status === 400) {
+            return data || {
+                success: false,
+                message: ERROR_MESSAGE.badRequest
+            };
+        }
+
+        if (response.status >= 500) {
+            return data || {
+                success: false,
+                message: ERROR_MESSAGE.server
+            };
+        }
+
+        if (!response.ok) {
+            return data || {
+                success: false,
+                message: ERROR_MESSAGE.unknown
+            };
+        }
+
+        if (!isJsonResponse(response)) {
+            return {
+                success: false,
+                message: ERROR_MESSAGE.invalidResponse
+            };
+        }
+
+        return data || {
+            success: false,
+            message: ERROR_MESSAGE.invalidResponse
+        };
+    }
+
+    /**
+     * 세션 만료 여부를 여러 형태로 감지합니다.
+     * 1. 서버가 401을 반환한 경우
+     * 2. 서버 JSON이 sessionExpired=true를 반환한 경우
+     * 3. Spring Security가 로그인 페이지로 redirect한 경우
+     * 4. 마이페이지 API 요청인데 JSON이 아닌 HTML 로그인 페이지가 반환된 경우
+     */
+    function isSessionExpiredResponse(response, data) {
+        if (response.status === 401) {
+            return true;
+        }
+
+        if (data && data.sessionExpired) {
+            return true;
+        }
+
+        if (isLoginPageResponse(response)) {
+            return true;
+        }
+
+        return response.ok && !isJsonResponse(response) && isHtmlResponse(response);
+    }
+
+    function isLoginPageResponse(response) {
+        const responseUrl = response && response.url ? response.url : "";
+        return response.redirected && responseUrl.includes(LOGIN_URL)
+            || responseUrl.includes(LOGIN_URL + "?")
+            || responseUrl.endsWith(LOGIN_URL);
+    }
+
+    function createSessionExpiredResult(data) {
+        return {
+            success: false,
+            message: data && data.message ? data.message : ERROR_MESSAGE.loginExpired,
+            redirectUrl: LOGIN_URL,
+            sessionExpired: true
+        };
+    }
+
+    function isJsonResponse(response) {
         const contentType = response.headers.get("content-type") || "";
-        if (!contentType.includes("application/json")) {
+        return contentType.toLowerCase().includes("application/json");
+    }
+
+    function isHtmlResponse(response) {
+        const contentType = response.headers.get("content-type") || "";
+        return contentType.toLowerCase().includes("text/html");
+    }
+
+    async function readJson(response) {
+        if (!isJsonResponse(response)) {
             return null;
         }
 
-        return await response.json();
+        try {
+            return await response.json();
+        } catch (error) {
+            return null;
+        }
     }
 
     function formToObject(form) {
@@ -767,11 +868,12 @@
     function showMyPageMessage(result) {
         const safeResult = result || {
             success: false,
-            message: "처리 결과를 확인할 수 없습니다."
+            message: ERROR_MESSAGE.unknown
         };
 
         const messageBox = document.querySelector("[data-mypage-message]");
         if (!messageBox) {
+            handleSessionExpiredRedirect(safeResult);
             return;
         }
 
@@ -779,6 +881,30 @@
         messageBox.className = "mypage-message " + (safeResult.success ? "success" : "error");
         messageBox.hidden = false;
         messageBox.scrollIntoView({ block: "nearest", behavior: "smooth" });
+
+        handleSessionExpiredRedirect(safeResult);
+    }
+
+    /**
+     * 세션 만료 결과라면 현재 사용자 정보를 비우고 로그인 화면으로 이동합니다.
+     * 메시지 영역이 없는 예외 상황에서도 redirect가 누락되지 않도록 별도 함수로 분리했습니다.
+     */
+    function handleSessionExpiredRedirect(result) {
+        if (!result || !result.sessionExpired || !result.redirectUrl) {
+            return;
+        }
+
+        clearCurrentUser();
+        redirectAfterMessage(result.redirectUrl);
+    }
+
+    /**
+     * 세션 만료 안내 메시지를 사용자가 볼 수 있도록 짧게 기다린 뒤 로그인 화면으로 이동합니다.
+     */
+    function redirectAfterMessage(url) {
+        window.setTimeout(() => {
+            location.href = url;
+        }, SESSION_REDIRECT_DELAY_MS);
     }
 
     function validateBasicProfilePayload(payload) {
