@@ -1,14 +1,60 @@
 //메인 위젯 조회
 function getMainWidgets() {
     return state.widgets
-        .filter((widget) => widget.visible && widget.zone === "main")
+        .filter((widget) =>
+            widget.visible &&
+            widget.zone === "main" &&
+            widget.id !== state.headerWidgetId
+        )
         .sort((a, b) => a.orderNo - b.orderNo);
 }
 //사이드 위젯 조회
 function getSideWidgets() {
     return state.widgets
-        .filter((widget) => widget.visible && widget.zone === "side")
+        .filter((widget) =>
+            widget.visible &&
+            widget.zone === "side" &&
+            widget.id !== state.headerWidgetId
+        )
         .sort((a, b) => a.orderNo - b.orderNo);
+}
+
+// 메인/보조 위젯 높이를 비교해서 짧은 컬럼만 스크롤을 따라가게 설정
+function updateFollowColumn() {
+    const mainColumn = document.querySelector(".main-column");
+    const sideColumn = document.querySelector(".side-column");
+
+    const mainList = document.querySelector(
+        '[data-widget-list="main"]'
+    );
+
+    const sideList = document.querySelector(
+        '[data-widget-list="side"]'
+    );
+
+    if (!mainColumn || !sideColumn || !mainList || !sideList) {
+        return;
+    }
+
+    // 이전에 붙은 이동 클래스를 먼저 제거
+    mainColumn.classList.remove("is-follow-column");
+    sideColumn.classList.remove("is-follow-column");
+
+    const mainHeight = mainList.getBoundingClientRect().height;
+    const sideHeight = sideList.getBoundingClientRect().height;
+
+    // 높이가 같으면 어느 쪽도 따라가지 않음
+    if (mainHeight === sideHeight) {
+        return;
+    }
+
+    // 더 짧은 컬럼에만 sticky 클래스 부여
+    if (mainHeight < sideHeight) {
+        mainColumn.classList.add("is-follow-column");
+        return;
+    }
+
+    sideColumn.classList.add("is-follow-column");
 }
 
 //위젯 위치 저장
@@ -213,11 +259,16 @@ function refreshWidgetContent(widgetId) {
 
         content.innerHTML = renderWidgetContent(widget);
         initStockSwiper();
+
+        requestAnimationFrame(updateFollowColumn);
+
         return;
     }
 
     // 뉴스, 날씨, 계산기 등은 해당 위젯 내용만 교체
     content.innerHTML = renderWidgetContent(widget);
+
+    requestAnimationFrame(updateFollowColumn);
 }
 
 // 현재 화면의 카드 순서를 state.orderNo에 저장

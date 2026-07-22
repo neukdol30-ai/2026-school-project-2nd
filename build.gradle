@@ -23,6 +23,7 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
     implementation 'org.springframework.boot:spring-boot-starter-validation'
     implementation 'org.springframework.boot:spring-boot-starter-webmvc'
+    implementation 'org.jsoup:jsoup:1.22.2'
     implementation 'org.springframework.boot:spring-boot-starter-websocket'
     // 이메일 인증번호 발송에 사용하는 JavaMailSender 기능을 추가합니다.
     implementation 'org.springframework.boot:spring-boot-starter-mail'

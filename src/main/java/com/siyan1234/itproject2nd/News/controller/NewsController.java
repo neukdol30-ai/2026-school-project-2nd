@@ -4,6 +4,7 @@ import com.siyan1234.itproject2nd.News.dto.NewsDto;
 import com.siyan1234.itproject2nd.News.service.NewsService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -19,7 +20,9 @@ public class NewsController {
     private final NewsService newsService;
 
     @GetMapping
-    public List<NewsDto> getMainNews() {
-        return newsService.getMainNews();
+    public List<NewsDto> getMainNews(
+            @RequestParam(defaultValue = "정치") String category
+    ) {
+        return newsService.getMainNews(category);
     }
 }

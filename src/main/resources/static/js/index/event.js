@@ -51,8 +51,42 @@ function handleAction(event) {
     const value = button.dataset.value;
 
     if (action === "toggle-edit") {
-        state.isEditMode = !state.isEditMode;
+        state.isSettingsOpen = true;
         render();
+        return;
+    }
+
+    if (action === "close-edit") {
+        state.isSettingsOpen = false;
+        render();
+        return;
+    }
+
+    if (action === "start-layout-edit") {
+        state.isSettingsOpen = false;
+        state.isEditMode = true;
+        render();
+        return;
+    }
+
+    if (action === "finish-layout-edit") {
+        state.isEditMode = false;
+        render();
+        return;
+    }
+
+    if (action === "select-news-category") {
+        const category = button.dataset.value;
+
+        if (!state.newsCategories.includes(category)) {
+            return;
+        }
+
+        if (state.newsCategory === category) {
+            return;
+        }
+
+        fetchNews(category);
         return;
     }
 
