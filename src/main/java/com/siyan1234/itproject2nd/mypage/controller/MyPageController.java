@@ -38,6 +38,7 @@ public class MyPageController {
      * 메인 홈 계정 위젯과 마이페이지 모달에서 공통으로 사용하는 현재 로그인 회원 정보입니다.
      * 비로그인 상태에서는 예외가 아니라 loggedIn=false 응답을 반환합니다.
      */
+    //메인 화면 로그인 사용자 영역 동기화, 마이페이지 모달 초기 데이터 조회
     @GetMapping("/me")
     public MyPageResponseDto myPage(
             @AuthenticationPrincipal CustomUserDetails customUserDetails,
@@ -56,6 +57,7 @@ public class MyPageController {
      * 내 정보 탭의 공개성 낮은 기본 정보 수정입니다.
      * 이름/닉네임처럼 별도 비밀번호 재확인이 필요하지 않은 항목만 처리합니다.
      */
+    // 내 정보 수정
     @PostMapping("/profile")
     public ResponseEntity<MyPageActionResponseDto> updateProfile(
             @AuthenticationPrincipal CustomUserDetails customUserDetails,
@@ -74,6 +76,7 @@ public class MyPageController {
      * 보안 설정 탭에서 개인정보를 표시/수정하기 전 일반 로그인 회원의 현재 비밀번호를 확인합니다.
      * 소셜 로그인 회원은 사이트 비밀번호가 없으므로 Service에서 안내 메시지를 반환합니다.
      */
+    // 보안 설정 본인 확인
     @PostMapping("/verify-password")
     public ResponseEntity<MyPageActionResponseDto> verifyPassword(
             @AuthenticationPrincipal CustomUserDetails customUserDetails,
@@ -98,6 +101,7 @@ public class MyPageController {
      * 보안 설정 탭의 개인정보 수정입니다.
      * 일반 회원은 verify-password 성공 세션이 있어야 하고, 소셜 회원은 현재 로그인 세션 기준으로 수정합니다.
      */
+    //보안 설정 개인정보 수정
     @PostMapping("/security")
     public ResponseEntity<MyPageActionResponseDto> updateSecurityProfile(
             @AuthenticationPrincipal CustomUserDetails customUserDetails,
@@ -119,6 +123,7 @@ public class MyPageController {
      * 비밀번호 변경 탭 전용 요청입니다.
      * 소셜 로그인 회원은 Service에서 차단하고 안내 메시지를 반환합니다.
      */
+    // 비밀번호 변경
     @PostMapping("/password")
     public ResponseEntity<MyPageActionResponseDto> changePassword(
             @AuthenticationPrincipal CustomUserDetails customUserDetails,
@@ -143,6 +148,7 @@ public class MyPageController {
      * 회원 탈퇴 요청입니다.
      * 탈퇴 성공 시 SecurityContext와 세션을 모두 정리해서 즉시 로그아웃 상태로 전환합니다.
      */
+    //회원 탈퇴
     @PostMapping("/withdraw")
     public ResponseEntity<MyPageActionResponseDto> withdraw(
             @AuthenticationPrincipal CustomUserDetails customUserDetails,
