@@ -36,8 +36,25 @@ button.danger {
     color: white;
 }
 
-/* 비활성화된 이동 버튼 */
-button:disabled {
-    opacity: 0.4;
-    cursor: not-allowed;
+/* 드래그 정렬 핸들 */
+.widget-drag-handle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    color: #6b7280;
+    cursor: grab;
+    user-select: none;
+}
+
+/* 실제로 끌고 있는 위젯 */
+.widget.is-dragging {
+    opacity: 0.45;
+}
+
+/* 드래그 중 놓을 수 있는 위젯 위치 */
+.widget.is-drag-over {
+    outline: 2px dashed #2563eb;
+    outline-offset: 2px;
 }

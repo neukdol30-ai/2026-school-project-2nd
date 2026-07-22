@@ -26,6 +26,11 @@
                     <small th:text="'오늘 작성 ' + ${dashboard.todayBoardCount} + '건'">오늘 작성 0건</small>
                 </article>
                 <article class="metric-card">
+                    <span>오늘 방문</span>
+                    <strong id="metricTodayVisits" th:text="${dashboard.todayVisitCount}">0</strong>
+                    <small>분석 쿠키 동의 기준</small>
+                </article>
+                <article class="metric-card">
                     <span>진행 중 상담</span>
                     <strong class="orange" id="metricOpenChats" th:text="${dashboard.openChatRoomCount}">0</strong>
                     <small id="metricTodayChatText" th:text="'오늘 접수 ' + ${dashboard.todayChatRoomCount} + '건'">오늘 접수 0건</small>
@@ -39,11 +44,6 @@
                     <span>종료된 상담</span>
                     <strong class="green" id="metricClosedChats" th:text="${dashboard.closedChatRoomCount}">0</strong>
                     <small id="metricTotalChatText" th:text="'전체 상담 ' + ${dashboard.totalChatRoomCount} + '건'">전체 상담 0건</small>
-                </article>
-                <article class="metric-card">
-                    <span>오늘 방문</span>
-                    <strong id="metricTodayVisits" th:text="${dashboard.todayVisitCount}">0</strong>
-                    <small>분석 쿠키 동의 기준</small>
                 </article>
             </section>
 

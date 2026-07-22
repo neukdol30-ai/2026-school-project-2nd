@@ -1,6 +1,5 @@
 package com.siyan1234.itproject2nd.chat.websocket;
 
-import com.siyan1234.itproject2nd.chat.websocket.ChatHandler;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.socket.config.annotation.EnableWebSocket;

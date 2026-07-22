@@ -19,55 +19,79 @@ function renderControlBox() {
     `;
 }
 
-//위젯 카드
-function renderWidget(widget, index, widgetCount) {
+// 위젯 공통 헤더
+function renderWidgetHeader(widget, index, widgetCount) {
     return `
-        <article class="widget ${widget.zone === "main" ? "main-widget" : "side-widget"}"
-        data-widget-id="${widget.id}">
-            <div class="widget-header">
-                <div>
-                    <div class="widget-title">
-                        ${widget.icon} ${widget.title}
-                    </div>
-                    <div class="widget-desc">
-                        ${widget.description}
-                    </div>
+        <div class="widget-header">
+            <div>
+                <div class="widget-title">
+                    ${widget.icon} ${widget.title}
                 </div>
-                
-                 <div class="widget-actions">
-                    ${state.isEditMode ? `
-                        <button
-                            data-action="move-up"
-                            data-id="${widget.id}"
-                            ${index === 0 ? "disabled" : ""}
-                        >
-                            ↑
-                        </button>
-
-                        <button
-                            data-action="move-down"
-                            data-id="${widget.id}"
-                            ${index === widgetCount - 1 ? "disabled" : ""}
-                        >
-                            ↓
-                        </button>
-
-                        <button
-                            class="danger"
-                            data-action="toggle-widget"
-                            data-id="${widget.id}"
-                        >
-                            숨김
-                        </button>
-                    ` : ""}
+                <div class="widget-desc">
+                    ${widget.description}
                 </div>
             </div>
 
+            <div class="widget-actions">
+                ${state.isEditMode ? `
+                    <span
+                        class="widget-drag-handle"
+                        draggable="true"
+                        data-drag-handle
+                        title="위젯 이동"
+                    >
+                        ↕
+                    </span>
+
+                    <button
+                        class="danger"
+                        data-action="toggle-widget"
+                        data-id="${widget.id}"
+                    >
+                        숨김
+                    </button>
+                ` : ""}
+            </div>
+        </div>
+    `;
+}
+
+// 위젯 카드
+function renderWidget(widget, index, widgetCount) {
+    return `
+        <article
+            class="widget ${widget.zone === "main" ? "main-widget" : "side-widget"}"
+            data-widget-id="${widget.id}"
+        >
+            ${renderWidgetHeader(widget, index, widgetCount)}
+
             ${widget.collapsed ? "" : `
-                <div class="widget-content">
+                <div class="widget-content" data-widget-content="${widget.id}">
                     ${renderWidgetContent(widget)}
                 </div>
             `}
+        </article>
+    `;
+}
+
+// 상단 좌측 고정 위젯 임시 화면
+function renderHeaderWidget() {
+    return `
+        <article class="widget header-widget">
+            <div class="widget-header">
+                <div>
+                    <div class="widget-title">✨ 빠른 위젯</div>
+                    <div class="widget-desc">
+                        나중에 날씨, 시계, 증권 등으로 변경할 수 있습니다.
+                    </div>
+                </div>
+            </div>
+
+            <div class="widget-content">
+                <p class="widget-desc">
+                    상단 고정 위젯 영역
+                </p>
+            </div>
         </article>
     `;
 }

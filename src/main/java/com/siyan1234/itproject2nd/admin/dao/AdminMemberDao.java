@@ -20,6 +20,10 @@ public interface AdminMemberDao {
 
     int countBannedMember(@Param("memberNo") Integer memberNo);
 
+    int countActiveAdminByNo(@Param("memberNo") Integer memberNo);
+
+    int countActiveAdminsExcept(@Param("memberNo") Integer memberNo);
+
     int updateRole(
             @Param("memberNo") Integer memberNo,
             @Param("role") String role

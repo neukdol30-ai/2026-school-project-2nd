@@ -34,3 +34,32 @@
     flex-direction: column;
     gap: 20px;
 }
+
+/* 상단 고정 영역: 좌측 위젯 / 중앙 로고 / 우측 로그인 */
+.dashboard-header {
+    display: grid;
+    grid-template-columns: 300px minmax(0, 1fr) 300px;
+    grid-template-areas: "widget logo auth";
+    gap: 24px;
+    align-items: stretch;
+    margin-bottom: 24px;
+}
+
+/* 상단 각 영역이 내용 때문에 가로로 밀려나는 것을 방지 */
+.header-widget-slot,
+.header-logo-slot,
+.header-auth-slot {
+    min-width: 0;
+}
+
+/* 좌측 위젯과 중앙 로고의 최소 높이 확보 */
+.header-widget-slot,
+.header-logo-slot {
+    min-height: 140px;
+}
+
+/* 상단 좌측 더미 위젯이 슬롯 높이를 채우도록 설정 */
+.header-widget-slot > .header-widget {
+    height: 100%;
+    box-sizing: border-box;
+}

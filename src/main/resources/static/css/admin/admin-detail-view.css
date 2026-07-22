@@ -1,0 +1,654 @@
+/*
+ * admin-detail-view.css
+ * 역할: 관리자 콘솔 내부 상세/수정 화면, 임베디드 상담방 화면 스타일입니다.
+ */
+
+.admin-edit-form {
+    display: grid;
+    gap: 18px;
+}
+
+.edit-summary-card {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 18px;
+    border: 1px solid var(--admin-line);
+    border-radius: 20px;
+    background: linear-gradient(135deg, #f8fbff, #f6f7ff);
+}
+
+.edit-summary-card strong {
+    display: block;
+    font-size: 20px;
+}
+
+.edit-summary-card span {
+    display: block;
+    margin-top: 4px;
+    color: var(--admin-muted);
+    font-weight: 700;
+}
+
+.admin-form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+}
+
+.admin-form-grid label {
+    display: grid;
+    gap: 8px;
+}
+
+.admin-form-grid label > span {
+    color: #475467;
+    font-size: 12px;
+    font-weight: 900;
+}
+
+.admin-form-grid input,
+.admin-form-grid select {
+    height: 44px;
+    padding: 0 13px;
+    border: 1px solid var(--admin-line);
+    border-radius: 13px;
+    color: var(--admin-text);
+    background: #ffffff;
+    font-weight: 800;
+    outline: none;
+}
+
+.admin-form-grid input[readonly] {
+    color: #667085;
+    background: #f8fafc;
+}
+
+.wide-field {
+    grid-column: 1 / -1;
+}
+
+.form-actions-row {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+}
+
+.primary-button,
+.form-link-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 44px;
+    padding: 0 18px;
+    border-radius: 13px;
+    font-weight: 900;
+}
+
+.primary-button {
+    border: 0;
+    color: #ffffff;
+    background: var(--admin-primary);
+    cursor: pointer;
+}
+
+.embedded-chat-room {
+    display: grid;
+    grid-template-columns: 300px minmax(0, 1fr);
+    gap: 18px;
+}
+
+.embedded-chat-side,
+.embedded-chat-panel {
+    border: 1px solid var(--admin-line);
+    border-radius: 24px;
+    background: #ffffff;
+    overflow: hidden;
+}
+
+.embedded-chat-side {
+    padding: 20px;
+}
+
+.side-title {
+    display: flex;
+    gap: 14px;
+    align-items: center;
+    padding: 16px;
+    border: 1px solid #dfe7f5;
+    border-radius: 20px;
+    background: linear-gradient(135deg, #f1f5ff, #f6fff9);
+}
+
+.side-title > span {
+    width: 52px;
+    height: 52px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 18px;
+    background: #ffffff;
+    font-size: 26px;
+}
+
+.side-title h3,
+.chat-header h3 {
+    margin: 0;
+}
+
+.side-title p,
+.chat-header p {
+    margin: 5px 0 0;
+    color: var(--admin-muted);
+    font-size: 13px;
+}
+
+.info-stack {
+    display: grid;
+    gap: 10px;
+    margin-top: 16px;
+}
+
+.info-card {
+    padding: 14px;
+    border: 1px solid var(--admin-line);
+    border-radius: 16px;
+    background: #f8fafc;
+}
+
+.info-card span {
+    display: block;
+    margin-bottom: 5px;
+    color: var(--admin-muted);
+    font-size: 12px;
+    font-weight: 900;
+}
+
+.info-card strong {
+    color: var(--admin-text);
+}
+
+.status-open { color: #16a34a !important; }
+.status-closed { color: #94a3b8 !important; }
+
+.side-actions {
+    display: grid;
+    gap: 10px;
+    margin-top: 18px;
+}
+
+.side-actions form { margin: 0; }
+
+.close-btn,
+.delete-btn {
+    width: 100%;
+    min-height: 44px;
+    border: 0;
+    border-radius: 14px;
+    color: #ffffff;
+    font-weight: 900;
+    cursor: pointer;
+}
+
+.close-btn { background: #111827; }
+.delete-btn { background: var(--admin-red); }
+
+.embedded-chat-panel {
+    min-height: 620px;
+    display: flex;
+    flex-direction: column;
+}
+
+.chat-header {
+    min-height: 92px;
+    padding: 20px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    border-bottom: 1px solid var(--admin-line);
+}
+
+.category-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 9px 12px;
+    border-radius: 999px;
+    color: var(--admin-primary);
+    background: var(--admin-primary-soft);
+    font-size: 13px;
+    font-weight: 900;
+    white-space: nowrap;
+}
+
+.notice-bar {
+    margin: 16px 20px 0;
+    padding: 12px 14px;
+    border-radius: 14px;
+    color: #475467;
+    background: #f8fafc;
+    font-size: 13px;
+    font-weight: 800;
+}
+
+.chat-body {
+    flex: 1;
+    margin: 16px 20px;
+    padding: 18px;
+    border: 1px solid var(--admin-line);
+    border-radius: 18px;
+    background: #f8fafc;
+    overflow-y: auto;
+}
+
+.chat-input-box {
+    display: flex;
+    gap: 10px;
+    padding: 0 20px 20px;
+}
+
+.chat-input-box input {
+    flex: 1;
+    height: 46px;
+    padding: 0 14px;
+    border: 1px solid var(--admin-line);
+    border-radius: 14px;
+    outline: none;
+    font-weight: 800;
+}
+
+.chat-input-box button {
+    min-width: 86px;
+    height: 46px;
+    border: 0;
+    border-radius: 14px;
+    color: #ffffff;
+    background: var(--admin-primary);
+    font-weight: 900;
+    cursor: pointer;
+}
+
+.chat-input-box input:disabled,
+.chat-input-box button:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+}
+
+.message-row {
+    display: flex;
+    margin-bottom: 12px;
+}
+
+.message-row.me { justify-content: flex-end; }
+.message-row.other { justify-content: flex-start; }
+
+.message-box { max-width: 72%; }
+
+.message-label {
+    margin-bottom: 4px;
+    color: var(--admin-muted);
+    font-size: 12px;
+    font-weight: 900;
+}
+
+.message-row.me .message-label { text-align: right; }
+
+.message-bubble {
+    padding: 12px 14px;
+    border-radius: 16px;
+    background: #ffffff;
+    color: var(--admin-text);
+    box-shadow: 0 8px 20px rgba(15, 23, 42, 0.06);
+    word-break: break-word;
+}
+
+.message-row.me .message-bubble {
+    color: #ffffff;
+    background: var(--admin-primary);
+}
+
+.message-meta {
+    display: flex;
+    justify-content: flex-end;
+    gap: 7px;
+    margin-top: 4px;
+    color: var(--admin-muted);
+    font-size: 11px;
+    font-weight: 800;
+}
+
+.system-row {
+    display: flex;
+    justify-content: center;
+    margin: 12px 0;
+}
+
+.system-message {
+    padding: 9px 12px;
+    border-radius: 999px;
+    color: #475467;
+    background: #e2e8f0;
+    font-size: 12px;
+    font-weight: 900;
+    text-align: center;
+}
+
+.system-time {
+    margin-top: 2px;
+    font-size: 10px;
+    opacity: 0.8;
+}
+
+@media (max-width: 1180px) {
+    .embedded-chat-room {
+        grid-template-columns: 1fr;
+    }
+
+    .embedded-chat-panel {
+        min-height: 560px;
+    }
+}
+
+@media (max-width: 760px) {
+    .admin-form-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .form-actions-row {
+        flex-direction: column;
+    }
+
+    .primary-button,
+    .form-link-button {
+        width: 100%;
+    }
+}
+
+/* 관리자 콘솔 게시글 상세 */
+.admin-board-detail-card {
+    padding: 24px;
+    border: 1px solid var(--admin-line);
+    border-radius: 22px;
+    background: linear-gradient(180deg, #ffffff, #fbfdff);
+}
+
+.admin-board-detail-meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    color: var(--admin-muted);
+    font-size: 12px;
+    font-weight: 900;
+}
+
+.admin-board-detail-card h3 {
+    margin: 18px 0 12px;
+    color: var(--admin-text);
+    font-size: 28px;
+    letter-spacing: -0.05em;
+}
+
+.admin-board-writer {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    margin-bottom: 22px;
+    color: var(--admin-muted);
+    font-size: 13px;
+}
+
+.admin-board-writer strong {
+    color: var(--admin-text);
+}
+
+.admin-board-content {
+    min-height: 260px;
+    padding: 24px;
+    border-radius: 18px;
+    background: #f8fafc;
+    color: #111827;
+    line-height: 1.8;
+    word-break: break-word;
+}
+
+.admin-board-content img,
+.comment-content img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 12px;
+}
+
+.admin-board-comment-section {
+    margin-top: 22px;
+}
+
+.compact-head {
+    margin-bottom: 14px;
+}
+
+.admin-board-comment-list {
+    display: grid;
+    gap: 12px;
+}
+
+.admin-board-comment-card {
+    display: flex;
+    gap: 14px;
+    padding: 18px;
+    border: 1px solid var(--admin-line);
+    border-radius: 18px;
+    background: #ffffff;
+}
+
+.comment-avatar {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 auto;
+    width: 42px;
+    height: 42px;
+    border-radius: 14px;
+    color: #ffffff;
+    background: var(--admin-primary);
+    font-weight: 900;
+}
+
+.comment-body {
+    min-width: 0;
+    flex: 1;
+}
+
+.comment-meta {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 10px;
+    color: var(--admin-muted);
+    font-size: 12px;
+    font-weight: 900;
+}
+
+.comment-content {
+    color: #111827;
+    line-height: 1.7;
+    word-break: break-word;
+}
+
+/* 관리자 게시글 등록/수정 폼 */
+.small-primary-button {
+    min-height: 38px;
+    padding: 0 14px;
+    border-radius: 12px;
+    font-size: 13px;
+    text-decoration: none;
+}
+
+.admin-board-form .admin-form-grid textarea {
+    width: 100%;
+    min-height: 360px;
+    padding: 14px;
+    border: 1px solid var(--admin-line);
+    border-radius: 14px;
+    color: var(--admin-text);
+    background: #ffffff;
+    font: inherit;
+    font-weight: 700;
+    line-height: 1.7;
+    resize: vertical;
+    outline: none;
+}
+
+.admin-board-form .admin-form-grid textarea:focus,
+.admin-board-form .admin-form-grid input:focus,
+.admin-board-form .admin-form-grid select:focus {
+    border-color: rgba(79, 99, 246, 0.58);
+    box-shadow: 0 0 0 4px rgba(79, 99, 246, 0.10);
+}
+
+.board-content-field small {
+    color: var(--admin-muted);
+    font-size: 12px;
+    font-weight: 800;
+}
+
+/* 관리자 문의 답변 등록/수정 */
+.admin-answer-form {
+    display: grid;
+    gap: 14px;
+    margin-bottom: 18px;
+    padding: 20px;
+    border: 1px solid rgba(79, 99, 246, 0.18);
+    border-radius: 20px;
+    background: linear-gradient(135deg, #f8fbff, #f7f8ff);
+}
+
+.answer-form-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+}
+
+.answer-form-head strong {
+    display: block;
+    color: var(--admin-text);
+    font-size: 18px;
+    font-weight: 900;
+}
+
+.answer-form-head span {
+    display: block;
+    margin-top: 4px;
+    color: var(--admin-muted);
+    font-size: 13px;
+    font-weight: 800;
+}
+
+.admin-answer-form textarea,
+.answer-edit-box textarea {
+    width: 100%;
+    padding: 14px;
+    border: 1px solid var(--admin-line);
+    border-radius: 14px;
+    color: var(--admin-text);
+    background: #ffffff;
+    font: inherit;
+    font-weight: 700;
+    line-height: 1.7;
+    resize: vertical;
+    outline: none;
+}
+
+.admin-answer-form textarea:focus,
+.answer-edit-box textarea:focus {
+    border-color: rgba(79, 99, 246, 0.58);
+    box-shadow: 0 0 0 4px rgba(79, 99, 246, 0.10);
+}
+
+.answer-action-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    margin-top: 16px;
+    padding-top: 14px;
+    border-top: 1px solid var(--admin-line);
+}
+
+.answer-edit-box {
+    flex: 1;
+    border: 1px solid var(--admin-line);
+    border-radius: 14px;
+    background: #f8fafc;
+}
+
+.answer-edit-box summary {
+    padding: 12px 14px;
+    color: var(--admin-primary);
+    font-size: 13px;
+    font-weight: 900;
+    cursor: pointer;
+}
+
+.answer-edit-box form {
+    display: grid;
+    gap: 10px;
+    padding: 0 14px 14px;
+}
+
+.answer-edit-actions {
+    display: flex;
+    justify-content: flex-end;
+}
+
+.inline-delete-form {
+    margin: 0;
+}
+
+.answer-action-row .danger-button {
+    min-height: 42px;
+    white-space: nowrap;
+}
+
+@media (max-width: 760px) {
+    .answer-form-head,
+    .answer-action-row {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .answer-form-head .primary-button,
+    .answer-action-row .danger-button {
+        width: 100%;
+    }
+}
+
+/* address-search common patch */
+.admin-address-row {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 8px;
+    align-items: center;
+}
+
+.admin-address-row .address-search-button {
+    min-height: 44px;
+    white-space: nowrap;
+}
+
+.admin-address-row input[readonly],
+.admin-form-grid input[readonly] {
+    background: #f8fafc;
+    cursor: default;
+}
+
+@media (max-width: 760px) {
+    .admin-address-row {
+        grid-template-columns: 1fr;
+    }
+
+    .admin-address-row .address-search-button {
+        width: 100%;
+    }
+}
