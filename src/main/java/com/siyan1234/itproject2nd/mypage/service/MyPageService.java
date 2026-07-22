@@ -35,13 +35,12 @@ public class MyPageService {
             return MyPageResponseDto.anonymous();
         }
 
-        MyPageResponseDto responseDto = new MyPageResponseDto();
-        responseDto.setLoggedIn(true);
-        responseDto.setProfile(profile);
-        responseDto.setActivity(myPageDao.findActivityByMemberNo(memberNo));
-        responseDto.setRecentBoards(myPageDao.findRecentBoards(memberNo));
-        responseDto.setRecentChats(myPageDao.findRecentChats(memberNo));
-        return responseDto;
+        return MyPageResponseDto.loggedIn(
+                profile,
+                myPageDao.findActivityByMemberNo(memberNo),
+                myPageDao.findRecentBoards(memberNo),
+                myPageDao.findRecentChats(memberNo)
+        );
     }
 
     /** 내 정보 탭의 기본 정보 수정입니다. */

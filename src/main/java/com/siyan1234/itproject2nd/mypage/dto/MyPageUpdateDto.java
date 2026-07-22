@@ -6,6 +6,11 @@ import org.springframework.format.annotation.DateTimeFormat;
 
 import java.time.LocalDate;
 
+/**
+ * 마이페이지 수정 요청 DTO입니다.
+ * 내 정보 탭에서는 name/nickname만 사용하고,
+ * 보안 설정 탭에서는 email/phone/birthDate/gender/address 계열을 사용합니다.
+ */
 @Getter
 @Setter
 public class MyPageUpdateDto {

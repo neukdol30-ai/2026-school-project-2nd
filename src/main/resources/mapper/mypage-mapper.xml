@@ -4,6 +4,12 @@
         "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.siyan1234.itproject2nd.mypage.dao.MyPageDao">
 
+    <!--
+        마이페이지 프로필 조회
+        - member 기본 정보
+        - social_account 연결 여부
+        - 연결된 provider 목록(KAKAO, NAVER 등)을 LISTAGG로 묶어서 응답
+    -->
     <select id="findProfileByNo" resultType="com.siyan1234.itproject2nd.mypage.dto.MyPageProfileDto">
         SELECT
             m.no,
@@ -38,6 +44,7 @@
         WHERE m.no = #{memberNo, jdbcType=NUMERIC}
     </select>
 
+    <!-- 내 정보 탭: 이름/닉네임만 수정 -->
     <update id="updateBasicProfile">
         UPDATE member
         SET
@@ -46,6 +53,7 @@
         WHERE no = #{memberNo, jdbcType=NUMERIC}
     </update>
 
+    <!-- 보안 설정 탭: 개인정보 수정 -->
     <update id="updateSecurityProfile">
         UPDATE member
         SET
@@ -59,18 +67,21 @@
         WHERE no = #{memberNo, jdbcType=NUMERIC}
     </update>
 
+    <!-- 비밀번호는 Service에서 PasswordEncoder로 암호화한 값만 저장 -->
     <update id="updatePassword">
         UPDATE member
         SET password = #{password, jdbcType=VARCHAR}
         WHERE no = #{memberNo, jdbcType=NUMERIC}
     </update>
 
+    <!-- 관리자 계정 보호를 위해 SQL에서도 role='USER' 조건을 한 번 더 확인 -->
     <delete id="deleteMe">
         DELETE FROM member
         WHERE no = #{memberNo, jdbcType=NUMERIC}
         AND role = 'USER'
     </delete>
 
+    <!-- 본인을 제외한 닉네임 중복 검사 -->
     <select id="countNicknameDuplicateExceptMe" resultType="int">
         SELECT COUNT(*)
         FROM member
@@ -78,6 +89,7 @@
         AND no != #{memberNo, jdbcType=NUMERIC}
     </select>
 
+    <!-- 본인을 제외한 이메일 중복 검사 -->
     <select id="countEmailDuplicateExceptMe" resultType="int">
         SELECT COUNT(*)
         FROM member
@@ -85,6 +97,7 @@
         AND no != #{memberNo, jdbcType=NUMERIC}
     </select>
 
+    <!-- 마이페이지 내 활동 요약 카드 -->
     <select id="findActivityByMemberNo" resultType="com.siyan1234.itproject2nd.mypage.dto.MyPageActivityDto">
         SELECT
             (SELECT COUNT(*)
@@ -105,6 +118,7 @@
         FROM dual
     </select>
 
+    <!-- 최근 게시글 3개 -->
     <select id="findRecentBoards" resultType="com.siyan1234.itproject2nd.mypage.dto.MyPageRecentBoardDto">
         SELECT
             no,
@@ -118,6 +132,7 @@
         FETCH FIRST 3 ROWS ONLY
     </select>
 
+    <!-- 최근 상담방 3개: 진행 중 상담을 먼저 보여줌 -->
     <select id="findRecentChats" resultType="com.siyan1234.itproject2nd.mypage.dto.MyPageRecentChatDto">
         SELECT
             room_no,
