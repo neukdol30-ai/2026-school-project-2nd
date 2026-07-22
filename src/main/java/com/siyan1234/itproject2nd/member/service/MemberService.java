@@ -62,7 +62,7 @@ public class MemberService {
 
             LocalDate oldestAllowed = today.minusYears(120); // (2) 과거 하한선 : today.minusYears(14)와 같은 방식(자동으로 매년 기준이 밀림)
             if (signupDto.getBirthDate().isBefore(oldestAllowed)) { // 하한선보다 더 과거 날짜면 차단
-                bindingResult.rejectValue("birthDate", "tooOldBirthDate", "올바른 생년월일을 입력해 주세요,");
+                bindingResult.rejectValue("birthDate", "tooOldBirthDate", "올바른 생년월일을 입력해 주세요.");
                 return true;
             }
 
@@ -93,7 +93,7 @@ public class MemberService {
 
         signupDto.setPassword(encodedPassword); // DTO의 password 값을 암호화된 비밀번호로 교체
 
-        memberDao.signup(signupDto); // 암호화된 비밀번호가 들어 있는 DTO를 DB에 INSERTㅊ
+        memberDao.signup(signupDto); // 암호화된 비밀번호가 들어 있는 DTO를 DB에 INSERT
     }
 
     public List<MemberDto> findAllMembers() {
