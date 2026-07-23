@@ -1,24 +1,3 @@
-// 메인 화면의 실제 로그인 정보 읽기
-function getLoginUserFromPage() {
-    const app = document.querySelector("#app");
-
-    if (
-        !app
-        || app.dataset.login !== "true"
-    ) {
-        return null;
-    }
-
-    return {
-        username:
-            app.dataset.memberId || "",
-
-        nickname:
-            app.dataset.name
-            || app.dataset.memberId
-            || "회원"
-    };
-}
 
 // 메인 대시보드 상태
 const state = {
@@ -33,7 +12,7 @@ const state = {
 
     // 실제 로그인 세션 정보 사용
     currentUser:
-        getLoginUserFromPage(),
+        null,
 
     myPage: null,
 
