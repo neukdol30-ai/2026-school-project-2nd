@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>일정 등록</title>
+
+    <link rel="stylesheet" href="/css/calendar.css">
+</head>
+<body>
+
+<div class="calendar-page">
+
+    <div class="calendar-detail">
+
+        <!-- 캘린더 화면으로 돌아가기 -->
+        <a th:href="@{/calendar(date=${date})}" class="back-link">
+            ‹ 캘린더로 돌아가기
+        </a>
+
+        <!-- 선택한 날짜 표시 -->
+        <div class="detail-header">
+            <h3 th:text="${date}">2026-07-15</h3>
+        </div>
+
+        <!-- 일정 등록 폼 -->
+        <form action="/calendar/write" method="post" class="write-form">
+
+            <!-- 어떤 날짜에 등록하는 일정인지 같이 넘김 -->
+            <input type="hidden" name="eventDate" th:value="${date}">
+
+            <label for="title">일정 제목</label>
+            <input type="text"
+                   id="title"
+                   name="title"
+                   placeholder="일정 제목을 입력하세요"
+                   required>
+
+            <label for="content">일정 내용</label>
+            <textarea id="content"
+                      name="content"
+                      placeholder="일정 내용을 입력하세요"></textarea>
+
+            <label for="location">장소</label>
+            <input type="text"
+                   id="location"
+                   name="location"
+                   placeholder="장소를 입력하세요">
+
+            <button type="submit" class="wide-blue-btn">
+                일정 저장
+            </button>
+
+        </form>
+
+    </div>
+
+</div>
+
+</body>
+</html>

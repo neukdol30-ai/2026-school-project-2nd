@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>캘린더</title>
+
+    <link rel="stylesheet" href="/css/calendar.css?v=20260722-1">
+</head>
+<body>
+
+<!-- JS에서 사용할 현재 날짜와 구글 연동 상태 -->
+<div class="calendar-page"
+     th:data-selected-date="${selectedDate}"
+     th:data-year="${year}"
+     th:data-month="${month}"
+     th:data-google-connected="${googleConnected}">
+
+    <!-- 캘린더 상단 -->
+    <header class="calendar-topbar">
+
+        <a href="/"
+           class="calendar-home-link">
+            ← 메인으로
+        </a>
+
+        <div class="calendar-topbar-title">
+
+            <strong>
+                캘린더
+            </strong>
+
+            <span>
+                내 일정과 구글 일정을 관리합니다.
+            </span>
+
+        </div>
+
+        <div class="calendar-topbar-actions">
+            <div class="theme-switch" role="group" aria-label="화면 테마 선택">
+                <span class="theme-switch-label">☀ 밝게</span>
+                <button type="button"
+                        id="themeToggle"
+                        class="theme-toggle"
+                        role="switch"
+                        aria-checked="false"
+                        aria-label="어두운 화면으로 전환">
+                    <span class="theme-toggle-knob"></span>
+                </button>
+                <span class="theme-switch-label">어둡게 ☾</span>
+            </div>
+        </div>
+
+    </header>
+
+
+    <!-- 왼쪽 메뉴와 오른쪽 본문 -->
+    <div class="calendar-layout">
+
+        <!-- 왼쪽 메뉴 -->
+        <aside class="calendar-sidebar">
+
+            <div class="calendar-sidebar-header">
+
+                <h1>
+                    캘린더
+                </h1>
+
+                <p>
+                    날짜를 선택하면 달력 아래에서
+                    일정을 확인할 수 있습니다.
+                </p>
+
+            </div>
+
+
+            <nav class="calendar-side-menu"
+                 aria-label="캘린더 메뉴">
+
+                <a href="#calendarMonthPanel"
+                   class="calendar-side-link active">
+                    <span>📅</span>
+                    월간 캘린더
+                </a>
+
+                <a href="#calendarDetailPanel"
+                   class="calendar-side-link">
+                    <span>📋</span>
+                    선택 날짜 일정
+                </a>
+
+            </nav>
+
+
+            <div class="calendar-sidebar-section">
+
+                <h2>
+                    내 캘린더
+                </h2>
+
+                <div class="calendar-check-item">
+
+                    <span class="calendar-color-dot local"></span>
+
+                    <span>
+                        일반 일정
+                    </span>
+
+                </div>
+
+                <div class="calendar-check-item">
+
+                    <span class="calendar-color-dot local"></span>
+
+                    <span>
+                        출처는 일정 아래에 표시
+                    </span>
+
+                </div>
+
+                <div class="calendar-check-item">
+
+                    <span class="calendar-color-dot holiday"></span>
+
+                    <span>
+                        대한민국 공휴일
+                    </span>
+
+                </div>
+
+            </div>
+
+
+            <div class="calendar-sidebar-section">
+
+                <h2>
+                    구글 캘린더
+                </h2>
+
+                <p th:if="${googleConnected}"
+                   class="calendar-connect-status connected">
+                    구글 캘린더 연결됨
+                </p>
+
+                <p th:if="${!googleConnected}"
+                   class="calendar-connect-status">
+                    구글 캘린더 연결 안 됨
+                </p>
+
+                <section id="sidebarUpcomingPanel"
+                         class="sidebar-upcoming"
+                         aria-labelledby="sidebarUpcomingTitle">
+
+                    <div class="sidebar-upcoming-header">
+                        <h2 id="sidebarUpcomingTitle">예정 일정</h2>
+                        <span id="sidebarUpcomingCount">0개</span>
+                    </div>
+
+                    <p id="sidebarUpcomingMessage"
+                       class="sidebar-upcoming-message">
+                        일정을 불러오는 중입니다.
+                    </p>
+
+                    <div id="sidebarUpcomingList"
+                         class="sidebar-upcoming-list">
+                    </div>
+
+                </section>
+
+            </div>
+
+        </aside>
+
+
+        <!-- 캘린더 본문 -->
+        <main class="calendar-main">
+
+            <div class="calendar-workspace">
+
+                <!-- 월간 캘린더 -->
+                <div id="calendarMonthPanel"
+                     class="calendar-box">
+
+                    <div class="calendar-header">
+
+                        <button type="button" id="prevMonth">
+                            ‹
+                        </button>
+
+                        <h2 id="calendarTitle"
+                            th:text="|${year}. ${month}.|">
+                            2026. 7.
+                        </h2>
+
+                        <button type="button" id="nextMonth">
+                            ›
+                        </button>
+
+                    </div>
+                    <!-- 구글 캘린더 연동 -->
+                    <div class="calendar-google-actions">
+
+                        <a th:if="${!googleConnected}"
+                           href="/google/calendar/connect"
+                           class="google-calendar-btn">
+                            구글 캘린더 연결
+                        </a>
+
+                        <a th:if="${googleConnected}"
+                           href="/google/calendar/sync"
+                           class="google-calendar-btn">
+                            구글 일정 동기화
+                        </a>
+
+                        <a th:if="${googleConnected}"
+                           href="/google/calendar/disconnect"
+                           class="google-calendar-btn danger"
+                           onclick="return confirm('구글 캘린더 연동을 해제할까요?')">
+                            구글 연동 해제
+                        </a>
+
+                    </div>
+
+
+                    <div th:if="${googleRequired}"
+                         class="calendar-message error">
+                        개인 일정을 사용하려면 구글 캘린더를 먼저 연결해주세요.
+                    </div>
+
+
+                    <!-- 요일 -->
+                    <div class="calendar-week">
+
+                        <div class="sunday">일</div>
+                        <div>월</div>
+                        <div>화</div>
+                        <div>수</div>
+                        <div>목</div>
+                        <div>금</div>
+                        <div class="saturday">토</div>
+
+                    </div>
+
+
+                    <!-- JS가 날짜 버튼을 넣는 영역 -->
+                    <div id="calendarDays"
+                         class="calendar-days">
+                    </div>
+
+
+                    <!-- 일정이 있는 날짜 데이터 -->
+                    <div id="eventDateData"
+                         style="display: none;">
+
+            <span th:each="day : ${calendarList}"
+                  th:if="${day.hasEvent}"
+                  th:data-date="${day.date}">
+            </span>
+
+                    </div>
+
+
+                    <!-- 대한민국 공휴일 데이터 -->
+                    <div id="holidayDateData"
+                         style="display: none;">
+
+            <span th:each="day : ${calendarList}"
+                  th:if="${day.holiday}"
+                  th:data-date="${day.date}"
+                  th:data-name="${day.holidayName}">
+            </span>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <!-- 달력 아래 예정 일정 -->
+            <div id="calendarDetailPanel"
+                 class="calendar-detail"
+                 hidden>
+
+                <div class="detail-header agenda-header">
+                    <div>
+                        <h3>선택 날짜 일정</h3>
+                        <p>달력에서 날짜를 선택하면 해당 날짜의 일정이 표시됩니다.</p>
+                    </div>
+
+                    <span id="selectedDateTitle"
+                          class="selected-date-badge"
+                          th:text="${selectedDate}">
+                2026-07-21
+            </span>
+                </div>
+
+                <div class="agenda-summary" aria-label="일정 요약">
+                    <div>
+                        <strong id="agendaTotalCount">0</strong>
+                        <span>선택 날짜 일정</span>
+                    </div>
+                    <div>
+                        <strong id="agendaGoogleCount">0</strong>
+                        <span>Google 일정</span>
+                    </div>
+                </div>
+
+
+                <!-- 성공 또는 오류 메시지 -->
+                <div id="eventMessage"
+                     class="calendar-message"
+                     hidden>
+                </div>
+
+
+                <!-- 일정 목록 전체 영역 -->
+                <div id="eventListArea"></div>
+                <!-- 일정 등록 -->
+                <div th:if="${googleConnected}">
+
+                    <button type="button"
+                            id="toggleEventWriteBtn"
+                            class="wide-blue-btn">
+                        일정 추가
+                    </button>
+
+                    <div id="eventWriteBox"
+                         class="event-write-box"
+                         hidden>
+
+                        <form id="eventWriteForm"
+                              class="event-write-form">
+
+                            <!--
+                                일정 추가일 때는 빈 값이고,
+                                수정 버튼을 누르면 수정할 일정 번호가 들어간다.
+                            -->
+                            <input type="hidden"
+                                   id="eventNo"
+                                   name="no"
+                                   value="">
+
+                            <label>
+                                날짜
+
+                                <input type="date"
+                                       id="eventDate"
+                                       name="eventDate"
+                                       th:value="${selectedDate}"
+                                       readonly>
+                            </label>
+
+
+                            <!--
+                                시간은 선택 입력이다.
+
+                                둘 다 비우면 날짜 일정으로 저장하고,
+                                둘 다 선택하면 시간 일정으로 저장한다.
+                            -->
+                            <div class="event-time-row">
+
+                                <!-- 시작 시간 -->
+                                <div class="event-time-field">
+                                    <span>시작 시간</span>
+
+                                    <div class="time-picker"
+                                         data-time-picker="start">
+
+                                        <button type="button"
+                                                class="time-picker-button"
+                                                aria-haspopup="listbox"
+                                                aria-expanded="false">
+
+                                    <span class="time-picker-value">
+                                        시간 선택
+                                    </span>
+
+                                            <span class="time-picker-arrow">
+                                       ⌄
+                                    </span>
+
+                                        </button>
+
+
+                                        <div class="time-picker-panel"
+                                             hidden>
+
+                                            <!-- JS가 30분 단위 시간 버튼을 생성 -->
+                                            <div class="time-option-list"
+                                                 role="listbox">
+                                            </div>
+
+
+                                            <!-- 10:37처럼 세부 시간 직접 입력 -->
+                                            <div class="time-direct-row">
+
+                                                <input type="text"
+                                                       class="time-direct-input"
+                                                       inputmode="numeric"
+                                                       maxlength="5"
+                                                       placeholder="직접 입력 10:37"
+                                                       autocomplete="off">
+
+                                                <button type="button"
+                                                        class="time-direct-apply">
+                                                    적용
+                                                </button>
+
+                                            </div>
+
+
+                                            <button type="button"
+                                                    class="time-clear-button">
+                                                시간 선택 안 함
+                                            </button>
+
+                                        </div>
+
+
+                                        <!-- 실제 서버로 전송되는 시작 시간 -->
+                                        <input type="hidden"
+                                               id="eventStartTime"
+                                               name="startTime">
+
+                                    </div>
+                                </div>
+
+
+                                <!-- 종료 시간 -->
+                                <div class="event-time-field">
+                                    <span>종료 시간</span>
+
+                                    <div class="time-picker"
+                                         data-time-picker="end">
+
+                                        <button type="button"
+                                                class="time-picker-button"
+                                                aria-haspopup="listbox"
+                                                aria-expanded="false">
+
+                                    <span class="time-picker-value">
+                                        시간 선택
+                                    </span>
+
+                                            <span class="time-picker-arrow">
+                                       ⌄
+                                    </span>
+
+                                        </button>
+
+
+                                        <div class="time-picker-panel"
+                                             hidden>
+
+                                            <!-- JS가 30분 단위 시간 버튼을 생성 -->
+                                            <div class="time-option-list"
+                                                 role="listbox">
+                                            </div>
+
+
+                                            <!-- 11:12처럼 세부 시간 직접 입력 -->
+                                            <div class="time-direct-row">
+
+                                                <input type="text"
+                                                       class="time-direct-input"
+                                                       inputmode="numeric"
+                                                       maxlength="5"
+                                                       placeholder="직접 입력 11:12"
+                                                       autocomplete="off">
+
+                                                <button type="button"
+                                                        class="time-direct-apply">
+                                                    적용
+                                                </button>
+
+                                            </div>
+
+
+                                            <button type="button"
+                                                    class="time-clear-button">
+                                                시간 선택 안 함
+                                            </button>
+
+                                        </div>
+
+
+                                        <!-- 실제 서버로 전송되는 종료 시간 -->
+                                        <input type="hidden"
+                                               id="eventEndTime"
+                                               name="endTime">
+
+                                    </div>
+                                </div>
+
+                            </div>
+
+
+                            <p class="event-time-help">
+                                시간은 선택사항이며, 목록은 30분 단위입니다.
+                            </p>
+
+
+
+                            <label>
+                                제목
+
+                                <input type="text"
+                                       id="eventTitle"
+                                       name="title"
+                                       maxlength="200"
+                                       placeholder="일정 제목"
+                                       required>
+                            </label>
+
+
+                            <label>
+                                내용
+
+                                <textarea id="eventContent"
+                                          name="content"
+                                          placeholder="일정 내용을 입력하세요."></textarea>
+                            </label>
+
+
+                            <label>
+                                장소
+
+                                <input type="text"
+                                       id="eventLocation"
+                                       name="location"
+                                       maxlength="200"
+                                       placeholder="장소">
+                            </label>
+
+
+                            <div class="event-form-actions">
+
+                                <button type="button"
+                                        id="cancelEventWriteBtn"
+                                        class="secondary-btn">
+                                    취소
+                                </button>
+
+                                <button type="submit"
+                                        id="saveEventBtn"
+                                        class="wide-blue-btn">
+                                    저장
+                                </button>
+
+                            </div>
+
+                        </form>
+
+                    </div>
+
+                </div>
+
+
+                <a th:if="${!googleConnected}"
+                   href="/google/calendar/connect"
+                   class="wide-blue-btn">
+                    구글 캘린더 연결 후 일정 추가
+                </a>
+
+            </div>
+
+        </main>
+
+    </div>
+
+</div>
+<script src="/js/calendar.js?v=20260721-4"></script>
+<script src="/js/calendar-time-picker.js?v=20260722-1"></script>
+
+</body>
+</html>
