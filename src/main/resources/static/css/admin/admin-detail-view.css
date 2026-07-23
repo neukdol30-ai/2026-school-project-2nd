@@ -365,6 +365,60 @@
     }
 }
 
+/*
+ * 관리자 상담 상세 스크롤 보정
+ * - 상담 상세 화면에서는 페이지 전체가 길어지는 대신 채팅 메시지 영역(chat-body)만 스크롤됩니다.
+ * - flex 자식 요소에 min-height: 0을 지정해야 내부 overflow-y: auto가 정상 동작합니다.
+ */
+#chatRoomView.admin-view.active .panel.full-panel {
+    display: flex;
+    flex-direction: column;
+    height: calc(100vh - 170px);
+    min-height: 0;
+    overflow: hidden;
+}
+
+#chatRoomView.admin-view.active .panel-head {
+    flex: 0 0 auto;
+}
+
+#chatRoomView.admin-view.active .embedded-chat-room {
+    flex: 1 1 auto;
+    min-height: 0;
+}
+
+#chatRoomView.admin-view.active .embedded-chat-side,
+#chatRoomView.admin-view.active .embedded-chat-panel {
+    min-height: 0;
+}
+
+#chatRoomView.admin-view.active .embedded-chat-side {
+    overflow-y: auto;
+    overscroll-behavior: contain;
+}
+
+#chatRoomView.admin-view.active .embedded-chat-panel {
+    height: 100%;
+}
+
+#chatRoomView.admin-view.active .chat-body {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+}
+
+@media (max-width: 900px) {
+    #chatRoomView.admin-view.active .panel.full-panel {
+        height: auto;
+        overflow: visible;
+    }
+
+    #chatRoomView.admin-view.active .embedded-chat-panel {
+        height: 620px;
+    }
+}
+
 /* 관리자 콘솔 게시글 상세 */
 .admin-board-detail-card {
     padding: 24px;
@@ -620,35 +674,6 @@
 
     .answer-form-head .primary-button,
     .answer-action-row .danger-button {
-        width: 100%;
-    }
-}
-
-/* address-search common patch */
-.admin-address-row {
-    display: grid;
-    grid-template-columns: 1fr auto;
-    gap: 8px;
-    align-items: center;
-}
-
-.admin-address-row .address-search-button {
-    min-height: 44px;
-    white-space: nowrap;
-}
-
-.admin-address-row input[readonly],
-.admin-form-grid input[readonly] {
-    background: #f8fafc;
-    cursor: default;
-}
-
-@media (max-width: 760px) {
-    .admin-address-row {
-        grid-template-columns: 1fr;
-    }
-
-    .admin-address-row .address-search-button {
         width: 100%;
     }
 }
