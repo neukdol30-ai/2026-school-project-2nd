@@ -314,4 +314,23 @@
         WHERE no = #{no}
     </delete>
 
+    <!-- 게시글 답변 상태 변경 -->
+    <update id="updateAnswerStatus">
+        UPDATE board
+        SET answer_status = #{answerStatus}
+        WHERE no = #{boardNo}
+    </update>
+
+    <!-- 게시글에 등록된 답변 개수 조회 -->
+    <select id="countCommentsByBoardNo"
+            parameterType="long"
+            resultType="int">
+
+        SELECT COUNT(*)
+        FROM board_comment
+        WHERE board_no = #{boardNo}
+
+    </select>
+
+
 </mapper>
