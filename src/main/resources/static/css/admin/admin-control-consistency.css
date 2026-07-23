@@ -1,0 +1,117 @@
+/*
+ * admin-control-consistency.css
+ * 역할: 관리자 콘솔의 버튼/링크형 액션 컨트롤 글자 줄바꿈과 크기 불일치를 통일합니다.
+ *
+ * 적용 이유:
+ * - 회원관리, 상담관리, 게시글관리에서 같은 버튼 역할인데 CSS 파일별로 line-height, min-width,
+ *   white-space 기준이 달라 한글이 한 글자씩 줄바꿈되는 문제가 있었습니다.
+ * - 기능별 CSS는 그대로 두고, 마지막 공통 보정 파일에서 액션 컨트롤의 공통 규칙만 정리합니다.
+ */
+
+/* 버튼형 링크/버튼 공통: 한글 버튼 문구가 글자 단위로 깨지지 않도록 합니다. */
+.admin-main .small-link,
+.admin-main .reset-link,
+.admin-main .ghost-button,
+.admin-main .danger-button,
+.admin-main .danger-action,
+.admin-main .table-action,
+.admin-main .primary-button,
+.admin-main .form-link-button,
+.admin-main .small-primary-button,
+.admin-main .top-link,
+.admin-main .logout-btn,
+.admin-main .close-btn,
+.admin-main .delete-btn,
+.admin-main .notification-toggle,
+.admin-main .address-search-button,
+.admin-main .admin-filter-form button,
+.admin-main .chat-input-box button,
+.admin-main .compact-chat-input-box button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 auto;
+    min-width: max-content;
+    line-height: 1.2;
+    text-align: center;
+    text-decoration: none;
+    white-space: nowrap;
+    word-break: keep-all;
+    overflow-wrap: normal;
+}
+
+/* 상단/테이블 액션 묶음은 버튼 자체가 아니라 묶음 단위로 줄바꿈되도록 합니다. */
+.admin-main .toolbar-actions,
+.admin-main .panel-actions,
+.admin-main .form-actions-row,
+.admin-main .answer-edit-actions,
+.admin-main .topbar-actions {
+    min-width: 0;
+}
+
+.admin-main .toolbar-actions,
+.admin-main .panel-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+}
+
+/* 선택/삭제 툴바 버튼은 화면이 넓을 때 균일한 폭을 확보합니다. */
+.admin-main .toolbar-actions .ghost-button {
+    min-width: 88px;
+}
+
+.admin-main .toolbar-actions .danger-button {
+    min-width: 96px;
+}
+
+/* 작은 링크 버튼은 메뉴 이동 용도이므로 지나치게 좁아지지 않게 합니다. */
+.admin-main .small-link,
+.admin-main .reset-link {
+    min-width: 74px;
+}
+
+/* 게시글/회원/상담 테이블 내부 액션 버튼은 줄바꿈 대신 버튼 단위로 감싸지게 합니다. */
+.admin-main .table-actions-inline,
+.admin-main .member-actions {
+    align-items: center;
+}
+
+.admin-main .table-action {
+    min-width: 58px;
+}
+
+/* 위험 버튼은 긴 문구가 들어와도 세로쓰기처럼 보이지 않도록 폭과 여백을 보장합니다. */
+.admin-main .danger-button {
+    min-width: 92px;
+}
+
+/* 관리자 상담 상세 미니 패널 하단 버튼 전용 정렬입니다. */
+#chatRoomView.admin-view.active .compact-side-navigation .small-link {
+    width: 100%;
+    min-width: 0;
+    padding-inline: 12px;
+}
+
+#chatRoomView.admin-view.active .compact-side-actions .close-btn,
+#chatRoomView.admin-view.active .compact-side-actions .delete-btn {
+    min-width: 0;
+}
+
+/* 아주 좁은 화면에서는 버튼이 화면 밖으로 밀리지 않게 한 줄 전체 폭을 사용합니다. */
+@media (max-width: 560px) {
+    .admin-main .toolbar-actions,
+    .admin-main .panel-actions,
+    .admin-main .form-actions-row {
+        align-items: stretch;
+    }
+
+    .admin-main .toolbar-actions .ghost-button,
+    .admin-main .toolbar-actions .danger-button,
+    .admin-main .form-actions-row .primary-button,
+    .admin-main .form-actions-row .form-link-button {
+        width: 100%;
+        min-width: 0;
+    }
+}
