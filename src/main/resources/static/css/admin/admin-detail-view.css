@@ -1,8 +1,15 @@
 /*
  * admin-detail-view.css
- * 역할: 관리자 콘솔 내부 상세/수정 화면, 임베디드 상담방 화면 스타일입니다.
+ * 역할: 관리자 콘솔 내부 상세/수정 화면, 임베디드 상담방 화면, 게시글 상세/폼 화면 스타일입니다.
+ * 정리 기준:
+ * 1. 상담 상세 화면의 중복 높이/레이아웃 보정 코드를 하나의 섹션으로 통합합니다.
+ * 2. 왼쪽 미니 패널은 세로 배치를 유지하고, 오른쪽 채팅 영역만 크게 사용합니다.
+ * 3. 채팅 메시지 영역만 내부 스크롤되도록 부모 요소까지 min-height: 0을 적용합니다.
  */
 
+/* =========================================================
+   관리자 수정 폼 공통
+   ========================================================= */
 .admin-edit-form {
     display: grid;
     gap: 18px;
@@ -83,6 +90,7 @@
     padding: 0 18px;
     border-radius: 13px;
     font-weight: 900;
+    text-decoration: none;
 }
 
 .primary-button {
@@ -92,14 +100,21 @@
     cursor: pointer;
 }
 
+/* =========================================================
+   관리자 상담 상세 - 기본 채팅 컴포넌트
+   ========================================================= */
 .embedded-chat-room {
     display: grid;
-    grid-template-columns: 300px minmax(0, 1fr);
-    gap: 18px;
+    grid-template-columns: 280px minmax(0, 1fr);
+    gap: 16px;
+    min-height: 0;
+    align-items: stretch;
 }
 
 .embedded-chat-side,
 .embedded-chat-panel {
+    min-width: 0;
+    min-height: 0;
     border: 1px solid var(--admin-line);
     border-radius: 24px;
     background: #ffffff;
@@ -107,13 +122,20 @@
 }
 
 .embedded-chat-side {
-    padding: 20px;
+    padding: 18px;
+}
+
+.embedded-chat-panel {
+    display: flex;
+    flex-direction: column;
+    min-height: 620px;
 }
 
 .side-title {
     display: flex;
-    gap: 14px;
     align-items: center;
+    gap: 14px;
+    min-width: 0;
     padding: 16px;
     border: 1px solid #dfe7f5;
     border-radius: 20px;
@@ -121,11 +143,12 @@
 }
 
 .side-title > span {
-    width: 52px;
-    height: 52px;
     display: flex;
     align-items: center;
     justify-content: center;
+    flex: 0 0 auto;
+    width: 52px;
+    height: 52px;
     border-radius: 18px;
     background: #ffffff;
     font-size: 26px;
@@ -145,11 +168,13 @@
 
 .info-stack {
     display: grid;
+    grid-template-columns: 1fr;
     gap: 10px;
     margin-top: 16px;
 }
 
 .info-card {
+    min-width: 0;
     padding: 14px;
     border: 1px solid var(--admin-line);
     border-radius: 16px;
@@ -165,11 +190,20 @@
 }
 
 .info-card strong {
+    display: block;
+    overflow: hidden;
     color: var(--admin-text);
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
-.status-open { color: #16a34a !important; }
-.status-closed { color: #94a3b8 !important; }
+.status-open {
+    color: #16a34a !important;
+}
+
+.status-closed {
+    color: #94a3b8 !important;
+}
 
 .side-actions {
     display: grid;
@@ -177,7 +211,9 @@
     margin-top: 18px;
 }
 
-.side-actions form { margin: 0; }
+.side-actions form {
+    margin: 0;
+}
 
 .close-btn,
 .delete-btn {
@@ -190,22 +226,46 @@
     cursor: pointer;
 }
 
-.close-btn { background: #111827; }
-.delete-btn { background: var(--admin-red); }
+.close-btn {
+    background: #111827;
+}
 
-.embedded-chat-panel {
-    min-height: 620px;
-    display: flex;
-    flex-direction: column;
+.delete-btn {
+    background: var(--admin-red);
+}
+
+.compact-side-navigation {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+}
+
+.compact-side-navigation .small-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 0;
+    min-height: 40px;
+    padding: 0 10px;
+    border-radius: 999px;
+    background: var(--admin-primary-soft);
+    color: var(--admin-primary);
+    font-size: 12px;
+    font-weight: 900;
+    line-height: 1.2;
+    text-align: center;
+    text-decoration: none;
+    white-space: nowrap;
 }
 
 .chat-header {
-    min-height: 92px;
-    padding: 20px 24px;
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: 16px;
+    flex: 0 0 auto;
+    min-height: 92px;
+    padding: 20px 24px;
     border-bottom: 1px solid var(--admin-line);
 }
 
@@ -223,6 +283,7 @@
 }
 
 .notice-bar {
+    flex: 0 0 auto;
     margin: 16px 20px 0;
     padding: 12px 14px;
     border-radius: 14px;
@@ -233,23 +294,27 @@
 }
 
 .chat-body {
-    flex: 1;
+    flex: 1 1 auto;
+    min-height: 0;
     margin: 16px 20px;
     padding: 18px;
     border: 1px solid var(--admin-line);
     border-radius: 18px;
     background: #f8fafc;
     overflow-y: auto;
+    overscroll-behavior: contain;
 }
 
 .chat-input-box {
     display: flex;
+    flex: 0 0 auto;
     gap: 10px;
     padding: 0 20px 20px;
 }
 
 .chat-input-box input {
-    flex: 1;
+    flex: 1 1 auto;
+    min-width: 0;
     height: 46px;
     padding: 0 14px;
     border: 1px solid var(--admin-line);
@@ -259,6 +324,7 @@
 }
 
 .chat-input-box button {
+    flex: 0 0 auto;
     min-width: 86px;
     height: 46px;
     border: 0;
@@ -280,10 +346,17 @@
     margin-bottom: 12px;
 }
 
-.message-row.me { justify-content: flex-end; }
-.message-row.other { justify-content: flex-start; }
+.message-row.me {
+    justify-content: flex-end;
+}
 
-.message-box { max-width: 72%; }
+.message-row.other {
+    justify-content: flex-start;
+}
+
+.message-box {
+    max-width: 72%;
+}
 
 .message-label {
     margin-bottom: 4px;
@@ -292,7 +365,9 @@
     font-weight: 900;
 }
 
-.message-row.me .message-label { text-align: right; }
+.message-row.me .message-label {
+    text-align: right;
+}
 
 .message-bubble {
     padding: 12px 14px;
@@ -340,86 +415,134 @@
     opacity: 0.8;
 }
 
-@media (max-width: 1180px) {
-    .embedded-chat-room {
-        grid-template-columns: 1fr;
-    }
-
-    .embedded-chat-panel {
-        min-height: 560px;
-    }
-}
-
-@media (max-width: 760px) {
-    .admin-form-grid {
-        grid-template-columns: 1fr;
-    }
-
-    .form-actions-row {
-        flex-direction: column;
-    }
-
-    .primary-button,
-    .form-link-button {
-        width: 100%;
-    }
-}
-
-/*
- * 관리자 상담 상세 스크롤 보정
- * - 상담 상세 화면에서는 페이지 전체가 길어지는 대신 채팅 메시지 영역(chat-body)만 스크롤됩니다.
- * - flex 자식 요소에 min-height: 0을 지정해야 내부 overflow-y: auto가 정상 동작합니다.
- */
-#chatRoomView.admin-view.active .panel.full-panel {
+/* =========================================================
+   관리자 상담 상세 - 미니 패널 레이아웃 전용
+   ========================================================= */
+#chatRoomView.admin-view.active .chat-room-panel {
     display: flex;
     flex-direction: column;
-    height: calc(100vh - 170px);
+    height: calc(100vh - 132px);
+    min-height: 620px;
+    padding: 22px;
+    overflow: hidden;
+}
+
+#chatRoomView.admin-view.active .compact-chat-layout {
+    flex: 1 1 auto;
+    display: grid;
+    grid-template-columns: 280px minmax(0, 1fr);
+    gap: 16px;
+    min-height: 0;
+    align-items: stretch;
+}
+
+#chatRoomView.admin-view.active .compact-chat-side,
+#chatRoomView.admin-view.active .compact-chat-panel {
     min-height: 0;
     overflow: hidden;
 }
 
-#chatRoomView.admin-view.active .panel-head {
+#chatRoomView.admin-view.active .compact-chat-side {
+    display: flex;
+    flex-direction: column;
+    align-self: start;
+    max-height: 100%;
+    padding: 18px;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+}
+
+#chatRoomView.admin-view.active .compact-side-title {
     flex: 0 0 auto;
+    padding: 14px;
 }
 
-#chatRoomView.admin-view.active .embedded-chat-room {
-    flex: 1 1 auto;
-    min-height: 0;
+#chatRoomView.admin-view.active .compact-side-title > span {
+    width: 46px;
+    height: 46px;
+    border-radius: 16px;
+    font-size: 23px;
 }
 
-#chatRoomView.admin-view.active .embedded-chat-side,
-#chatRoomView.admin-view.active .embedded-chat-panel {
-    min-height: 0;
+#chatRoomView.admin-view.active .compact-side-title h3 {
+    overflow: hidden;
+    font-size: 18px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
-#chatRoomView.admin-view.active .embedded-chat-side {
-    overflow-y: auto;
-    overscroll-behavior: contain;
+#chatRoomView.admin-view.active .compact-info-stack {
+    flex: 0 0 auto;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 10px;
+    margin-top: 14px;
+    overflow: visible;
 }
 
-#chatRoomView.admin-view.active .embedded-chat-panel {
+#chatRoomView.admin-view.active .compact-info-card {
+    width: 100%;
+    padding: 13px 14px;
+}
+
+#chatRoomView.admin-view.active .compact-info-card strong {
+    font-size: 17px;
+    font-weight: 900;
+    line-height: 1.3;
+}
+
+#chatRoomView.admin-view.active .compact-side-actions {
+    flex: 0 0 auto;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 10px;
+    margin-top: 14px;
+}
+
+#chatRoomView.admin-view.active .compact-side-actions form {
+    display: block;
+    width: 100%;
+    margin: 0;
+}
+
+#chatRoomView.admin-view.active .compact-side-actions .close-btn,
+#chatRoomView.admin-view.active .compact-side-actions .delete-btn {
+    min-height: 46px;
+    white-space: nowrap;
+}
+
+#chatRoomView.admin-view.active .compact-chat-panel {
+    display: flex;
+    flex-direction: column;
     height: 100%;
+    min-height: 0;
 }
 
-#chatRoomView.admin-view.active .chat-body {
+#chatRoomView.admin-view.active .compact-notice-bar {
+    margin: 16px 16px 0;
+    padding: 12px 14px;
+}
+
+#chatRoomView.admin-view.active .compact-chat-body {
     flex: 1 1 auto;
     min-height: 0;
+    margin: 14px 16px;
     overflow-y: auto;
     overscroll-behavior: contain;
 }
 
-@media (max-width: 900px) {
-    #chatRoomView.admin-view.active .panel.full-panel {
-        height: auto;
-        overflow: visible;
-    }
-
-    #chatRoomView.admin-view.active .embedded-chat-panel {
-        height: 620px;
-    }
+#chatRoomView.admin-view.active .compact-chat-input-box {
+    padding: 0 16px 16px;
 }
 
-/* 관리자 콘솔 게시글 상세 */
+#chatRoomView.admin-view.active .compact-chat-input-box input,
+#chatRoomView.admin-view.active .compact-chat-input-box button {
+    height: 50px;
+}
+
+/* =========================================================
+   관리자 게시글 상세
+   ========================================================= */
 .admin-board-detail-card {
     padding: 24px;
     border: 1px solid var(--admin-line);
@@ -530,7 +653,9 @@
     word-break: break-word;
 }
 
-/* 관리자 게시글 등록/수정 폼 */
+/* =========================================================
+   관리자 게시글 등록/수정 폼
+   ========================================================= */
 .small-primary-button {
     min-height: 38px;
     padding: 0 14px;
@@ -567,7 +692,9 @@
     font-weight: 800;
 }
 
-/* 관리자 문의 답변 등록/수정 */
+/* =========================================================
+   관리자 문의 답변 등록/수정
+   ========================================================= */
 .admin-answer-form {
     display: grid;
     gap: 14px;
@@ -665,7 +792,113 @@
     white-space: nowrap;
 }
 
-@media (max-width: 760px) {
+/* =========================================================
+   반응형
+   ========================================================= */
+@media (max-width: 1180px) {
+    .embedded-chat-room {
+        grid-template-columns: 260px minmax(0, 1fr);
+    }
+}
+
+@media (max-width: 1100px) {
+    #chatRoomView.admin-view.active .chat-room-panel {
+        height: calc(100vh - 116px);
+        min-height: 620px;
+        padding: 18px;
+    }
+
+    #chatRoomView.admin-view.active .compact-chat-layout {
+        grid-template-columns: 1fr;
+        grid-template-rows: auto minmax(0, 1fr);
+        gap: 12px;
+    }
+
+    #chatRoomView.admin-view.active .compact-chat-side {
+        display: grid;
+        grid-template-columns: minmax(220px, 1.2fr) minmax(0, 2fr);
+        gap: 12px;
+        align-self: stretch;
+        overflow: visible;
+    }
+
+    #chatRoomView.admin-view.active .compact-side-title {
+        min-width: 0;
+    }
+
+    #chatRoomView.admin-view.active .compact-info-stack {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 8px;
+        margin-top: 0;
+    }
+
+    #chatRoomView.admin-view.active .compact-info-card {
+        padding: 11px 12px;
+    }
+
+    #chatRoomView.admin-view.active .compact-info-card span {
+        margin-bottom: 4px;
+        font-size: 11px;
+    }
+
+    #chatRoomView.admin-view.active .compact-info-card strong {
+        font-size: 15px;
+    }
+
+    #chatRoomView.admin-view.active .compact-side-actions {
+        grid-column: 1 / -1;
+        grid-template-columns: minmax(0, 1fr) auto;
+        align-items: stretch;
+        margin-top: 0;
+    }
+
+    #chatRoomView.admin-view.active .compact-side-navigation {
+        min-width: 220px;
+    }
+
+    #chatRoomView.admin-view.active .compact-side-actions .close-btn,
+    #chatRoomView.admin-view.active .compact-side-actions .delete-btn,
+    #chatRoomView.admin-view.active .compact-side-navigation .small-link {
+        min-height: 42px;
+    }
+}
+
+@media (max-width: 860px) {
+    .admin-form-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .form-actions-row {
+        flex-direction: column;
+    }
+
+    .primary-button,
+    .form-link-button {
+        width: 100%;
+    }
+
+    #chatRoomView.admin-view.active .chat-room-panel {
+        height: calc(100vh - 104px);
+        min-height: 580px;
+        padding: 16px;
+    }
+
+    #chatRoomView.admin-view.active .compact-chat-side {
+        grid-template-columns: 1fr;
+    }
+
+    #chatRoomView.admin-view.active .compact-info-stack {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    #chatRoomView.admin-view.active .compact-side-actions {
+        grid-template-columns: 1fr;
+    }
+
+    #chatRoomView.admin-view.active .compact-side-navigation {
+        min-width: 0;
+    }
+
     .answer-form-head,
     .answer-action-row {
         flex-direction: column;
@@ -675,5 +908,44 @@
     .answer-form-head .primary-button,
     .answer-action-row .danger-button {
         width: 100%;
+    }
+}
+
+@media (max-width: 560px) {
+    #chatRoomView.admin-view.active .chat-room-panel {
+        height: calc(100vh - 92px);
+        min-height: 540px;
+        padding: 12px;
+    }
+
+    #chatRoomView.admin-view.active .compact-info-stack {
+        grid-template-columns: 1fr;
+    }
+
+    #chatRoomView.admin-view.active .compact-created-card {
+        display: none;
+    }
+
+    #chatRoomView.admin-view.active .compact-side-navigation {
+        grid-template-columns: 1fr;
+    }
+
+    #chatRoomView.admin-view.active .compact-notice-bar {
+        margin: 12px 12px 0;
+        font-size: 12px;
+    }
+
+    #chatRoomView.admin-view.active .compact-chat-body {
+        margin: 12px;
+        padding: 14px;
+    }
+
+    #chatRoomView.admin-view.active .compact-chat-input-box {
+        gap: 8px;
+        padding: 0 12px 12px;
+    }
+
+    #chatRoomView.admin-view.active .compact-chat-input-box button {
+        min-width: 72px;
     }
 }
