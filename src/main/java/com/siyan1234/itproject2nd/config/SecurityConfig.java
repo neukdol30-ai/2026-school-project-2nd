@@ -1,9 +1,6 @@
 package com.siyan1234.itproject2nd.config;
 
-import com.siyan1234.itproject2nd.config.handler.CustomAccessDeniedHandler;
-import com.siyan1234.itproject2nd.config.handler.CustomAuthenticationEntryPoint;
-import com.siyan1234.itproject2nd.config.handler.CustomLoginFailureHandler;
-import com.siyan1234.itproject2nd.config.handler.CustomLoginSuccessHandler;
+import com.siyan1234.itproject2nd.config.handler.*;
 import com.siyan1234.itproject2nd.config.security.AdminSessionGuardFilter;
 import com.siyan1234.itproject2nd.config.security.SecurityAuthority;
 import com.siyan1234.itproject2nd.config.security.SecurityPaths;
@@ -33,6 +30,7 @@ public class SecurityConfig {
     private final CustomAccessDeniedHandler customAccessDeniedHandler;
     private final AdminSessionGuardFilter adminSessionGuardFilter;
 
+    private final OAuth2LoginFailureHandler oAuth2LoginFailureHandler; // STEP 1 신규. 소셜 실패 전용
     private final OAuth2DetailsService oAuth2DetailsService;
 
     @Bean
@@ -63,7 +61,7 @@ public class SecurityConfig {
                 .oauth2Login(oauth2 -> oauth2
                         .loginPage("/member/login")
                         .defaultSuccessUrl("/", true)
-                        .failureUrl("/member/login?error=social")
+                        .failureHandler(oAuth2LoginFailureHandler) // 실패 사유를 세션에 담고 로그인 화면으로 보냄
                         .userInfoEndpoint(userInfo -> userInfo.userService(oAuth2DetailsService))
                 )
                 // 3 로그아웃 설정
