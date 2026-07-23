@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>카카오맵 API 테스트</title>
+    <link rel="stylesheet" th:href="@{/css/kakao-map.css}">
+    <script defer th:src="@{/js/kakao-map.js}"></script>
+</head>
+<body>
+<div class="kakao-map-page">
+    <header class="map-hero">
+        <div>
+            <span class="eyebrow">KAKAO MAP API</span>
+            <h1>카카오맵 1차 기능 테스트</h1>
+            <p>주소/좌표 변환과 장소 검색을 먼저 연결합니다. 정적 지도와 경로 조회는 다음 패치에서 이어서 연결합니다.</p>
+        </div>
+        <a class="home-link" href="/index.html">메인으로</a>
+    </header>
+
+    <main class="map-grid">
+        <section class="map-card">
+            <div class="card-head">
+                <span class="card-icon">📍</span>
+                <div>
+                    <h2>주소 → 좌표 변환</h2>
+                    <p>도로명/지번 주소를 입력하면 좌표 x, y를 조회합니다.</p>
+                </div>
+            </div>
+
+            <form class="map-form" data-kakao-form="address">
+                <label>
+                    <span>주소 검색어</span>
+                    <input type="text" name="query" placeholder="예: 서울 강남구 테헤란로 152" autocomplete="off" required>
+                </label>
+                <button type="submit">주소 검색</button>
+            </form>
+
+            <div class="result-box" data-result="address"></div>
+        </section>
+
+        <section class="map-card">
+            <div class="card-head">
+                <span class="card-icon">🧭</span>
+                <div>
+                    <h2>좌표 → 주소 변환</h2>
+                    <p>WGS84 좌표 x, y를 입력하면 행정 주소를 조회합니다.</p>
+                </div>
+            </div>
+
+            <form class="map-form two-column" data-kakao-form="coord">
+                <label>
+                    <span>x 좌표</span>
+                    <input type="text" name="x" placeholder="예: 127.02758" autocomplete="off" required>
+                </label>
+                <label>
+                    <span>y 좌표</span>
+                    <input type="text" name="y" placeholder="예: 37.49794" autocomplete="off" required>
+                </label>
+                <button type="submit">주소 변환</button>
+            </form>
+
+            <div class="result-box" data-result="coord"></div>
+        </section>
+
+        <section class="map-card wide-card">
+            <div class="card-head">
+                <span class="card-icon">🔎</span>
+                <div>
+                    <h2>장소 검색</h2>
+                    <p>키워드로 장소를 검색합니다. 좌표를 함께 넣으면 주변 검색과 거리순 정렬이 가능합니다.</p>
+                </div>
+            </div>
+
+            <form class="map-form place-form" data-kakao-form="place">
+                <label class="wide-field">
+                    <span>장소 키워드</span>
+                    <input type="text" name="query" placeholder="예: 강남역 카페" autocomplete="off" required>
+                </label>
+                <label>
+                    <span>중심 x 좌표</span>
+                    <input type="text" name="x" placeholder="선택 입력" autocomplete="off">
+                </label>
+                <label>
+                    <span>중심 y 좌표</span>
+                    <input type="text" name="y" placeholder="선택 입력" autocomplete="off">
+                </label>
+                <label>
+                    <span>반경 meter</span>
+                    <input type="number" name="radius" placeholder="예: 1000" min="1" max="20000">
+                </label>
+                <label>
+                    <span>정렬</span>
+                    <select name="sort">
+                        <option value="accuracy">정확도순</option>
+                        <option value="distance">거리순</option>
+                    </select>
+                </label>
+                <button type="submit">장소 검색</button>
+            </form>
+
+            <div class="result-box" data-result="place"></div>
+        </section>
+
+        <section class="map-card disabled-card">
+            <div class="card-head">
+                <span class="card-icon">🗺️</span>
+                <div>
+                    <h2>정적 지도 조회</h2>
+                    <p>2차 패치에서 백엔드 이미지 프록시 방식으로 연결할 예정입니다.</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="map-card disabled-card">
+            <div class="card-head">
+                <span class="card-icon">🚗</span>
+                <div>
+                    <h2>경로 조회</h2>
+                    <p>3차 패치에서 출발지/도착지 좌표 기반 경로 조회를 연결할 예정입니다.</p>
+                </div>
+            </div>
+        </section>
+    </main>
+</div>
+</body>
+</html>
