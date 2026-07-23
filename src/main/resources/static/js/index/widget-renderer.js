@@ -32,41 +32,64 @@ function renderControlBox() {
     `;
 }
 
+// 일정과 캘린더는 네 기존 제목 디자인 사용
+function isScheduleCalendarWidget(widget) {
+    return widget.id === 3 || widget.id === 7;
+}
+
 // 위젯 공통 헤더
 function renderWidgetHeader(
     widget,
     index,
     widgetCount
 ) {
+    const useCalendarDesign =
+        isScheduleCalendarWidget(widget);
+
     return `
         <div class="widget-header">
             <div>
                 <div class="widget-title">
-                    ${widget.title}
+                    ${
+        useCalendarDesign && widget.icon
+            ? `${widget.icon} `
+            : ""
+    }${widget.title}
                 </div>
+
+                ${
+        useCalendarDesign && widget.description
+            ? `
+                            <div class="widget-desc">
+                                ${widget.description}
+                            </div>
+                        `
+            : ""
+    }
             </div>
 
             <div class="widget-actions">
-                ${state.isEditMode
-        ? `
-                        <span
-                            class="widget-move-guide"
-                            title="더블클릭하여 이동"
-                            aria-label="더블클릭하여 위젯 이동"
-                        >
-                            ↕
-                        </span>
+                ${
+        state.isEditMode
+            ? `
+                            <span
+                                class="widget-move-guide"
+                                title="더블클릭하여 이동"
+                            >
+                                ↕
+                            </span>
 
-                        <button
-                            class="danger"
-                            type="button"
-                            data-action="toggle-widget"
-                            data-id="${widget.id}"
-                        >
-                            숨김
-                        </button>
-                    `
-        : ""}
+                            <button
+                                class="danger"
+                                type="button"
+                                data-action="toggle-widget"
+                                data-id="${widget.id}"
+                            >
+                                숨김
+                            </button>
+                        `
+            : ""
+    }
             </div>
         </div>
     `;
@@ -97,21 +120,23 @@ function renderWidget(
         widgetCount
     )}
 
-            ${widget.collapsed
-        ? ""
-        : `
-                    <div
-                        class="widget-content"
-                        data-widget-content="${widget.id}"
-                    >
-                        ${renderWidgetContent(widget)}
-                    </div>
-                `}
+            ${
+        widget.collapsed
+            ? ""
+            : `
+                        <div
+                            class="widget-content"
+                            data-widget-content="${widget.id}"
+                        >
+                            ${renderWidgetContent(widget)}
+                        </div>
+                    `
+    }
         </article>
     `;
 }
 
-// 상단 좌측 현재시간 위젯
+// 상단 현재시간 위젯
 function renderHeaderWidget() {
     const headerWidget =
         state.widgets.find((widget) => {
@@ -159,7 +184,7 @@ function renderHeaderWidget() {
     `;
 }
 
-// 위젯 종류별 내용 연결
+// 위젯 내용 연결
 function renderWidgetContent(widget) {
     if (widget.type === "news") {
         return renderNewsWidget();

@@ -244,7 +244,7 @@ const state = {
             id: 3,
             zone: "main",
             type: "schedule",
-            title: "오늘 일정",
+            title: "예정 일정",
             visible: true,
             collapsed: false,
             orderNo: 2
@@ -278,9 +278,9 @@ const state = {
         },
         {
             id: 7,
-            zone: "side",
+            zone: "main",
             type: "miniCalendar",
-            title: "미니 캘린더",
+            title: "월간 캘린더",
             visible: true,
             collapsed: false,
             orderNo: 3

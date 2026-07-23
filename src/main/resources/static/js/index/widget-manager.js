@@ -1,5 +1,82 @@
+// 예정 일정과 월간 캘린더 위젯 ID
+const SCHEDULE_WIDGET_ID = 3;
+const CALENDAR_WIDGET_ID = 7;
+
+// 예정 일정과 월간 캘린더를 메인 영역에서 항상 붙여 배치
+function normalizeScheduleCalendarGroup() {
+    const scheduleWidget =
+        state.widgets.find((widget) => {
+            return widget.id === SCHEDULE_WIDGET_ID;
+        });
+
+    const calendarWidget =
+        state.widgets.find((widget) => {
+            return widget.id === CALENDAR_WIDGET_ID;
+        });
+
+    if (!scheduleWidget || !calendarWidget) {
+        return;
+    }
+
+    scheduleWidget.zone = "main";
+    calendarWidget.zone = "main";
+
+    const mainWidgets =
+        state.widgets
+            .filter((widget) => {
+                return widget.zone === "main";
+            })
+            .sort((a, b) => {
+                return a.orderNo - b.orderNo;
+            });
+
+    const scheduleIndex =
+        mainWidgets.findIndex((widget) => {
+            return widget.id === SCHEDULE_WIDGET_ID;
+        });
+
+    const calendarIndex =
+        mainWidgets.findIndex((widget) => {
+            return widget.id === CALENDAR_WIDGET_ID;
+        });
+
+    const existingIndexes = [
+        scheduleIndex,
+        calendarIndex
+    ].filter((index) => {
+        return index >= 0;
+    });
+
+    const groupIndex =
+        existingIndexes.length > 0
+            ? Math.min(...existingIndexes)
+            : mainWidgets.length;
+
+    const arrangedWidgets =
+        mainWidgets.filter((widget) => {
+            return widget.id !== SCHEDULE_WIDGET_ID
+                && widget.id !== CALENDAR_WIDGET_ID;
+        });
+
+    arrangedWidgets.splice(
+        Math.min(
+            groupIndex,
+            arrangedWidgets.length
+        ),
+        0,
+        scheduleWidget,
+        calendarWidget
+    );
+
+    arrangedWidgets.forEach((widget, index) => {
+        widget.orderNo = index + 1;
+    });
+}
+
 // 메인 위젯 조회
 function getMainWidgets() {
+    normalizeScheduleCalendarGroup();
+
     return state.widgets
         .filter((widget) => {
             return widget.visible
@@ -65,7 +142,7 @@ function updateFollowColumn() {
     const sideHeight =
         sideList.getBoundingClientRect().height;
 
-    if (mainHeight === sideHeight) {
+    if (Math.abs(mainHeight - sideHeight) < 1) {
         return;
     }
 
@@ -149,11 +226,10 @@ function animateWidgetChanges(prevPositions) {
 
 // 위젯 표시 숨김
 function toggleWidget(id) {
-    const widget = state.widgets.find(
-        (item) => {
+    const widget =
+        state.widgets.find((item) => {
             return item.id === id;
-        }
-    );
+        });
 
     if (!widget) {
         return;
@@ -161,16 +237,16 @@ function toggleWidget(id) {
 
     widget.visible = !widget.visible;
 
+    normalizeScheduleCalendarGroup();
     render();
 }
 
 // 위젯 접기 펼치기
 function toggleCollapse(id) {
-    const widget = state.widgets.find(
-        (item) => {
+    const widget =
+        state.widgets.find((item) => {
             return item.id === id;
-        }
-    );
+        });
 
     if (!widget) {
         return;
@@ -211,6 +287,10 @@ function updateWidgetFrame(
         widget.zone === "main"
             ? "main-widget"
             : "side-widget"
+    } ${
+        state.isEditMode
+            ? "is-layout-editing"
+            : ""
     }`;
 
     const header =
@@ -267,6 +347,10 @@ function updateWidgetFrame(
 
 // 특정 영역의 위젯 목록 동기화
 function syncWidgetList(zone) {
+    if (zone === "main") {
+        normalizeScheduleCalendarGroup();
+    }
+
     const widgetList =
         document.querySelector(
             `[data-widget-list="${zone}"]`
@@ -358,11 +442,10 @@ function syncWidgetList(zone) {
 
 // 특정 위젯 내용만 다시 그리기
 function refreshWidgetContent(widgetId) {
-    const widget = state.widgets.find(
-        (item) => {
+    const widget =
+        state.widgets.find((item) => {
             return item.id === widgetId;
-        }
-    );
+        });
 
     if (!widget) {
         return;
@@ -433,6 +516,8 @@ function saveWidgetOrderToStorage() {
     if (!memberId) {
         return;
     }
+
+    normalizeScheduleCalendarGroup();
 
     const savedOrder = {
         main: state.widgets
@@ -518,6 +603,7 @@ function loadWidgetOrderForCurrentUser() {
         getWidgetOrderMemberId();
 
     if (!memberId) {
+        normalizeScheduleCalendarGroup();
         return false;
     }
 
@@ -525,6 +611,7 @@ function loadWidgetOrderForCurrentUser() {
         loadedWidgetOrderMemberId
         === memberId
     ) {
+        normalizeScheduleCalendarGroup();
         return false;
     }
 
@@ -542,6 +629,7 @@ function loadWidgetOrderForCurrentUser() {
         memberId;
 
     if (!savedText) {
+        normalizeScheduleCalendarGroup();
         return false;
     }
 
@@ -559,6 +647,9 @@ function loadWidgetOrderForCurrentUser() {
             savedOrder.side
         );
 
+        normalizeScheduleCalendarGroup();
+        saveWidgetOrderToStorage();
+
         return true;
     } catch (error) {
         console.error(
@@ -569,6 +660,8 @@ function loadWidgetOrderForCurrentUser() {
         localStorage.removeItem(
             storageKey
         );
+
+        normalizeScheduleCalendarGroup();
 
         return false;
     }
@@ -624,6 +717,7 @@ function saveWidgetOrderFromDom(zone) {
             index + 1;
     });
 
+    normalizeScheduleCalendarGroup();
     saveWidgetOrderToStorage();
 
     requestAnimationFrame(
