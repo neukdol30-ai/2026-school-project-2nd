@@ -5,6 +5,7 @@
  * 1. 상담 상세 화면의 중복 높이/레이아웃 보정 코드를 하나의 섹션으로 통합합니다.
  * 2. 왼쪽 미니 패널은 세로 배치를 유지하고, 오른쪽 채팅 영역만 크게 사용합니다.
  * 3. 채팅 메시지 영역만 내부 스크롤되도록 부모 요소까지 min-height: 0을 적용합니다.
+ * 4. 관리자 콘솔 fragment에서 사용하지 않는 legacy 헤더 스타일은 legacy 전용 CSS로 분리합니다.
  */
 
 /* =========================================================
@@ -154,13 +155,11 @@
     font-size: 26px;
 }
 
-.side-title h3,
-.chat-header h3 {
+.side-title h3 {
     margin: 0;
 }
 
-.side-title p,
-.chat-header p {
+.side-title p {
     margin: 5px 0 0;
     color: var(--admin-muted);
     font-size: 13px;
@@ -258,29 +257,7 @@
     white-space: nowrap;
 }
 
-.chat-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 16px;
-    flex: 0 0 auto;
-    min-height: 92px;
-    padding: 20px 24px;
-    border-bottom: 1px solid var(--admin-line);
-}
 
-.category-chip {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    padding: 9px 12px;
-    border-radius: 999px;
-    color: var(--admin-primary);
-    background: var(--admin-primary-soft);
-    font-size: 13px;
-    font-weight: 900;
-    white-space: nowrap;
-}
 
 .notice-bar {
     flex: 0 0 auto;

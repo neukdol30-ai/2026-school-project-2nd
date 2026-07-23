@@ -305,3 +305,53 @@
         min-width: 0;
     }
 }
+
+/* =========================================================
+   5. 3차 최종 점검 보정
+   =========================================================
+   - 목록/상세 이동 버튼처럼 글자가 긴 링크는 버튼 내부가 아니라 버튼 묶음에서 줄바꿈되게 합니다.
+   - danger/primary 계열 버튼은 화면이 좁아져도 한 글자씩 세로로 쪼개지지 않게 합니다.
+   - 테이블 내부 상태 배지는 줄바꿈하지 않고, 긴 일반 텍스트는 ellipsis 클래스가 담당하게 둡니다.
+*/
+.admin-main .panel-actions > *,
+.admin-main .toolbar-actions > *,
+.admin-main .form-actions-row > * {
+    max-width: 100%;
+}
+
+.admin-main .small-link,
+.admin-main .reset-link,
+.admin-main .primary-button,
+.admin-main .form-link-button,
+.admin-main .small-primary-button,
+.admin-main .danger-button,
+.admin-main .ghost-button,
+.admin-main .table-action,
+.admin-main .table-muted-action,
+.admin-main .status-pill,
+.admin-main .status-tag,
+.admin-main .role-tag {
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* 상담 상세 미니 패널 안에서는 버튼이 카드 너비 안에서 자연스럽게 줄어들도록 합니다. */
+#chatRoomView.admin-view.active .compact-side-actions .small-link,
+#chatRoomView.admin-view.active .compact-side-actions button {
+    max-width: 100%;
+}
+
+/* 모바일/좁은 창에서는 버튼을 넓게 쓰되 글씨는 한 줄로 유지합니다. */
+@media (max-width: 560px) {
+    .admin-main .small-link,
+    .admin-main .reset-link,
+    .admin-main .primary-button,
+    .admin-main .form-link-button,
+    .admin-main .small-primary-button,
+    .admin-main .danger-button,
+    .admin-main .ghost-button {
+        width: 100%;
+        min-width: 0;
+    }
+}
+
