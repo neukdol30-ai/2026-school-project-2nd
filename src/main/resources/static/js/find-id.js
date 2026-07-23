@@ -86,6 +86,19 @@ function restorePendingState() {
     startCooldown(Math.ceil(remainingMs / 1000)); // 남은 ms를 초 단위로 올림 처리해 카운트다운 재개
 }
 
+// 이메일 칸에 한 글자씩 타이핑할 때마다(input 이벤트) 실시간 형식 검사
+emailInput.addEventListener('input', function () {
+    const email = emailInput.value.trim(); // 지금까지 입력한 값
+
+    if (email === '') {
+        setMsg(sendMsg, '', null); // 빈 칸이면 메시지 지움
+    } else if (!emailPattern.test(email)) {
+        setMsg(sendMsg, 'example@domain.com 형식으로 입력하세요.', 'fail'); // 형식 틀림 -> 빨간 글씨
+    } else {
+        setMsg(sendMsg, '', null); // 형식 맞으면 메시지 지움
+    }
+});
+
 // 1단계 : 인증번호 발송 버튼
 sendBtn.addEventListener('click', function () {
     const email = emailInput.value.trim(); // 입력칸의 현재 값을 꺼내고, 앞 뒤 공백 제거
