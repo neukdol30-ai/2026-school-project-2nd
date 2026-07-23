@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.siyan1234.itproject2nd.board.dao.GuestAuthorDao">
+
+    <!--
+        guest_author 조회 결과를 GuestAuthorDto에 연결
+    -->
+    <resultMap
+            id="guestAuthorResultMap"
+            type="com.siyan1234.itproject2nd.board.dto.GuestAuthorDto">
+
+        <id
+                property="no"
+                column="no"/>
+
+        <result
+                property="guestName"
+                column="guest_name"/>
+
+        <result
+                property="passwordHash"
+                column="password_hash"/>
+
+        <result
+                property="createdDate"
+                column="created_date"/>
+
+    </resultMap>
+
+
+    <!-- 비회원 작성자 저장 -->
+    <insert
+            id="insertGuestAuthor"
+            parameterType="com.siyan1234.itproject2nd.board.dto.GuestAuthorDto"
+            useGeneratedKeys="true"
+            keyProperty="no"
+            keyColumn="no">
+
+        INSERT INTO guest_author (
+        guest_name,
+        password_hash
+        )
+        VALUES (
+        #{guestName},
+        #{passwordHash}
+        )
+
+    </insert>
+
+
+    <!-- 비회원 작성자 번호로 조회 -->
+    <select
+            id="findByNo"
+            parameterType="long"
+            resultMap="guestAuthorResultMap">
+
+        SELECT
+        no,
+        guest_name,
+        password_hash,
+        created_date
+        FROM guest_author
+        WHERE no = #{no}
+
+    </select>
+
+
+    <!-- 비회원 작성자 삭제 -->
+    <delete id="deleteByNo"
+            parameterType="long">
+
+        DELETE FROM guest_author
+        WHERE no = #{no}
+
+    </delete>
+
+</mapper>

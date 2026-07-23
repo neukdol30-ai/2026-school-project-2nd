@@ -41,7 +41,14 @@ function renderCurrentTimeWidget() {
 function updateCurrentTimeWidget() {
     const now = new Date();
 
-    const clockText = new Intl.DateTimeFormat("ko-KR", {
+    const clock = document.querySelector("#current-time-clock");
+    const date = document.querySelector("#current-time-date");
+
+    if (!clock || !date) {
+        return;
+    }
+
+    clock.textContent = new Intl.DateTimeFormat("ko-KR", {
         timeZone: "Asia/Seoul",
         hour: "2-digit",
         minute: "2-digit",
@@ -49,48 +56,13 @@ function updateCurrentTimeWidget() {
         hour12: false
     }).format(now);
 
-    const headerClockText = new Intl.DateTimeFormat("ko-KR", {
-        timeZone: "Asia/Seoul",
-        hour: "2-digit",
-        minute: "2-digit",
-        hour12: false
-    }).format(now);
-
-    const dateText = new Intl.DateTimeFormat("ko-KR", {
+    date.textContent = new Intl.DateTimeFormat("ko-KR", {
         timeZone: "Asia/Seoul",
         year: "numeric",
         month: "long",
         day: "numeric",
-        weekday: "long"
+        weekday: "short"
     }).format(now);
-
-    const widgetClock =
-        document.querySelector("#current-time-clock");
-
-    const widgetDate =
-        document.querySelector("#current-time-date");
-
-    const dashboardClock =
-        document.querySelector("#dashboard-current-time");
-
-    const dashboardDate =
-        document.querySelector("#dashboard-current-date");
-
-    if (widgetClock) {
-        widgetClock.textContent = clockText;
-    }
-
-    if (widgetDate) {
-        widgetDate.textContent = dateText;
-    }
-
-    if (dashboardClock) {
-        dashboardClock.textContent = headerClockText;
-    }
-
-    if (dashboardDate) {
-        dashboardDate.textContent = dateText;
-    }
 }
 
 // 타이머는 한 번만 생성

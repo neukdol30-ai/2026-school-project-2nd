@@ -6,7 +6,7 @@
 /* 페이지 전체 기본 스타일 */
 body {
     margin: 0;
-    font-family: "Pretendard", "Noto Sans KR", "Malgun Gothic", sans-serif;
+    font-family: Arial, "Noto Sans KR", sans-serif;
     min-height: 100vh;
     background: linear-gradient(
             to bottom,

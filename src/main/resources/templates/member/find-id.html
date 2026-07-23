@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>아이디 찾기</title>
+    <link rel="stylesheet" th:href="@{/css/find-account.css}">
+</head>
+<body>
+<div class="page-wrap">
+    <div class="find-box">
+        <h1 class="page-title">아이디 찾기</h1>
+        <p class="page-desc">가입하신 이메일로 인증번호를 보내드립니다.</p>
+
+        <!-- 1단계 : 이메일 입력 + 인증번호 발송 -->
+        <div class="form-group">
+            <label class="form-label" for="email">이메일</label>
+            <div class="input-row">
+                <input id="email" type="email" class="form-input" placeholder="example@domain.com">
+                <button type="button" id="sendBtn" class="side-button">인증번호 발송</button>
+            </div>
+            <span id="sendMsg" class="check-msg"></span>
+            <a href="#" id="changeEmailLink" class="change-email-link" style="display:none;">이메일을 잘못 입력했나요? 다시 입력하기</a>
+        </div>
+
+        <!-- 2단계 : 인증번호 입력 + 확인 -->
+        <div class="form-group" id="codeGroup" style="display:none;">
+            <label class="form-label" for="code">인증번호</label>
+            <div class="input-row">
+                <input id="code" type="text" class="form-input" placeholder="6자리 숫자" maxlength="6">
+                <button type="button" id="verifyBtn" class="side-button">인증 확인</button>
+            </div>
+            <span id="verifyMsg" class="check-msg"></span>
+        </div>
+
+        <div class="bottom-link">
+            <a th:href="@{/member/login}">로그인으로 돌아가기</a>
+            &nbsp;|&nbsp;
+            <a th:href="@{/member/find-password}">비밀번호 찾기</a>
+        </div>
+    </div>
+</div>
+
+<script th:src="@{/js/find-id.js}"></script>
+</body>
+</html>

@@ -1,0 +1,290 @@
+/* src/main/resources/static/css/find-account.css */
+/* find-id.html, find-id-result.html, find-password.html, reset-password.html 이 파일이 공용으로 사용 */
+/* login.css와 같은 색상·폰트·여백 값을 그대로 맞춰서, 화면이 바뀌어도 같은 사이트처럼 보이게 함 */
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    min-height: 100vh;
+    font-family: Arial, "Noto Sans KR", sans-serif;
+    background-color: #f4f6f8;
+    color: #222;
+}
+
+.page-wrap { /* 박스를 화면 가운데로 밀어주는 바깥 div */
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 40px 16px;
+}
+
+.find-box { /* 흰색 카드 박스. login.css의 .login-box와 같은 값 */
+    width: 100%;
+    max-width: 420px;
+    background-color: #fff;
+    border: 1px solid #ddd;
+    border-radius: 12px;
+    padding: 32px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+}
+
+.page-title { /* <h1 class="page-title">아이디 찾기<h1> 제목 */
+    margin: 0 0 12px;
+    text-align: center;
+    font-size: 28px;
+    font-weight: 700;
+}
+
+.page-desc { /* 제목 아래 한 줄 안내 문구 <p> */
+    margin: 0 0 28px;
+    text-align: center;
+    font-size: 14px;
+    color: #666;
+}
+
+.form-group { /* 입력칸 한 묶음(label+input+메시지)을 감싸는 div. -> login.css와 동일 */
+    margin-bottom: 20px;
+}
+
+.form-label { /* "이메일", "인증번호" 등 label 태그 */
+    display: block;
+    margin-bottom: 8px;
+    font-size: 14px;
+    font-weight: 700;
+}
+
+.input-row { /* [입력칸][버튼]을 한 줄에 가로로 나란히 놓기 위한 div. -> login.css엔 없던 새 구조 */
+    display: flex;
+    gap: 8px;
+}
+
+.form-input { /* input-row 안의 입력칸. login.css의 .form-input과 크기+테두리 동일 */
+    flex: 1;
+    height: 44px;
+    padding: 0 12px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 15px;
+    outline: none;
+}
+
+.side-button { /* 입력칸 옆에 붙는 "인증번호 발송" / "인증 확인" 버튼 */
+    flex-shrink: 0; /* 화면이 좁아져도 이 버튼 너비는 줄어들지 않음(글자 잘리는 것 방지) */
+    height: 44px;
+    padding: 0 16px;
+    border: none;
+    border-radius: 6px;
+    background-color: #222;
+    color: #fff;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    white-space: nowrap; /* "인증번호 발송" 글자 줄바꿈되지 않고 한 줄로 유지 */
+}
+
+.side-button:hover {
+    background-color: #444;
+}
+
+.side-button:disabled { /* JS가 요청 보내는 동안 버튼을 잠금 때(중복 클릭 방지) 적용되는 흐린 색 */
+    background-color: #aaa;
+    cursor: not-allowed;
+}
+
+/* 실시간 결과 메시지 (signup.js의 setMsg 함수가 className을 여기 정의된 값으로 교체함. */
+
+.check-msg { /* 기본 상태 : 아무 색도 없는 작은 안내 글자 */
+    display: block;
+    margin-top: 6px;
+    font-size: 13px;
+}
+
+.check-ok { /* setMsg(el, text, 'ok') -> 성공/통과 메시지 색 */
+    color: #176b35;
+}
+
+.check-fail { /* setMsg(el, text, 'fail') -> 실패/오류 메시지 색*/
+    color: #b42318;
+}
+
+.check-hint { /* setMsg(el, text, 'hint') -> 아직 판단 전, 안내만 하는 회색 */
+    color: #888;
+}
+
+.bottom-link { /* 화면 하단 "로그인으로 돌아가기" 등 링크 영역. login.css와 동일 구조 */
+    margin-top: 24px;
+    text-align: center;
+    font-size: 14px;
+}
+
+.bottom-link a {
+    color: #222;
+    font-weight: 700;
+    text-decoration: none;
+}
+
+.bottom-link a:hover {
+    text-decoration: underline;
+}
+
+/* find-id-result / reset-password 화면용
+
+ 1) 전체 폭 제출 버튼*/
+.submit-button {
+    display: block;
+    width: 100%;
+    height: 46px;
+    margin-top: 12px;
+    border: none;
+    border-radius: 6px;
+    background-color: #222;
+    color: #fff;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.submit-button:hover {
+    background-color: #444;
+}
+
+.submit-button:disabled {
+    background-color: #aaa;
+    cursor: not-allowed; /* 커서를 금지 표시로 바꿈 */
+}
+
+/* 2) 눈 아이콘(비밀번호 표시/숨김) 영역 */
+.input-wrap {
+    position: relative;
+}
+
+/* find-account.css의 .form-input은 flex: 1만 있고 width 없음. -> .input-wrap 안의 .form-input에만 width를 따로 지정한다. */
+.input-wrap .form-input {
+    width: 100%;
+}
+
+.form-input.has-eye { /* 비밀번호 input에만 붙이는 보조 클래스. */
+    padding-right: 44px;
+}
+
+.eye-btn {
+    position: absolute;
+    top: 50%;
+    right: 8px;
+    transform: translateY(-50%);
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    border: none;
+    background: transparent; /* 완전 투명. 배경을 없애야 밑의 입력칸이 비쳐 보임. */
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #999;
+}
+
+.eye-btn:hover {
+    color: #444;
+}
+
+/* 3) 비밀번호 조건 실시간 체크리스트 */
+.rule-list {
+    list-style: none; /* <ul>이 기본으로 찍는 검은 점을 없앤다. */
+    margin: 8px 0 0;
+    padding: 0; /* <ul>의 기본 왼쪽 들여쓰기 제거.  */
+}
+
+/* 조건 미충족 상태(기본값) : 회색 안내 글씨 + o 기호 */
+.rule-item {
+    position: relative;
+    padding-left: 18px;
+    margin-top: 3px;
+    font-size: 13px;
+    color: #888;
+}
+
+/* ::before = 그 요소의 내용 "앞"에 가짜 글자를 하나 끼워 넣는 CSS 기능 */
+.rule-item::before {
+    content: "○";
+    position: absolute;
+    left: 0;
+}
+
+/* 조건 충족 상태 : JS가 classList.add('rule-ok') 하면 초록 + ✓로 바뀐다 */
+.rule-item.rule-ok {
+    color: #2e9e5b;
+}
+
+.rule-item.rule-ok::before {
+    content: "✓"; /* 기호를 ○에서 ✓로 교체 */
+}
+
+/* 4) 서버 오류 메시지 박스 */
+.error-summary {
+    margin-bottom: 18px;
+    padding: 12px;
+    border: 1px solid #f2b8b5;
+    border-radius: 6px;
+    background-color: #fdecec;
+    color: #b42318;
+    font-size: 14px;
+}
+
+/* 5) 찾은 아이디를 크게 보여주는 박스 */
+.result-box {
+    margin: 0 0 24px;
+    padding: 24px 16px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    background-color: #f9fafb;
+    text-align: center;
+}
+
+.result-label {
+    margin: 0 0 8px;
+    font-size: 13px;
+    color: #666;
+}
+
+.result-id {
+    margin: 0;
+    font-size: 24px;
+    font-weight: 700;
+    color: #222;
+    letter-spacing: 0.5px;
+    word-break: break-all;
+    user-select: all;
+}
+
+/* <a> 태그를 버튼 모양으로 쓸 때의 보정 */
+a.submit-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none; /* <a> 태그의 밑줄 제거 */
+}
+
+/* "이메일을 잘못 입력했나요? 다시 입력하기" 보조 링크 */
+/* find-id.js / find-password.js가 발송 성공 시 style.display='inline'으로 켜고, 다시 입력하기 클릭 시 'none'으로 끔 */
+.change-email-link {
+    display: inline-block;
+    margin-top: 6px;
+    font-size: 13px;
+    color: #666;
+    text-decoration: underline;
+    cursor: pointer;
+}
+
+.change-email-link:hover {
+    color: #222;
+}
+
+/* 한국어 줄바꿈 보정 */
+body {
+    word-break: keep-all;
+}

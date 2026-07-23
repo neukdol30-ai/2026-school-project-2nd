@@ -1,0 +1,157 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.siyan1234.itproject2nd.mypage.dao.MyPageDao">
+
+    <!--
+        마이페이지 프로필 조회
+        - member 기본 정보
+        - social_account 연결 여부
+        - 연결된 provider 목록(KAKAO, NAVER 등)을 LISTAGG로 묶어서 응답
+    -->
+    <select id="findProfileByNo" resultType="com.siyan1234.itproject2nd.mypage.dto.MyPageProfileDto">
+        SELECT
+            m.no,
+            m.member_id,
+            m.name,
+            m.nickname,
+            m.email,
+            m.phone,
+            m.birth_date,
+            m.gender,
+            m.postcode,
+            m.address,
+            m.detail_address,
+            m.role,
+            m.profile_image,
+            m.last_login_date,
+            m.regdate,
+            CASE
+                WHEN EXISTS (
+                    SELECT 1
+                    FROM social_account sa
+                    WHERE sa.member_no = m.no
+                ) THEN 'Y'
+                ELSE 'N'
+            END AS social_login_yn,
+            (
+                SELECT LISTAGG(UPPER(sa.provider), ', ') WITHIN GROUP (ORDER BY sa.provider)
+                FROM social_account sa
+                WHERE sa.member_no = m.no
+            ) AS social_providers
+        FROM member m
+        WHERE m.no = #{memberNo, jdbcType=NUMERIC}
+    </select>
+
+    <!-- 내 정보 탭: 이름/닉네임만 수정 -->
+    <update id="updateBasicProfile">
+        UPDATE member
+        SET
+            name = #{profile.name, jdbcType=VARCHAR},
+            nickname = #{profile.nickname, jdbcType=VARCHAR}
+        WHERE no = #{memberNo, jdbcType=NUMERIC}
+    </update>
+
+    <!-- 보안 설정 탭: 개인정보 수정 -->
+    <update id="updateSecurityProfile">
+        UPDATE member
+        SET
+            email = #{profile.email, jdbcType=VARCHAR},
+            phone = #{profile.phone, jdbcType=VARCHAR},
+            birth_date = #{profile.birthDate, jdbcType=DATE},
+            gender = #{profile.gender, jdbcType=VARCHAR},
+            postcode = #{profile.postcode, jdbcType=VARCHAR},
+            address = #{profile.address, jdbcType=VARCHAR},
+            detail_address = #{profile.detailAddress, jdbcType=VARCHAR}
+        WHERE no = #{memberNo, jdbcType=NUMERIC}
+    </update>
+
+    <!-- 비밀번호는 Service에서 PasswordEncoder로 암호화한 값만 저장 -->
+    <update id="updatePassword">
+        UPDATE member
+        SET password = #{password, jdbcType=VARCHAR}
+        WHERE no = #{memberNo, jdbcType=NUMERIC}
+    </update>
+
+    <!-- 관리자 계정 보호를 위해 SQL에서도 role='USER' 조건을 한 번 더 확인 -->
+    <delete id="deleteMe">
+        DELETE FROM member
+        WHERE no = #{memberNo, jdbcType=NUMERIC}
+        AND role = 'USER'
+    </delete>
+
+    <!-- 본인을 제외한 닉네임 중복 검사 -->
+    <select id="countNicknameDuplicateExceptMe" resultType="int">
+        SELECT COUNT(*)
+        FROM member
+        WHERE nickname = #{nickname, jdbcType=VARCHAR}
+        AND no != #{memberNo, jdbcType=NUMERIC}
+    </select>
+
+    <!-- 본인을 제외한 이메일 중복 검사 -->
+    <select id="countEmailDuplicateExceptMe" resultType="int">
+        SELECT COUNT(*)
+        FROM member
+        WHERE email = #{email, jdbcType=VARCHAR}
+        AND no != #{memberNo, jdbcType=NUMERIC}
+    </select>
+
+    <!-- 마이페이지 내 활동 요약 카드 -->
+    <select id="findActivityByMemberNo" resultType="com.siyan1234.itproject2nd.mypage.dto.MyPageActivityDto">
+        SELECT
+            (SELECT COUNT(*)
+             FROM board
+             WHERE writer_no = #{memberNo, jdbcType=NUMERIC}) AS board_count,
+            (SELECT COUNT(*)
+             FROM board
+             WHERE writer_no = #{memberNo, jdbcType=NUMERIC}
+             AND category = 'QUESTION'
+             AND answer_status = 'WAITING') AS waiting_question_count,
+            (SELECT COUNT(*)
+             FROM chat_room
+             WHERE user_no = #{memberNo, jdbcType=NUMERIC}) AS chat_count,
+            (SELECT COUNT(*)
+             FROM chat_room
+             WHERE user_no = #{memberNo, jdbcType=NUMERIC}
+             AND status = 'OPEN') AS open_chat_count
+        FROM dual
+    </select>
+
+    <!-- 최근 게시글 3개 -->
+    <select id="findRecentBoards" resultType="com.siyan1234.itproject2nd.mypage.dto.MyPageRecentBoardDto">
+        SELECT
+            no,
+            category,
+            answer_status,
+            title,
+            created_date
+        FROM board
+        WHERE writer_no = #{memberNo, jdbcType=NUMERIC}
+        ORDER BY created_date DESC
+        FETCH FIRST 3 ROWS ONLY
+    </select>
+
+    <!-- 최근 상담방 3개: 진행 중 상담을 먼저 보여줌 -->
+    <select id="findRecentChats" resultType="com.siyan1234.itproject2nd.mypage.dto.MyPageRecentChatDto">
+        SELECT
+            room_no,
+            category,
+            status,
+            last_message,
+            last_message_date,
+            created_date
+        FROM chat_room
+        WHERE user_no = #{memberNo, jdbcType=NUMERIC}
+        ORDER BY
+            CASE status
+                WHEN 'OPEN' THEN 1
+                WHEN 'CLOSED' THEN 2
+                ELSE 3
+            END,
+            last_message_date DESC NULLS LAST,
+            created_date DESC
+        FETCH FIRST 3 ROWS ONLY
+    </select>
+
+</mapper>
