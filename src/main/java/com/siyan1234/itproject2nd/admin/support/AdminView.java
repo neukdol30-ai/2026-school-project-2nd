@@ -3,14 +3,20 @@ package com.siyan1234.itproject2nd.admin.support;
 /**
  * 관리자 콘솔에서 사용하는 화면(view) 값을 한 곳에서 관리합니다.
  *
- * 컨트롤러와 Thymeleaf에서 "dashboard", "chats" 같은 문자열이 흩어지지 않도록
- * 화면 코드, 상단 영문 라벨, 한글 제목을 함께 보관합니다.
+ * 관리자 기능은 /admin 단일 콘솔 안에서 우측 콘텐츠 영역만 바뀌도록 구성합니다.
  */
 public enum AdminView {
 
     DASHBOARD("dashboard", "Admin Dashboard", "운영 현황 요약"),
-    CHATS("chats", "Chat Management", "상담 관리"),
     MEMBERS("members", "Member Management", "회원 관리"),
+    MEMBER_EDIT("memberEdit", "Member Edit", "회원 정보 수정"),
+    CHATS("chats", "Chat Management", "상담 관리"),
+    CHAT_ROOM("chatRoom", "Chat Room", "상담 상세"),
+    BOARDS("boards", "Board Management", "게시글 관리"),
+    BOARD_CREATE("boardCreate", "Board Create", "게시글 등록"),
+    BOARD_EDIT("boardEdit", "Board Edit", "게시글 수정"),
+    BOARD_DETAIL("boardDetail", "Board Detail", "게시글 상세"),
+    VISITS("visits", "Visit Log", "방문 기록"),
     SERVICES("services", "Service Status", "외부 서비스 상태");
 
     private final String code;
