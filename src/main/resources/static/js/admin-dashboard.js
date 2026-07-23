@@ -17,9 +17,7 @@
         Admin.Selection?.init();
         Admin.Delete?.init();
         Admin.MemberActions?.init();
-        Admin.SessionGuard?.init();
         Admin.BrowserNotification?.init();
         Admin.ChatRealtime?.init();
-        Admin.SidebarState?.init();
     });
 })(window);

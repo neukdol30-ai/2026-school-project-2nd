@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<body>
+<header th:fragment="topbar" class="admin-topbar">
+            <div>
+                <span class="eyebrow" th:text="${activeViewEyebrow}">Admin Dashboard</span>
+                <h1 th:text="${activeViewTitle}">운영 현황 요약</h1>
+            </div>
+            <div class="topbar-actions">
+                <button type="button" class="top-profile-chip" data-modal-open="adminProfileModal">
+                    <span class="top-profile-avatar"
+                          th:text="${loginAdmin != null and loginAdmin.nickname != null and !#strings.isEmpty(loginAdmin.nickname) ? #strings.substring(loginAdmin.nickname, 0, 1) : 'A'}">A</span>
+                    <span class="login-user">
+                        <strong th:text="${loginAdmin != null ? loginAdmin.memberId : 'admin'}">admin01</strong>
+                        <small th:text="${loginAdmin != null ? loginAdmin.role : 'ADMIN'}">ADMIN</small>
+                    </span>
+                </button>
+                <a th:href="@{/}" class="top-link">서비스 홈</a>
+                <form th:action="@{/member/logout}" method="post">
+                    <button type="submit" class="logout-btn">로그아웃</button>
+                </form>
+            </div>
+        </header>
+</body>
+</html>

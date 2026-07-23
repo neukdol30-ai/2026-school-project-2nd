@@ -262,11 +262,9 @@
                 <!-- 게시글 보조 정보 -->
                 <div class="question-card-meta">
 
-                <span th:text="${board.guestName != null
-                    ? board.guestName
-                    : (board.writerNickname != null
-                        ? board.writerNickname
-                        : '탈퇴회원')}">
+                <span th:text="${board.writerNickname != null
+                    ? board.writerNickname
+                    : '탈퇴회원'}">
                     작성자
                 </span>
 

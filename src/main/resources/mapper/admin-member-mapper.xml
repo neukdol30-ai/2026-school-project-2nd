@@ -74,26 +74,6 @@
         AND ban_yn = 'Y'
     </select>
 
-
-
-    <!-- 관리자 콘솔 회원관리: 현재 DB 기준 활성 ADMIN 여부 확인 -->
-    <select id="countActiveAdminByNo" resultType="int">
-        SELECT COUNT(*)
-        FROM member
-        WHERE no = #{memberNo, jdbcType=NUMERIC}
-        AND role = 'ADMIN'
-        AND NVL(ban_yn, 'N') = 'N'
-    </select>
-
-    <!-- 관리자 콘솔 회원관리: 특정 관리자를 제외하고 남는 활성 ADMIN 수 확인 -->
-    <select id="countActiveAdminsExcept" resultType="int">
-        SELECT COUNT(*)
-        FROM member
-        WHERE role = 'ADMIN'
-        AND NVL(ban_yn, 'N') = 'N'
-        AND no != #{memberNo, jdbcType=NUMERIC}
-    </select>
-
     <!-- 관리자 콘솔 회원관리: 권한 변경 -->
     <update id="updateRole">
         UPDATE member

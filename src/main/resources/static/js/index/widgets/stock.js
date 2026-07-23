@@ -184,7 +184,7 @@ function renderStockWidget() {
 async function fetchStocks() {
     state.stockLoading = true;
     state.stockError = "";
-    refreshWidgetContent(4);
+    render();
 
     try {
         const response = await fetch("/api/stocks");
@@ -200,6 +200,6 @@ async function fetchStocks() {
         state.stockError = "증권 정보를 불러오지 못했습니다.";
     } finally {
         state.stockLoading = false;
-        refreshWidgetContent(4);
+        render();
     }
 }

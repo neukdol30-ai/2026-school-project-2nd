@@ -1,6 +1,5 @@
 package com.siyan1234.itproject2nd.member.service;
 
-import com.siyan1234.itproject2nd.config.security.PasswordPolicy;
 import com.siyan1234.itproject2nd.member.dao.MemberDao;
 import com.siyan1234.itproject2nd.member.dto.MemberDto;
 import com.siyan1234.itproject2nd.member.dto.SignupDto;
@@ -19,8 +18,6 @@ public class MemberService {
     private final MemberDao memberDao; // DB 작업 담당 DAO
 
     private final PasswordEncoder passwordEncoder; // BCrypt 암호화 담당
-
-    private static final String PASSWORD_PATTERN = PasswordPolicy.PASSWORD_REGEX;
 
     //  회원가입 검증 오류 확인
     public boolean hasSignupErrors(SignupDto signupDto, BindingResult bindingResult) {
@@ -60,15 +57,9 @@ public class MemberService {
                 return true;
             }
 
-            LocalDate oldestAllowed = today.minusYears(120); // (2) 과거 하한선 : today.minusYears(14)와 같은 방식(자동으로 매년 기준이 밀림)
-            if (signupDto.getBirthDate().isBefore(oldestAllowed)) { // 하한선보다 더 과거 날짜면 차단
-                bindingResult.rejectValue("birthDate", "tooOldBirthDate", "올바른 생년월일을 입력해 주세요.");
-                return true;
-            }
-
             LocalDate fourteenYearsAgo = today.minusYears(14);
 
-            if (signupDto.getBirthDate().isAfter(fourteenYearsAgo)) { // (3) 만 14세 미만 차단
+            if (signupDto.getBirthDate().isAfter(fourteenYearsAgo)) { // (2) 만 14세 미만 차단
                 bindingResult.rejectValue("birthDate", "underAge", "만 14세 미만은 가입할 수 없습니다.");
                 return true;
             }
@@ -93,7 +84,7 @@ public class MemberService {
 
         signupDto.setPassword(encodedPassword); // DTO의 password 값을 암호화된 비밀번호로 교체
 
-        memberDao.signup(signupDto); // 암호화된 비밀번호가 들어 있는 DTO를 DB에 INSERT
+        memberDao.signup(signupDto); // 암호화된 비밀번호가 들어 있는 DTO를 DB에 INSERTㅊ
     }
 
     public List<MemberDto> findAllMembers() {
@@ -158,36 +149,5 @@ public class MemberService {
     public boolean isNicknameDuplicate(String nickname) {
         // 조회 결과 null 아니면 닉네임 이미 존재 -> 중복
         return memberDao.findByNickname(nickname) != null;
-    }
-
-    // 아이디, 비밀번호 찾기 재작업
-
-    // 아이디 찾기 : 인증된 이메일로 회원 한 명 조회 -> memberId를 알아낸다.
-    public MemberDto findByEmail(String email) {
-        return memberDao.findByEmail(email);
-    }
-
-    // 비밀번호 찾기 : 입력한 아이디 + 이메일이 같은 회원인지 본인 확인
-    public MemberDto findByMemberIdAndEmail(String memberId, String email) {
-        return memberDao.findByMemberIdAndEmail(memberId, email);
-    }
-
-    // 비밀번호 규칙 검증
-    public boolean isPasswordValid(String password) {
-        return password != null && password.matches(PASSWORD_PATTERN);
-        // matches()는 String의 일부가 아니라 "문자열 전체"가 패턴과 일치해야 true.
-    }
-
-    // 비밀번호 재설정 : 규칙 검증 -> BCrypt 해싱 -> UPDATE
-    // false 반환 = 규칙 위반이라 저장 자체를 안 한 것.(Controller가 이 값으로 오류 메시지 결정)
-    public boolean updatePasswordByEmail(String email, String newPassword) {
-        if (!isPasswordValid(newPassword)) { // 규칙에 안 맞는 비밀번호?
-            return false; // 참이면 실행 : DB 저장 시도조차 안 하고 즉시 반환
-        } // 규칙 통과
-
-        String encodedPassword = passwordEncoder.encode(newPassword); // 원본 비밀번호 -> BCrypt 해시로 변환
-        return memberDao.updatePasswordByEmail(email, encodedPassword) > 0;
-        // updatePasswordByEmail(Dao)의 반환값은 "영향받은 행 수"(int). 1 이상이면 실제로 수정된 행 있다는 뜻 -> true / 0이면 false.
-
     }
 }

@@ -18,7 +18,7 @@ function renderControlBox() {
                         data-action="toggle-widget"
                         data-id="${widget.id}"
                     >
-                       ${widget.title}
+                        ${widget.icon} ${widget.title}
                     </button>
                 `).join("")}
             </div>
@@ -32,17 +32,18 @@ function renderWidgetHeader(widget, index, widgetCount) {
         <div class="widget-header">
             <div>
                 <div class="widget-title">
-                     ${widget.title}
+                    ${widget.icon} ${widget.title}
+                </div>
+                <div class="widget-desc">
+                    ${widget.description}
                 </div>
             </div>
 
             <div class="widget-actions">
                 ${state.isEditMode ? `
                     <span
-                        class="widget-drag-handle"
-                        draggable="true"
-                        data-drag-handle
-                        title="위젯 이동"
+                        class="widget-move-guide"
+                        title="더블클릭하여 이동"
                     >
                         ↕
                     </span>
@@ -60,12 +61,19 @@ function renderWidgetHeader(widget, index, widgetCount) {
     `;
 }
 
+
+
 // 위젯 카드
 function renderWidget(widget, index, widgetCount) {
     return `
         <article
-            class="widget ${widget.zone === "main" ? "main-widget" : "side-widget"}"
+            class="widget ${
+                widget.zone === "main"
+                    ? "main-widget"
+                    : "side-widget"
+            } ${state.isEditMode ? "is-layout-editing" : ""}"
             data-widget-id="${widget.id}"
+            draggable="${state.isEditMode}"
         >
             ${renderWidgetHeader(widget, index, widgetCount)}
 
@@ -78,43 +86,32 @@ function renderWidget(widget, index, widgetCount) {
     `;
 }
 
-// 상단 좌측 고정 위젯 렌더링
-function renderHeaderWidget() {
-    const headerWidget = state.widgets.find(
-        (widget) => widget.id === state.headerWidgetId
-    );
-
-    // 설정에서 상단 위젯을 비우는 경우를 위한 임시 화면
-    if (!headerWidget || !headerWidget.visible) {
-        return `
-            <article class="widget header-widget">
-                <div class="widget-content">
-                    <p class="widget-desc">상단 위젯이 비어 있습니다.</p>
-                </div>
-            </article>
-        `;
-    }
-
+// 대시보드 상단 브랜드 영역
+function renderDashboardBrand() {
     return `
-        <article
-            class="widget header-widget"
-            data-header-widget-id="${headerWidget.id}"
-        >
-            <div class="widget-header">
-                <div>
-                    <div class="widget-title">
-                         ${headerWidget.title}
-                    </div>
-                </div>
+        <div class="dashboard-brand">
+            <div class="dashboard-brand-copy">
+                <h1>MY DASHBOARD</h1>
+                <p>일정과 생활 정보를 한곳에서 관리하세요.</p>
             </div>
 
             <div
-                class="widget-content"
-                data-widget-content="${headerWidget.id}"
+                class="dashboard-today"
+                aria-label="현재 날짜와 시간"
             >
-                ${renderWidgetContent(headerWidget)}
+                <span class="dashboard-today-icon" aria-hidden="true">▣</span>
+                <strong id="dashboard-current-date">
+                    ----년 --월 --일
+                </strong>
+
+                <span class="dashboard-today-divider" aria-hidden="true"></span>
+
+                <span class="dashboard-today-icon" aria-hidden="true">◷</span>
+                <strong id="dashboard-current-time">
+                    --:--
+                </strong>
             </div>
-        </article>
+        </div>
     `;
 }
 

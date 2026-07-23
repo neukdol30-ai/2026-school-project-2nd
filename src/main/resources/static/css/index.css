@@ -1,11 +1,8 @@
 /* 공통 기본 스타일 */
 @import url("./index/base.css");
-@import url("./index/layout/banner.css");
-@import url("./index/layout/footer.css");
 @import url("./index/layout.css");
 @import url("./index/controls.css");
 @import url("./index/login.css");
-
 
 /* 위젯별 스타일 */
 @import url("./index/widgets/news.css");
@@ -19,5 +16,5 @@
 @import url("./index/widgets/curent-time.css");
 @import url("./index/widgets/widget-base.css");
 
-/* 반응형 스타일 */
-@import url("./index/responsive.css");
+
+

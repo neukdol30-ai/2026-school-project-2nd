@@ -10,6 +10,7 @@ import com.siyan1234.itproject2nd.member.dto.MemberDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -67,8 +68,6 @@ public class AdminMemberController {
 
         if (isSelf(no, loginAdminNo)) {
             redirectAttributes.addFlashAttribute("adminErrorMessage", AdminFlashMessage.MEMBER_ROLE_SELF_DENIED);
-        } else if (adminMemberService.isLastActiveAdmin(no)) {
-            redirectAttributes.addFlashAttribute("adminErrorMessage", AdminFlashMessage.MEMBER_ROLE_LAST_ADMIN_DENIED);
         } else if (updatedCount == 0) {
             redirectAttributes.addFlashAttribute("adminErrorMessage", AdminFlashMessage.MEMBER_ROLE_CHANGE_FAILED);
         } else {
@@ -104,11 +103,9 @@ public class AdminMemberController {
     @PostMapping("/{no}/unban")
     public String unbanMember(
             @PathVariable("no") Integer no,
-            @AuthenticationPrincipal CustomUserDetails customUserDetails,
             RedirectAttributes redirectAttributes
     ) {
-        Integer loginAdminNo = resolveLoginAdminNo(customUserDetails);
-        int updatedCount = adminMemberService.unbanMember(no, loginAdminNo);
+        int updatedCount = adminMemberService.unbanMember(no);
 
         if (updatedCount == 0) {
             redirectAttributes.addFlashAttribute("adminErrorMessage", AdminFlashMessage.MEMBER_UNBAN_FAILED);
@@ -177,11 +174,16 @@ public class AdminMemberController {
     @GetMapping("/{no}/edit")
     public String memberEditForm(
             @PathVariable("no") Integer no,
-            RedirectAttributes redirectAttributes
+            Model model
     ) {
-        redirectAttributes.addAttribute("view", "memberEdit");
-        redirectAttributes.addAttribute("editMemberNo", no);
-        return AdminRoutes.ADMIN_HOME;
+        MemberDto member = adminMemberService.findByNo(no);
+
+        if (member == null) {
+            return AdminRoutes.ADMIN_MEMBERS;
+        }
+
+        model.addAttribute("member", member);
+        return "admin/member-edit";
     }
 
     @PostMapping("/{no}/edit")

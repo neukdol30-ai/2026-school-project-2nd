@@ -10,7 +10,6 @@
         SELECT
         b.no,
         b.writer_no,
-        b.guest_author_no,
         b.category,
         b.answer_status,
         b.title,
@@ -20,28 +19,21 @@
         b.modified_date,
         m.name AS writer_name,
         m.nickname AS writer_nickname,
-        g.guest_name,
         (
-        SELECT COUNT(*)
-        FROM board_comment bc
-        WHERE bc.board_no = b.no
-        ) AS answer_count
+             SELECT COUNT(*)
+             FROM board_comment bc
+             WHERE bc.board_no = b.no
+            ) AS answer_count
         FROM board b
         LEFT JOIN member m
         ON b.writer_no = m.no
-        LEFT JOIN guest_author g
-        ON b.guest_author_no = g.no
         ORDER BY b.no DESC
     </select>
 
-    <select id="findByNo"
-            parameterType="long"
-            resultType="BoardDto">
-
+    <select id="findByNo" parameterType="long" resultType="BoardDto">
         SELECT
         b.no,
         b.writer_no,
-        b.guest_author_no,
         b.category,
         b.answer_status,
         b.title,
@@ -51,48 +43,36 @@
         b.modified_date,
         m.name AS writer_name,
         m.nickname AS writer_nickname,
-        g.guest_name,
-        (
-        SELECT COUNT(*)
-        FROM board_comment bc
-        WHERE bc.board_no = b.no
-        ) AS answer_count
+            (
+              SELECT COUNT(*)
+              FROM board_comment bc
+              WHERE bc.board_no = b.no
+            ) AS answer_count
         FROM board b
         LEFT JOIN member m
         ON b.writer_no = m.no
-        LEFT JOIN guest_author g
-        ON b.guest_author_no = g.no
         WHERE b.no = #{no}
-
     </select>
 
     <insert id="insert" parameterType="BoardDto">
         INSERT INTO board (
         writer_no,
-        guest_author_no,
         category,
         title,
-        content,
-        answer_status
+        content
         )
         VALUES (
-        #{writerNo, jdbcType=NUMERIC},
-        #{guestAuthorNo, jdbcType=NUMERIC},
-        #{category, jdbcType=VARCHAR},
-        #{title, jdbcType=VARCHAR},
-        #{content, jdbcType=CLOB},
-        #{answerStatus, jdbcType=VARCHAR}
+        #{writerNo},
+        #{category},
+        #{title},
+        #{content}
         )
     </insert>
 
-    <select id="findByCategory"
-            parameterType="string"
-            resultType="BoardDto">
-
+    <select id="findByCategory" parameterType="string" resultType="BoardDto">
         SELECT
         b.no,
         b.writer_no,
-        b.guest_author_no,
         b.category,
         b.answer_status,
         b.title,
@@ -102,32 +82,24 @@
         b.modified_date,
         m.name AS writer_name,
         m.nickname AS writer_nickname,
-        g.guest_name,
-        (
-        SELECT COUNT(*)
-        FROM board_comment bc
-        WHERE bc.board_no = b.no
-        ) AS answer_count
+            (
+              SELECT COUNT(*)
+              FROM board_comment bc
+              WHERE bc.board_no = b.no
+            ) AS answer_count
         FROM board b
         LEFT JOIN member m
         ON b.writer_no = m.no
-        LEFT JOIN guest_author g
-        ON b.guest_author_no = g.no
         WHERE b.category = #{category}
         ORDER BY b.no DESC
-
     </select>
 
 
     <!-- 게시글 검색 -->
-    <select id="search"
-            parameterType="string"
-            resultType="BoardDto">
-
+    <select id="search" parameterType="string" resultType="BoardDto">
         SELECT
         b.no,
         b.writer_no,
-        b.guest_author_no,
         b.category,
         b.answer_status,
         b.title,
@@ -137,24 +109,17 @@
         b.modified_date,
         m.name AS writer_name,
         m.nickname AS writer_nickname,
-        g.guest_name,
-        (
-        SELECT COUNT(*)
-        FROM board_comment bc
-        WHERE bc.board_no = b.no
-        ) AS answer_count
+            (
+              SELECT COUNT(*)
+              FROM board_comment bc
+              WHERE bc.board_no = b.no
+            ) AS answer_count
         FROM board b
         LEFT JOIN member m
         ON b.writer_no = m.no
-        LEFT JOIN guest_author g
-        ON b.guest_author_no = g.no
-        WHERE (
-        b.title LIKE '%' || #{keyword} || '%'
+        WHERE b.title LIKE '%' || #{keyword} || '%'
         OR m.nickname LIKE '%' || #{keyword} || '%'
-        OR g.guest_name LIKE '%' || #{keyword} || '%'
-        )
         ORDER BY b.no DESC
-
     </select>
 
 
@@ -182,7 +147,6 @@
         SELECT
         b.no,
         b.writer_no,
-        b.guest_author_no,
         b.category,
         b.answer_status,
         b.title,
@@ -190,39 +154,21 @@
         b.view_count,
         b.created_date,
         b.modified_date,
-
-        -- 회원 작성자 정보
         m.name AS writer_name,
         m.nickname AS writer_nickname,
-
-        -- 비회원 작성자 이름
-        g.guest_name,
-
-        -- 게시글 답변 개수
-        (
-        SELECT COUNT(*)
-        FROM board_comment bc
-        WHERE bc.board_no = b.no
-        ) AS answer_count
-
+            (
+              SELECT COUNT(*)
+              FROM board_comment bc
+              WHERE bc.board_no = b.no
+            ) AS answer_count
         FROM board b
-
-        -- 회원 작성자 연결
         LEFT JOIN member m
         ON b.writer_no = m.no
-
-        -- 비회원 작성자 연결
-        LEFT JOIN guest_author g
-        ON b.guest_author_no = g.no
-
         WHERE b.category = #{category}
-
         ORDER BY b.no DESC
         ) board_data
-
         WHERE ROWNUM &lt;= #{endRow}
         )
-
         WHERE rn &gt;= #{startRow}
 
     </select>
@@ -236,10 +182,8 @@
     </select>
 
 
-    <!-- 게시글 전체 페이징 조회 -->
-    <select id="findPage"
-            resultType="BoardDto">
-
+    <!-- 게시글 페이징 조회 -->
+    <select id="findPage" resultType="BoardDto">
         SELECT *
         FROM (
         SELECT
@@ -249,7 +193,6 @@
         SELECT
         b.no,
         b.writer_no,
-        b.guest_author_no,
         b.category,
         b.answer_status,
         b.title,
@@ -257,39 +200,21 @@
         b.view_count,
         b.created_date,
         b.modified_date,
-
-        -- 회원 작성자 정보
         m.name AS writer_name,
         m.nickname AS writer_nickname,
-
-        -- 비회원 작성자 이름
-        g.guest_name,
-
-        -- 게시글 답변 개수
-        (
-        SELECT COUNT(*)
-        FROM board_comment bc
-        WHERE bc.board_no = b.no
-        ) AS answer_count
-
+            (
+              SELECT COUNT(*)
+              FROM board_comment bc
+              WHERE bc.board_no = b.no
+            ) AS answer_count
         FROM board b
-
-        -- 회원 작성자 연결
         LEFT JOIN member m
         ON b.writer_no = m.no
-
-        -- 비회원 작성자 연결
-        LEFT JOIN guest_author g
-        ON b.guest_author_no = g.no
-
         ORDER BY b.no DESC
         ) board_data
-
         WHERE ROWNUM &lt;= #{endRow}
         )
-
         WHERE rn &gt;= #{startRow}
-
     </select>
 
 

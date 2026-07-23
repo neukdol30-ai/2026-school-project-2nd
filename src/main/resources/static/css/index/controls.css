@@ -36,7 +36,7 @@ button.danger {
     color: white;
 }
 
-/* 드래그 정렬 핸들 */
+/* 이동 가능 표시 */
 .widget-drag-handle {
     display: inline-flex;
     align-items: center;
@@ -44,19 +44,62 @@ button.danger {
     width: 28px;
     height: 28px;
     color: #6b7280;
-    cursor: grab;
+    cursor: pointer;
     user-select: none;
 }
 
-/* 실제로 끌고 있는 위젯 */
-.widget.is-dragging {
-    opacity: 0.45;
+/* 배치 편집 중인 위젯 */
+.is-layout-edit-mode .widget {
+    cursor: pointer;
+    user-select: none;
 }
 
-/* 드래그 중 놓을 수 있는 위젯 위치 */
-.widget.is-drag-over {
-    outline: 2px dashed #2563eb;
+/* 배치 편집 중 위젯 강조 */
+.is-layout-edit-mode .widget:hover {
+    outline: 2px solid rgba(37, 99, 235, 0.2);
     outline-offset: 2px;
+}
+
+/* 편집 중에는 위젯 내부 기능을 잠시 막는다. */
+.is-layout-edit-mode .widget-content {
+    pointer-events: none;
+}
+
+/* 숨김 버튼은 편집 중에도 사용할 수 있다. */
+.is-layout-edit-mode .widget-actions,
+.is-layout-edit-mode .widget-actions * {
+    pointer-events: auto;
+}
+
+/* 더블클릭으로 선택된 위젯 */
+.widget.is-move-selected {
+    opacity: 0.96;
+    cursor: move;
+    box-shadow:
+            0 18px 45px
+            rgba(15, 23, 42, 0.26);
+}
+
+/* 선택한 위젯이 들어갈 자리 */
+.widget-move-placeholder {
+    width: 100%;
+    min-height: 90px;
+    border: 2px dashed #2563eb;
+    border-radius: 12px;
+    background: rgba(37, 99, 235, 0.08);
+}
+
+/* 현재 이동할 수 있는 열 표시 */
+.widget-list.is-widget-move-list {
+    outline: 2px solid rgba(37, 99, 235, 0.14);
+    outline-offset: 6px;
+    border-radius: 12px;
+}
+
+/* 위젯 이동 중 화면 상태 */
+body.is-widget-move-mode {
+    cursor: move;
+    user-select: none;
 }
 
 /* 설정 서랍 전체 레이어 */

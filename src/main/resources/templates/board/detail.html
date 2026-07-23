@@ -89,12 +89,9 @@
 
                 <span>
                     작성자
-                    <strong
-                            th:text="${board.writerNickname != null
-                            ? board.writerNickname
-                            : (board.guestName != null
-                                ? board.guestName
-                                : '탈퇴회원')}">
+                    <strong th:text="${board.writerNickname != null
+                        ? board.writerNickname
+                        : '탈퇴회원'}">
                     </strong>
                 </span>
 
@@ -137,10 +134,9 @@
                 목록
             </a>
 
-            <!-- 회원 게시글 수정/삭제 -->
+            <!-- 작성자에게만 수정/삭제 표시 -->
             <div sec:authorize="isAuthenticated()"
-                 th:if="${board.writerNo != null
-                and #authentication.principal.memberDto.no.equals(board.writerNo)}"
+                 th:if="${#authentication.principal.memberDto.no.equals(board.writerNo)}"
                  class="board-owner-actions">
 
                 <a th:href="@{/board/update/{no}(no=${board.no})}"
@@ -162,29 +158,12 @@
 
             </div>
 
-            <!-- 비회원 게시글 수정/삭제 -->
-            <div th:if="${board.guestAuthorNo != null}"
-                 class="board-owner-actions">
-
-                <a th:href="@{/board/guest/update/{no}(no=${board.no})}"
-                   class="board-button board-button-edit">
-                    수정
-                </a>
-
-                <a th:href="@{/board/guest/delete/{no}(no=${board.no})}"
-                   class="board-button board-button-delete">
-                    삭제
-                </a>
-
-            </div>
-
         </footer>
 
     </article>
 
     <!-- 답변 버튼 -->
-    <div sec:authorize="hasRole('ADMIN')"
-         th:if="${board.category == 'QUESTION'}"
+    <div th:if="${board.category == 'QUESTION'}"
          class="question-answer-toolbar">
 
         <button type="button"
@@ -360,8 +339,7 @@
 
 
         <!-- 답변 작성 열기 버튼 -->
-        <section sec:authorize="hasRole('ADMIN')"
-                 class="answer-write-area">
+        <section class="answer-write-area">
 
             <button type="button"
                     id="answer-open-button"

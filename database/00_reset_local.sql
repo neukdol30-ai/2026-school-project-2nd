@@ -5,15 +5,12 @@
 -- ════════════════════════════════════════════════════════════
 -- [1] 게시판 관련 테이블 삭제
 -- 자식 테이블부터 삭제해야 외래 키 오류 방지
--- board가 guest_author를 참조하므로 guest_author는 board 다음에 삭제
 -- ════════════════════════════════════════════════════════════
 DROP TABLE board_comment CASCADE CONSTRAINTS PURGE;
 
 DROP TABLE board_file CASCADE CONSTRAINTS PURGE;
 
 DROP TABLE board CASCADE CONSTRAINTS PURGE;
-
-DROP TABLE guest_author CASCADE CONSTRAINTS PURGE;
 
 
 -- ════════════════════════════════════════════════════════════

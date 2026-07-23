@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<body>
+<!-- 외부 서비스 상태 영역 -->
+        <section th:fragment="serviceManageView" class="admin-view" th:classappend="${activeView == 'services'} ? ' active' : ''" id="serviceManageView">
+            <article class="panel full-panel">
+                <div class="panel-head">
+                    <div>
+                        <span class="eyebrow">External Services</span>
+                        <h2>외부 서비스 상태</h2>
+                        <p>외부 API 키와 토큰 값은 노출하지 않고 설정 여부만 확인합니다.</p>
+                    </div>
+                </div>
+                <div class="service-list">
+                    <div class="service-card"
+                         th:each="service : ${dashboard.serviceStatusList}"
+                         th:classappend="${service.available} ? ' available' : ' pending'">
+                        <div>
+                            <strong th:text="${service.serviceName}">서비스명</strong>
+                            <p th:text="${service.description}">서비스 설명</p>
+                        </div>
+                        <span th:text="${service.status}">상태</span>
+                    </div>
+                </div>
+            </article>
+        </section>
+</body>
+</html>

@@ -258,19 +258,3 @@ body {
 .pagination span {
     color: #64748b;
 }
-
-.mobile-home-link {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    min-height: 38px;
-    margin-top: 18px;
-    padding: 0 16px;
-    border-radius: 999px;
-    background: rgba(255, 255, 255, 0.18);
-    border: 1px solid rgba(255, 255, 255, 0.42);
-    color: #ffffff;
-    font-size: 13px;
-    font-weight: 900;
-    text-decoration: none;
-}

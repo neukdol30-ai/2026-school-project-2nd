@@ -337,15 +337,6 @@ birthDateInput.addEventListener('input', function () {
         return;
     }
 
-    // 과거 하한선 : 120년 전보다 더 오래된 날짜는 비정상 입력으로 간주 (서버 MemberService와 동일 기준)
-    const oldestAllowed = new Date(today);
-    oldestAllowed.setFullYear(today.getFullYear() - 120);
-
-    if (selected < oldestAllowed) {
-        setMsg(birthDateHint, '올바른 생년월일을 입력해 주세요.', 'fail');
-        return;
-    }
-
     const fourteenYearsAgo = new Date(today);
     fourteenYearsAgo.setFullYear(today.getFullYear() -14);
 

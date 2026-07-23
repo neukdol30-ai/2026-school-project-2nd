@@ -1,15 +1,175 @@
-/* 달력 그리드 */
-.calendar-grid {
+/* ========================= */
+/* 미니 캘린더 헤더 */
+/* ========================= */
+
+.mini-calendar-header {
+    display: grid;
+    grid-template-columns: 34px minmax(0, 1fr) 34px;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 12px;
+}
+
+
+/* 현재 연도와 월 */
+.mini-calendar-title {
+    text-align: center;
+    font-size: 16px;
+    font-weight: 800;
+}
+
+
+/* 이전 달, 다음 달 버튼 */
+.mini-calendar-month-button {
+    width: 34px;
+    height: 34px;
+    padding: 0;
+
+    border: none;
+    border-radius: 50%;
+
+    background: #f1f3f5;
+    color: #222;
+
+    font-size: 22px;
+    line-height: 1;
+
+    cursor: pointer;
+}
+
+.mini-calendar-month-button:hover {
+    background: #e5e7eb;
+}
+
+
+/* 조회 오류 또는 안내 메시지 */
+.mini-calendar-message {
+    margin: 0 0 10px;
+
+    color: #4b5563;
+
+    font-size: 12px;
+    line-height: 1.5;
+}
+
+.mini-calendar-message.error {
+    color: #c33838;
+}
+
+
+/* ========================= */
+/* 미니 캘린더 날짜 영역 */
+/* ========================= */
+
+.mini-calendar-grid {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
-    gap: 6px;
+    column-gap: 4px;
+    row-gap: 6px;
+
+    width: 100%;
     text-align: center;
 }
 
-/* 달력 칸 */
-.calendar-cell {
-    padding: 8px;
-    border-radius: 8px;
-    background: #f3f4f6;
-    font-size: 14px;
+
+/* 요일 */
+.mini-calendar-week-name {
+    padding: 3px 0 5px;
+
+    color: #222;
+
+    font-size: 12px;
+    font-weight: 800;
 }
+
+.mini-calendar-week-name.sunday {
+    color: #dc2626;
+}
+
+.mini-calendar-week-name.saturday {
+    color: #2563eb;
+}
+
+
+.mini-calendar-day {
+    position: relative;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+
+    width: 100%;
+    min-width: 0;
+    aspect-ratio: 1 / 1;
+    padding: 2px;
+
+    border: 2px solid transparent;
+    border-radius: 9px;
+
+    background: #f1f3f5;
+    color: #222;
+
+    font-size: 13px;
+    font-weight: 700;
+
+    cursor: pointer;
+}
+
+.mini-calendar-day:hover {
+    background: #dbeafe;
+}
+
+
+/* 이전 달과 다음 달 날짜 */
+.mini-calendar-day.other-month {
+    opacity: 0.35;
+}
+
+
+/* 일요일과 공휴일 */
+.mini-calendar-day.sunday:not(.today) .mini-calendar-day-number,
+.mini-calendar-day.holiday:not(.today) .mini-calendar-day-number {
+    color: #dc2626;
+    font-weight: 800;
+}
+
+
+/* 토요일 */
+.mini-calendar-day.saturday:not(.today):not(.holiday)
+.mini-calendar-day-number {
+    color: #2563eb;
+    font-weight: 800;
+}
+
+
+/* 오늘 날짜 */
+.mini-calendar-day.today {
+    border-color: #2563eb;
+    background: #2563eb;
+    color: #ffffff;
+}
+
+.mini-calendar-day.today .mini-calendar-day-number {
+    color: #ffffff;
+}
+
+
+/* 일정이 있는 날짜의 점 */
+.mini-calendar-event-dot {
+    display: block;
+    flex-shrink: 0;
+
+    width: 5px;
+    height: 5px;
+
+    border-radius: 50%;
+    background: #2f6df6;
+}
+
+.mini-calendar-day.today .mini-calendar-event-dot {
+    background: #ffffff;
+}
+
+

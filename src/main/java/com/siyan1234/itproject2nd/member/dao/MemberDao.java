@@ -28,15 +28,6 @@ public interface MemberDao {
 
     int updateMember(MemberDto memberDto); // 관리자 회원 정보 수정용 UPDATE 연결.
 
-    int updateLastLoginDate(@Param("no") Integer no); // 로그인 성공 시 최근 로그인 시각 갱신 영준 추가
-
     /** 관리자 회원 삭제용 DELETE 연결 */
     int deleteMember(@Param("no") Integer no); // 영준
-
-    // 아이디, 비밀번호 찾기 재작업
-    // 비밀번호 찾기 : 사용자가 입력한 아이디 + 이메일이 같은 회원의 것인지 본인 확인용
-    MemberDto findByMemberIdAndEmail(@Param("memberId") String memberId, @Param("email") String email);
-
-    // 비밀번호 재설정 : 이메일을 기준으로 새 비밀번호(이미 암호화된 값)를 저장
-    int updatePasswordByEmail(@Param("email") String email, @Param("password") String password);
 }

@@ -1,17 +1,145 @@
-/* 메모 입력창 */
-textarea {
+/* ========================= */
+/* 메모 작성 영역 */
+/* ========================= */
+
+.memo-form {
     width: 100%;
-    height: 120px;
-    resize: vertical;
-    padding: 12px;
-    border: 1px solid #ddd;
-    border-radius: 10px;
-    font-family: inherit;
 }
 
-/* 메모 글자 수 */
-.memo-count {
-    margin-top: 8px;
-    color: #666;
+
+/* 메모 입력창 */
+.memo-input {
+    width: 100%;
+    min-height: 90px;
+    padding: 12px;
+
+    border: 1px solid #d9dce3;
+    border-radius: 9px;
+
+    resize: vertical;
+
+    font-family: inherit;
     font-size: 14px;
+    line-height: 1.5;
+}
+
+.memo-input:focus {
+    outline: none;
+    border-color: #888;
+}
+
+
+/* 글자 수와 저장 버튼 */
+.memo-form-bottom {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    gap: 10px;
+    margin-top: 8px;
+}
+
+
+/* 글자 수 */
+.memo-count {
+    color: #666;
+
+    font-size: 12px;
+}
+
+
+/* 저장 버튼 */
+.memo-save-button {
+    padding: 7px 12px;
+
+    border: none;
+    border-radius: 8px;
+
+    background: #eef0f4;
+    color: #222;
+
+    cursor: pointer;
+}
+
+.memo-save-button:hover {
+    background: #e1e4ea;
+}
+
+
+/* ========================= */
+/* 저장된 메모 목록 */
+/* ========================= */
+
+.memo-list {
+    max-height: 260px;
+    margin-top: 14px;
+
+    overflow-y: auto;
+}
+
+
+/* 저장된 메모가 없을 때 */
+.memo-empty {
+    margin: 0;
+    padding: 12px 4px;
+
+    color: #888;
+
+    font-size: 13px;
+}
+
+
+/* 메모 한 개 */
+.memo-item {
+    position: relative;
+
+    margin-bottom: 10px;
+    padding: 12px 42px 12px 12px;
+
+    border-radius: 10px;
+
+    background: #f4f5f7;
+}
+
+.memo-item:last-child {
+    margin-bottom: 0;
+}
+
+
+/* 메모 내용 */
+.memo-text {
+    margin: 0;
+
+    line-height: 1.5;
+
+    white-space: pre-wrap;
+    word-break: break-word;
+}
+
+
+/* 메모 삭제 버튼 */
+.memo-delete-button {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+
+    width: 26px;
+    height: 26px;
+    padding: 0;
+
+    border: none;
+    border-radius: 50%;
+
+    background: #e7e9ed;
+    color: #555;
+
+    font-size: 17px;
+    line-height: 26px;
+
+    cursor: pointer;
+}
+
+.memo-delete-button:hover {
+    background: #ef4444;
+    color: #ffffff;
 }

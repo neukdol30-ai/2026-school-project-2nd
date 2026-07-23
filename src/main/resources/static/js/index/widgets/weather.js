@@ -71,7 +71,7 @@ function getWeatherIcon(weatherText) {
 async function fetchWeather() {
     state.weatherLoading = true;
     state.weatherError = "";
-    refreshWidgetContent(5)
+    render();
 
     try {
         const response = await fetch("/api/weather");
@@ -85,6 +85,6 @@ async function fetchWeather() {
         state.weatherError = error.message;
     } finally {
         state.weatherLoading = false;
-        refreshWidgetContent(5)
+        render();
     }
 }

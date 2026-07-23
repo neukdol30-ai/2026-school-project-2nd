@@ -7,8 +7,6 @@ public final class AdminRoutes {
     public static final String ADMIN_HOME = "redirect:/admin";
     public static final String ADMIN_CHATS = "redirect:/admin?view=chats";
     public static final String ADMIN_MEMBERS = "redirect:/admin?view=members";
-    public static final String ADMIN_BOARDS = "redirect:/admin?view=boards";
-    public static final String ADMIN_VISITS = "redirect:/admin?view=visits";
 
     private AdminRoutes() {
     }
@@ -18,18 +16,6 @@ public final class AdminRoutes {
     }
 
     public static String chatRoom(Integer roomNo) {
-        return "redirect:/admin?view=chatRoom&roomNo=" + roomNo;
-    }
-
-    public static String boardCreate() {
-        return "redirect:/admin?view=boardCreate";
-    }
-
-    public static String boardEdit(Long boardNo) {
-        return "redirect:/admin?view=boardEdit&boardNo=" + boardNo;
-    }
-
-    public static String boardDetail(Long boardNo) {
-        return "redirect:/admin?view=boardDetail&boardNo=" + boardNo;
+        return "redirect:/admin/chats/" + roomNo;
     }
 }

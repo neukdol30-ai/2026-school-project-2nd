@@ -59,14 +59,12 @@
 
     <section class="board-form-box">
 
-        <form id="board-update-form"
-              th:action="${formAction}"
+        <form th:action="@{/board/update/{no}(no=${board.no})}"
               method="post"
               th:object="${board}">
 
-            <!-- 회원 수정용 카테고리 -->
-            <div class="board-form-group"
-                 th:if="${guestMode == false}">
+            <!-- 카테고리 -->
+            <div class="board-form-group">
 
                 <label for="category"
                        class="board-form-label">
@@ -81,30 +79,13 @@
                         문의 게시판
                     </option>
 
+                    <!-- 관리자에게만 공지사항 표시 -->
                     <option value="NOTICE"
                             sec:authorize="hasRole('ADMIN')">
                         공지사항
                     </option>
 
                 </select>
-
-            </div>
-
-            <!-- 비회원 수정용 카테고리 -->
-            <div class="board-form-group"
-                 th:if="${guestMode == true}">
-
-                <label class="board-form-label">
-                    카테고리
-                </label>
-
-                <input type="hidden"
-                       th:field="*{category}">
-
-                <input type="text"
-                       value="문의 게시판"
-                       class="board-form-input"
-                       readonly>
 
             </div>
 
