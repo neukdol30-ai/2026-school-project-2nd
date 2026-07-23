@@ -33,6 +33,7 @@ public final class SecurityPaths {
             "/member/reset-password", // 새 비밀번호 입력 화면과 변경 요청 접근 허용
             "/admin/login", // 관리자 로그인 화면
             "/mypage/me", // 메인 페이지 로그인 상태 확인용 공개 조회 API
+            "/map/kakao", // 카카오맵 기능 테스트 화면
             "/kakao/authorize", // 카카오 동의
             "/kakao/callback", // 카카오 인가 코드 토큰발급
             "/css/**",
