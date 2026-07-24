@@ -239,5 +239,9 @@ function renderWidgetContent(widget) {
         return renderCurrentTimeWidget();
     }
 
+    if (widget.type === "worldTime") {
+        return renderWorldTimeWidget();
+    }
+
     return "";
 }
