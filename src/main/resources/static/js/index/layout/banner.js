@@ -40,11 +40,10 @@ function renderGlobalBanner() {
 
     return `
         <nav class="global-banner" aria-label="전역 메뉴">
-            <a
-                class="global-home-link"
-                href="/"
-            >
-                홈
+            <a class="global-home-link" href="/" aria-label="홈으로 이동">
+                <span class="global-logo-text" aria-hidden="true">
+                    <span class="global-logo-letter">더</span>
+                </span>
             </a>
 
             <div class="global-right-menu">
