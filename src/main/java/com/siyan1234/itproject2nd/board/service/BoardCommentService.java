@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.siyan1234.itproject2nd.board.dao.BoardDao;
 import java.util.List;
 
 @Service
@@ -13,6 +14,12 @@ import java.util.List;
 public class BoardCommentService {
 
     private final BoardCommentDao boardCommentDao;
+    private final BoardDao boardDao;
+
+    // 답변 상태
+    private static final String WAITING = "WAITING";
+    private static final String ANSWERED = "ANSWERED";
+
 
     // 답변 HTML의 최대 저장 길이
     // DB 컬럼은 CLOB이지만 지나치게 큰 입력을 제한하기 위한 값
@@ -51,6 +58,13 @@ public class BoardCommentService {
             );
         }
 
+        if (commentDto.getBoardNo() == null) {
+            throw new IllegalArgumentException(
+                    "게시글 번호가 없습니다."
+            );
+        }
+
+
         String content = normalizeContent(
                 commentDto.getContent()
         );
@@ -59,7 +73,27 @@ public class BoardCommentService {
 
         commentDto.setContent(content);
 
-        return boardCommentDao.insert(commentDto);
+        int result = boardCommentDao.insert(commentDto);
+
+        if (result != 1) {
+            throw new IllegalStateException(
+                    "답변 등록에 실패했습니다."
+            );
+        }
+
+        int statusResult =
+                boardDao.updateAnswerStatus(
+                        commentDto.getBoardNo(),
+                        ANSWERED
+                );
+
+        if (statusResult != 1) {
+            throw new IllegalStateException(
+                    "게시글 답변 상태 변경에 실패했습니다."
+            );
+        }
+
+        return result;
     }
 
 
@@ -97,7 +131,48 @@ public class BoardCommentService {
             );
         }
 
-        return boardCommentDao.delete(no);
+        // 삭제할 답변 조회
+        BoardCommentDto commentDto =
+                boardCommentDao.findByNo(no);
+
+        if (commentDto == null) {
+            throw new IllegalArgumentException(
+                    "삭제할 답변을 찾을 수 없습니다."
+            );
+        }
+
+        Long boardNo = commentDto.getBoardNo();
+
+        // 답변 삭제
+        int result = boardCommentDao.delete(no);
+
+        if (result != 1) {
+            throw new IllegalStateException(
+                    "답변 삭제에 실패했습니다."
+            );
+        }
+
+        // 삭제 후 남은 답변 개수 확인
+        int commentCount =
+                boardDao.countCommentsByBoardNo(boardNo);
+
+        // 남은 답변이 없으면 WAITING으로 변경
+        if (commentCount == 0) {
+
+            int statusResult =
+                    boardDao.updateAnswerStatus(
+                            boardNo,
+                            WAITING
+                    );
+
+            if (statusResult != 1) {
+                throw new IllegalStateException(
+                        "게시글 답변 상태 변경에 실패했습니다."
+                );
+            }
+        }
+
+        return result;
     }
 
 

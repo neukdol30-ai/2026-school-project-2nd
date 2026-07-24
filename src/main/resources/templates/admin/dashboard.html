@@ -8,6 +8,9 @@
     <title>SecondPro 관리자 콘솔</title>
     <link rel="stylesheet" th:href="@{/css/admin/admin-dashboard.css}">
     <link rel="stylesheet" th:href="@{/css/cookie-consent.css}">
+    <!-- Toast UI -->
+    <link rel="stylesheet"
+          href="https://uicdn.toast.com/editor/latest/toastui-editor.min.css">
 </head>
 <body>
 <div class="admin-shell">
@@ -31,6 +34,12 @@
 
 <th:block th:replace="~{admin/fragments/admin-modals :: adminProfileModal}"></th:block>
 <th:block th:replace="~{admin/fragments/admin-modals :: memberDetailModal}"></th:block>
+
+
+<!-- Toast UI Editor -->
+<script src="https://uicdn.toast.com/editor/latest/toastui-editor-all.min.js"></script>
+<script src="https://uicdn.toast.com/editor/latest/i18n/ko-kr.js"></script>
+<script th:src="@{/js/board/board-editor.js}"></script>
 
 <script src="https://t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
 <script th:src="@{/js/common/address-search.js}"></script>

@@ -59,4 +59,15 @@ public interface BoardDao {
 
     // 게시글 삭제
     int delete(Long no);
+
+    // 게시글 답변 상태 변경
+    int updateAnswerStatus(
+            @Param("boardNo") Long boardNo,
+            @Param("answerStatus") String answerStatus
+    );
+
+    // 게시글에 등록된 답변 개수 조회
+    int countCommentsByBoardNo(Long boardNo);
+
+
 }

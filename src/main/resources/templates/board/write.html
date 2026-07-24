@@ -66,6 +66,7 @@
     <section class="board-form-box">
 
         <form id="board-write-form"
+              data-board-form
               th:action="@{/board/write}"
               method="post"
               th:object="${boardDto}">
@@ -221,12 +222,14 @@
 
                 <!-- TOAST UI Editor 영역 -->
                 <div id="editor"
-                     class="board-editor">
+                     class="board-editor"
+                     data-board-editor>
                 </div>
 
                 <!-- 서버로 전송할 본문 HTML -->
                 <input type="hidden"
                        id="content"
+                       data-board-content
                        th:field="*{content}">
 
                 <p th:if="${#fields.hasErrors('content')}"
@@ -262,80 +265,7 @@
 
 </main>
 
-<script>
-    /*
-     * Validation 실패 후 글쓰기 화면으로 돌아왔을 때
-     * 이전에 입력했던 본문을 에디터에 다시 표시한다.
-     */
-    const contentInput = document.querySelector("#content");
-    const savedContent = contentInput.value || "";
-
-    const editor = new toastui.Editor({
-        el: document.querySelector("#editor"),
-        height: "560px",
-        initialEditType: "wysiwyg",
-        previewStyle: "vertical",
-        language: "ko-KR",
-        initialValue: savedContent,
-
-        hooks: {
-            /*
-             * TOAST UI 이미지 버튼에서
-             * 이미지 파일을 선택했을 때 실행
-             */
-            addImageBlobHook: async function (
-                blob,
-                callback
-            ) {
-                const formData = new FormData();
-
-                /*
-                 * Controller의
-                 * @RequestParam("image")와 이름을 맞춘다.
-                 */
-                formData.append("image", blob);
-
-                try {
-                    const response = await fetch(
-                        "/board/image/upload",
-                        {
-                            method: "POST",
-                            body: formData
-                        }
-                    );
-
-                    const result = await response.json();
-
-                    if (!response.ok) {
-                        throw new Error(
-                            result.message ||
-                            "이미지 업로드에 실패했습니다."
-                        );
-                    }
-
-                    callback(
-                        result.imageUrl,
-                        blob.name || "게시글 이미지"
-                    );
-
-                } catch (error) {
-                    alert(error.message);
-                }
-            }
-        }
-    });
-
-    /*
-     * 등록 버튼을 누르면
-     * TOAST UI의 HTML 내용을 hidden input에 저장한다.
-     */
-    document.querySelector("#board-write-form")
-        .addEventListener("submit", function () {
-
-            contentInput.value = editor.getHTML();
-        });
-</script>
-
+<script th:src="@{/js/board/board-editor.js}"></script>
 <script th:src="@{/js/cookie-consent.js}"></script>
 
 </body>
