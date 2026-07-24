@@ -169,3 +169,161 @@
 .widget-content {
     min-width: 0;
 }
+/* 상단 폭과 정렬 보정 */
+:root {
+    --main-widget-width: 920px;
+    --side-widget-width: 450px;
+    --header-widget-width: 450px;
+    --header-logo-width: 440px;
+    --layout-gap: 30px;
+    --dashboard-width: 1400px;
+    --global-banner-height: 60px;
+}
+
+.dashboard-header {
+    grid-template-columns:
+        var(--header-widget-width)
+        var(--header-logo-width)
+        var(--header-widget-width);
+}
+
+.header-logo-slot {
+    visibility: hidden;
+    min-height: 204px;
+}
+
+.header-logo-slot::before,
+.header-logo-slot::after {
+    content: none !important;
+    display: none !important;
+}
+
+.header-widget-slot,
+.header-auth-slot {
+    display: flex;
+    min-height: 204px;
+    align-items: stretch;
+}
+
+.header-widget-slot > *,
+.header-auth-slot > * {
+    width: 100% !important;
+    max-width: none !important;
+    min-width: 0 !important;
+    height: 100% !important;
+    margin: 0 !important;
+}
+
+/* 홈, 로그인, 환경설정 상단 라인 */
+.global-banner-area {
+    position: sticky;
+    top: 0;
+    z-index: 150;
+    width: 100%;
+    min-width: var(--dashboard-width);
+    height: var(--global-banner-height);
+    background: #ffffff;
+    border-bottom: 1px solid #d8edf7;
+    box-shadow: 0 3px 12px rgba(31, 91, 122, 0.08);
+}
+
+.global-banner-area [data-global-banner] {
+    width: var(--dashboard-width);
+    min-width: var(--dashboard-width);
+    height: 100%;
+    margin: 0 auto;
+    padding: 0 170px 0 20px;
+    box-sizing: border-box;
+}
+
+.global-banner-area [data-global-banner] {
+    width: var(--dashboard-width);
+    min-width: var(--dashboard-width);
+    height: 100%;
+    margin: 0 auto;
+
+    /* 환경설정이 들어갈 오른쪽 공간 확보 */
+    padding: 0 210px 0 0;
+
+    box-sizing: border-box;
+}
+
+.global-banner-area a {
+    color: #334e68;
+    font-weight: 700;
+    text-decoration: none;
+}
+
+.global-banner-area a[href="/"],
+.global-banner-area a[href="/index.html"],
+.global-banner-area a[href="./index.html"] {
+    position: relative;
+    color: #087fb4;
+}
+
+.global-banner-area a[href="/"]::after,
+.global-banner-area a[href="/index.html"]::after,
+.global-banner-area a[href="./index.html"]::after {
+    content: "";
+    position: absolute;
+    right: 0;
+    bottom: -20px;
+    left: 0;
+    height: 3px;
+    border-radius: 999px;
+    background: #20afe5;
+}
+
+/* 상단 오른쪽 환경설정 */
+.page-actions {
+    position: fixed;
+    top: 0;
+    right: max(
+            24px,
+            calc((100vw - var(--dashboard-width)) / 2)
+    );
+    z-index: 170;
+
+    display: flex;
+    align-items: center;
+    height: var(--global-banner-height);
+}
+
+/* 로그인과 환경설정 사이 구분선 */
+.page-actions::before {
+    content: "";
+    width: 1px;
+    height: 18px;
+    margin: 0 20px;
+    background: #cbd5e1;
+}
+
+.page-actions button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    height: 36px;
+    padding: 0 4px;
+    border: 0;
+    border-radius: 6px;
+
+    background: transparent;
+    color: #334e68;
+    font-size: 14px;
+    font-weight: 700;
+}
+
+/* 앞에 붙던 톱니 아이콘 제거 */
+.page-actions button::before {
+    content: none;
+}
+
+.page-actions button:hover {
+    background: transparent;
+    color: #0797d5;
+}
+
+.page-actions:empty {
+    display: none;
+}

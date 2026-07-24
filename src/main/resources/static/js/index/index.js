@@ -12,10 +12,35 @@ function renderInitialPage() {
 
     app.innerHTML = `
         <div class="global-banner-area">
-            <div data-global-banner>
+            <div class="global-banner-inner">
+
+            <div
+                class="global-banner-content"
+                data-global-banner
+            >
                 ${renderGlobalBanner()}
             </div>
+
+            <div
+                class="page-actions"
+                data-page-actions
+            >
+                <button
+                    type="button"
+                    data-action="toggle-edit"
+                >
+                    <span
+                        class="settings-button-icon"
+                        aria-hidden="true"
+                    >
+                        ⚙
+                    </span>
+                    <span>환경설정</span>
+                </button>
+            </div>
+
         </div>
+    </div>
 
         <div class="container">
             <header class="dashboard-header">
@@ -36,17 +61,7 @@ function renderInitialPage() {
                 </div>
             </header>
 
-            <div
-                class="page-actions"
-                data-page-actions
-            >
-                <button
-                    type="button"
-                    data-action="toggle-edit"
-                >
-                    환경설정
-                </button>
-            </div>
+           
 
             <div
                 class="settings-layer ${state.isSettingsOpen ? "is-open" : ""}"
