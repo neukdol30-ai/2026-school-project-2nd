@@ -4,6 +4,8 @@ import com.siyan1234.itproject2nd.member.dto.SocialAccountDto;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
+import java.util.List;
+
 @Mapper
 public interface SocialAccountDao {
 
@@ -16,4 +18,8 @@ public interface SocialAccountDao {
 
     // 새 소셜 계정 연결 저장. MyBatis는 INSERT/UPDATE/DELETE 결과 "영향 받은 행 수"를 int로 반환.
     int insertSocialAccount(SocialAccountDto socialAccountDto);
+
+    // 한 회원에게 연결된 모든 소셜 계정을 조회
+    List<SocialAccountDto> findAllByMemberNo(
+            @Param("memberNo") Integer memberNo); // member 테이블의 회원 고유 번호를 XML에 전달
 }
