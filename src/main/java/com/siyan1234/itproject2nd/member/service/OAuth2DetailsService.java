@@ -51,7 +51,9 @@ public class OAuth2DetailsService extends DefaultOAuth2UserService {
         String provider = userRequest.getClientRegistration().getRegistrationId();
 
         log.info("소셜 로그인 provider = {}", provider);
-        log.info("소셜 응답 원본 = {}", attributes); // 실패 시 여기 로그 보면 JSON 구조 정확히 알 수 있음.
+
+        // 실명과 이메일이 포함된 응답 전체를 INFO로 콘솔에 남기지 않는다. -> DEBUG 레벨로 낮춤. 기본 설정에서는 DEBUG가 화면에 안 찍힘
+        log.debug("소셜 응답 원본 = {}", attributes);
 
         // 1단계 : provider에 맞는 해석기 고르기
         SocialUserInfo socialUserInfo;
@@ -66,6 +68,10 @@ public class OAuth2DetailsService extends DefaultOAuth2UserService {
         }
 
         String providerId = socialUserInfo.getProviderId(); // 예 : "3948573"
+
+        // 개인정보(이름, 이메일) 없이 provider와 회원번호만 남기는 최소 로그 / 탈퇴, 연결해제 테스트 판정에는 이 두 값이면 충분
+        log.info("소셜 로그인 식별자 provider={}, providerId={}", provider, providerId);
+
         String email = socialUserInfo.getEmail(); // null일 수 있음.
 
         // 2단계 : 이 소셜 계정이 social_account 테이블에 이미 연결되어 있는지 확인.

@@ -84,3 +84,8 @@ kakao:
 
 file:
   board-image-dir: uploads/board-images
+
+# DEBUG 다시 켜고 싶으면 아래 세 줄 주석 해제하면 된다.
+#logging:
+#  level:
+#    com.siyan1234.itproject2nd.member.service.OAuth2DetailsService: DEBUG

@@ -72,6 +72,8 @@ public class KakaoUnlinkService {
         // social_account.provider_id에서 조회한 실제 카카오 회원번호
         formData.add("target_id", providerId);
 
+        log.info("카카오 연결 해제 요청 시작. providerId={}", providerId);
+
         try {
             restClient.post() // Spring Boot 서버에서 카카오 연결 해제 서버로 POST 요청.
                     .uri(KAKAO_UNLINK_URL) // 연결 해제 API 주소 지정
@@ -85,6 +87,8 @@ public class KakaoUnlinkService {
                     .body(formData) // 위에서 만든 target_id_type과 target_id를 요청 본문에 넣음
                     .retrieve() // 실제 요청 보내고 HTTP 응답 받음
                     .toBodilessEntity(); // 응답 본문 사용하지 않고 성공 여부만 확인
+
+            log.info("카카오 연결 해제 성공. providerId={}", providerId);
 
             // 예외 없이 정상 응답을 받았다면 연결 해제 성공
             return true;
