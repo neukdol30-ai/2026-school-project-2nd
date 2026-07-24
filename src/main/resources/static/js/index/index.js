@@ -12,35 +12,10 @@ function renderInitialPage() {
 
     app.innerHTML = `
         <div class="global-banner-area">
-            <div class="global-banner-inner">
-
-            <div
-                class="global-banner-content"
-                data-global-banner
-            >
+            <div data-global-banner>
                 ${renderGlobalBanner()}
             </div>
-
-            <div
-                class="page-actions"
-                data-page-actions
-            >
-                <button
-                    type="button"
-                    data-action="toggle-edit"
-                >
-                    <span
-                        class="settings-button-icon"
-                        aria-hidden="true"
-                    >
-                        ⚙
-                    </span>
-                    <span>환경설정</span>
-                </button>
-            </div>
-
         </div>
-    </div>
 
         <div class="container">
             <header class="dashboard-header">
@@ -144,45 +119,6 @@ function renderWidgetList(widgetList) {
         .join("");
 }
 
-// 환경설정 버튼 갱신
-function updatePageActions() {
-    const pageActions =
-        document.querySelector(
-            "[data-page-actions]"
-        );
-
-    if (!pageActions) {
-        return;
-    }
-
-    if (state.isSettingsOpen) {
-        pageActions.innerHTML = "";
-        return;
-    }
-
-    if (state.isEditMode) {
-        pageActions.innerHTML = `
-            <button
-                type="button"
-                data-action="finish-layout-edit"
-            >
-                배치 완료
-            </button>
-        `;
-
-        return;
-    }
-
-    pageActions.innerHTML = `
-        <button
-            type="button"
-            data-action="toggle-edit"
-        >
-            환경설정
-        </button>
-    `;
-}
-
 // 환경설정 내용 갱신
 function updateControlBox() {
     const controlBox =
@@ -271,7 +207,6 @@ function renderDashboard() {
     const prevPositions =
         captureWidgetPositions();
 
-    updatePageActions();
     updateSettingsDrawer();
     updateControlBox();
     updateAuthWidget();

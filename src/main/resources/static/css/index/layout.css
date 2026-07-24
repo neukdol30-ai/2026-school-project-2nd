@@ -84,14 +84,6 @@
     box-sizing: border-box;
 }
 
-/* 최상단 우측 환경설정 버튼 */
-.page-actions {
-    position: fixed;
-    top: calc(var(--global-banner-height) + 16px);
-    right: 16px;
-    z-index: 100;
-}
-
 /* 짧은 컬럼만 스크롤을 따라 이동 */
 .widget-column.is-follow-column > .widget-list {
     position: sticky;
@@ -177,7 +169,7 @@
     --header-logo-width: 440px;
     --layout-gap: 30px;
     --dashboard-width: 1400px;
-    --global-banner-height: 60px;
+    --global-banner-height: 76px;
 }
 
 .dashboard-header {
@@ -214,116 +206,153 @@
     margin: 0 !important;
 }
 
-/* 홈, 로그인, 환경설정 상단 라인 */
+/* 상단 전체 메뉴 바 */
 .global-banner-area {
     position: sticky;
     top: 0;
     z-index: 150;
-    width: 100%;
-    min-width: var(--dashboard-width);
-    height: var(--global-banner-height);
-    background: #ffffff;
-    border-bottom: 1px solid #d8edf7;
-    box-shadow: 0 3px 12px rgba(31, 91, 122, 0.08);
-}
-
-.global-banner-area [data-global-banner] {
-    width: var(--dashboard-width);
-    min-width: var(--dashboard-width);
-    height: 100%;
-    margin: 0 auto;
-    padding: 0 170px 0 20px;
-    box-sizing: border-box;
-}
-
-.global-banner-area [data-global-banner] {
-    width: var(--dashboard-width);
-    min-width: var(--dashboard-width);
-    height: 100%;
-    margin: 0 auto;
-
-    /* 환경설정이 들어갈 오른쪽 공간 확보 */
-    padding: 0 210px 0 0;
-
-    box-sizing: border-box;
-}
-
-.global-banner-area a {
-    color: #334e68;
-    font-weight: 700;
-    text-decoration: none;
-}
-
-.global-banner-area a[href="/"],
-.global-banner-area a[href="/index.html"],
-.global-banner-area a[href="./index.html"] {
-    position: relative;
-    color: #087fb4;
-}
-
-.global-banner-area a[href="/"]::after,
-.global-banner-area a[href="/index.html"]::after,
-.global-banner-area a[href="./index.html"]::after {
-    content: "";
-    position: absolute;
-    right: 0;
-    bottom: -20px;
-    left: 0;
-    height: 3px;
-    border-radius: 999px;
-    background: #20afe5;
-}
-
-/* 상단 오른쪽 환경설정 */
-.page-actions {
-    position: fixed;
-    top: 0;
-    right: max(
-            24px,
-            calc((100vw - var(--dashboard-width)) / 2)
-    );
-    z-index: 170;
 
     display: flex;
     align-items: center;
+
+    width: 100%;
+    min-width: var(--dashboard-width);
     height: var(--global-banner-height);
+
+    background: #f7fcff;
+    border-bottom: 2px solid #91dcf7;
+    box-shadow: 0 3px 12px rgba(31, 114, 148, 0.08);
 }
 
-/* 로그인과 환경설정 사이 구분선 */
-.page-actions::before {
-    content: "";
-    width: 1px;
-    height: 18px;
-    margin: 0 20px;
-    background: #cbd5e1;
+/* 메뉴 내용 너비 */
+.global-banner-area [data-global-banner] {
+    width: var(--dashboard-width);
+    min-width: var(--dashboard-width);
+    height: 100%;
+
+    margin: 0 auto;
+    padding: 0;
+
+    box-sizing: border-box;
+
+    background: transparent;
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
+    overflow: visible;
 }
 
-.page-actions button {
+.global-banner {
+    display: grid !important;
+    grid-template-columns:
+        var(--main-widget-width)
+        var(--layout-gap)
+        var(--side-widget-width);
+    align-items: center;
+    width: 100% !important;
+    height: 100% !important;
+    margin: 0 !important;
+}
+
+/* 홈 */
+.global-home-link {
+    position: relative;
     display: inline-flex;
     align-items: center;
     justify-content: center;
+    height: 100%;
+    padding: 0 6px;
+    color: #087fac !important;
+    font-size: 14px;
+    font-weight: 800;
+    text-decoration: none;
+    grid-column: 1;
+    justify-self: start;
+    margin-left: 24px;
+}
 
-    height: 36px;
-    padding: 0 4px;
+.global-home-link::after {
+    content: "";
+    position: absolute;
+    right: 4px;
+    bottom: 0;
+    left: 4px;
+    height: 3px;
+    border-radius: 999px 999px 0 0;
+    background: #079fd4;
+}
+
+/* 로그인 버튼 오른쪽 끝에 상단 메뉴 정렬 */
+.global-right-menu {
+    grid-column: 3;
+    justify-self: end;
+
+    display: flex;
+    align-items: center;
+    height: 100%;
+    gap: 18px;
+
+    /* 로그인 카드 내부 버튼의 오른쪽 여백과 동일 */
+    margin-right: 32px;
+}
+
+.global-user-menu,
+.global-settings-menu {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.global-user-menu a,
+.global-user-menu button,
+.global-settings-menu button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 36px;
+    padding: 0 3px;
     border: 0;
     border-radius: 6px;
-
     background: transparent;
-    color: #334e68;
+    color: #244d60;
+    font-family: inherit;
     font-size: 14px;
-    font-weight: 700;
+    font-weight: 750;
+    line-height: 1;
+    text-decoration: none;
+    white-space: nowrap;
 }
 
-/* 앞에 붙던 톱니 아이콘 제거 */
-.page-actions button::before {
-    content: none;
+.global-user-menu button,
+.global-settings-menu button {
+    cursor: pointer;
 }
 
-.page-actions button:hover {
-    background: transparent;
-    color: #0797d5;
+.global-user-menu a:hover,
+.global-user-menu button:hover,
+.global-settings-menu button:hover {
+    background: rgba(255, 255, 255, 0.42);
+    color: #087fac;
 }
 
-.page-actions:empty {
-    display: none;
+/* 로그인과 환경설정 사이 선 */
+.global-menu-divider {
+    display: block;
+    width: 1px;
+    height: 18px;
+    flex: 0 0 1px;
+    background: rgba(36, 77, 96, 0.34);
+}
+
+/* 톱니와 환경설정 글자 간격 */
+.global-settings-menu button {
+    gap: 7px;
+}
+
+.global-settings-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    line-height: 1;
 }

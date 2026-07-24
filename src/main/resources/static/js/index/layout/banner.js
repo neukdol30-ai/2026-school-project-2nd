@@ -3,10 +3,39 @@ function renderGlobalBanner() {
     const userMenu = state.currentUser
         ? `
             <a href="/mypage">내 정보</a>
-            <button data-action="logout">로그아웃</button>
+            <button
+                type="button"
+                data-action="logout"
+            >
+                로그아웃
+            </button>
         `
         : `
             <a href="/login">로그인</a>
+        `;
+
+    const settingsMenu = state.isEditMode
+        ? `
+            <button
+                type="button"
+                data-action="finish-layout-edit"
+            >
+                배치 완료
+            </button>
+        `
+        : `
+            <button
+                type="button"
+                data-action="toggle-edit"
+            >
+                <span
+                    class="global-settings-icon"
+                    aria-hidden="true"
+                >
+                    ⚙
+                </span>
+                <span>환경설정</span>
+            </button>
         `;
 
     return `
@@ -18,14 +47,25 @@ function renderGlobalBanner() {
                 홈
             </a>
 
-            <div class="global-user-menu">
-                ${userMenu}
+            <div class="global-right-menu">
+                <div class="global-user-menu">
+                    ${userMenu}
+                </div>
+
+                <span
+                    class="global-menu-divider"
+                    aria-hidden="true"
+                ></span>
+
+                <div class="global-settings-menu">
+                    ${settingsMenu}
+                </div>
             </div>
         </nav>
     `;
 }
 
-// 로그인 상태 변경 시 배너 메뉴만 갱신
+// 로그인 및 설정 상태 변경 시 상단 메뉴 갱신
 function updateGlobalBanner() {
     const globalBanner = document.querySelector(
         "[data-global-banner]"
