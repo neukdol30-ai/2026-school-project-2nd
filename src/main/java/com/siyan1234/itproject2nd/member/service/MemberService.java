@@ -190,4 +190,15 @@ public class MemberService {
         // updatePasswordByEmail(Dao)의 반환값은 "영향받은 행 수"(int). 1 이상이면 실제로 수정된 행 있다는 뜻 -> true / 0이면 false.
 
     }
+
+    // 현재 로그인한 회원의 약관 동의 상태를 DB에서 Y/Y로 변경
+    public boolean updateAgreement(Integer no) {
+
+        if (no == null) {
+            return false;
+        }
+
+        // DAO가 돌려준 수정 행 수가 1 이상이면 실제 DB 수정에 성공한 것
+        return memberDao.updateAgreement(no) > 0;
+    }
 }
