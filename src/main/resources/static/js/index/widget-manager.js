@@ -88,17 +88,26 @@ function getMainWidgets() {
         });
 }
 
-// 사이드 위젯 조회
 function getSideWidgets() {
     return state.widgets
         .filter((widget) => {
+            const type = String(widget.type || "")
+                .toLowerCase()
+                .replace(/[\s_-]/g, "");
+
+            const title = String(widget.title || "")
+                .replace(/\s/g, "");
+
+            const isWorldTime =
+                type === "worldtime"
+                || title === "세계시간";
+
             return widget.visible
                 && widget.zone === "side"
-                && widget.id !== state.headerWidgetId;
+                && widget.id !== state.headerWidgetId
+                && !isWorldTime;
         })
-        .sort((a, b) => {
-            return a.orderNo - b.orderNo;
-        });
+        .sort((a, b) => a.orderNo - b.orderNo);
 }
 
 // 더 짧은 위젯 컬럼이 스크롤을 따라가도록 설정

@@ -39,19 +39,78 @@
     gap: 20px;
 }
 
-/* 상단 위젯 영역 */
+/* 상단 현재시간·세계시간 / 계정 배치 */
 .dashboard-header {
     display: grid;
     grid-template-columns:
-        var(--header-widget-width)
-        var(--header-logo-width)
-        var(--header-widget-width);
+        var(--main-widget-width)
+        var(--side-widget-width);
     gap: var(--layout-gap);
     align-items: stretch;
 
     width: var(--dashboard-width);
     min-width: var(--dashboard-width);
     margin: 0 auto 24px;
+}
+
+/* 현재시간과 세계시간 묶음 */
+.header-time-group {
+    display: grid;
+    grid-template-columns:
+        var(--header-widget-width)
+        minmax(0, 1fr);
+    gap: 0;
+
+    min-width: 0;
+    min-height: 204px;
+    box-sizing: border-box;
+}
+
+/* 상단 세 영역 높이 맞춤 */
+.header-widget-slot,
+.header-world-time-slot,
+.header-auth-slot {
+    display: flex;
+    min-width: 0;
+    min-height: 204px;
+    align-items: stretch;
+}
+
+.header-widget-slot > *,
+.header-world-time-slot > *,
+.header-auth-slot > * {
+    width: 100% !important;
+    max-width: none !important;
+    min-width: 0 !important;
+    height: 100% !important;
+    margin: 0 !important;
+}
+
+/* 현재시간 오른쪽 모서리 제거 */
+.header-widget-slot > * {
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+    border-right: 0;
+}
+
+/* 세계시간 왼쪽 모서리 제거 */
+.header-world-time-slot > * {
+    position: relative;
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+}
+
+/* 현재시간과 세계시간 사이 선 */
+.header-world-time-slot > *::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 2;
+
+    width: 1px;
+    background: #e5e7eb;
 }
 
 /* 메인 위젯 영역 */
@@ -73,18 +132,6 @@
 .header-logo-slot,
 .header-auth-slot {
     min-width: 0;
-}
-
-/* 중앙 로고 슬롯은 현재 사용하지 않음 */
-.header-logo-slot {
-    visibility: hidden;
-    min-height: 204px;
-}
-
-.header-logo-slot::before,
-.header-logo-slot::after {
-    content: none !important;
-    display: none !important;
 }
 
 /* 현재시간, 로그인 카드 높이 */
