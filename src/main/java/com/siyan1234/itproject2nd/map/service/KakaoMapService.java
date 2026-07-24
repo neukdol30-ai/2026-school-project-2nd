@@ -25,7 +25,7 @@ import java.util.Map;
  * 2차 범위:
  * - 정적 지도 이미지 조회
  *
- * 3차 범위:
+ * 3차 이후:
  * - 대중교통 / 도보 / 자전거 경로 조회
  */
 @Service
@@ -136,24 +136,29 @@ public class KakaoMapService {
         KakaoRouteType routeType = KakaoRouteType.from(type);
 
         Map<String, Object> parameters = new LinkedHashMap<>();
-        parameters.put("start_x", normalizeCoordinate(startX));
-        parameters.put("start_y", normalizeCoordinate(startY));
-        parameters.put("end_x", normalizeCoordinate(endX));
-        parameters.put("end_y", normalizeCoordinate(endY));
-        parameters.put("s_name", normalizeRouteName(startName, "출발"));
-        parameters.put("e_name", normalizeRouteName(endName, "도착"));
-
-        if (!routeType.isPublicTraffic()) {
-            parameters.put("input_coord", "WGS84");
-            parameters.put("output_coord", "WGS84");
-        }
+        parameters.put("start_x", normalizeLongitude(startX));
+        parameters.put("start_y", normalizeLatitude(startY));
+        parameters.put("end_x", normalizeLongitude(endX));
+        parameters.put("end_y", normalizeLatitude(endY));
+        parameters.put("input_coord", "WGS84");
+        parameters.put("output_coord", "WGS84");
 
         /*
-         * 카카오맵 도보 경로 조회 API는 route_mode를 지원합니다.
-         * 자전거/대중교통은 공통 좌표 파라미터 중심으로 호출합니다.
+         * 대중교통 API는 공식 예제와 동일하게 좌표 중심으로 요청합니다.
+         * s_name/e_name은 선택값이지만, 한글 장소명이 포함되면 HTTP 400 원인 파악이 어려워
+         * publictraffic 요청에서는 제외합니다.
          */
+        if (!routeType.isPublicTraffic()) {
+            parameters.put("s_name", normalizeRouteName(startName, "출발"));
+            parameters.put("e_name", normalizeRouteName(endName, "도착"));
+        }
+
         if (routeType.isWalk()) {
             parameters.put("route_mode", normalizeWalkRouteMode(routeMode));
+        }
+
+        if (routeType.isBicycle()) {
+            parameters.put("route_mode", normalizeBicycleRouteMode(routeMode));
         }
 
         return callKakao(routeType.getLabel() + " 경로 조회가 완료되었습니다.", routeType.getUrl(), parameters);
@@ -172,10 +177,39 @@ public class KakaoMapService {
             JsonNode data = kakaoMapClient.get(url, parameters);
             return KakaoMapActionResponseDto.success(successMessage, data);
         } catch (KakaoMapApiException e) {
-            return KakaoMapActionResponseDto.failure(e.getMessage(), e.getStatusCode(), e.getResponseBody());
+            return KakaoMapActionResponseDto.failure(resolveKakaoFailureMessage(e), e.getStatusCode(), e.getResponseBody());
         } catch (IllegalStateException | IllegalArgumentException e) {
             return KakaoMapActionResponseDto.failure(e.getMessage());
         }
+    }
+
+    private String resolveKakaoFailureMessage(KakaoMapApiException e) {
+        StringBuilder message = new StringBuilder(e.getMessage());
+
+        String kakaoMessage = findText(e.getResponseBody(), "msg");
+        if (!StringUtils.hasText(kakaoMessage)) {
+            kakaoMessage = findText(e.getResponseBody(), "message");
+        }
+        if (!StringUtils.hasText(kakaoMessage)) {
+            kakaoMessage = findText(e.getResponseBody(), "error_description");
+        }
+        if (!StringUtils.hasText(kakaoMessage)) {
+            kakaoMessage = findText(e.getResponseBody(), "error");
+        }
+
+        if (StringUtils.hasText(kakaoMessage)) {
+            message.append(" - ").append(kakaoMessage);
+        }
+
+        return message.toString();
+    }
+
+    private String findText(JsonNode node, String fieldName) {
+        if (node == null || !node.has(fieldName) || node.get(fieldName) == null) {
+            return "";
+        }
+
+        return node.get(fieldName).asText();
     }
 
     private void validateCoordinateRequired(String x, String y, String message) {
@@ -190,6 +224,38 @@ public class KakaoMapService {
         try {
             Double.parseDouble(normalized);
             return normalized;
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException("좌표 값은 숫자로 입력해주세요.");
+        }
+    }
+
+    private String normalizeLongitude(String value) {
+        double longitude = parseCoordinate(value);
+
+        if (longitude < 123.0 || longitude > 132.5) {
+            throw new IllegalArgumentException("경도 값이 올바르지 않습니다. 출발지/도착지 좌표가 뒤바뀌었는지 확인해주세요.");
+        }
+
+        return value.trim();
+    }
+
+    private String normalizeLatitude(String value) {
+        double latitude = parseCoordinate(value);
+
+        if (latitude < 32.0 || latitude > 39.8) {
+            throw new IllegalArgumentException("위도 값이 올바르지 않습니다. 출발지/도착지 좌표가 뒤바뀌었는지 확인해주세요.");
+        }
+
+        return value.trim();
+    }
+
+    private double parseCoordinate(String value) {
+        if (!StringUtils.hasText(value)) {
+            throw new IllegalArgumentException("좌표 값은 숫자로 입력해주세요.");
+        }
+
+        try {
+            return Double.parseDouble(value.trim());
         } catch (NumberFormatException e) {
             throw new IllegalArgumentException("좌표 값은 숫자로 입력해주세요.");
         }
@@ -240,5 +306,25 @@ public class KakaoMapService {
         }
 
         return "BROAD_FIRST";
+    }
+
+    private String normalizeBicycleRouteMode(String routeMode) {
+        if (!StringUtils.hasText(routeMode)) {
+            return "BIKE_ONLY";
+        }
+
+        if ("SHORTEST".equalsIgnoreCase(routeMode)) {
+            return "SHORTEST";
+        }
+
+        if ("ACCESSIBLE".equalsIgnoreCase(routeMode)) {
+            return "ACCESSIBLE";
+        }
+
+        /*
+         * 화면의 도보 옵션인 BROAD_FIRST가 자전거 요청으로 넘어오면
+         * 자전거 API의 기본 옵션인 BIKE_ONLY로 보정합니다.
+         */
+        return "BIKE_ONLY";
     }
 }

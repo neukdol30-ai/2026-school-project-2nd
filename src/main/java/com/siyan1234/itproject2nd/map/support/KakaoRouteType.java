@@ -40,9 +40,15 @@ public enum KakaoRouteType {
         return PUBLICTRANSPORT;
     }
 
+    public boolean isPublicTraffic() {
+        return this == PUBLICTRANSPORT;
+    }
+
     public boolean isWalk() {
         return this == WALK;
     }
 
-    public boolean isPublicTraffic() { return this == PUBLICTRANSPORT; }
+    public boolean isBicycle() {
+        return this == BICYCLE;
+    }
 }
