@@ -9,9 +9,14 @@
     box-sizing: border-box;
 }
 
+html {
+    min-height: 100%;
+}
+
 body {
     margin: 0;
     min-height: 100vh;
+    overflow-y: auto;
     background: #f4f7fb;
     color: #0f172a;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
@@ -102,7 +107,8 @@ select:disabled {
     display: grid;
     grid-template-columns: 390px minmax(0, 1fr);
     gap: 18px;
-    min-height: calc(100vh - 170px);
+    height: clamp(680px, calc(100vh - 170px), 860px);
+    min-height: 680px;
 }
 
 .map-side-panel,
@@ -117,9 +123,10 @@ select:disabled {
     display: flex;
     flex-direction: column;
     gap: 14px;
-    max-height: calc(100vh - 174px);
+    min-height: 0;
     padding: 16px;
-    overflow: hidden;
+    overflow-y: auto;
+    overscroll-behavior: contain;
 }
 
 .map-panel-section {
@@ -136,8 +143,8 @@ select:disabled {
 
 .result-section {
     display: flex;
-    flex: 1 1 auto;
-    min-height: 240px;
+    flex: 0 0 auto;
+    min-height: 0;
     overflow: hidden;
     flex-direction: column;
 }
@@ -370,6 +377,7 @@ select:disabled {
     display: grid;
     gap: 9px;
     min-height: 0;
+    max-height: 330px;
     overflow: auto;
     padding-right: 4px;
 }
@@ -556,6 +564,7 @@ select:disabled {
     display: flex;
     flex-direction: column;
     min-width: 0;
+    min-height: 0;
     overflow: hidden;
 }
 
@@ -589,37 +598,21 @@ select:disabled {
 
 .kakao-dynamic-map {
     flex: 1 1 auto;
-    min-height: 640px;
+    min-height: 0;
+    height: 100%;
     background: #e2e8f0;
 }
 
-.map-floating-card {
-    position: absolute;
-    left: 18px;
-    bottom: 18px;
-    width: min(360px, calc(100% - 36px));
-    padding: 15px 16px;
-    border: 1px solid rgba(226, 232, 240, 0.9);
-    border-radius: 18px;
-    background: rgba(255, 255, 255, 0.94);
-    box-shadow: 0 16px 38px rgba(15, 23, 42, 0.13);
-    backdrop-filter: blur(10px);
-    z-index: 3;
-}
-
-.map-floating-card strong {
-    display: block;
-    color: #111827;
-    font-size: 14px;
-    font-weight: 900;
-}
-
-.map-floating-card p {
+.map-toolbar-guide {
     margin: 5px 0 0;
     color: #64748b;
     font-size: 12px;
     font-weight: 800;
     line-height: 1.45;
+}
+
+.map-floating-card {
+    display: none;
 }
 
 .map-info-window {
@@ -668,6 +661,8 @@ select:disabled {
 
     .map-layout {
         grid-template-columns: 1fr;
+        height: auto;
+        min-height: 0;
     }
 
     .map-side-panel {
@@ -678,6 +673,7 @@ select:disabled {
     .map-canvas-panel {
         order: 1;
         min-height: 520px;
+        height: 520px;
     }
 
     .kakao-dynamic-map {
@@ -711,4 +707,17 @@ select:disabled {
     .map-floating-card {
         display: none;
     }
+}
+
+
+/* 5차 보정: 전체 화면에서도 왼쪽 패널을 독립 스크롤로 유지합니다. */
+.map-side-panel::-webkit-scrollbar,
+.result-list::-webkit-scrollbar {
+    width: 8px;
+}
+
+.map-side-panel::-webkit-scrollbar-thumb,
+.result-list::-webkit-scrollbar-thumb {
+    border-radius: 999px;
+    background: #cbd5e1;
 }

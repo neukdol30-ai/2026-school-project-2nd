@@ -65,6 +65,7 @@
 
         const zoomControl = new kakao.maps.ZoomControl();
         state.map.addControl(zoomControl, kakao.maps.ControlPosition.RIGHT);
+        resizeMapAfterLayout();
     }
 
     function bindEvents() {
@@ -115,11 +116,17 @@
             size: 15
         };
 
-        if (useCurrentLocation && state.currentPosition) {
+        const useDistanceSort = useCurrentLocation && isCurrentLocationReliable();
+
+        if (useDistanceSort) {
             options.location = state.currentPosition;
             options.sort = kakao.maps.services.SortBy.DISTANCE;
         } else {
             options.sort = kakao.maps.services.SortBy.ACCURACY;
+
+            if (useCurrentLocation && state.currentPosition && !isCurrentLocationReliable()) {
+                showLocationStatus("현재 위치 오차가 커서 정확도순으로 검색합니다. 모바일 GPS 또는 위치 보정 후 다시 시도해주세요.", "warning");
+            }
         }
 
         state.places.keywordSearch(keyword, (data, status) => {
@@ -226,6 +233,7 @@
         }
 
         state.lastBounds = bounds;
+        resizeMapAfterLayout();
         state.map.setBounds(bounds);
         setFitButtonEnabled(true);
     }
@@ -480,11 +488,11 @@
                 state.map.setLevel(3);
                 state.map.panTo(latLng);
 
-                const accuracyMessage = accuracy > 1000
-                    ? `현재 위치를 찾았지만 오차가 클 수 있습니다. 약 ${formatDistance(accuracy)} 범위입니다.`
+                const accuracyMessage = accuracy > 5000
+                    ? `현재 위치를 찾았지만 오차가 큽니다. 약 ${formatDistance(accuracy)} 범위입니다. 거리순 검색은 정확도순으로 보정됩니다.`
                     : `현재 위치가 적용되었습니다. 약 ${formatDistance(accuracy)} 범위입니다.`;
 
-                showLocationStatus(accuracyMessage, accuracy > 1000 ? "warning" : "success");
+                showLocationStatus(accuracyMessage, accuracy > 5000 ? "warning" : "success");
                 button.disabled = false;
                 button.textContent = "현재 위치";
             },
@@ -511,8 +519,23 @@
 
     function fitResultBounds() {
         if (state.lastBounds) {
+            resizeMapAfterLayout();
             state.map.setBounds(state.lastBounds);
         }
+    }
+
+    function isCurrentLocationReliable() {
+        return Boolean(state.currentPosition) && (!state.currentAccuracy || state.currentAccuracy <= 5000);
+    }
+
+    function resizeMapAfterLayout() {
+        if (!state.map || !window.kakao?.maps?.event) {
+            return;
+        }
+
+        window.setTimeout(() => {
+            kakao.maps.event.trigger(state.map, "resize");
+        }, 80);
     }
 
     function clearMapView() {
