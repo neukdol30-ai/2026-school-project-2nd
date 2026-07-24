@@ -10,7 +10,10 @@
     const Admin = window.SecondProAdmin = window.SecondProAdmin || {};
     const STORAGE_KEY = "SECONDPRO_ADMIN_CHAT_NOTIFICATION";
 
+    const NOTIFICATION_COOLDOWN_MILLIS = 1500;
+
     let lastNotifiedAt = 0;
+    let lastNotifiedKey = "";
 
     function initBrowserNotification() {
         updateNotificationButton();
@@ -62,6 +65,10 @@
     }
 
     function notifyChatEvent(roomNo) {
+        if (isDuplicateNotification(roomNo)) {
+            return;
+        }
+
         const message = roomNo
             ? "상담방 #" + roomNo + "번에 새 상담 또는 새 메시지가 도착했습니다."
             : "새 상담 또는 새 메시지가 도착했습니다.";
@@ -72,13 +79,25 @@
             return;
         }
 
-        const now = Date.now();
-        if (now - lastNotifiedAt < 1500) {
-            return;
-        }
-        lastNotifiedAt = now;
-
         showBrowserNotification("SecondPro 상담 알림", message);
+    }
+
+    /**
+     * 같은 상담방의 ADMIN_ROOM_REFRESH 이벤트가 짧은 시간 안에 여러 번 들어오면
+     * 토스트가 2개 이상 겹쳐 보일 수 있습니다.
+     * 화면 내부 토스트와 브라우저 알림 모두 같은 기준으로 중복 표시를 막습니다.
+     */
+    function isDuplicateNotification(roomNo) {
+        const now = Date.now();
+        const notificationKey = String(roomNo || "ALL");
+
+        if (lastNotifiedKey === notificationKey && now - lastNotifiedAt < NOTIFICATION_COOLDOWN_MILLIS) {
+            return true;
+        }
+
+        lastNotifiedKey = notificationKey;
+        lastNotifiedAt = now;
+        return false;
     }
 
     function shouldUseBrowserNotification() {

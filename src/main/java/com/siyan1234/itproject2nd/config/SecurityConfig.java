@@ -1,9 +1,6 @@
 package com.siyan1234.itproject2nd.config;
 
-import com.siyan1234.itproject2nd.config.handler.CustomAccessDeniedHandler;
-import com.siyan1234.itproject2nd.config.handler.CustomAuthenticationEntryPoint;
-import com.siyan1234.itproject2nd.config.handler.CustomLoginFailureHandler;
-import com.siyan1234.itproject2nd.config.handler.CustomLoginSuccessHandler;
+import com.siyan1234.itproject2nd.config.handler.*;
 import com.siyan1234.itproject2nd.config.security.AdminSessionGuardFilter;
 import com.siyan1234.itproject2nd.config.security.SecurityAuthority;
 import com.siyan1234.itproject2nd.config.security.SecurityPaths;
@@ -21,7 +18,7 @@ import org.springframework.security.config.annotation.method.configuration.Enabl
 
 /**
  * Spring Security 설정입니다.
- *
+ * <p>
  * URL 그룹은 SecurityPaths에서 관리하고,
  * 로그인 성공/실패/권한 오류 이동 처리는 handler 패키지에서 담당합니다.
  */
@@ -36,7 +33,8 @@ public class SecurityConfig {
     private final CustomAuthenticationEntryPoint customAuthenticationEntryPoint;
     private final CustomAccessDeniedHandler customAccessDeniedHandler;
     private final AdminSessionGuardFilter adminSessionGuardFilter;
-
+    private final OAuth2LoginSuccessHandler oAuth2LoginSuccessHandler; // 소셜 로그인 성공 전용 Handler
+    private final OAuth2LoginFailureHandler oAuth2LoginFailureHandler; // 소셜 로그인 실패 전용 Handler
     private final OAuth2DetailsService oAuth2DetailsService;
 
     @Bean
@@ -66,8 +64,8 @@ public class SecurityConfig {
                 // 2-2 소셜 로그인 설정
                 .oauth2Login(oauth2 -> oauth2
                         .loginPage("/member/login")
-                        .defaultSuccessUrl("/", true)
-                        .failureUrl("/member/login?error=social")
+                        .successHandler(oAuth2LoginSuccessHandler) // 소셜 로그인 성공 시 최근 로그인 시각 갱신 후 메인으로 이동
+                        .failureHandler(oAuth2LoginFailureHandler) // 실패 사유를 세션에 담고 로그인 화면으로 보냄
                         .userInfoEndpoint(userInfo -> userInfo.userService(oAuth2DetailsService))
                 )
                 // 3 로그아웃 설정

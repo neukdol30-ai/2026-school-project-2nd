@@ -452,6 +452,8 @@ if (
     fetchWeather();
 }
 
+startWorldTimeClock();
+
 // 일정과 미니 캘린더 최초 조회
 const initialCalendarJobs = [];
 
