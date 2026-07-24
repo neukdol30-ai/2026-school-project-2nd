@@ -3,85 +3,159 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>카카오맵 API 테스트</title>
-    <link rel="stylesheet" th:href="@{/css/kakao-map.css}">
-    <script defer th:src="@{/js/kakao-map.js}"></script>
+    <title>지도</title>
+    <link rel="stylesheet" th:href="@{/css/kakao-dynamic-map.css}">
 </head>
 <body>
-<div class="kakao-map-page">
-    <header class="map-hero">
+<div class="service-map-page">
+    <header class="service-map-header">
         <div>
-            <span class="eyebrow">KAKAO MAP API</span>
-            <h1>카카오맵 기능 테스트</h1>
-            <p>주소/좌표 변환, 장소 검색, 정적 지도 조회, 경로 조회를 테스트합니다.</p>
+            <span class="service-map-eyebrow">MAP SERVICE</span>
+            <h1>지도</h1>
+            <p>장소를 검색하고 현재 위치를 기준으로 경로를 확인할 수 있습니다.</p>
         </div>
-        <a class="home-link" href="/index.html">메인으로</a>
+        <a class="service-map-home" href="/index.html">메인으로</a>
     </header>
 
-    <main class="map-grid">
-        <section class="map-card">
-            <div class="card-head"><span class="card-icon">📍</span><div><h2>주소 → 좌표 변환</h2><p>도로명/지번 주소를 입력하면 좌표 x, y를 조회합니다.</p></div></div>
-            <form class="map-form" data-kakao-form="address">
-                <label><span>주소 검색어</span><input type="text" name="query" placeholder="예: 서울 강남구 테헤란로 152" autocomplete="off" required></label>
-                <button type="submit">주소 검색</button>
-            </form>
-            <div class="result-box" data-result="address"></div>
-        </section>
+    <main class="service-map-shell">
+        <aside class="map-sidebar" aria-label="지도 조작 패널">
+            <section class="map-panel-card">
+                <div class="panel-title-row">
+                    <div>
+                        <span class="panel-kicker">Search</span>
+                        <h2>장소 검색</h2>
+                    </div>
+                    <button type="button" class="map-icon-button" data-current-location-button title="현재 위치로 이동">⌖</button>
+                </div>
 
-        <section class="map-card">
-            <div class="card-head"><span class="card-icon">🧭</span><div><h2>좌표 → 주소 변환</h2><p>WGS84 좌표 x, y를 입력하면 행정 주소를 조회합니다.</p></div></div>
-            <form class="map-form two-column" data-kakao-form="coord">
-                <label><span>x 좌표</span><input type="text" name="x" placeholder="예: 127.02758" autocomplete="off" required></label>
-                <label><span>y 좌표</span><input type="text" name="y" placeholder="예: 37.49794" autocomplete="off" required></label>
-                <button type="submit">주소 변환</button>
-            </form>
-            <div class="result-box" data-result="coord"></div>
-        </section>
+                <form class="map-search-form" data-map-search-form>
+                    <div class="search-input-wrap">
+                        <input type="text" name="query" placeholder="장소, 주소를 검색하세요" autocomplete="off" required>
+                        <button type="submit">검색</button>
+                    </div>
+                    <div class="search-type-row" role="group" aria-label="검색 방식">
+                        <label>
+                            <input type="radio" name="searchType" value="keyword" checked>
+                            <span>장소</span>
+                        </label>
+                        <label>
+                            <input type="radio" name="searchType" value="address">
+                            <span>주소</span>
+                        </label>
+                    </div>
+                </form>
 
-        <section class="map-card wide-card">
-            <div class="card-head"><span class="card-icon">🔎</span><div><h2>장소 검색</h2><p>검색 결과의 좌표를 출발지/도착지로 바로 설정할 수 있습니다.</p></div></div>
-            <form class="map-form place-form" data-kakao-form="place">
-                <label class="wide-field"><span>장소 키워드</span><input type="text" name="query" placeholder="예: 강남역 카페" autocomplete="off" required></label>
-                <label><span>중심 x 좌표</span><input type="text" name="x" placeholder="선택 입력" autocomplete="off"></label>
-                <label><span>중심 y 좌표</span><input type="text" name="y" placeholder="선택 입력" autocomplete="off"></label>
-                <label><span>반경 meter</span><input type="number" name="radius" placeholder="예: 1000" min="1" max="20000"></label>
-                <label><span>정렬</span><select name="sort"><option value="accuracy">정확도순</option><option value="distance">거리순</option></select></label>
-                <button type="submit">장소 검색</button>
-            </form>
-            <div class="result-box" data-result="place"></div>
-        </section>
+                <div class="map-message" data-map-message>장소명 또는 주소를 입력해 주세요.</div>
+            </section>
 
-        <section class="map-card wide-card static-map-card">
-            <div class="card-head"><span class="card-icon">🗺️</span><div><h2>정적 지도 조회</h2><p>좌표를 기준으로 이미지 지도를 조회합니다.</p></div></div>
-            <form class="map-form static-map-form" data-kakao-form="staticMap">
-                <label><span>x 좌표</span><input type="text" name="x" placeholder="예: 127.02758" autocomplete="off" required></label>
-                <label><span>y 좌표</span><input type="text" name="y" placeholder="예: 37.49794" autocomplete="off" required></label>
-                <label><span>가로</span><input type="number" name="width" value="640" min="160" max="2048"></label>
-                <label><span>세로</span><input type="number" name="height" value="360" min="160" max="1024"></label>
-                <label><span>지도 레벨</span><input type="number" name="level" value="3" min="1" max="15"></label>
-                <label><span>포맷</span><select name="format"><option value="png">PNG</option><option value="jpg">JPG</option></select></label>
-                <button type="submit">정적 지도 보기</button>
-            </form>
-            <div class="static-map-preview"><div class="result-box" data-result="staticMap"></div><img class="static-map-image" data-static-map-image src="" alt="카카오 정적 지도 미리보기" hidden></div>
-        </section>
+            <section class="map-panel-card route-panel">
+                <div class="panel-title-row compact">
+                    <div>
+                        <span class="panel-kicker">Route</span>
+                        <h2>경로 조회</h2>
+                    </div>
+                </div>
 
-        <section class="map-card wide-card route-card">
-            <div class="card-head"><span class="card-icon">🚗</span><div><h2>경로 조회</h2><p>출발지와 도착지 좌표를 입력해 대중교통, 도보, 자전거 경로를 조회합니다.</p></div></div>
-            <form class="map-form route-form" data-kakao-form="route">
-                <label><span>경로 종류</span><select name="type"><option value="publictraffic">대중교통</option><option value="walk">도보</option><option value="bicycle">자전거</option></select></label>
-                <label><span>도보 옵션</span><select name="routeMode"><option value="BROAD_FIRST">넓은 길 우선</option><option value="SHORTEST">최단 경로</option><option value="ACCESSIBLE">편안한 길</option></select></label>
-                <label><span>출발지명</span><input type="text" name="startName" value="출발" autocomplete="off"></label>
-                <label><span>도착지명</span><input type="text" name="endName" value="도착" autocomplete="off"></label>
-                <label><span>출발 x</span><input type="text" name="startX" placeholder="예: 127.02758" autocomplete="off" required></label>
-                <label><span>출발 y</span><input type="text" name="startY" placeholder="예: 37.49794" autocomplete="off" required></label>
-                <label><span>도착 x</span><input type="text" name="endX" placeholder="예: 127.1105" autocomplete="off" required></label>
-                <label><span>도착 y</span><input type="text" name="endY" placeholder="예: 37.3955" autocomplete="off" required></label>
-                <button type="submit">경로 조회</button>
-            </form>
-            <div class="route-helper"><span>장소 검색 결과에서 출발지로 설정 / 도착지로 설정 버튼을 누르면 좌표가 자동 입력됩니다.</span></div>
-            <div class="result-box" data-result="route"></div>
+                <form class="route-form" data-route-form>
+                    <label>
+                        <span>경로 종류</span>
+                        <select name="type">
+                            <option value="publictraffic">대중교통</option>
+                            <option value="walk">도보</option>
+                            <option value="bicycle">자전거</option>
+                        </select>
+                    </label>
+
+                    <label data-walk-option>
+                        <span>도보 옵션</span>
+                        <select name="routeMode">
+                            <option value="BROAD_FIRST">넓은 길 우선</option>
+                            <option value="SHORTEST">최단 경로</option>
+                            <option value="ACCESSIBLE">편안한 길</option>
+                        </select>
+                    </label>
+
+                    <div class="route-point-box">
+                        <span class="route-point-label">출발지</span>
+                        <strong data-route-start-name>출발지를 선택해 주세요</strong>
+                    </div>
+
+                    <div class="route-point-box">
+                        <span class="route-point-label">도착지</span>
+                        <strong data-route-end-name>도착지를 선택해 주세요</strong>
+                    </div>
+
+                    <input type="hidden" name="startX">
+                    <input type="hidden" name="startY">
+                    <input type="hidden" name="startName">
+                    <input type="hidden" name="endX">
+                    <input type="hidden" name="endY">
+                    <input type="hidden" name="endName">
+
+                    <button type="submit" class="route-submit-button">경로 조회</button>
+                </form>
+
+                <div class="route-result" data-route-result></div>
+            </section>
+
+            <section class="map-panel-card favorite-preview-panel">
+                <div class="panel-title-row compact">
+                    <div>
+                        <span class="panel-kicker">Favorite</span>
+                        <h2>자주 가는 장소</h2>
+                    </div>
+                    <span class="coming-badge">5차 예정</span>
+                </div>
+                <p>로그인한 유저의 즐겨찾기 저장/삭제 기능은 다음 패치에서 DB와 연결합니다.</p>
+            </section>
+
+            <section class="search-result-panel" data-search-result-panel>
+                <div class="result-panel-head">
+                    <h2>검색 결과</h2>
+                    <span data-result-count>0개</span>
+                </div>
+                <div class="place-result-list" data-place-result-list>
+                    <div class="empty-result">검색 결과가 여기에 표시됩니다.</div>
+                </div>
+            </section>
+        </aside>
+
+        <section class="map-main-card" aria-label="지도 영역">
+            <div class="map-toolbar">
+                <div>
+                    <span class="panel-kicker">Dynamic Map</span>
+                    <h2 data-selected-place-name>지도를 움직여 주변을 확인하세요</h2>
+                    <p data-selected-place-address>검색 결과 또는 현재 위치를 선택하면 지도에 표시됩니다.</p>
+                </div>
+                <div class="map-toolbar-actions">
+                    <button type="button" data-zoom-in-button>확대</button>
+                    <button type="button" data-zoom-out-button>축소</button>
+                </div>
+            </div>
+
+            <div class="map-sdk-warning" th:if="${!kakaoMapReady}">
+                카카오 JavaScript 키가 설정되어 있지 않습니다. <strong>KAKAO_MAP_JAVASCRIPT_KEY</strong> 환경변수를 등록해 주세요.
+            </div>
+
+            <div id="kakaoDynamicMap" class="kakao-dynamic-map" data-kakao-map></div>
+
+            <div class="selected-place-card" data-selected-place-card hidden>
+                <div>
+                    <span class="selected-label">선택한 장소</span>
+                    <strong data-selected-card-name></strong>
+                    <p data-selected-card-address></p>
+                </div>
+                <div class="selected-actions">
+                    <button type="button" data-selected-start>출발지</button>
+                    <button type="button" data-selected-end>도착지</button>
+                    <button type="button" data-selected-favorite disabled>즐겨찾기</button>
+                </div>
+            </div>
         </section>
     </main>
 </div>
+
+<script th:if="${kakaoMapReady}" th:src="${kakaoMapSdkUrl}"></script>
+<script defer th:src="@{/js/kakao-dynamic-map.js}"></script>
 </body>
 </html>
