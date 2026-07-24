@@ -69,7 +69,6 @@ function renderWidgetHeader(
             </div>
 
             <div class="widget-actions">
-                       <div class="widget-actions">
                 ${widget.type === "stock" && !state.isEditMode ? `
                 <div class="stock-header-tools">
                     <span class="stock-header-updated">
