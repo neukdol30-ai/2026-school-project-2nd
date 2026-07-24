@@ -16,6 +16,7 @@
     };
     const DEFAULT_MAP_LEVEL = 4;
     const MAX_MAP_LEVEL = 10;
+    const MAX_PUBLIC_ROUTE_CANDIDATES = 5;
     const ROUTE_LINE_OPTIONS = {
         strokeWeight: 6,
         strokeColor: "#2563eb",
@@ -488,21 +489,14 @@
         }
 
         const data = response.data || {};
-        drawRouteOnMap(data, payload);
-        const routeType = document.querySelector('[data-route-form] [name="type"]')?.value || "publictraffic";
+        const routeType = payload.type || document.querySelector('[data-route-form] [name="type"]')?.value || "publictraffic";
 
         if (routeType === "publictraffic") {
-            const firstRoute = data.routes?.[0]?.properties || {};
-            result.classList.remove("error");
-            result.innerHTML = `
-                <strong>경로 요약</strong>
-                <span>${formatDistance(firstRoute.totalDistance)} · ${formatTime(firstRoute.totalTime)}</span>
-                <small>환승 ${formatNumber(firstRoute.transfers)}회${firstRoute.fare?.value ? ` · ${formatNumber(firstRoute.fare.value)}원` : ""}</small>
-                <small>오른쪽 지도에서 경로를 확인할 수 있습니다.</small>
-            `;
+            renderPublicRouteSummary(result, data, payload);
             return;
         }
 
+        drawRouteOnMap(data, payload, 0);
         const properties = data.route?.properties || {};
         result.classList.remove("error");
         result.innerHTML = `
@@ -512,12 +506,70 @@
         `;
     }
 
-    function drawRouteOnMap(routeData, payload) {
+    function renderPublicRouteSummary(result, data, payload) {
+        const routes = Array.isArray(data.routes) ? data.routes : [];
+
+        if (routes.length === 0) {
+            clearRouteLines();
+            result.classList.add("error");
+            result.textContent = "대중교통 경로 조회 결과가 없습니다.";
+            return;
+        }
+
+        drawRouteOnMap(data, payload, 0);
+        result.classList.remove("error");
+
+        const routeCards = routes.slice(0, MAX_PUBLIC_ROUTE_CANDIDATES).map((route, index) => {
+            const routeProps = route.properties || {};
+            const fareText = routeProps.fare?.value ? `${formatNumber(routeProps.fare.value)}원` : "요금 정보 없음";
+            const activeClass = index === 0 ? " active" : "";
+
+            return `
+                <button type="button" class="route-candidate-card${activeClass}" data-route-candidate="${index}">
+                    <span class="route-candidate-rank">${index + 1}</span>
+                    <span class="route-candidate-content">
+                        <strong>${formatTime(routeProps.totalTime)} · ${formatDistance(routeProps.totalDistance)}</strong>
+                        <small>환승 ${formatNumber(routeProps.transfers)}회 · ${fareText}</small>
+                        <em>이 경로 보기</em>
+                    </span>
+                </button>
+            `;
+        }).join("");
+
+        const firstRoute = routes[0]?.properties || {};
+        result.innerHTML = `
+            <strong>경로 요약</strong>
+            <span>${formatDistance(firstRoute.totalDistance)} · ${formatTime(firstRoute.totalTime)}</span>
+            <small>환승 ${formatNumber(firstRoute.transfers)}회${firstRoute.fare?.value ? ` · ${formatNumber(firstRoute.fare.value)}원` : ""}</small>
+            <small>대중교통은 선택한 한 개 경로만 지도에 표시됩니다.</small>
+            <div class="route-candidate-list">${routeCards}</div>
+        `;
+
+        result.querySelectorAll("[data-route-candidate]").forEach((button) => {
+            button.addEventListener("click", () => {
+                const index = Number(button.dataset.routeCandidate);
+                const routeProps = routes[index]?.properties || {};
+
+                drawRouteOnMap(data, payload, index);
+                result.querySelectorAll(".route-candidate-card").forEach((card) => card.classList.remove("active"));
+                button.classList.add("active");
+
+                const summarySpan = result.querySelector(":scope > span");
+                if (summarySpan) {
+                    summarySpan.textContent = `${formatDistance(routeProps.totalDistance)} · ${formatTime(routeProps.totalTime)}`;
+                }
+
+                setMapGuide(`${index + 1}번 대중교통 경로가 지도에 표시되었습니다.`);
+            });
+        });
+    }
+
+    function drawRouteOnMap(routeData, payload, routeIndex = 0) {
         clearRouteLines();
 
         const startPosition = createLatLngFromPayload(payload.startY, payload.startX);
         const endPosition = createLatLngFromPayload(payload.endY, payload.endX);
-        const extractedPath = extractRoutePath(routeData);
+        const extractedPath = extractRoutePath(routeData, payload.type, routeIndex);
         const routePath = extractedPath.length >= 2 ? extractedPath : [startPosition, endPosition].filter(Boolean);
 
         if (routePath.length < 2) {
@@ -564,9 +616,16 @@
         return new kakao.maps.LatLng(lat, lng);
     }
 
-    function extractRoutePath(routeData) {
+    function extractRoutePath(routeData, routeType, routeIndex) {
+        const source = resolveRoutePathSource(routeData, routeType, routeIndex);
+        const orderedPoints = extractOrderedPathPoints(source);
+
+        if (orderedPoints.length >= 2) {
+            return removeDuplicateLatLng(orderedPoints).slice(0, 3000);
+        }
+
         const groups = [];
-        collectCoordinateGroups(routeData, groups);
+        collectCoordinateGroups(source, groups);
 
         const points = [];
         groups.forEach((group) => {
@@ -574,6 +633,80 @@
         });
 
         return removeDuplicateLatLng(points).slice(0, 3000);
+    }
+
+    function resolveRoutePathSource(routeData, routeType, routeIndex) {
+        if (routeType === "publictraffic" && Array.isArray(routeData?.routes)) {
+            return routeData.routes[routeIndex] || routeData.routes[0] || routeData;
+        }
+
+        if (routeData?.route) {
+            return routeData.route;
+        }
+
+        return routeData;
+    }
+
+    function extractOrderedPathPoints(source) {
+        const points = [];
+        collectOrderedPathPoints(source, points);
+        return points;
+    }
+
+    function collectOrderedPathPoints(node, points) {
+        if (!node) {
+            return;
+        }
+
+        if (Array.isArray(node)) {
+            node.forEach((item) => collectOrderedPathPoints(item, points));
+            return;
+        }
+
+        if (typeof node !== "object") {
+            return;
+        }
+
+        if (node.path) {
+            appendPathObjectPoints(node.path, points);
+        }
+
+        if (node.geometry) {
+            appendPathObjectPoints(node.geometry, points);
+        }
+
+        Object.entries(node).forEach(([key, value]) => {
+            const lowerKey = key.toLowerCase();
+
+            if (["path", "geometry"].includes(lowerKey)) {
+                return;
+            }
+
+            if (["sections", "steps", "legs", "roads", "guides", "routes"].includes(lowerKey)) {
+                collectOrderedPathPoints(value, points);
+            }
+        });
+    }
+
+    function appendPathObjectPoints(pathObject, points) {
+        if (!pathObject) {
+            return;
+        }
+
+        if (Array.isArray(pathObject)) {
+            parseCoordinateArray(pathObject).forEach((point) => points.push(point));
+            return;
+        }
+
+        if (typeof pathObject !== "object") {
+            return;
+        }
+
+        ["points", "coordinates", "vertexes", "vertices", "path"].forEach((key) => {
+            if (Array.isArray(pathObject[key])) {
+                parseCoordinateArray(pathObject[key]).forEach((point) => points.push(point));
+            }
+        });
     }
 
     function collectCoordinateGroups(node, groups) {
@@ -607,7 +740,9 @@
                 }
             }
 
-            collectCoordinateGroups(value, groups);
+            if (["sections", "steps", "legs", "roads", "guides", "routes", "geometry", "path"].includes(lowerKey)) {
+                collectCoordinateGroups(value, groups);
+            }
         });
     }
 

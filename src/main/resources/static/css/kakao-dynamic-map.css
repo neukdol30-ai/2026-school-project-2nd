@@ -733,3 +733,111 @@ select:disabled {
 .route-result:not(.error) {
     border: 1px solid #e2e8f0;
 }
+
+
+/* 6차 추가 보정: 검색 결과와 정보창의 긴 장소명/주소가 카드 밖으로 벗어나지 않게 합니다. */
+.search-result-card,
+.result-main-button,
+.result-content,
+.selected-title-row div,
+.map-info-window {
+    min-width: 0;
+    max-width: 100%;
+}
+
+.result-main-button {
+    overflow: hidden;
+}
+
+.result-content strong,
+.result-content span,
+.result-content small,
+.selected-title-row strong,
+.selected-title-row span:not(.result-rank),
+.route-point-box strong,
+.map-info-window strong,
+.map-info-window span,
+.map-info-window small {
+    max-width: 100%;
+    overflow-wrap: anywhere;
+    word-break: keep-all;
+}
+
+.map-info-window {
+    width: min(240px, 62vw);
+}
+
+/* 6차 추가 보정: 대중교통은 여러 후보 중 선택한 한 개 경로만 지도에 표시합니다. */
+.route-candidate-list {
+    display: grid;
+    gap: 8px;
+    margin-top: 10px;
+}
+
+.route-candidate-card {
+    display: flex;
+    align-items: flex-start;
+    gap: 9px;
+    width: 100%;
+    min-width: 0;
+    padding: 10px;
+    border: 1px solid #e2e8f0;
+    border-radius: 14px;
+    background: #ffffff;
+    color: inherit;
+    text-align: left;
+    cursor: pointer;
+}
+
+.route-candidate-card.active {
+    border-color: #2563eb;
+    background: #eff6ff;
+    box-shadow: 0 8px 20px rgba(37, 99, 235, 0.12);
+}
+
+.route-candidate-rank {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 24px;
+    width: 24px;
+    height: 24px;
+    border-radius: 999px;
+    background: #2563eb;
+    color: #ffffff;
+    font-size: 11px;
+    font-weight: 900;
+}
+
+.route-candidate-content {
+    display: grid;
+    gap: 3px;
+    min-width: 0;
+}
+
+.route-candidate-content strong,
+.route-candidate-content small,
+.route-candidate-content em {
+    max-width: 100%;
+    overflow-wrap: anywhere;
+    word-break: keep-all;
+}
+
+.route-candidate-content strong {
+    margin: 0;
+    color: #111827;
+    font-size: 13px;
+}
+
+.route-candidate-content small {
+    color: #64748b;
+    font-size: 11px;
+    font-weight: 800;
+}
+
+.route-candidate-content em {
+    color: #2563eb;
+    font-size: 11px;
+    font-style: normal;
+    font-weight: 900;
+}
