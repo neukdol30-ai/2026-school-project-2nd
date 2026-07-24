@@ -43,4 +43,6 @@ public enum KakaoRouteType {
     public boolean isWalk() {
         return this == WALK;
     }
+
+    public boolean isPublicTraffic() { return this == PUBLICTRANSPORT; }
 }

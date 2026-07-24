@@ -142,8 +142,11 @@ public class KakaoMapService {
         parameters.put("end_y", normalizeCoordinate(endY));
         parameters.put("s_name", normalizeRouteName(startName, "출발"));
         parameters.put("e_name", normalizeRouteName(endName, "도착"));
-        parameters.put("input_coord", "WGS84");
-        parameters.put("output_coord", "WGS84");
+
+        if (!routeType.isPublicTraffic()) {
+            parameters.put("input_coord", "WGS84");
+            parameters.put("output_coord", "WGS84");
+        }
 
         /*
          * 카카오맵 도보 경로 조회 API는 route_mode를 지원합니다.
