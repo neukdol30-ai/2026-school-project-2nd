@@ -15,7 +15,7 @@ import org.springframework.security.web.access.intercept.AuthorizationFilter;
 
 /**
  * Spring Security 설정입니다.
- *
+ * <p>
  * URL 그룹은 SecurityPaths에서 관리하고,
  * 로그인 성공/실패/권한 오류 이동 처리는 handler 패키지에서 담당합니다.
  */
@@ -29,8 +29,8 @@ public class SecurityConfig {
     private final CustomAuthenticationEntryPoint customAuthenticationEntryPoint;
     private final CustomAccessDeniedHandler customAccessDeniedHandler;
     private final AdminSessionGuardFilter adminSessionGuardFilter;
-
-    private final OAuth2LoginFailureHandler oAuth2LoginFailureHandler; // STEP 1 신규. 소셜 실패 전용
+    private final OAuth2LoginSuccessHandler oAuth2LoginSuccessHandler; // 소셜 로그인 성공 전용 Handler
+    private final OAuth2LoginFailureHandler oAuth2LoginFailureHandler; // 소셜 로그인 실패 전용 Handler
     private final OAuth2DetailsService oAuth2DetailsService;
 
     @Bean
@@ -60,7 +60,7 @@ public class SecurityConfig {
                 // 2-2 소셜 로그인 설정
                 .oauth2Login(oauth2 -> oauth2
                         .loginPage("/member/login")
-                        .defaultSuccessUrl("/", true)
+                        .successHandler(oAuth2LoginSuccessHandler) // 소셜 로그인 성공 시 최근 로그인 시각 갱신 후 메인으로 이동
                         .failureHandler(oAuth2LoginFailureHandler) // 실패 사유를 세션에 담고 로그인 화면으로 보냄
                         .userInfoEndpoint(userInfo -> userInfo.userService(oAuth2DetailsService))
                 )
