@@ -21,6 +21,7 @@ public class KakaoMapPageController {
     public String kakaoMapPage(Model model) {
         model.addAttribute("kakaoMapReady", properties.hasJavascriptKey());
         model.addAttribute("kakaoMapSdkUrl", buildKakaoMapSdkUrl());
+        model.addAttribute("kakaoMapJavascriptKey", properties.getJavascriptKey());
         return "map/kakao-map";
     }
 

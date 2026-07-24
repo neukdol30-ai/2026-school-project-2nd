@@ -24,8 +24,8 @@ import org.springframework.util.StringUtils;
 public class KakaoMapApiProperties {
 
     /** 카카오 개발자센터에서 발급받은 REST API 키 */
-    private String restApiKey;
     private String javascriptKey;
+    private String restApiKey;
     /** 카카오 서버 연결 대기 시간 */
     private int connectTimeoutSeconds = 5;
     /** 카카오 서버 응답 대기 시간 */

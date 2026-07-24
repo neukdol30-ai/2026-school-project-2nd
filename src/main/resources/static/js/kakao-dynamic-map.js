@@ -1,296 +1,387 @@
 /*
  * kakao-dynamic-map.js
- * 역할: Kakao Map JavaScript SDK 기반 동적 지도 화면을 담당합니다.
- *
- * 화면에는 위도/경도 숫자를 직접 노출하지 않습니다.
- * 좌표는 마커 이동, 경로 조회, 즐겨찾기 저장을 위한 내부 데이터로만 사용합니다.
+ * 5차 패치 역할
+ * - 현재 위치 정확도 옵션 개선
+ * - 현재 위치 기준 거리순 장소 검색
+ * - 검색 결과를 왼쪽 상단 영역에 표시
+ * - 검색 결과 전체를 동적지도 마커로 표시
+ * - 화면에는 위도/경도 숫자를 노출하지 않음
  */
 (() => {
     const ROUTE_API = "/api/kakao-map/route";
-    const DEFAULT_CENTER = { y: 37.566826, x: 126.978652 };
-    const DEFAULT_LEVEL = 5;
+    const LOCATION_OPTIONS = {
+        enableHighAccuracy: true,
+        timeout: 15000,
+        maximumAge: 0
+    };
 
-    let map = null;
-    let places = null;
-    let geocoder = null;
-    let infoWindow = null;
-    let selectedPlace = null;
-    let currentLocationMarker = null;
-    let startMarker = null;
-    let endMarker = null;
-    let searchMarkers = [];
+    const state = {
+        map: null,
+        places: null,
+        geocoder: null,
+        currentPosition: null,
+        currentAccuracy: null,
+        currentMarker: null,
+        resultMarkers: [],
+        routeMarkers: {
+            start: null,
+            end: null
+        },
+        infoWindow: null,
+        selectedPlace: null,
+        lastBounds: null
+    };
 
     document.addEventListener("DOMContentLoaded", () => {
-        if (!isKakaoReady()) {
-            showMessage("카카오맵 SDK를 불러오지 못했습니다. JavaScript 키와 도메인 설정을 확인해 주세요.", "error");
+        if (!window.kakao || !window.kakao.maps) {
+            showLocationStatus("카카오 지도 SDK를 불러오지 못했습니다. JavaScript 키와 도메인을 확인해주세요.", "error");
             return;
         }
 
-        initMap();
-        bindEvents();
+        window.kakao.maps.load(() => {
+            initializeMap();
+            bindEvents();
+        });
     });
 
-    function isKakaoReady() {
-        return window.kakao && kakao.maps && kakao.maps.services;
-    }
+    function initializeMap() {
+        const pageConfig = window.KAKAO_MAP_PAGE || {};
+        const defaultLat = Number(pageConfig.defaultLat) || 37.566826;
+        const defaultLng = Number(pageConfig.defaultLng) || 126.9786567;
+        const container = document.getElementById("kakaoDynamicMap");
 
-    function initMap() {
-        const container = document.querySelector("[data-kakao-map]");
         if (!container) {
             return;
         }
 
-        const center = new kakao.maps.LatLng(DEFAULT_CENTER.y, DEFAULT_CENTER.x);
-        map = new kakao.maps.Map(container, {
+        const center = new kakao.maps.LatLng(defaultLat, defaultLng);
+        state.map = new kakao.maps.Map(container, {
             center,
-            level: DEFAULT_LEVEL
+            level: 4
         });
+        state.places = new kakao.maps.services.Places(state.map);
+        state.geocoder = new kakao.maps.services.Geocoder();
+        state.infoWindow = new kakao.maps.InfoWindow({ zIndex: 10 });
 
-        map.addControl(new kakao.maps.ZoomControl(), kakao.maps.ControlPosition.RIGHT);
-        places = new kakao.maps.services.Places();
-        geocoder = new kakao.maps.services.Geocoder();
-        infoWindow = new kakao.maps.InfoWindow({ zIndex: 10 });
+        const zoomControl = new kakao.maps.ZoomControl();
+        state.map.addControl(zoomControl, kakao.maps.ControlPosition.RIGHT);
     }
 
     function bindEvents() {
-        document.querySelector("[data-map-search-form]")?.addEventListener("submit", handleSearchSubmit);
-        document.querySelector("[data-route-form]")?.addEventListener("submit", handleRouteSubmit);
-        document.querySelector("[data-current-location-button]")?.addEventListener("click", moveToCurrentLocation);
-        document.querySelector("[data-zoom-in-button]")?.addEventListener("click", () => changeZoom(-1));
-        document.querySelector("[data-zoom-out-button]")?.addEventListener("click", () => changeZoom(1));
-        document.querySelector("[data-selected-start]")?.addEventListener("click", () => setRoutePoint("start", selectedPlace));
-        document.querySelector("[data-selected-end]")?.addEventListener("click", () => setRoutePoint("end", selectedPlace));
+        const searchForm = document.querySelector("[data-search-form]");
+        const currentLocationButton = document.querySelector("[data-current-location-button]");
+        const fitResultButton = document.querySelector("[data-fit-result-button]");
+        const clearMapButton = document.querySelector("[data-clear-map-button]");
+        const routeForm = document.querySelector("[data-route-form]");
 
-        document.querySelector('[data-route-form] [name="type"]')?.addEventListener("change", toggleWalkOption);
-        toggleWalkOption();
+        searchForm?.addEventListener("submit", handleSearchSubmit);
+        currentLocationButton?.addEventListener("click", moveToCurrentLocation);
+        fitResultButton?.addEventListener("click", fitResultBounds);
+        clearMapButton?.addEventListener("click", clearMapView);
+        routeForm?.addEventListener("submit", handleRouteSubmit);
     }
 
-    function handleSearchSubmit(event) {
+    async function handleSearchSubmit(event) {
         event.preventDefault();
 
         const form = event.currentTarget;
-        const query = form.querySelector('[name="query"]')?.value?.trim();
-        const searchType = form.querySelector('[name="searchType"]:checked')?.value || "keyword";
+        const keyword = form.keyword.value.trim();
+        const searchType = form.searchType.value;
+        const useCurrentLocation = form.useCurrentLocation.checked;
 
-        if (!query) {
-            showMessage("검색어를 입력해 주세요.", "error");
+        if (!keyword) {
+            renderEmptyResult("검색어를 입력해주세요.", "장소명이나 주소를 입력하면 결과가 표시됩니다.");
             return;
         }
 
-        showMessage("검색 중입니다.", "");
+        setFormLoading(form, true);
+        updateResultCount(0);
+        renderLoadingResult("검색 중입니다...");
 
-        if (searchType === "address") {
-            searchAddress(query);
-            return;
+        try {
+            if (searchType === "address") {
+                searchAddress(keyword);
+                return;
+            }
+
+            searchKeyword(keyword, useCurrentLocation);
+        } finally {
+            setFormLoading(form, false);
         }
-
-        searchKeyword(query);
     }
 
-    function searchKeyword(query) {
-        places.keywordSearch(query, (data, status) => {
-            if (status !== kakao.maps.services.Status.OK) {
-                clearSearchResults("검색 결과가 없습니다.");
-                showMessage("검색 결과가 없습니다.", "");
-                return;
-            }
-
-            const results = data.map((item) => normalizePlaceFromKeyword(item));
-            renderSearchResults(results);
-            renderSearchMarkers(results);
-            fitMapToPlaces(results);
-            showMessage("장소 검색이 완료되었습니다.", "success");
-        });
-    }
-
-    function searchAddress(query) {
-        geocoder.addressSearch(query, (data, status) => {
-            if (status !== kakao.maps.services.Status.OK) {
-                clearSearchResults("주소 검색 결과가 없습니다.");
-                showMessage("주소 검색 결과가 없습니다.", "");
-                return;
-            }
-
-            const results = data.map((item) => normalizePlaceFromAddress(item));
-            renderSearchResults(results);
-            renderSearchMarkers(results);
-            fitMapToPlaces(results);
-            showMessage("주소 검색이 완료되었습니다.", "success");
-        });
-    }
-
-    function normalizePlaceFromKeyword(item) {
-        return {
-            id: item.id || `${item.x}-${item.y}`,
-            name: item.place_name || "장소명 없음",
-            address: item.road_address_name || item.address_name || "주소 정보 없음",
-            category: item.category_name || "",
-            phone: item.phone || "",
-            placeUrl: item.place_url || "",
-            x: Number(item.x),
-            y: Number(item.y)
+    function searchKeyword(keyword, useCurrentLocation) {
+        const options = {
+            size: 15
         };
+
+        if (useCurrentLocation && state.currentPosition) {
+            options.location = state.currentPosition;
+            options.sort = kakao.maps.services.SortBy.DISTANCE;
+        } else {
+            options.sort = kakao.maps.services.SortBy.ACCURACY;
+        }
+
+        state.places.keywordSearch(keyword, (data, status) => {
+            if (status === kakao.maps.services.Status.OK) {
+                const results = normalizePlaceResults(data);
+                renderSearchResults(results, options.sort === kakao.maps.services.SortBy.DISTANCE);
+                drawSearchMarkers(results);
+                return;
+            }
+
+            if (status === kakao.maps.services.Status.ZERO_RESULT) {
+                clearSearchMarkers();
+                renderEmptyResult("검색 결과가 없습니다.", "다른 검색어로 다시 시도해주세요.");
+                return;
+            }
+
+            renderEmptyResult("장소 검색 중 오류가 발생했습니다.", "잠시 후 다시 시도해주세요.");
+        }, options);
     }
 
-    function normalizePlaceFromAddress(item) {
-        const roadAddress = item.road_address?.address_name;
-        const address = item.address?.address_name || item.address_name || "주소 정보 없음";
+    function searchAddress(keyword) {
+        state.geocoder.addressSearch(keyword, (data, status) => {
+            if (status === kakao.maps.services.Status.OK) {
+                const results = normalizeAddressResults(data);
+                renderSearchResults(results, false);
+                drawSearchMarkers(results);
+                return;
+            }
 
-        return {
-            id: `${item.x}-${item.y}`,
-            name: roadAddress || address,
-            address,
+            if (status === kakao.maps.services.Status.ZERO_RESULT) {
+                clearSearchMarkers();
+                renderEmptyResult("주소 검색 결과가 없습니다.", "도로명 또는 지번 주소를 다시 확인해주세요.");
+                return;
+            }
+
+            renderEmptyResult("주소 검색 중 오류가 발생했습니다.", "잠시 후 다시 시도해주세요.");
+        });
+    }
+
+    function normalizePlaceResults(data) {
+        return data.map((item, index) => {
+            const lat = Number(item.y);
+            const lng = Number(item.x);
+            const fallbackDistance = state.currentPosition ? calculateDistanceFromCurrent(lat, lng) : null;
+
+            return {
+                id: item.id || `place-${index}`,
+                title: item.place_name || "장소명 없음",
+                address: item.road_address_name || item.address_name || "주소 정보 없음",
+                category: compactCategory(item.category_name),
+                phone: item.phone || "",
+                url: item.place_url || "",
+                lat,
+                lng,
+                distance: item.distance ? Number(item.distance) : fallbackDistance,
+                source: "place"
+            };
+        });
+    }
+
+    function normalizeAddressResults(data) {
+        return data.map((item, index) => ({
+            id: `address-${index}`,
+            title: item.address_name || "주소 결과",
+            address: item.road_address?.address_name || item.address?.address_name || item.address_name || "주소 정보 없음",
             category: "주소",
             phone: "",
-            placeUrl: "",
-            x: Number(item.x),
-            y: Number(item.y)
-        };
+            url: "",
+            lat: Number(item.y),
+            lng: Number(item.x),
+            distance: state.currentPosition ? calculateDistanceFromCurrent(Number(item.y), Number(item.x)) : null,
+            source: "address"
+        }));
     }
 
-    function renderSearchResults(results) {
-        const list = document.querySelector("[data-place-result-list]");
-        const count = document.querySelector("[data-result-count]");
-
-        if (count) {
-            count.textContent = `${results.length}개`;
-        }
-
-        if (!list) {
-            return;
-        }
-
-        if (results.length === 0) {
-            list.innerHTML = '<div class="empty-result">검색 결과가 없습니다.</div>';
-            return;
-        }
-
-        list.innerHTML = results.map((place, index) => `
-            <article class="place-result-card" data-place-index="${index}">
-                <button type="button" class="place-main-button" data-select-place="${index}">
-                    <strong>${escapeHtml(place.name)}</strong>
-                    <span>${escapeHtml(place.address)}</span>
-                    ${place.category ? `<small>${escapeHtml(place.category)}</small>` : ""}
-                </button>
-                <div class="place-card-actions">
-                    <button type="button" data-route-point="start" data-place-index="${index}">출발지</button>
-                    <button type="button" data-route-point="end" data-place-index="${index}">도착지</button>
-                    <button type="button" data-favorite-placeholder disabled>즐겨찾기</button>
-                    ${place.placeUrl ? `<a href="${escapeAttribute(place.placeUrl)}" target="_blank" rel="noopener noreferrer">카카오맵</a>` : ""}
-                </div>
-            </article>
-        `).join("");
-
-        list.querySelectorAll("[data-select-place]").forEach((button) => {
-            button.addEventListener("click", () => {
-                selectPlace(results[Number(button.dataset.selectPlace)]);
-            });
-        });
-
-        list.querySelectorAll("[data-route-point]").forEach((button) => {
-            button.addEventListener("click", () => {
-                const place = results[Number(button.dataset.placeIndex)];
-                setRoutePoint(button.dataset.routePoint, place);
-            });
-        });
-    }
-
-    function renderSearchMarkers(results) {
+    function drawSearchMarkers(results) {
         clearSearchMarkers();
 
-        results.forEach((place) => {
-            const marker = new kakao.maps.Marker({
-                map,
-                position: new kakao.maps.LatLng(place.y, place.x)
-            });
-
-            kakao.maps.event.addListener(marker, "click", () => {
-                selectPlace(place);
-            });
-
-            searchMarkers.push(marker);
-        });
-    }
-
-    function fitMapToPlaces(results) {
-        if (!results.length) {
+        if (results.length === 0) {
             return;
         }
 
         const bounds = new kakao.maps.LatLngBounds();
-        results.forEach((place) => bounds.extend(new kakao.maps.LatLng(place.y, place.x)));
-        map.setBounds(bounds);
+
+        results.forEach((place, index) => {
+            const position = new kakao.maps.LatLng(place.lat, place.lng);
+            const marker = new kakao.maps.Marker({
+                map: state.map,
+                position,
+                title: place.title
+            });
+
+            kakao.maps.event.addListener(marker, "click", () => {
+                selectPlace(place, marker, index + 1);
+            });
+
+            marker.__place = place;
+            state.resultMarkers.push(marker);
+            bounds.extend(position);
+        });
+
+        if (state.currentPosition) {
+            bounds.extend(state.currentPosition);
+        }
+
+        state.lastBounds = bounds;
+        state.map.setBounds(bounds);
+        setFitButtonEnabled(true);
     }
 
-    function selectPlace(place) {
-        if (!place) {
+    function renderSearchResults(results, distanceSorted) {
+        const resultList = document.querySelector("[data-result-list]");
+
+        if (!resultList) {
             return;
         }
 
-        selectedPlace = place;
-        const position = new kakao.maps.LatLng(place.y, place.x);
-        map.panTo(position);
+        updateResultCount(results.length);
 
-        infoWindow.setContent(`<div class="map-info-window">${escapeHtml(place.name)}</div>`);
-        infoWindow.setPosition(position);
-        infoWindow.open(map);
+        const sortedLabel = distanceSorted ? "내 위치 기준 가까운 순" : "정확도순";
+        const items = results.map((place, index) => `
+            <article class="search-result-card" data-result-index="${index}">
+                <button type="button" class="result-main-button" data-select-result="${index}">
+                    <span class="result-rank">${index + 1}</span>
+                    <span class="result-content">
+                        <strong>${escapeHtml(place.title)}</strong>
+                        <span>${escapeHtml(place.address)}</span>
+                        <small>${escapeHtml(place.category || sortedLabel)}${place.distance ? ` · ${formatDistance(place.distance)}` : ""}</small>
+                    </span>
+                </button>
+                <div class="result-card-actions">
+                    <button type="button" data-route-point="start" data-result-index="${index}">출발지</button>
+                    <button type="button" data-route-point="end" data-result-index="${index}">도착지</button>
+                    ${place.url ? `<a href="${escapeAttribute(place.url)}" target="_blank" rel="noopener noreferrer">상세</a>` : ""}
+                </div>
+            </article>
+        `).join("");
 
-        updateSelectedPlaceUi(place);
+        resultList.innerHTML = `
+            <div class="result-mode-badge">${escapeHtml(sortedLabel)}</div>
+            ${items}
+        `;
+
+        resultList.querySelectorAll("[data-select-result]").forEach((button) => {
+            button.addEventListener("click", () => {
+                const index = Number(button.dataset.selectResult);
+                const marker = state.resultMarkers[index];
+                selectPlace(results[index], marker, index + 1);
+            });
+        });
+
+        resultList.querySelectorAll("[data-route-point]").forEach((button) => {
+            button.addEventListener("click", () => {
+                const index = Number(button.dataset.resultIndex);
+                setRoutePoint(button.dataset.routePoint, results[index]);
+            });
+        });
     }
 
-    function updateSelectedPlaceUi(place) {
-        setText("[data-selected-place-name]", place.name);
-        setText("[data-selected-place-address]", place.address);
-        setText("[data-selected-card-name]", place.name);
-        setText("[data-selected-card-address]", place.address);
+    function selectPlace(place, marker, markerNumber) {
+        state.selectedPlace = place;
 
-        const card = document.querySelector("[data-selected-place-card]");
-        if (card) {
-            card.hidden = false;
+        const position = new kakao.maps.LatLng(place.lat, place.lng);
+        state.map.panTo(position);
+
+        const infoContent = `
+            <div class="map-info-window">
+                <strong>${escapeHtml(place.title)}</strong>
+                <span>${escapeHtml(place.address)}</span>
+                ${place.distance ? `<small>${formatDistance(place.distance)}</small>` : ""}
+            </div>
+        `;
+
+        if (marker) {
+            state.infoWindow.setContent(infoContent);
+            state.infoWindow.open(state.map, marker);
         }
+
+        renderSelectedPlace(place, markerNumber);
+        highlightResultCard(place);
+    }
+
+    function renderSelectedPlace(place, markerNumber) {
+        const section = document.querySelector("[data-selected-section]");
+        const card = document.querySelector("[data-selected-place-card]");
+
+        if (!section || !card) {
+            return;
+        }
+
+        section.hidden = false;
+        card.innerHTML = `
+            <div class="selected-title-row">
+                <span class="result-rank large">${markerNumber || "선택"}</span>
+                <div>
+                    <strong>${escapeHtml(place.title)}</strong>
+                    <span>${escapeHtml(place.address)}</span>
+                </div>
+            </div>
+            <div class="selected-meta-row">
+                ${place.category ? `<span>${escapeHtml(place.category)}</span>` : ""}
+                ${place.distance ? `<span>${formatDistance(place.distance)}</span>` : ""}
+                ${place.phone ? `<span>${escapeHtml(place.phone)}</span>` : ""}
+            </div>
+            <div class="selected-actions">
+                <button type="button" data-selected-route="start">출발지로 설정</button>
+                <button type="button" data-selected-route="end">도착지로 설정</button>
+                <button type="button" data-selected-center>지도 중앙</button>
+            </div>
+        `;
+
+        card.querySelector('[data-selected-route="start"]')?.addEventListener("click", () => setRoutePoint("start", place));
+        card.querySelector('[data-selected-route="end"]')?.addEventListener("click", () => setRoutePoint("end", place));
+        card.querySelector("[data-selected-center]")?.addEventListener("click", () => state.map.panTo(new kakao.maps.LatLng(place.lat, place.lng)));
+    }
+
+    function highlightResultCard(place) {
+        document.querySelectorAll(".search-result-card").forEach((card) => card.classList.remove("active"));
+        const index = state.resultMarkers.findIndex((marker) => marker.__place === place);
+        const target = document.querySelector(`[data-result-index="${index}"]`);
+        target?.classList.add("active");
+        target?.scrollIntoView({ behavior: "smooth", block: "nearest" });
     }
 
     function setRoutePoint(type, place) {
         if (!place) {
-            showMessage("먼저 장소를 선택해 주세요.", "error");
             return;
         }
 
         const form = document.querySelector("[data-route-form]");
-        if (!form) {
+        const nameTarget = document.querySelector(type === "start" ? "[data-route-start-name]" : "[data-route-end-name]");
+
+        if (!form || !nameTarget) {
             return;
         }
 
-        const markerPosition = new kakao.maps.LatLng(place.y, place.x);
+        const position = new kakao.maps.LatLng(place.lat, place.lng);
+        const fieldPrefix = type === "start" ? "start" : "end";
+        form[`${fieldPrefix}X`].value = place.lng;
+        form[`${fieldPrefix}Y`].value = place.lat;
+        form[`${fieldPrefix}Name`].value = place.title;
+        nameTarget.textContent = place.title;
 
-        if (type === "start") {
-            form.querySelector('[name="startX"]').value = place.x;
-            form.querySelector('[name="startY"]').value = place.y;
-            form.querySelector('[name="startName"]').value = place.name;
-            setText("[data-route-start-name]", place.name);
-            startMarker = refreshMarker(startMarker, markerPosition, "출발");
-            showMessage("출발지가 설정되었습니다.", "success");
-            return;
-        }
-
-        form.querySelector('[name="endX"]').value = place.x;
-        form.querySelector('[name="endY"]').value = place.y;
-        form.querySelector('[name="endName"]').value = place.name;
-        setText("[data-route-end-name]", place.name);
-        endMarker = refreshMarker(endMarker, markerPosition, "도착");
-        showMessage("도착지가 설정되었습니다.", "success");
+        drawRoutePointMarker(type, position, place.title);
+        updateRouteBoxState(type);
     }
 
-    function refreshMarker(marker, position, title) {
-        if (marker) {
-            marker.setMap(null);
+    function drawRoutePointMarker(type, position, title) {
+        if (state.routeMarkers[type]) {
+            state.routeMarkers[type].setMap(null);
         }
 
-        return new kakao.maps.Marker({
-            map,
+        state.routeMarkers[type] = new kakao.maps.Marker({
+            map: state.map,
             position,
             title
         });
+    }
+
+    function updateRouteBoxState(type) {
+        const box = document.querySelector(`[data-route-point-box="${type}"]`);
+        box?.classList.add("selected");
     }
 
     async function handleRouteSubmit(event) {
@@ -299,43 +390,203 @@
         const form = event.currentTarget;
         const result = document.querySelector("[data-route-result]");
         const payload = {
-            type: form.querySelector('[name="type"]')?.value || "publictraffic",
-            routeMode: form.querySelector('[name="routeMode"]')?.value || "BROAD_FIRST",
-            startX: form.querySelector('[name="startX"]')?.value,
-            startY: form.querySelector('[name="startY"]')?.value,
-            startName: form.querySelector('[name="startName"]')?.value,
-            endX: form.querySelector('[name="endX"]')?.value,
-            endY: form.querySelector('[name="endY"]')?.value,
-            endName: form.querySelector('[name="endName"]')?.value
+            type: form.type.value,
+            routeMode: form.routeMode.value,
+            startX: form.startX.value,
+            startY: form.startY.value,
+            startName: form.startName.value,
+            endX: form.endX.value,
+            endY: form.endY.value,
+            endName: form.endName.value
         };
 
         if (!payload.startX || !payload.startY || !payload.endX || !payload.endY) {
-            renderRouteMessage("출발지와 도착지를 모두 설정해 주세요.", "error");
+            result.textContent = "출발지와 도착지를 먼저 선택해주세요.";
+            result.classList.add("error");
             return;
         }
 
-        renderRouteMessage("경로를 조회하는 중입니다.", "");
+        setFormLoading(form, true);
+        result.classList.remove("error");
+        result.textContent = "경로를 조회하는 중입니다...";
 
         try {
-            const response = await requestJson(ROUTE_API, payload);
-            renderRouteResult(response, payload.type);
-            fitRouteBounds(payload);
+            const data = await requestJson(ROUTE_API, payload);
+            renderRouteSummary(data);
         } catch (error) {
-            if (result) {
-                result.innerHTML = routeMessageTemplate(error.message || "경로 조회 중 오류가 발생했습니다.", "error");
-            }
+            result.classList.add("error");
+            result.textContent = error.message || "경로 조회 중 오류가 발생했습니다.";
+        } finally {
+            setFormLoading(form, false);
+        }
+    }
+
+    function renderRouteSummary(response) {
+        const result = document.querySelector("[data-route-result]");
+
+        if (!result) {
+            return;
+        }
+
+        if (!response.success) {
+            result.classList.add("error");
+            result.textContent = response.message || "경로 조회 결과가 없습니다.";
+            return;
+        }
+
+        const data = response.data || {};
+        const routeType = document.querySelector('[data-route-form] [name="type"]')?.value || "publictraffic";
+
+        if (routeType === "publictraffic") {
+            const firstRoute = data.routes?.[0]?.properties || {};
+            result.classList.remove("error");
+            result.innerHTML = `
+                <strong>경로 요약</strong>
+                <span>${formatDistance(firstRoute.totalDistance)} · ${formatTime(firstRoute.totalTime)}</span>
+                <small>환승 ${formatNumber(firstRoute.transfers)}회${firstRoute.fare?.value ? ` · ${formatNumber(firstRoute.fare.value)}원` : ""}</small>
+            `;
+            return;
+        }
+
+        const properties = data.route?.properties || {};
+        result.classList.remove("error");
+        result.innerHTML = `
+            <strong>경로 요약</strong>
+            <span>${formatDistance(properties.totalDistance)} · ${formatTime(properties.totalTime)}</span>
+            <small>6차 패치에서 오른쪽 지도에 경로선을 표시할 예정입니다.</small>
+        `;
+    }
+
+    async function moveToCurrentLocation() {
+        const button = document.querySelector("[data-current-location-button]");
+
+        if (!navigator.geolocation) {
+            showLocationStatus("이 브라우저에서는 현재 위치 기능을 사용할 수 없습니다.", "error");
+            return;
+        }
+
+        button.disabled = true;
+        button.textContent = "확인 중";
+        showLocationStatus("현재 위치를 확인하는 중입니다...", "");
+
+        navigator.geolocation.getCurrentPosition(
+            (position) => {
+                const { latitude, longitude, accuracy } = position.coords;
+                const latLng = new kakao.maps.LatLng(latitude, longitude);
+
+                state.currentPosition = latLng;
+                state.currentAccuracy = accuracy;
+                drawCurrentLocationMarker(latLng);
+                state.map.setLevel(3);
+                state.map.panTo(latLng);
+
+                const accuracyMessage = accuracy > 1000
+                    ? `현재 위치를 찾았지만 오차가 클 수 있습니다. 약 ${formatDistance(accuracy)} 범위입니다.`
+                    : `현재 위치가 적용되었습니다. 약 ${formatDistance(accuracy)} 범위입니다.`;
+
+                showLocationStatus(accuracyMessage, accuracy > 1000 ? "warning" : "success");
+                button.disabled = false;
+                button.textContent = "현재 위치";
+            },
+            (error) => {
+                showLocationStatus(resolveLocationErrorMessage(error), "error");
+                button.disabled = false;
+                button.textContent = "현재 위치";
+            },
+            LOCATION_OPTIONS
+        );
+    }
+
+    function drawCurrentLocationMarker(position) {
+        if (state.currentMarker) {
+            state.currentMarker.setMap(null);
+        }
+
+        state.currentMarker = new kakao.maps.Marker({
+            map: state.map,
+            position,
+            title: "현재 위치"
+        });
+    }
+
+    function fitResultBounds() {
+        if (state.lastBounds) {
+            state.map.setBounds(state.lastBounds);
+        }
+    }
+
+    function clearMapView() {
+        clearSearchMarkers();
+        state.infoWindow?.close();
+        state.selectedPlace = null;
+        state.lastBounds = null;
+        setFitButtonEnabled(false);
+        updateResultCount(0);
+        renderEmptyResult("검색 결과가 초기화되었습니다.", "다시 검색하면 결과와 마커가 표시됩니다.");
+        document.querySelector("[data-selected-section]")?.setAttribute("hidden", "hidden");
+    }
+
+    function clearSearchMarkers() {
+        state.resultMarkers.forEach((marker) => marker.setMap(null));
+        state.resultMarkers = [];
+    }
+
+    function renderLoadingResult(message) {
+        const resultList = document.querySelector("[data-result-list]");
+        if (resultList) {
+            resultList.innerHTML = `<div class="empty-state loading"><strong>${escapeHtml(message)}</strong></div>`;
+        }
+    }
+
+    function renderEmptyResult(title, description) {
+        const resultList = document.querySelector("[data-result-list]");
+        if (!resultList) {
+            return;
+        }
+
+        updateResultCount(0);
+        resultList.innerHTML = `
+            <div class="empty-state">
+                <strong>${escapeHtml(title)}</strong>
+                <p>${escapeHtml(description || "")}</p>
+            </div>
+        `;
+    }
+
+    function updateResultCount(count) {
+        const target = document.querySelector("[data-result-count]");
+        if (target) {
+            target.textContent = `${Number(count || 0).toLocaleString()}개`;
+        }
+    }
+
+    function setFitButtonEnabled(enabled) {
+        const button = document.querySelector("[data-fit-result-button]");
+        if (button) {
+            button.disabled = !enabled;
+        }
+    }
+
+    function showLocationStatus(message, type) {
+        const target = document.querySelector("[data-location-status]");
+        if (!target) {
+            return;
+        }
+
+        target.textContent = message;
+        target.classList.remove("success", "error", "warning");
+        if (type) {
+            target.classList.add(type);
         }
     }
 
     async function requestJson(url, params) {
-        const queryString = new URLSearchParams();
-        Object.entries(params)
-            .filter(([, value]) => value !== undefined && value !== null && String(value).trim() !== "")
-            .forEach(([key, value]) => queryString.append(key, value));
-
-        const response = await fetch(`${url}?${queryString}`, {
+        const requestUrl = buildRequestUrl(url, params);
+        const response = await fetch(requestUrl, {
             method: "GET",
-            headers: { "Accept": "application/json" }
+            headers: {
+                "Accept": "application/json"
+            }
         });
 
         if (!response.ok) {
@@ -345,200 +596,60 @@
         return response.json();
     }
 
-    function renderRouteResult(response, type) {
-        const result = document.querySelector("[data-route-result]");
-        if (!result) {
-            return;
-        }
-
-        if (!response.success) {
-            result.innerHTML = routeMessageTemplate(response.message || "경로 조회에 실패했습니다.", "error");
-            return;
-        }
-
-        const data = response.data || {};
-        const status = data.status || "UNKNOWN";
-
-        if (status !== "OK") {
-            result.innerHTML = routeMessageTemplate(`경로 조회 결과가 없습니다. 상태: ${status}`, "error");
-            return;
-        }
-
-        if (type === "publictraffic") {
-            result.innerHTML = renderPublicTrafficSummary(response.message, data);
-            return;
-        }
-
-        result.innerHTML = renderSimpleRouteSummary(response.message, data, type);
+    function buildRequestUrl(url, params) {
+        const queryString = new URLSearchParams();
+        Object.entries(params)
+            .filter(([, value]) => value !== undefined && value !== null && String(value).trim() !== "")
+            .forEach(([key, value]) => queryString.append(key, value));
+        return queryString.toString() ? `${url}?${queryString}` : url;
     }
 
-    function renderPublicTrafficSummary(message, data) {
-        const properties = data.properties || {};
-        const routes = data.routes || [];
-        const firstRoute = routes[0]?.properties || {};
-        const fare = firstRoute.fare?.value ? `${formatNumber(firstRoute.fare.value)}원` : "-";
-        const landingUrl = properties.landingURL;
-
-        return routeMessageTemplate(message, "success") + `
-            <div class="route-summary-grid">
-                <div><span>예상 시간</span><strong>${formatTime(firstRoute.totalTime)}</strong></div>
-                <div><span>이동 거리</span><strong>${formatDistance(firstRoute.totalDistance)}</strong></div>
-                <div><span>환승</span><strong>${formatNumber(firstRoute.transfers)}회</strong></div>
-                <div><span>요금</span><strong>${fare}</strong></div>
-            </div>
-            ${landingUrl ? `<a class="route-link" href="${escapeAttribute(landingUrl)}" target="_blank" rel="noopener noreferrer">카카오맵에서 자세히 보기</a>` : ""}
-        `;
-    }
-
-    function renderSimpleRouteSummary(message, data, type) {
-        const route = data.route || {};
-        const properties = route.properties || {};
-        const landingUrl = properties.landingUrl;
-
-        return routeMessageTemplate(message, "success") + `
-            <div class="route-summary-grid">
-                <div><span>경로 종류</span><strong>${type === "walk" ? "도보" : "자전거"}</strong></div>
-                <div><span>예상 시간</span><strong>${formatTime(properties.totalTime)}</strong></div>
-                <div><span>이동 거리</span><strong>${formatDistance(properties.totalDistance)}</strong></div>
-            </div>
-            ${landingUrl ? `<a class="route-link" href="${escapeAttribute(landingUrl)}" target="_blank" rel="noopener noreferrer">카카오맵에서 자세히 보기</a>` : ""}
-        `;
-    }
-
-    function fitRouteBounds(payload) {
-        const bounds = new kakao.maps.LatLngBounds();
-        bounds.extend(new kakao.maps.LatLng(Number(payload.startY), Number(payload.startX)));
-        bounds.extend(new kakao.maps.LatLng(Number(payload.endY), Number(payload.endX)));
-        map.setBounds(bounds);
-    }
-
-    function moveToCurrentLocation() {
-        if (!navigator.geolocation) {
-            showMessage("현재 브라우저에서 위치 기능을 지원하지 않습니다.", "error");
-            return;
-        }
-
-        showMessage("현재 위치를 확인하는 중입니다.", "");
-
-        navigator.geolocation.getCurrentPosition((position) => {
-            const place = {
-                id: "current-location",
-                name: "현재 위치",
-                address: "브라우저에서 확인한 현재 위치입니다.",
-                category: "현재 위치",
-                x: position.coords.longitude,
-                y: position.coords.latitude
-            };
-
-            const latLng = new kakao.maps.LatLng(place.y, place.x);
-            currentLocationMarker = refreshMarker(currentLocationMarker, latLng, "현재 위치");
-            selectedPlace = place;
-            map.setLevel(4);
-            map.panTo(latLng);
-            updateSelectedPlaceUi(place);
-            showMessage("현재 위치로 이동했습니다.", "success");
-        }, (error) => {
-            showMessage(resolveGeoErrorMessage(error), "error");
-        }, {
-            enableHighAccuracy: true,
-            timeout: 10000,
-            maximumAge: 30000
+    function setFormLoading(form, loading) {
+        form.querySelectorAll("button, input, select").forEach((element) => {
+            element.disabled = loading;
         });
     }
 
-    function resolveGeoErrorMessage(error) {
-        if (error.code === error.PERMISSION_DENIED) {
-            return "위치 권한이 거부되었습니다. 브라우저 주소창의 위치 권한을 허용해 주세요.";
+    function calculateDistanceFromCurrent(lat, lng) {
+        if (!state.currentPosition || !Number.isFinite(lat) || !Number.isFinite(lng)) {
+            return null;
         }
 
-        if (error.code === error.POSITION_UNAVAILABLE) {
-            return "현재 위치 정보를 가져올 수 없습니다.";
-        }
-
-        if (error.code === error.TIMEOUT) {
-            return "현재 위치 확인 시간이 초과되었습니다.";
-        }
-
-        return "현재 위치 확인 중 오류가 발생했습니다.";
+        const currentLat = state.currentPosition.getLat();
+        const currentLng = state.currentPosition.getLng();
+        const earthRadius = 6371000;
+        const dLat = toRadian(lat - currentLat);
+        const dLng = toRadian(lng - currentLng);
+        const a = Math.sin(dLat / 2) ** 2
+            + Math.cos(toRadian(currentLat)) * Math.cos(toRadian(lat)) * Math.sin(dLng / 2) ** 2;
+        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+        return earthRadius * c;
     }
 
-    function changeZoom(delta) {
-        if (!map) {
-            return;
-        }
-
-        const nextLevel = Math.max(1, Math.min(14, map.getLevel() + delta));
-        map.setLevel(nextLevel);
+    function toRadian(value) {
+        return value * Math.PI / 180;
     }
 
-    function toggleWalkOption() {
-        const routeType = document.querySelector('[data-route-form] [name="type"]')?.value;
-        const walkOption = document.querySelector("[data-walk-option]");
-
-        if (walkOption) {
-            walkOption.hidden = routeType !== "walk";
-        }
-    }
-
-    function clearSearchMarkers() {
-        searchMarkers.forEach((marker) => marker.setMap(null));
-        searchMarkers = [];
-    }
-
-    function clearSearchResults(message) {
-        clearSearchMarkers();
-        const list = document.querySelector("[data-place-result-list]");
-        const count = document.querySelector("[data-result-count]");
-
-        if (count) {
-            count.textContent = "0개";
+    function compactCategory(categoryName) {
+        if (!categoryName) {
+            return "";
         }
 
-        if (list) {
-            list.innerHTML = `<div class="empty-result">${escapeHtml(message)}</div>`;
-        }
-    }
-
-    function showMessage(message, type) {
-        const box = document.querySelector("[data-map-message]");
-        if (!box) {
-            return;
-        }
-
-        box.textContent = message;
-        box.className = type ? `map-message ${type}` : "map-message";
-    }
-
-    function renderRouteMessage(message, type) {
-        const result = document.querySelector("[data-route-result]");
-        if (result) {
-            result.innerHTML = routeMessageTemplate(message, type);
-        }
-    }
-
-    function routeMessageTemplate(message, type) {
-        const className = type ? `route-message ${type}` : "route-message";
-        return `<div class="${className}">${escapeHtml(message)}</div>`;
-    }
-
-    function setText(selector, value) {
-        const element = document.querySelector(selector);
-        if (element) {
-            element.textContent = value || "";
-        }
+        const parts = String(categoryName).split(">").map((item) => item.trim()).filter(Boolean);
+        return parts.at(-1) || categoryName;
     }
 
     function formatDistance(value) {
         const distance = Number(value);
         if (!Number.isFinite(distance)) {
-            return "-";
+            return "";
         }
 
         if (distance >= 1000) {
             return `${(distance / 1000).toFixed(1)}km`;
         }
 
-        return `${formatNumber(distance)}m`;
+        return `${Math.round(distance).toLocaleString()}m`;
     }
 
     function formatTime(value) {
@@ -553,13 +664,32 @@
             const restMinutes = minutes % 60;
             return restMinutes > 0 ? `${hours}시간 ${restMinutes}분` : `${hours}시간`;
         }
-
         return `${minutes}분`;
     }
 
     function formatNumber(value) {
         const number = Number(value);
         return Number.isFinite(number) ? number.toLocaleString() : "-";
+    }
+
+    function resolveLocationErrorMessage(error) {
+        if (!error) {
+            return "현재 위치를 가져오지 못했습니다.";
+        }
+
+        if (error.code === error.PERMISSION_DENIED) {
+            return "위치 권한이 거부되었습니다. 브라우저 주소창의 위치 권한을 허용해주세요.";
+        }
+
+        if (error.code === error.POSITION_UNAVAILABLE) {
+            return "현재 위치 정보를 사용할 수 없습니다. Wi-Fi 또는 모바일 위치 설정을 확인해주세요.";
+        }
+
+        if (error.code === error.TIMEOUT) {
+            return "현재 위치 확인 시간이 초과되었습니다. 다시 시도해주세요.";
+        }
+
+        return "현재 위치를 가져오지 못했습니다.";
     }
 
     function escapeHtml(value) {
