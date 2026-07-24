@@ -18,7 +18,6 @@ import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.security.oauth2.core.OAuth2Error; // 오류 코드 + 안내문구
 
 import java.util.Map;
 import java.util.UUID;
@@ -27,11 +26,6 @@ import java.util.UUID;
 @Slf4j
 @RequiredArgsConstructor
 public class OAuth2DetailsService extends DefaultOAuth2UserService {
-
-    // 오류 코드 상수 3개. 실패 핸들러의 화이트 리스트가 이 값을 그대로 참조.
-    public static final String ERROR_EMAIL_ALREADY_REGISTERED = "email_already_registered"; // STEP 1
-    public static final String ERROR_MEMBER_BANNED = "member_banned"; // STEP 2에서 사용
-    public static final String ERROR_MEMBER_NOT_FOUND = "member_not_found"; // STEP 2에서 사용
 
     private final MemberDao memberDao; // member 테이블 접근
     private final SocialAccountDao socialAccountDao; // social_account 테이블 접근
@@ -68,97 +62,56 @@ public class OAuth2DetailsService extends DefaultOAuth2UserService {
         String providerId = socialUserInfo.getProviderId(); // 예 : "3948573"
         String email = socialUserInfo.getEmail(); // null일 수 있음.
 
-        // 2단계 : 이 소셜 계정이 social_account 테이블에 이미 연결되어 있는지 확인.
-        SocialAccountDto socialAccount =
-                socialAccountDao.findByProviderAndProviderId(provider, providerId); // 두 값을 조건으로 기존 연결 정보 1건 조회
+        // 2단계 : 이 소셜 계정이 이미 연결되어 있는지 (두 번째 로그인 이후)
+        SocialAccountDto socialAccount = socialAccountDao.findByProviderAndProviderId(provider, providerId);
 
-        // socialAccount가 null이 아니면 이전 로그인에서 이미 우리 회원가 연결된 소셜 계정.
         if (socialAccount != null) {
-            // social_account.member_no 저장된 회원 번호로 member 테이블의 실제 회원 정보 조회.
-            MemberDto memberDto = memberDao.findByNo(socialAccount.getMemberNo()); // 연결된 회원 번호에 해당하는 MemberDto 가져옴.
-
-            // 1. 방어 검사 : social_account 연결 정보는 있는데 member 회원 정보가 없는 경우
-            if (memberDto == null) {
-                // 사용자 화면이 아닌 서버 콘솔에 문제 상황과 대상 회원 번호 기록
-                log.warn(
-                        "소셜 연결 정보는 있지만 회원 정보가 없음 memberNo={}",
-                        socialAccount.getMemberNo());
-                // OAuth2AuthenticationException을 던지면 소셜 인증은 실패로 종료
-                throw new OAuth2AuthenticationException(
-                        new OAuth2Error(
-                                ERROR_MEMBER_NOT_FOUND,
-                                "회원 정보를 찾을 수 없습니다. 관리자에게 문의해 주세요.",
-                                null));
-            } // 회원 정보 없음 검사 종료
-
-            // 2. 보안 검사 : 관리자가 정지한 회원인지 확인
-            // OAuth2DetailsService에서 직접 memberDto.isBanned()를 확인
-            if (memberDto.isBanned()) { // banYn 값이 "Y" -> true 반환.
-                // 정지 회원 로그인 시도를 회원 번호와 함께 서버 로그에 기록
-                log.warn(
-                        "정지 회원의 소셜 로그인 차단 memberNo={}",
-                        memberDto.getNo());
-
-                // 소셜 로그인 실패 예외 발생시켜 이후 로그인 성공 처리 막음
-                throw new OAuth2AuthenticationException(
-                        new OAuth2Error(
-                                ERROR_MEMBER_BANNED,
-                                memberDto.displayBanReason(), // 사유 있으면 정지 사유, 없으면 기본 정지 문구 반환
-                                null));
-            } // 정지 회원 검사 종료
-
-            // 회원 정보가 존재하고 정지 상태도 아니면 정상적인 기존 소셜 회원.
-            return new CustomUserDetails(
-                    memberDto, // 우리 member 테이블에서 조회한 로그인 회원 정보.
-                    attributes); // 카카오, 네이버가 반환한 사용자 정보 Map 객체
+            // 이미 연결된 계정 -> 그 member를 그대로 꺼내 로그인. 새로 만들지 않음.
+            MemberDto memberDto = memberDao.findByNo(socialAccount.getMemberNo());
+            log.info("기존 소셜 회원 로그인 memberNo = {}", socialAccount.getMemberNo());
+            return new CustomUserDetails(memberDto, attributes);
         }
 
-        // 3단계 : 이메일이 같은 기존 회원이 있으면 연동하지 않고 로그인 차단.
-        // 우리 일반 회원가입은 이메일 소유 인증 X -> 이메일만 믿고 자동 연동하면, 공격자가 선점형 계정 탈취
-        if (email != null && !email.isBlank()) { // 이메일 동의 거부하면 null 올 수 있음.
+        // 3단계 : 처음 들어온 소셜 계정. 기존 회원과 이메일로 연동할 수 있나?
+        // 같은 사람이 이미 일반 회원가입을 했거나 다른 소셜로 가입했다면, 회원을 새로 만들지 않고 그 회원에 소셜 계정만 "추가 연결"
+        MemberDto memberDto = null;
 
-            MemberDto duplicatedMember = memberDao.findByEmail(email); // 있으면 MemberDto, 없으면 null
-
-            if (duplicatedMember != null) { // 이메일이 겹치는 회원이 이미 있음.
-
-                log.warn("소셜 로그인 이메일 중복 차단 provider={}, email={}", provider, email); // 개발자용 기록
-
-                // OAuth2Error(오류 코드, 화면에 보일 설명, 참고 URL) 순서로 담는다.
-                // 이 예외 던지면 Security가 OAuth2LoginFailureHandler 호출
-                throw new OAuth2AuthenticationException(
-                        new OAuth2Error(
-                                ERROR_EMAIL_ALREADY_REGISTERED, // 화이트 리스트에 등록된 코드
-                                "이미 가입된 이메일입니다. 기존에 사용하던 로그인 방법으로 로그인해 주세요.",
-                                null)); // 참고 URL은 쓰지 않음
-            }
+        if (email != null && !email.isBlank()) {
+            memberDto = memberDao.findByEmail(email); // 있으면 MemberDto, 없으면 null
         }
 
-        // 4단계 : 여기까지 왔으면 확실한 신규 회원. -> member 테이블에 INSERT (이제 연동 분기가 없으므로 여기서 만듦)
-        MemberDto memberDto = new MemberDto();
+        if (memberDto == null) {
+            // 4단계 : 정말 신규 회원 -> member 테이블에 INSERT
 
-        // (가) member_id 생성. UNIQUE, CustomUserDetails.getUsername()이 이 값을 반환.
-        String memberId = provider + "_" + providerId; // 예 : "kakao_3948573"
+            // (가) member_id 생성 (UNIQUE, CustomUserDetails.getUsername에 이 값을 반환
+            // Security 내부에서 username이 null이면 문제 생김. 반드시 값 필요. 절대 겹치지 않게 (예: "kakao_3948573")
+            String memberId = provider + "_" + providerId;
 
-        // (나) 소셜 회원은 비밀번호로 로그인 X -> 컬럼 비우면 빈 비밀번호 시도 위험 있음. -> 무작위 문자열 BCrypt 해싱
-        String randomPassword = passwordEncoder.encode(UUID.randomUUID().toString());
+            // (나) password 생성 / 소셜 회원은 비밀번호 로그인 X, 하지만 컬럼 비워 두면 누군가 빈 비밀번호로 로그인 시도할 수도.
+            // -> 무작위 문자열을 BCrypt로 해싱해서 넣는다.
+            String randomPassword = passwordEncoder.encode(UUID.randomUUID().toString());
 
-        // (다) nickname은 NOT NULL, UNIQUE라 반드시 겹치지 않아야 함.
-        String nickname = generateUniqueNickname(socialUserInfo.getNickname(), provider, providerId);
+            // (다) nickname 만들기. member.nickname은 NOT NULL + UNIQUE. 반드시 겹치지 않아야 함.
+            String nickname = generateUniqueNickname(socialUserInfo.getNickname(), provider, providerId);
 
-        // (라) MemberDto 조립. @Setter가 있어 set으로 채움.
-        memberDto.setMemberId(memberId);
-        memberDto.setPassword(randomPassword);
-        memberDto.setName(socialUserInfo.getName()); // null 가능 (컬럼이 nullable)
-        memberDto.setNickname(nickname);
-        memberDto.setEmail(email); // null 가능
+            // (라) MemberDto 조립. @Setter -> set으로 채움
+            memberDto = new MemberDto();
+            memberDto.setMemberId(memberId);
+            memberDto.setPassword(randomPassword);
+            memberDto.setName(socialUserInfo.getName()); // null 가능 (zjffjadl nullable이라 OK)
+            memberDto.setNickname(nickname);
+            memberDto.setEmail(email); // null 가능
 
-        memberDao.insertSocialMember(memberDto); // -> MemberMapper.xml의 <insert id="insertSocialMember">
+            memberDao.insertSocialMember(memberDto); // -> MemberMapper.xml의 <insert id="insertSocialMember">
 
-        // INSERT 직후 memberDto의 no는 아직 비어 있음.
-        // member_id가 UNIQUE이므로 그 값으로 다시 조회하면 no가 채워진 완전한 객체 얻음.
-        memberDto = memberDao.findByMemberId(memberId);
+            // INSERT 직후 memberDto의 no는 아직 비어 있음.(DB가 부여한 값이라 자바는 모름)
+            // member_id가 UNIQUE이므로 그 값으로 다시 조회하면 no가 채워진 완전한 객체 얻음.
+            memberDto = memberDao.findByMemberId(memberId);
 
-        log.info("소셜 신규 회원 생성 memberId = {}, nickname = {}", memberId, nickname);
+            log.info("소셜 신규 회원 생성 memberId = {}, nickname = {}", memberId, nickname);
+        } else {
+            log.info("이메일 일치 -> 기존 회원에 소셜 계정 연동 memberNo = {}", memberDto.getNo());
+        }
 
         // 5단계 : social_account에 연결 정보 저장
         SocialAccountDto newSocialAccount = SocialAccountDto.builder() // @BUilder 있어서 .필드(값) 조립 가능

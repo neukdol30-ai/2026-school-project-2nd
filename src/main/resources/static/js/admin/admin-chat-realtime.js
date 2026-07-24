@@ -42,15 +42,6 @@
                 return;
             }
 
-            /*
-             * 관리자 상담 상세 화면에서는 해당 상담방을 이미 실시간으로 보고 있습니다.
-             * 이때 같은 roomNo에 대한 목록 갱신 알림까지 띄우면 화면 상단에 중복 토스트가 표시됩니다.
-             * 현재 열어둔 상담방과 같은 이벤트는 chat.js가 직접 처리하므로 목록 알림은 생략합니다.
-             */
-            if (isViewingCurrentChatRoom(data.roomNo)) {
-                return;
-            }
-
             setChatLiveStatus("syncing", "새 상담 반영 중");
             setRealtimeMessage("새 상담 또는 새 메시지가 도착해 목록을 갱신합니다.");
             Admin.BrowserNotification?.notifyChatEvent(data.roomNo);
@@ -319,32 +310,6 @@
         void tableWrap.offsetWidth;
         tableWrap.classList.add("realtime-updated");
     }
-    /**
-     * 현재 관리자가 보고 있는 상담 상세와 같은 roomNo의 알림인지 확인합니다.
-     * dashboard.html에는 모든 admin-view fragment가 함께 렌더링되기 때문에,
-     * chatRoom 화면에서도 숨겨진 chatManageView가 존재합니다.
-     * 따라서 active 상태의 chatRoomView를 기준으로 현재 상담방을 판별합니다.
-     */
-    function isViewingCurrentChatRoom(eventRoomNo) {
-        if (eventRoomNo == null) {
-            return false;
-        }
-
-        const activeChatRoomView = document.querySelector("#chatRoomView.admin-view.active");
-
-        if (!activeChatRoomView) {
-            return false;
-        }
-
-        const currentRoomNo = activeChatRoomView.dataset.roomNo;
-
-        if (!currentRoomNo) {
-            return false;
-        }
-
-        return String(currentRoomNo) === String(eventRoomNo);
-    }
-
 
     Admin.ChatRealtime = {
         init: function () {

@@ -35,8 +35,11 @@
                 게시글 목록
             </h1>
 
-            <p class="board-description">
-                공지사항과 문의 게시판의 글을 확인할 수 있습니다.
+            <p class="board-description"
+               th:text="${pageDescription != null
+                    ? pageDescription
+                    : '게시글을 확인할 수 있습니다.'}">
+                게시글을 확인할 수 있습니다.
             </p>
         </div>
 
@@ -48,37 +51,6 @@
         </a>
 
     </section>
-
-
-    <!-- 게시판 카테고리 메뉴 -->
-
-    <nav class="board-category-nav">
-
-        <a th:href="@{/board/list}"
-           class="board-category-link"
-           th:classappend="${pageUrl == '/board/list'}
-                ? ' active'
-                : ''">
-            전체
-        </a>
-
-        <a th:href="@{/board/notice}"
-           class="board-category-link"
-           th:classappend="${pageUrl == '/board/notice'}
-                ? ' active'
-                : ''">
-            공지사항
-        </a>
-
-        <a th:href="@{/board/question}"
-           class="board-category-link"
-           th:classappend="${pageUrl == '/board/question'} ? ' active' : ''">
-            문의 게시판
-        </a>
-
-    </nav>
-
-
 
     <!-- 검색 영역 -->
 

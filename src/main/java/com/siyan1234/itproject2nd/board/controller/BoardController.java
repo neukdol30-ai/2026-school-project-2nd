@@ -257,6 +257,10 @@ public class BoardController {
         );
 
         model.addAttribute("pageTitle", "공지사항");
+        model.addAttribute(
+                "pageDescription",
+                "서비스의 주요 공지사항을 확인할 수 있습니다."
+        );
         model.addAttribute("currentPage", page);
         model.addAttribute("totalPage", totalPage);
 
@@ -286,6 +290,10 @@ public class BoardController {
         );
 
         model.addAttribute("pageTitle", "문의 게시판");
+        model.addAttribute(
+                "pageDescription",
+                "서비스 이용과 관련된 문의글을 확인할 수 있습니다."
+        );
         model.addAttribute("currentPage", page);
         model.addAttribute("totalPage", totalPage);
         model.addAttribute("pageUrl", "/board/question");
