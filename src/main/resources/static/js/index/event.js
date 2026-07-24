@@ -873,6 +873,40 @@ function handleAction(event) {
         return;
     }
 
+    if (action === "select-stock") {
+        const stockIndex = Number(value);
+
+        if (
+            !Number.isInteger(stockIndex) ||
+            stockIndex < 0 ||
+            stockIndex >= state.stockItems.length
+        ) {
+            return;
+        }
+
+        state.stockSlideIndex = stockIndex;
+        updateStockQuoteSelection(stockIndex);
+
+        if (state.stockSwiper) {
+            state.stockSwiper.slideToLoop(
+                stockIndex,
+                450
+            );
+        }
+
+        return;
+    }
+
+    if (action === "refresh-stocks") {
+        if (state.stockLoading) {
+            return;
+        }
+
+        fetchStocks();
+        return;
+    }
+
+
     if (action === "move-up") {
         moveWidget(
             id,

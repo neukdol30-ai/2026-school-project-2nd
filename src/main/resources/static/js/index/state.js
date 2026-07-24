@@ -204,6 +204,7 @@ const state = {
 
     stockLoading: false,
     stockError: "",
+    stockUpdatedAt: null,
     stockSlideIndex: 0,
     stockCharts: [],
     stockSwiper: null,
@@ -232,7 +233,7 @@ const state = {
             id: 4,
             zone: "main",
             type: "stock",
-            title: "증권",
+            title: "국내 증권",
             visible: true,
             collapsed: false,
             orderNo: 3
