@@ -14,6 +14,14 @@
         timeout: 15000,
         maximumAge: 0
     };
+    const DEFAULT_MAP_LEVEL = 4;
+    const MAX_MAP_LEVEL = 10;
+    const ROUTE_LINE_OPTIONS = {
+        strokeWeight: 6,
+        strokeColor: "#2563eb",
+        strokeOpacity: 0.86,
+        strokeStyle: "solid"
+    };
 
     const state = {
         map: null,
@@ -23,6 +31,8 @@
         currentAccuracy: null,
         currentMarker: null,
         resultMarkers: [],
+        routePolylines: [],
+        routeBounds: null,
         routeMarkers: {
             start: null,
             end: null
@@ -57,15 +67,45 @@
         const center = new kakao.maps.LatLng(defaultLat, defaultLng);
         state.map = new kakao.maps.Map(container, {
             center,
-            level: 4
+            level: DEFAULT_MAP_LEVEL
         });
+        limitMapZoomOut();
         state.places = new kakao.maps.services.Places(state.map);
         state.geocoder = new kakao.maps.services.Geocoder();
         state.infoWindow = new kakao.maps.InfoWindow({ zIndex: 10 });
 
         const zoomControl = new kakao.maps.ZoomControl();
         state.map.addControl(zoomControl, kakao.maps.ControlPosition.RIGHT);
+        kakao.maps.event.addListener(state.map, "zoom_changed", enforceMaxMapLevel);
         resizeMapAfterLayout();
+    }
+
+    function limitMapZoomOut() {
+        if (!state.map) {
+            return;
+        }
+
+        if (typeof state.map.setMaxLevel === "function") {
+            state.map.setMaxLevel(MAX_MAP_LEVEL);
+        }
+    }
+
+    function enforceMaxMapLevel() {
+        if (!state.map || typeof state.map.getLevel !== "function") {
+            return;
+        }
+
+        if (state.map.getLevel() > MAX_MAP_LEVEL) {
+            state.map.setLevel(MAX_MAP_LEVEL);
+            setMapGuide("지도 축소 범위를 서비스 영역에 맞춰 제한했습니다.");
+        }
+    }
+
+    function setMapGuide(message) {
+        const guide = document.querySelector(".map-toolbar-guide");
+        if (guide) {
+            guide.textContent = message;
+        }
     }
 
     function bindEvents() {
@@ -235,7 +275,9 @@
         state.lastBounds = bounds;
         resizeMapAfterLayout();
         state.map.setBounds(bounds);
+        enforceMaxMapLevel();
         setFitButtonEnabled(true);
+        setMapGuide("검색 결과와 마커가 지도에 표시되었습니다.");
     }
 
     function renderSearchResults(results, distanceSorted) {
@@ -373,6 +415,8 @@
 
         drawRoutePointMarker(type, position, place.title);
         updateRouteBoxState(type);
+        fitRoutePointBounds();
+        setMapGuide("출발지와 도착지를 선택한 뒤 경로 조회를 누르면 지도에 경로가 표시됩니다.");
     }
 
     function drawRoutePointMarker(type, position, title) {
@@ -420,7 +464,7 @@
 
         try {
             const data = await requestJson(ROUTE_API, payload);
-            renderRouteSummary(data);
+            renderRouteSummary(data, payload);
         } catch (error) {
             result.classList.add("error");
             result.textContent = error.message || "경로 조회 중 오류가 발생했습니다.";
@@ -429,7 +473,7 @@
         }
     }
 
-    function renderRouteSummary(response) {
+    function renderRouteSummary(response, payload) {
         const result = document.querySelector("[data-route-result]");
 
         if (!result) {
@@ -437,12 +481,14 @@
         }
 
         if (!response.success) {
+            clearRouteLines();
             result.classList.add("error");
             result.textContent = response.message || "경로 조회 결과가 없습니다.";
             return;
         }
 
         const data = response.data || {};
+        drawRouteOnMap(data, payload);
         const routeType = document.querySelector('[data-route-form] [name="type"]')?.value || "publictraffic";
 
         if (routeType === "publictraffic") {
@@ -452,6 +498,7 @@
                 <strong>경로 요약</strong>
                 <span>${formatDistance(firstRoute.totalDistance)} · ${formatTime(firstRoute.totalTime)}</span>
                 <small>환승 ${formatNumber(firstRoute.transfers)}회${firstRoute.fare?.value ? ` · ${formatNumber(firstRoute.fare.value)}원` : ""}</small>
+                <small>오른쪽 지도에서 경로를 확인할 수 있습니다.</small>
             `;
             return;
         }
@@ -461,8 +508,219 @@
         result.innerHTML = `
             <strong>경로 요약</strong>
             <span>${formatDistance(properties.totalDistance)} · ${formatTime(properties.totalTime)}</span>
-            <small>6차 패치에서 오른쪽 지도에 경로선을 표시할 예정입니다.</small>
+            <small>오른쪽 지도에서 경로를 확인할 수 있습니다.</small>
         `;
+    }
+
+    function drawRouteOnMap(routeData, payload) {
+        clearRouteLines();
+
+        const startPosition = createLatLngFromPayload(payload.startY, payload.startX);
+        const endPosition = createLatLngFromPayload(payload.endY, payload.endX);
+        const extractedPath = extractRoutePath(routeData);
+        const routePath = extractedPath.length >= 2 ? extractedPath : [startPosition, endPosition].filter(Boolean);
+
+        if (routePath.length < 2) {
+            setMapGuide("경로 좌표를 지도에 표시하지 못했습니다. 출발지와 도착지 마커만 표시합니다.");
+            fitRoutePointBounds();
+            return;
+        }
+
+        const routeLine = new kakao.maps.Polyline({
+            map: state.map,
+            path: routePath,
+            ...ROUTE_LINE_OPTIONS
+        });
+        state.routePolylines.push(routeLine);
+
+        const bounds = new kakao.maps.LatLngBounds();
+        routePath.forEach((point) => bounds.extend(point));
+        if (startPosition) {
+            bounds.extend(startPosition);
+        }
+        if (endPosition) {
+            bounds.extend(endPosition);
+        }
+
+        state.routeBounds = bounds;
+        resizeMapAfterLayout();
+        state.map.setBounds(bounds);
+        enforceMaxMapLevel();
+        setFitButtonEnabled(true);
+        setMapGuide(extractedPath.length >= 2
+            ? "경로가 오른쪽 지도에 표시되었습니다."
+            : "카카오 경로 좌표가 부족해 출발지와 도착지를 직선으로 연결했습니다."
+        );
+    }
+
+    function createLatLngFromPayload(latValue, lngValue) {
+        const lat = Number(latValue);
+        const lng = Number(lngValue);
+
+        if (!isValidKoreaCoordinate(lng, lat)) {
+            return null;
+        }
+
+        return new kakao.maps.LatLng(lat, lng);
+    }
+
+    function extractRoutePath(routeData) {
+        const groups = [];
+        collectCoordinateGroups(routeData, groups);
+
+        const points = [];
+        groups.forEach((group) => {
+            group.forEach((point) => points.push(point));
+        });
+
+        return removeDuplicateLatLng(points).slice(0, 3000);
+    }
+
+    function collectCoordinateGroups(node, groups) {
+        if (!node) {
+            return;
+        }
+
+        if (Array.isArray(node)) {
+            const parsed = parseCoordinateArray(node);
+            if (parsed.length >= 2) {
+                groups.push(parsed);
+                return;
+            }
+
+            node.forEach((item) => collectCoordinateGroups(item, groups));
+            return;
+        }
+
+        if (typeof node !== "object") {
+            return;
+        }
+
+        Object.entries(node).forEach(([key, value]) => {
+            const lowerKey = key.toLowerCase();
+
+            if (Array.isArray(value) && ["coordinates", "vertexes", "vertices", "path", "points"].includes(lowerKey)) {
+                const parsed = parseCoordinateArray(value);
+                if (parsed.length >= 2) {
+                    groups.push(parsed);
+                    return;
+                }
+            }
+
+            collectCoordinateGroups(value, groups);
+        });
+    }
+
+    function parseCoordinateArray(value) {
+        if (!Array.isArray(value)) {
+            return [];
+        }
+
+        if (isFlatNumberArray(value)) {
+            return parseFlatCoordinatePairs(value);
+        }
+
+        if (isCoordinatePair(value)) {
+            return [new kakao.maps.LatLng(Number(value[1]), Number(value[0]))];
+        }
+
+        const points = [];
+        value.forEach((item) => {
+            parseCoordinateArray(item).forEach((point) => points.push(point));
+        });
+        return points;
+    }
+
+    function parseFlatCoordinatePairs(values) {
+        const points = [];
+
+        for (let index = 0; index < values.length - 1; index += 2) {
+            const lng = Number(values[index]);
+            const lat = Number(values[index + 1]);
+
+            if (isValidKoreaCoordinate(lng, lat)) {
+                points.push(new kakao.maps.LatLng(lat, lng));
+            }
+        }
+
+        return points;
+    }
+
+    function isFlatNumberArray(value) {
+        return Array.isArray(value)
+            && value.length >= 4
+            && value.every((item) => Number.isFinite(Number(item)));
+    }
+
+    function isCoordinatePair(value) {
+        if (!Array.isArray(value) || value.length < 2) {
+            return false;
+        }
+
+        const lng = Number(value[0]);
+        const lat = Number(value[1]);
+        return isValidKoreaCoordinate(lng, lat);
+    }
+
+    function isValidKoreaCoordinate(lng, lat) {
+        return Number.isFinite(lng)
+            && Number.isFinite(lat)
+            && lng >= 123
+            && lng <= 132.5
+            && lat >= 32
+            && lat <= 39.8;
+    }
+
+    function removeDuplicateLatLng(points) {
+        const result = [];
+        const seen = new Set();
+
+        points.forEach((point) => {
+            const key = `${point.getLat().toFixed(6)},${point.getLng().toFixed(6)}`;
+            if (!seen.has(key)) {
+                seen.add(key);
+                result.push(point);
+            }
+        });
+
+        return result;
+    }
+
+    function fitRoutePointBounds() {
+        const positions = Object.values(state.routeMarkers)
+            .filter(Boolean)
+            .map((marker) => marker.getPosition());
+
+        if (positions.length === 0) {
+            return;
+        }
+
+        if (positions.length === 1) {
+            state.map.setLevel(DEFAULT_MAP_LEVEL);
+            state.map.panTo(positions[0]);
+            return;
+        }
+
+        const bounds = new kakao.maps.LatLngBounds();
+        positions.forEach((position) => bounds.extend(position));
+        state.map.setBounds(bounds);
+        enforceMaxMapLevel();
+    }
+
+    function clearRouteLines() {
+        state.routePolylines.forEach((polyline) => polyline.setMap(null));
+        state.routePolylines = [];
+        state.routeBounds = null;
+    }
+
+    function clearRouteOverlays() {
+        clearRouteLines();
+        Object.entries(state.routeMarkers).forEach(([type, marker]) => {
+            if (marker) {
+                marker.setMap(null);
+                state.routeMarkers[type] = null;
+            }
+        });
     }
 
     async function moveToCurrentLocation() {
@@ -518,9 +776,12 @@
     }
 
     function fitResultBounds() {
-        if (state.lastBounds) {
+        const bounds = state.routeBounds || state.lastBounds;
+
+        if (bounds) {
             resizeMapAfterLayout();
-            state.map.setBounds(state.lastBounds);
+            state.map.setBounds(bounds);
+            enforceMaxMapLevel();
         }
     }
 
@@ -540,6 +801,7 @@
 
     function clearMapView() {
         clearSearchMarkers();
+        clearRouteOverlays();
         state.infoWindow?.close();
         state.selectedPlace = null;
         state.lastBounds = null;
@@ -547,6 +809,37 @@
         updateResultCount(0);
         renderEmptyResult("검색 결과가 초기화되었습니다.", "다시 검색하면 결과와 마커가 표시됩니다.");
         document.querySelector("[data-selected-section]")?.setAttribute("hidden", "hidden");
+        resetRoutePanel();
+        setMapGuide("검색 결과와 선택 장소가 지도에 표시됩니다.");
+    }
+
+    function resetRoutePanel() {
+        const form = document.querySelector("[data-route-form]");
+        const result = document.querySelector("[data-route-result]");
+
+        if (form) {
+            form.reset();
+            ["startX", "startY", "startName", "endX", "endY", "endName"].forEach((name) => {
+                if (form[name]) {
+                    form[name].value = "";
+                }
+            });
+        }
+
+        const startName = document.querySelector("[data-route-start-name]");
+        const endName = document.querySelector("[data-route-end-name]");
+        if (startName) {
+            startName.textContent = "선택 안 됨";
+        }
+        if (endName) {
+            endName.textContent = "선택 안 됨";
+        }
+        document.querySelectorAll(".route-point-box").forEach((box) => box.classList.remove("selected"));
+
+        if (result) {
+            result.classList.remove("error");
+            result.textContent = "출발지와 도착지를 선택하면 경로 요약을 확인할 수 있습니다.";
+        }
     }
 
     function clearSearchMarkers() {

@@ -721,3 +721,15 @@ select:disabled {
     border-radius: 999px;
     background: #cbd5e1;
 }
+
+
+/* 6차 보정: 경로 조회 결과가 지도와 함께 표시될 때 요약 텍스트 간격을 정리합니다. */
+.route-result small + small {
+    margin-top: 3px;
+    color: #2563eb;
+    font-weight: 900;
+}
+
+.route-result:not(.error) {
+    border: 1px solid #e2e8f0;
+}
