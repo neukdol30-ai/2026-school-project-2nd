@@ -14,12 +14,13 @@ public final class KakaoMapApiUrls {
     /** 키워드로 장소 검색 */
     public static final String PLACE_KEYWORD_SEARCH = "https://dapi.kakao.com/v2/local/search/keyword.json";
 
-    /** 정적 지도 조회: 2차 패치에서 사용 예정 */
+    /** 정적 지도 이미지 조회 */
     public static final String STATIC_MAP = "https://dapi.kakao.com/v2/maps/staticmap";
 
     /** 경로 조회: 3차 패치에서 사용 예정 */
     public static final String PUBLIC_TRAFFIC_ROUTE = "https://dapi.kakao.com/v2/routing/publictraffic";
     public static final String WALK_ROUTE = "https://dapi.kakao.com/v2/routing/walk";
+    public static final String BICYCLE_ROUTE = "https://dapi.kakao.com/v2/routing/bicycle";
 
     private KakaoMapApiUrls() {
     }

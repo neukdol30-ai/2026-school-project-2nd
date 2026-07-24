@@ -1,6 +1,8 @@
 /*
  * kakao-map.css
  * 역할: 카카오맵 REST API 테스트 화면 스타일입니다.
+ *
+ * 최종 디자인 통합 전까지는 프로젝트 관리자/마이페이지에서 사용한 카드형 UI 톤을 따릅니다.
  */
 * {
     box-sizing: border-box;
@@ -133,12 +135,17 @@ body {
 }
 
 .map-form.two-column,
-.place-form {
+.place-form,
+.static-map-form {
     grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
 .place-form {
     grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.static-map-form {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
 }
 
 .wide-field {
@@ -148,6 +155,7 @@ body {
 .map-form label {
     display: grid;
     gap: 7px;
+    min-width: 0;
 }
 
 .map-form label > span {
@@ -184,6 +192,7 @@ body {
     color: #111827;
     font-weight: 900;
     cursor: pointer;
+    white-space: nowrap;
 }
 
 .map-form button:disabled {
@@ -268,6 +277,7 @@ body {
     font-weight: 900;
     text-decoration: none;
     cursor: pointer;
+    white-space: nowrap;
 }
 
 .raw-json {
@@ -282,6 +292,33 @@ body {
     line-height: 1.6;
 }
 
+.static-map-preview {
+    display: grid;
+    gap: 14px;
+    margin-top: 16px;
+}
+
+.static-map-image {
+    width: 100%;
+    max-height: 520px;
+    object-fit: contain;
+    border: 1px solid #e2e8f0;
+    border-radius: 20px;
+    background: #f8fafc;
+    box-shadow: 0 16px 38px rgba(15, 23, 42, 0.08);
+}
+
+.static-map-image[hidden] {
+    display: none;
+}
+
+@media (max-width: 960px) {
+    .place-form,
+    .static-map-form {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
 @media (max-width: 860px) {
     .map-hero {
         align-items: flex-start;
@@ -290,7 +327,8 @@ body {
 
     .map-grid,
     .map-form.two-column,
-    .place-form {
+    .place-form,
+    .static-map-form {
         grid-template-columns: 1fr;
     }
 

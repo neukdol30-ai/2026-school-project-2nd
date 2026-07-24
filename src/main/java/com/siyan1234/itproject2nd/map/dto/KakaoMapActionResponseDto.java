@@ -1,12 +1,11 @@
 package com.siyan1234.itproject2nd.map.dto;
 
-
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import tools.jackson.databind.JsonNode;
 
 /**
- * 프론트엔드에 내려주는 카카오맵 공통 응답 DTO입니다.
+ * 프론트엔드에 내려주는 카카오맵 공통 JSON 응답 DTO입니다.
  *
  * data에는 카카오 API 원본 JSON을 그대로 담습니다.
  * 화면에서는 documents, meta 등을 그대로 확인할 수 있습니다.
