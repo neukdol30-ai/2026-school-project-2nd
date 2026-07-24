@@ -841,3 +841,120 @@ select:disabled {
     font-style: normal;
     font-weight: 900;
 }
+
+
+/* 6차 대중교통 안내 보정: 후보 번호 원형 안에서 숫자가 잘리지 않게 하고, 탑승 차량/정류장 안내를 표시합니다. */
+.route-candidate-card {
+    align-items: flex-start;
+}
+
+.route-candidate-rank {
+    flex: 0 0 30px;
+    width: 30px;
+    min-width: 30px;
+    height: 30px;
+    min-height: 30px;
+    padding: 0;
+    line-height: 1;
+    box-sizing: border-box;
+    overflow: visible;
+    white-space: nowrap;
+}
+
+.route-candidate-content {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+.route-candidate-guide {
+    color: #334155 !important;
+    font-size: 11px !important;
+    line-height: 1.45;
+}
+
+.route-selected-guide {
+    display: grid;
+    gap: 8px;
+    margin-top: 10px;
+    padding: 10px;
+    border: 1px solid #dbeafe;
+    border-radius: 14px;
+    background: #f8fbff;
+}
+
+.route-selected-guide > strong {
+    color: #111827;
+    font-size: 12px;
+    font-weight: 900;
+}
+
+.route-step-list {
+    display: grid;
+    gap: 8px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.route-step-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    min-width: 0;
+}
+
+.route-step-index {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 22px;
+    width: 22px;
+    height: 22px;
+    border-radius: 999px;
+    background: #e0ecff;
+    color: #1d4ed8;
+    font-size: 11px;
+    font-weight: 900;
+    line-height: 1;
+}
+
+.route-step-content {
+    display: grid;
+    gap: 2px;
+    min-width: 0;
+}
+
+.route-step-content strong,
+.route-step-content small,
+.route-step-content em {
+    max-width: 100%;
+    overflow-wrap: anywhere;
+    word-break: keep-all;
+}
+
+.route-step-content strong {
+    color: #111827;
+    font-size: 12px;
+    font-weight: 900;
+}
+
+.route-step-content small {
+    color: #64748b;
+    font-size: 11px;
+    font-weight: 800;
+}
+
+.route-step-content em {
+    color: #334155;
+    font-size: 11px;
+    font-style: normal;
+    font-weight: 800;
+}
+
+.route-step-empty {
+    margin: 0;
+    color: #64748b;
+    font-size: 11px;
+    font-weight: 800;
+    line-height: 1.5;
+}
