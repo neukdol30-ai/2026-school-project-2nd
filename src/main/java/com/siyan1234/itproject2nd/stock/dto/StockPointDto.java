@@ -11,5 +11,5 @@ import lombok.Setter;
 @AllArgsConstructor
 public class StockPointDto {
     private String time;
-    private long price;
+    private double price;
 }
