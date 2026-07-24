@@ -2,7 +2,7 @@
 function renderGlobalBanner() {
     const userMenu = state.currentUser
         ? `
-            <a href="/mypage">내 정보</a>
+            <a href="/mypage">마이페이지</a>
             <button
                 type="button"
                 data-action="logout"
