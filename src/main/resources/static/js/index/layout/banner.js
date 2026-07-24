@@ -3,7 +3,7 @@ function renderGlobalBanner() {
     const userMenu = state.currentUser
         ? `
 
-            <span class="global-calendar-label">캘린더</span>
+            
 
             <a href="/mypage">마이페이지</a>
             <button
