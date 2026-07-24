@@ -50,6 +50,10 @@ function renderGlobalBanner() {
             </a>
 
             <div class="global-right-menu">
+                <span class="global-calendar-label">
+                    캘린더
+                </span>
+                
                 <div class="global-user-menu">
                     ${userMenu}
                 </div>
