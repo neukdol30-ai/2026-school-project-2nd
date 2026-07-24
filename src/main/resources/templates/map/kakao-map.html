@@ -13,149 +13,73 @@
         <div>
             <span class="eyebrow">KAKAO MAP API</span>
             <h1>카카오맵 기능 테스트</h1>
-            <p>주소/좌표 변환, 장소 검색, 정적 지도 조회를 테스트합니다. 경로 조회는 다음 패치에서 이어서 연결합니다.</p>
+            <p>주소/좌표 변환, 장소 검색, 정적 지도 조회, 경로 조회를 테스트합니다.</p>
         </div>
         <a class="home-link" href="/index.html">메인으로</a>
     </header>
 
     <main class="map-grid">
         <section class="map-card">
-            <div class="card-head">
-                <span class="card-icon">📍</span>
-                <div>
-                    <h2>주소 → 좌표 변환</h2>
-                    <p>도로명/지번 주소를 입력하면 좌표 x, y를 조회합니다.</p>
-                </div>
-            </div>
-
+            <div class="card-head"><span class="card-icon">📍</span><div><h2>주소 → 좌표 변환</h2><p>도로명/지번 주소를 입력하면 좌표 x, y를 조회합니다.</p></div></div>
             <form class="map-form" data-kakao-form="address">
-                <label>
-                    <span>주소 검색어</span>
-                    <input type="text" name="query" placeholder="예: 서울 강남구 테헤란로 152" autocomplete="off" required>
-                </label>
+                <label><span>주소 검색어</span><input type="text" name="query" placeholder="예: 서울 강남구 테헤란로 152" autocomplete="off" required></label>
                 <button type="submit">주소 검색</button>
             </form>
-
             <div class="result-box" data-result="address"></div>
         </section>
 
         <section class="map-card">
-            <div class="card-head">
-                <span class="card-icon">🧭</span>
-                <div>
-                    <h2>좌표 → 주소 변환</h2>
-                    <p>WGS84 좌표 x, y를 입력하면 행정 주소를 조회합니다.</p>
-                </div>
-            </div>
-
+            <div class="card-head"><span class="card-icon">🧭</span><div><h2>좌표 → 주소 변환</h2><p>WGS84 좌표 x, y를 입력하면 행정 주소를 조회합니다.</p></div></div>
             <form class="map-form two-column" data-kakao-form="coord">
-                <label>
-                    <span>x 좌표</span>
-                    <input type="text" name="x" placeholder="예: 127.02758" autocomplete="off" required>
-                </label>
-                <label>
-                    <span>y 좌표</span>
-                    <input type="text" name="y" placeholder="예: 37.49794" autocomplete="off" required>
-                </label>
+                <label><span>x 좌표</span><input type="text" name="x" placeholder="예: 127.02758" autocomplete="off" required></label>
+                <label><span>y 좌표</span><input type="text" name="y" placeholder="예: 37.49794" autocomplete="off" required></label>
                 <button type="submit">주소 변환</button>
             </form>
-
             <div class="result-box" data-result="coord"></div>
         </section>
 
         <section class="map-card wide-card">
-            <div class="card-head">
-                <span class="card-icon">🔎</span>
-                <div>
-                    <h2>장소 검색</h2>
-                    <p>키워드로 장소를 검색합니다. 검색 결과의 좌표로 정적 지도도 바로 확인할 수 있습니다.</p>
-                </div>
-            </div>
-
+            <div class="card-head"><span class="card-icon">🔎</span><div><h2>장소 검색</h2><p>검색 결과의 좌표를 출발지/도착지로 바로 설정할 수 있습니다.</p></div></div>
             <form class="map-form place-form" data-kakao-form="place">
-                <label class="wide-field">
-                    <span>장소 키워드</span>
-                    <input type="text" name="query" placeholder="예: 강남역 카페" autocomplete="off" required>
-                </label>
-                <label>
-                    <span>중심 x 좌표</span>
-                    <input type="text" name="x" placeholder="선택 입력" autocomplete="off">
-                </label>
-                <label>
-                    <span>중심 y 좌표</span>
-                    <input type="text" name="y" placeholder="선택 입력" autocomplete="off">
-                </label>
-                <label>
-                    <span>반경 meter</span>
-                    <input type="number" name="radius" placeholder="예: 1000" min="1" max="20000">
-                </label>
-                <label>
-                    <span>정렬</span>
-                    <select name="sort">
-                        <option value="accuracy">정확도순</option>
-                        <option value="distance">거리순</option>
-                    </select>
-                </label>
+                <label class="wide-field"><span>장소 키워드</span><input type="text" name="query" placeholder="예: 강남역 카페" autocomplete="off" required></label>
+                <label><span>중심 x 좌표</span><input type="text" name="x" placeholder="선택 입력" autocomplete="off"></label>
+                <label><span>중심 y 좌표</span><input type="text" name="y" placeholder="선택 입력" autocomplete="off"></label>
+                <label><span>반경 meter</span><input type="number" name="radius" placeholder="예: 1000" min="1" max="20000"></label>
+                <label><span>정렬</span><select name="sort"><option value="accuracy">정확도순</option><option value="distance">거리순</option></select></label>
                 <button type="submit">장소 검색</button>
             </form>
-
             <div class="result-box" data-result="place"></div>
         </section>
 
         <section class="map-card wide-card static-map-card">
-            <div class="card-head">
-                <span class="card-icon">🗺️</span>
-                <div>
-                    <h2>정적 지도 조회</h2>
-                    <p>좌표를 기준으로 이미지 지도를 조회합니다. REST API 키 보호를 위해 서버 프록시로 이미지를 내려받습니다.</p>
-                </div>
-            </div>
-
+            <div class="card-head"><span class="card-icon">🗺️</span><div><h2>정적 지도 조회</h2><p>좌표를 기준으로 이미지 지도를 조회합니다.</p></div></div>
             <form class="map-form static-map-form" data-kakao-form="staticMap">
-                <label>
-                    <span>x 좌표</span>
-                    <input type="text" name="x" placeholder="예: 127.02758" autocomplete="off" required>
-                </label>
-                <label>
-                    <span>y 좌표</span>
-                    <input type="text" name="y" placeholder="예: 37.49794" autocomplete="off" required>
-                </label>
-                <label>
-                    <span>가로</span>
-                    <input type="number" name="width" value="640" min="160" max="2048">
-                </label>
-                <label>
-                    <span>세로</span>
-                    <input type="number" name="height" value="360" min="160" max="1024">
-                </label>
-                <label>
-                    <span>지도 레벨</span>
-                    <input type="number" name="level" value="3" min="1" max="15">
-                </label>
-                <label>
-                    <span>포맷</span>
-                    <select name="format">
-                        <option value="png">PNG</option>
-                        <option value="jpg">JPG</option>
-                    </select>
-                </label>
+                <label><span>x 좌표</span><input type="text" name="x" placeholder="예: 127.02758" autocomplete="off" required></label>
+                <label><span>y 좌표</span><input type="text" name="y" placeholder="예: 37.49794" autocomplete="off" required></label>
+                <label><span>가로</span><input type="number" name="width" value="640" min="160" max="2048"></label>
+                <label><span>세로</span><input type="number" name="height" value="360" min="160" max="1024"></label>
+                <label><span>지도 레벨</span><input type="number" name="level" value="3" min="1" max="15"></label>
+                <label><span>포맷</span><select name="format"><option value="png">PNG</option><option value="jpg">JPG</option></select></label>
                 <button type="submit">정적 지도 보기</button>
             </form>
-
-            <div class="static-map-preview">
-                <div class="result-box" data-result="staticMap"></div>
-                <img class="static-map-image" data-static-map-image src="" alt="카카오 정적 지도 미리보기" hidden>
-            </div>
+            <div class="static-map-preview"><div class="result-box" data-result="staticMap"></div><img class="static-map-image" data-static-map-image src="" alt="카카오 정적 지도 미리보기" hidden></div>
         </section>
 
-        <section class="map-card disabled-card">
-            <div class="card-head">
-                <span class="card-icon">🚗</span>
-                <div>
-                    <h2>경로 조회</h2>
-                    <p>3차 패치에서 출발지/도착지 좌표 기반 경로 조회를 연결할 예정입니다.</p>
-                </div>
-            </div>
+        <section class="map-card wide-card route-card">
+            <div class="card-head"><span class="card-icon">🚗</span><div><h2>경로 조회</h2><p>출발지와 도착지 좌표를 입력해 대중교통, 도보, 자전거 경로를 조회합니다.</p></div></div>
+            <form class="map-form route-form" data-kakao-form="route">
+                <label><span>경로 종류</span><select name="type"><option value="publictraffic">대중교통</option><option value="walk">도보</option><option value="bicycle">자전거</option></select></label>
+                <label><span>도보 옵션</span><select name="routeMode"><option value="BROAD_FIRST">넓은 길 우선</option><option value="SHORTEST">최단 경로</option><option value="ACCESSIBLE">편안한 길</option></select></label>
+                <label><span>출발지명</span><input type="text" name="startName" value="출발" autocomplete="off"></label>
+                <label><span>도착지명</span><input type="text" name="endName" value="도착" autocomplete="off"></label>
+                <label><span>출발 x</span><input type="text" name="startX" placeholder="예: 127.02758" autocomplete="off" required></label>
+                <label><span>출발 y</span><input type="text" name="startY" placeholder="예: 37.49794" autocomplete="off" required></label>
+                <label><span>도착 x</span><input type="text" name="endX" placeholder="예: 127.1105" autocomplete="off" required></label>
+                <label><span>도착 y</span><input type="text" name="endY" placeholder="예: 37.3955" autocomplete="off" required></label>
+                <button type="submit">경로 조회</button>
+            </form>
+            <div class="route-helper"><span>장소 검색 결과에서 출발지로 설정 / 도착지로 설정 버튼을 누르면 좌표가 자동 입력됩니다.</span></div>
+            <div class="result-box" data-result="route"></div>
         </section>
     </main>
 </div>

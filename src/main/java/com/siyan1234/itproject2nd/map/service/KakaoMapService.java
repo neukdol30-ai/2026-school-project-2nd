@@ -5,6 +5,7 @@ import com.siyan1234.itproject2nd.map.dto.KakaoMapActionResponseDto;
 import com.siyan1234.itproject2nd.map.support.KakaoMapApiException;
 import com.siyan1234.itproject2nd.map.support.KakaoMapApiUrls;
 import com.siyan1234.itproject2nd.map.support.KakaoMapMessages;
+import com.siyan1234.itproject2nd.map.support.KakaoRouteType;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
@@ -23,6 +24,9 @@ import java.util.Map;
  *
  * 2차 범위:
  * - 정적 지도 이미지 조회
+ *
+ * 3차 범위:
+ * - 대중교통 / 도보 / 자전거 경로 조회
  */
 @Service
 @RequiredArgsConstructor
@@ -64,8 +68,8 @@ public class KakaoMapService {
         }
 
         Map<String, Object> parameters = new LinkedHashMap<>();
-        parameters.put("x", x.trim());
-        parameters.put("y", y.trim());
+        parameters.put("x", normalizeCoordinate(x));
+        parameters.put("y", normalizeCoordinate(y));
         parameters.put("input_coord", "WGS84");
 
         return callKakao("좌표 주소 변환이 완료되었습니다.", KakaoMapApiUrls.COORD_TO_ADDRESS, parameters);
@@ -100,7 +104,7 @@ public class KakaoMapService {
                                  Integer height,
                                  Integer level,
                                  String format) {
-        validateCoordinateRequired(x, y);
+        validateCoordinateRequired(x, y, KakaoMapMessages.STATIC_MAP_COORDINATE_REQUIRED);
 
         String longitude = normalizeCoordinate(x);
         String latitude = normalizeCoordinate(y);
@@ -118,6 +122,40 @@ public class KakaoMapService {
         return kakaoMapClient.getBytes(KakaoMapApiUrls.STATIC_MAP, parameters);
     }
 
+    public KakaoMapActionResponseDto findRoute(String type,
+                                               String startX,
+                                               String startY,
+                                               String endX,
+                                               String endY,
+                                               String startName,
+                                               String endName,
+                                               String routeMode) {
+        validateCoordinateRequired(startX, startY, KakaoMapMessages.ROUTE_COORDINATE_REQUIRED);
+        validateCoordinateRequired(endX, endY, KakaoMapMessages.ROUTE_COORDINATE_REQUIRED);
+
+        KakaoRouteType routeType = KakaoRouteType.from(type);
+
+        Map<String, Object> parameters = new LinkedHashMap<>();
+        parameters.put("start_x", normalizeCoordinate(startX));
+        parameters.put("start_y", normalizeCoordinate(startY));
+        parameters.put("end_x", normalizeCoordinate(endX));
+        parameters.put("end_y", normalizeCoordinate(endY));
+        parameters.put("s_name", normalizeRouteName(startName, "출발"));
+        parameters.put("e_name", normalizeRouteName(endName, "도착"));
+        parameters.put("input_coord", "WGS84");
+        parameters.put("output_coord", "WGS84");
+
+        /*
+         * 카카오맵 도보 경로 조회 API는 route_mode를 지원합니다.
+         * 자전거/대중교통은 공통 좌표 파라미터 중심으로 호출합니다.
+         */
+        if (routeType.isWalk()) {
+            parameters.put("route_mode", normalizeWalkRouteMode(routeMode));
+        }
+
+        return callKakao(routeType.getLabel() + " 경로 조회가 완료되었습니다.", routeType.getUrl(), parameters);
+    }
+
     public String normalizeImageFormat(String format) {
         if ("jpg".equalsIgnoreCase(format)) {
             return "jpg";
@@ -132,14 +170,14 @@ public class KakaoMapService {
             return KakaoMapActionResponseDto.success(successMessage, data);
         } catch (KakaoMapApiException e) {
             return KakaoMapActionResponseDto.failure(e.getMessage(), e.getStatusCode(), e.getResponseBody());
-        } catch (IllegalStateException e) {
+        } catch (IllegalStateException | IllegalArgumentException e) {
             return KakaoMapActionResponseDto.failure(e.getMessage());
         }
     }
 
-    private void validateCoordinateRequired(String x, String y) {
+    private void validateCoordinateRequired(String x, String y, String message) {
         if (!StringUtils.hasText(x) || !StringUtils.hasText(y)) {
-            throw new IllegalArgumentException(KakaoMapMessages.STATIC_MAP_COORDINATE_REQUIRED);
+            throw new IllegalArgumentException(message);
         }
     }
 
@@ -179,5 +217,25 @@ public class KakaoMapService {
         }
 
         return "accuracy";
+    }
+
+    private String normalizeRouteName(String value, String defaultValue) {
+        return StringUtils.hasText(value) ? value.trim() : defaultValue;
+    }
+
+    private String normalizeWalkRouteMode(String routeMode) {
+        if (!StringUtils.hasText(routeMode)) {
+            return "BROAD_FIRST";
+        }
+
+        if ("SHORTEST".equalsIgnoreCase(routeMode)) {
+            return "SHORTEST";
+        }
+
+        if ("ACCESSIBLE".equalsIgnoreCase(routeMode)) {
+            return "ACCESSIBLE";
+        }
+
+        return "BROAD_FIRST";
     }
 }
