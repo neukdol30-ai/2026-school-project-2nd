@@ -29,6 +29,13 @@ public interface BoardDao {
     // 제목, 내용, 작성자 닉네임을 기준으로 검색
     List<BoardDto> search(String keyword);
 
+
+    List<BoardDto> searchByCategory(
+            @Param("keyword") String keyword,
+            @Param("category") String category
+    );
+
+
     // 게시글 상세
     BoardDto findByNo(Long no);
 

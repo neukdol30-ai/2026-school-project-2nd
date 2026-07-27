@@ -310,6 +310,10 @@ public class BoardController {
         // 공지사항 페이지 번호의 이동 주소
         model.addAttribute("pageUrl", "/board/notice");
 
+        // 검색할 게시판 종류
+        model.addAttribute("category", "NOTICE");
+
+
         return "board/list";
     }
 
@@ -341,6 +345,9 @@ public class BoardController {
         model.addAttribute("totalPage", totalPage);
         model.addAttribute("pageUrl", "/board/question");
 
+        // 검색할 게시판 종류
+        model.addAttribute("category", "QUESTION");
+
         return "board/list";
     }
 
@@ -348,18 +355,113 @@ public class BoardController {
 
     // 게시글 검색
     @GetMapping("/search")
-    public String search(@RequestParam String keyword,
-                         Model model) {
+    public String search(
+            @RequestParam String keyword,
+            @RequestParam(required = false) String category,
+            Model model
+    ) {
 
-        model.addAttribute("boardList", boardService.search(keyword));
-        model.addAttribute("pageTitle", "검색 결과");
-        model.addAttribute("keyword", keyword);
+        /*
+         * category가 있으면
+         * 해당 게시판 안에서만 검색한다.
+         *
+         * category가 없으면
+         * 전체 게시글을 검색한다.
+         */
+        if (category != null && !category.isBlank()) {
 
-        // list.html의 페이징 부분에서 필요
-        model.addAttribute("currentPage", 1);
-        model.addAttribute("totalPage", 1);
+            model.addAttribute(
+                    "boardList",
+                    boardService.searchByCategory(
+                            keyword,
+                            category
+                    )
+            );
 
+        } else {
 
+            model.addAttribute(
+                    "boardList",
+                    boardService.search(keyword)
+            );
+        }
+
+        /*
+         * 검색한 게시판에 맞는 제목 설정
+         */
+        if ("NOTICE".equals(category)) {
+
+            model.addAttribute(
+                    "pageTitle",
+                    "공지사항 검색 결과"
+            );
+
+            model.addAttribute(
+                    "pageDescription",
+                    "공지사항에서 검색한 결과입니다."
+            );
+
+            model.addAttribute(
+                    "pageUrl",
+                    "/board/notice"
+            );
+
+        } else if ("QUESTION".equals(category)) {
+
+            model.addAttribute(
+                    "pageTitle",
+                    "문의 게시판 검색 결과"
+            );
+
+            model.addAttribute(
+                    "pageDescription",
+                    "문의 게시판에서 검색한 결과입니다."
+            );
+
+            model.addAttribute(
+                    "pageUrl",
+                    "/board/question"
+            );
+
+        } else {
+
+            model.addAttribute(
+                    "pageTitle",
+                    "전체 검색 결과"
+            );
+
+            model.addAttribute(
+                    "pageUrl",
+                    "/board/list"
+            );
+        }
+
+        /*
+         * 검색어와 카테고리를 다시 화면으로 전달
+         */
+        model.addAttribute(
+                "keyword",
+                keyword
+        );
+
+        model.addAttribute(
+                "category",
+                category
+        );
+
+        /*
+         * 현재 검색 결과는 페이징을 적용하지 않으므로
+         * list.html 오류 방지를 위해 기본값 설정
+         */
+        model.addAttribute(
+                "currentPage",
+                1
+        );
+
+        model.addAttribute(
+                "totalPage",
+                1
+        );
 
         return "board/list";
     }
@@ -369,6 +471,7 @@ public class BoardController {
     @GetMapping("/update/{no}")
     public String update(
             @PathVariable Long no,
+            @RequestParam(required = false) String category,
             Model model,
             @AuthenticationPrincipal CustomUserDetails loginUser
     ) {
@@ -385,7 +488,16 @@ public class BoardController {
                 boardService.findByNo(no);
 
         if (board == null) {
-            return "redirect:/board/question";
+
+            if ("NOTICE".equals(category)) {
+                return "redirect:/board/notice";
+            }
+
+            if ("QUESTION".equals(category)) {
+                return "redirect:/board/question";
+            }
+
+            return "redirect:/board/list";
         }
 
         /*

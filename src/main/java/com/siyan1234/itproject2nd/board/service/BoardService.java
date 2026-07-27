@@ -34,6 +34,19 @@ public class BoardService {
         return boardDao.search(keyword);
     }
 
+
+    public List<BoardDto> searchByCategory(
+            String keyword,
+            String category
+    ) {
+
+        return boardDao.searchByCategory(
+                keyword,
+                category
+        );
+    }
+
+
     // 게시글 한 개 조회
     public BoardDto findByNo(Long no) {
         return boardDao.findByNo(no);

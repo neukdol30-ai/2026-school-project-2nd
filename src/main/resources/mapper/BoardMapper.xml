@@ -158,6 +158,56 @@
     </select>
 
 
+    <select id="searchByCategory"
+            resultType="BoardDto">
+
+        SELECT
+        b.no,
+        b.writer_no,
+        b.guest_author_no,
+        b.category,
+        b.answer_status,
+        b.title,
+        b.content,
+        b.view_count,
+        b.created_date,
+        b.modified_date,
+
+        -- 회원 작성자 정보
+        m.name AS writer_name,
+        m.nickname AS writer_nickname,
+
+        -- 비회원 작성자 이름
+        g.guest_name,
+
+        -- 게시글 답변 개수
+        (
+        SELECT COUNT(*)
+        FROM board_comment bc
+        WHERE bc.board_no = b.no
+        ) AS answer_count
+
+        FROM board b
+
+        -- 회원 작성자 연결
+        LEFT JOIN member m
+        ON b.writer_no = m.no
+
+        -- 비회원 작성자 연결
+        LEFT JOIN guest_author g
+        ON b.guest_author_no = g.no
+
+        WHERE b.category = #{category}
+        AND (
+        b.title LIKE '%' || #{keyword} || '%'
+        OR b.content LIKE '%' || #{keyword} || '%'
+        )
+
+        ORDER BY b.no DESC
+
+    </select>
+
+
     <!-- 카테고리별 게시글 개수 조회 -->
     <select id="countByCategory"
             parameterType="string"
