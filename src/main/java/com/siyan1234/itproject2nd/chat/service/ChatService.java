@@ -52,7 +52,7 @@ public interface ChatService {
     void saveMessage(ChatMessageDto chatMessageDto);
 
     /**
-     * 한 상담방의 Redis 메시지를 Oracle batch SQL로 저장합니다.
+     * 한 상담방의 Redis 메시지를 Oracle 일괄 실행 블록으로 저장합니다.
      * 반환값은 정상 저장된 메시지 개수입니다.
      */
     int saveMessages(List<ChatMessageDto> messages);

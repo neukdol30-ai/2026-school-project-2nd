@@ -95,7 +95,7 @@ public interface ChatDao {
     int saveMessage(ChatMessageDto chatMessageDto);
 
     /**
-     * 한 상담방의 메시지를 Oracle INSERT ALL 문으로 일괄 저장합니다.
+     * 한 상담방의 메시지를 Oracle 익명 PL/SQL 블록으로 묶어 저장합니다.
      */
     void saveMessages(@Param("messages") List<ChatMessageDto> messages);
 

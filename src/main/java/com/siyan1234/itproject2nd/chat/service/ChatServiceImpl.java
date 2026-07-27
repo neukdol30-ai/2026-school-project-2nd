@@ -100,7 +100,7 @@ public class ChatServiceImpl implements ChatService {
     }
 
     /**
-     * Scheduler가 한 상담방의 Redis 메시지를 Oracle INSERT ALL 문으로 묶어서 저장합니다.
+     * Scheduler가 한 상담방의 Redis 메시지를 Oracle 익명 PL/SQL 블록으로 묶어서 저장합니다.
      * 모든 메시지가 유효해야만 SQL을 실행하며 마지막 메시지 정보는 한 번만 갱신합니다.
      */
     @Override

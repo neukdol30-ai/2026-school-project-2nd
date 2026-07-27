@@ -266,11 +266,20 @@
         )
     </insert>
 
-    <!-- Redis 메시지 일괄 저장: 한 상담방의 메시지를 한 번의 Oracle SQL로 저장 -->
+    <!--
+        Redis 메시지 일괄 저장
+
+        CHAT_MESSAGE.MESSAGE_NO는 Oracle IDENTITY 컬럼입니다.
+        같은 테이블을 대상으로 INSERT ALL을 사용하면 한 source row에서 생성된
+        동일한 IDENTITY 값이 여러 INTO 절에 재사용되어 PK 중복이 발생할 수 있습니다.
+
+        익명 PL/SQL 블록 안에서 INSERT를 각각 실행하면 JDBC 왕복은 한 번으로 유지하면서
+        각 INSERT마다 서로 다른 IDENTITY 값을 발급받을 수 있습니다.
+    -->
     <insert id="saveMessages">
-        INSERT ALL
+        BEGIN
         <foreach collection="messages" item="message">
-            INTO chat_message (
+            INSERT INTO chat_message (
                 room_no,
                 sender_no,
                 message_content,
@@ -282,9 +291,9 @@
                 #{message.messageContent, jdbcType=VARCHAR},
                 #{message.readYn, jdbcType=CHAR},
                 #{message.createdDate, jdbcType=TIMESTAMP}
-            )
+            );
         </foreach>
-        SELECT 1 FROM dual
+        END;
     </insert>
 
     <!-- 특정 상담방 메시지 조회 -->
