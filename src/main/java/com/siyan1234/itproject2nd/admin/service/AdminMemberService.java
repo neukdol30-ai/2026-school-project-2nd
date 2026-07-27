@@ -2,6 +2,7 @@ package com.siyan1234.itproject2nd.admin.service;
 
 import com.siyan1234.itproject2nd.admin.dao.AdminMemberDao;
 import com.siyan1234.itproject2nd.admin.dto.AdminDeleteResultDto;
+import com.siyan1234.itproject2nd.admin.support.AdminMemberActionResult;
 import com.siyan1234.itproject2nd.admin.support.AdminPagingHelper;
 import com.siyan1234.itproject2nd.member.dto.MemberDto;
 import com.siyan1234.itproject2nd.member.service.MemberService;
@@ -37,6 +38,9 @@ public class AdminMemberService {
 
     @Transactional(readOnly = true)
     public MemberDto findByNo(Integer memberNo) {
+        if (memberNo == null) {
+            return null;
+        }
         return memberService.findByNo(memberNo);
     }
 
@@ -46,22 +50,34 @@ public class AdminMemberService {
     }
 
     @Transactional
-    public int grantAdmin(Integer memberNo, Integer loginAdminNo) {
-        if (!isActiveAdmin(loginAdminNo) || isBanned(memberNo)) {
-            return 0;
+    public AdminMemberActionResult grantAdmin(Integer memberNo, Integer loginAdminNo) {
+        TargetValidation validation = validateActorAndTarget(memberNo, loginAdminNo);
+        if (validation.failed()) {
+            return validation.failure();
         }
 
-        return updateRoleSafely(memberNo, loginAdminNo, ROLE_ADMIN);
+        MemberDto targetMember = validation.targetMember();
+        if (targetMember.isBanned()) {
+            return AdminMemberActionResult.BANNED_MEMBER_DENIED;
+        }
+
+        return toUpdateResult(adminMemberDao.updateRole(memberNo, ROLE_ADMIN));
     }
 
     /** 마지막 활성 관리자 계정은 USER로 강등하지 않아 관리자 콘솔 접근 수단을 보존합니다. */
     @Transactional
-    public int grantUser(Integer memberNo, Integer loginAdminNo) {
-        if (!isActiveAdmin(loginAdminNo) || isLastActiveAdmin(memberNo)) {
-            return 0;
+    public AdminMemberActionResult grantUser(Integer memberNo, Integer loginAdminNo) {
+        TargetValidation validation = validateActorAndTarget(memberNo, loginAdminNo);
+        if (validation.failed()) {
+            return validation.failure();
         }
 
-        return updateRoleSafely(memberNo, loginAdminNo, ROLE_USER);
+        MemberDto targetMember = validation.targetMember();
+        if (isLastActiveAdmin(targetMember)) {
+            return AdminMemberActionResult.LAST_ADMIN_DENIED;
+        }
+
+        return toUpdateResult(adminMemberDao.updateRole(memberNo, ROLE_USER));
     }
 
     @Transactional(readOnly = true)
@@ -69,14 +85,12 @@ public class AdminMemberService {
         if (memberNo == null) {
             return false;
         }
-
         return adminMemberDao.countBannedMember(memberNo) > 0;
     }
 
     @Transactional(readOnly = true)
     public boolean isAdminAccount(Integer memberNo) {
-        MemberDto member = findByNo(memberNo);
-        return member != null && ROLE_ADMIN.equalsIgnoreCase(member.getRole());
+        return isAdminAccount(findByNo(memberNo));
     }
 
     @Transactional(readOnly = true)
@@ -84,52 +98,64 @@ public class AdminMemberService {
         if (memberNo == null) {
             return false;
         }
-
         return adminMemberDao.countActiveAdminByNo(memberNo) > 0;
     }
 
     @Transactional(readOnly = true)
     public boolean isLastActiveAdmin(Integer memberNo) {
-        if (memberNo == null || !isActiveAdmin(memberNo)) {
+        if (memberNo == null) {
             return false;
         }
-
-        return adminMemberDao.countActiveAdminsExcept(memberNo) == 0;
+        return isLastActiveAdmin(findByNo(memberNo));
     }
 
-    /** 관리자 본인과 다른 관리자 계정은 직접 정지할 수 없도록 서비스 계층에서도 방어합니다. */
+    /** 관리자 본인과 다른 관리자 계정은 직접 정지할 수 없도록 서비스 계층에서 방어합니다. */
     @Transactional
-    public int banMember(Integer memberNo, String banReason, Integer loginAdminNo) {
-        if (!isActiveAdmin(loginAdminNo)
-                || isSelf(memberNo, loginAdminNo)
-                || memberNo == null
-                || isAdminAccount(memberNo)) {
-            return 0;
+    public AdminMemberActionResult banMember(Integer memberNo, String banReason, Integer loginAdminNo) {
+        TargetValidation validation = validateActorAndTarget(memberNo, loginAdminNo);
+        if (validation.failed()) {
+            return validation.failure();
         }
 
-        return adminMemberDao.banMember(memberNo, normalizeBanReason(banReason), loginAdminNo);
-    }
-
-    @Transactional
-    public int unbanMember(Integer memberNo, Integer loginAdminNo) {
-        if (memberNo == null || !isActiveAdmin(loginAdminNo)) {
-            return 0;
+        MemberDto targetMember = validation.targetMember();
+        if (isAdminAccount(targetMember)) {
+            return AdminMemberActionResult.ADMIN_ACCOUNT_DENIED;
         }
 
-        return adminMemberDao.unbanMember(memberNo);
+        int updatedCount = adminMemberDao.banMember(
+                memberNo,
+                normalizeBanReason(banReason),
+                loginAdminNo
+        );
+        return toUpdateResult(updatedCount);
     }
 
     @Transactional
-    public int deleteMember(Integer memberNo, Integer loginAdminNo) {
-        if (memberNo == null || !isActiveAdmin(loginAdminNo)) {
-            return 0;
+    public AdminMemberActionResult unbanMember(Integer memberNo, Integer loginAdminNo) {
+        if (!isActiveAdmin(loginAdminNo)) {
+            return AdminMemberActionResult.ACTOR_NOT_ALLOWED;
         }
 
-        if (isSelf(memberNo, loginAdminNo) || isAdminAccount(memberNo)) {
-            return 0;
+        if (memberNo == null || findByNo(memberNo) == null) {
+            return AdminMemberActionResult.TARGET_NOT_FOUND;
         }
 
-        return memberService.deleteMember(memberNo);
+        return toUpdateResult(adminMemberDao.unbanMember(memberNo));
+    }
+
+    @Transactional
+    public AdminMemberActionResult deleteMember(Integer memberNo, Integer loginAdminNo) {
+        TargetValidation validation = validateActorAndTarget(memberNo, loginAdminNo);
+        if (validation.failed()) {
+            return validation.failure();
+        }
+
+        MemberDto targetMember = validation.targetMember();
+        if (isAdminAccount(targetMember)) {
+            return AdminMemberActionResult.ADMIN_ACCOUNT_DENIED;
+        }
+
+        return toUpdateResult(memberService.deleteMember(memberNo));
     }
 
     /** 선택 목록에 본인 또는 관리자 계정이 포함되어도 가능한 회원만 삭제하고 결과를 집계합니다. */
@@ -143,23 +169,74 @@ public class AdminMemberService {
         int requestedCount = memberNoList.size();
 
         for (Integer memberNo : memberNoList) {
-            deletedCount += deleteMember(memberNo, loginAdminNo);
+            if (deleteMember(memberNo, loginAdminNo).isSuccess()) {
+                deletedCount++;
+            }
         }
 
         int skippedCount = requestedCount - deletedCount;
         return new AdminDeleteResultDto(requestedCount, deletedCount, skippedCount);
     }
 
-    private int updateRoleSafely(Integer memberNo, Integer loginAdminNo, String role) {
-        if (memberNo == null || isSelf(memberNo, loginAdminNo)) {
-            return 0;
+    /**
+     * 모든 단일 회원 작업에서 공통으로 필요한 관리자 권한·대상 존재·본인 작업 금지 검증입니다.
+     * 검증 실패 사유 또는 후속 작업에 사용할 대상 회원을 함께 반환합니다.
+     */
+    private TargetValidation validateActorAndTarget(Integer memberNo, Integer loginAdminNo) {
+        if (!isActiveAdmin(loginAdminNo)) {
+            return TargetValidation.failure(AdminMemberActionResult.ACTOR_NOT_ALLOWED);
         }
 
-        return adminMemberDao.updateRole(memberNo, role);
+        if (memberNo == null) {
+            return TargetValidation.failure(AdminMemberActionResult.TARGET_NOT_FOUND);
+        }
+
+        MemberDto targetMember = findByNo(memberNo);
+        if (targetMember == null) {
+            return TargetValidation.failure(AdminMemberActionResult.TARGET_NOT_FOUND);
+        }
+
+        if (isSelf(memberNo, loginAdminNo)) {
+            return TargetValidation.failure(AdminMemberActionResult.SELF_ACTION_DENIED);
+        }
+
+        return TargetValidation.success(targetMember);
+    }
+
+    private AdminMemberActionResult toUpdateResult(int updatedCount) {
+        return updatedCount > 0
+                ? AdminMemberActionResult.SUCCESS
+                : AdminMemberActionResult.UPDATE_FAILED;
+    }
+
+    private boolean isAdminAccount(MemberDto member) {
+        return member != null && ROLE_ADMIN.equalsIgnoreCase(member.getRole());
+    }
+
+    private boolean isLastActiveAdmin(MemberDto member) {
+        if (member == null || !isAdminAccount(member) || member.isBanned()) {
+            return false;
+        }
+        return adminMemberDao.countActiveAdminsExcept(member.getNo()) == 0;
     }
 
     private boolean isSelf(Integer memberNo, Integer loginAdminNo) {
         return memberNo != null && loginAdminNo != null && memberNo.equals(loginAdminNo);
+    }
+
+    private record TargetValidation(AdminMemberActionResult failure, MemberDto targetMember) {
+
+        private static TargetValidation success(MemberDto targetMember) {
+            return new TargetValidation(null, targetMember);
+        }
+
+        private static TargetValidation failure(AdminMemberActionResult failure) {
+            return new TargetValidation(failure, null);
+        }
+
+        private boolean failed() {
+            return failure != null;
+        }
     }
 
     private String normalizeBanReason(String banReason) {
