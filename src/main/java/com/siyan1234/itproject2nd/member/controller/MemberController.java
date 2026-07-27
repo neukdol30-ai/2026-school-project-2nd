@@ -2,6 +2,7 @@ package com.siyan1234.itproject2nd.member.controller;
 
 import com.siyan1234.itproject2nd.config.handler.CustomLoginFailureHandler;
 import com.siyan1234.itproject2nd.config.security.PasswordPolicy;
+import com.siyan1234.itproject2nd.config.security.SecurityPaths;
 import com.siyan1234.itproject2nd.member.dto.CustomUserDetails;
 import com.siyan1234.itproject2nd.member.dto.MemberDto;
 import com.siyan1234.itproject2nd.member.dto.SignupDto;
@@ -17,6 +18,8 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+
+import java.security.Security;
 
 
 @Slf4j
@@ -92,6 +95,95 @@ public class MemberController {
         } // 영준
 
         return "member/login";
+    }
+
+    // GET /member/terms 요청으로 이용약관 전문 화면 보여줌
+    @GetMapping("/terms")
+    private String termsPage() {
+
+        return "member/terms";
+    }
+
+    // GET /member/privacy 요청으로 개인정보 수집·이용 전문 화면 보여줌
+    @GetMapping("/privacy")
+    public String privacyPage() {
+
+        return "member/privacy";
+    }
+
+    // GET /member/terms-agree 요청 -> 신규 소셜 회원 약관 동의 화면 보여줌
+    @GetMapping("/terms-agree")
+    private String termsAgreeForm(
+            @AuthenticationPrincipal CustomUserDetails loginUser
+    ) {
+
+        // 로그인 정보 또는 회원 DTO가 없으면 로그인 화면으로 돌려보냄
+        if (loginUser == null
+                || loginUser.getMemberDto() == null
+                || loginUser.getMemberDto().getNo() == null) {
+
+            // 로그인하지 않은 상태에서 약관 동의 화면에 직접 접근 차단
+            return "redirect:" + SecurityPaths.MEMBER_LOGIN;
+        }
+
+        MemberDto memberDto = loginUser.getMemberDto();
+
+        // 두 약관에 이미 동의한 회원은 약관 화면 다시 볼 필요 X
+        if (isAgreementCompleted(memberDto)) {
+
+            return "redirect:" + SecurityPaths.HOME;
+        }
+
+        return "member/terms-agree";
+    }
+
+    // POST /member/terms-agree 요청으로 두 약관의 실제 동의 처리 수행
+    @PostMapping("/terms-agree")
+    public String termsAgreeProcess(@AuthenticationPrincipal CustomUserDetails loginUser,
+                                    @RequestParam(value = "agreeTermsYn", required = false) String agreeTermsYn,
+                                    @RequestParam(value = "agreePrivacyYn", required = false) String agreePrivacyYn,
+                                    RedirectAttributes redirectAttributes
+    ) {
+
+        // 로그인 정보 또는 회원 DTO가 없으면 로그인 화면으로 돌려보냄.
+        if (loginUser == null
+                || loginUser.getMemberDto() == null
+                || loginUser.getMemberDto().getNo() == null) {
+
+            return "redirect:" + SecurityPaths.MEMBER_LOGIN;
+        }
+
+        // HTML의 required 속성을 우회한 직접 POST 요청까지 서버에서 다시 검증
+        if (!"Y".equals(agreeTermsYn)
+                || !"Y".equals(agreePrivacyYn)) {
+
+            redirectAttributes.addFlashAttribute(
+                    "agreementError",
+                    "이용약관과 개인정보 수집·이용에 모두 동의해야 합니다."
+            );
+
+            return "redirect:" + SecurityPaths.MEMBER_TERMS_AGREE;
+        }
+
+        MemberDto memberDto = loginUser.getMemberDto();
+
+        boolean updated = memberService.updateAgreement(memberDto.getNo());
+
+        if (!updated) {
+
+            redirectAttributes.addFlashAttribute(
+                    "agreementError",
+                    "약관 동의 정보를 저장하지 못했습니다. 잠시 후 다시 시도해 주세요."
+            );
+
+            return "redirect:" + SecurityPaths.MEMBER_TERMS_AGREE;
+        }
+
+        memberDto.setAgreeTermsYn("Y");
+
+        memberDto.setAgreePrivacyYn("Y");
+
+        return "redirect:" + SecurityPaths.HOME;
     }
 
     // true/false(boolean) 그대로 브라우저 전달. JS가 이 값을 받아 메시지 띄움.
@@ -297,5 +389,15 @@ public class MemberController {
         // 회원가입(signupProcess)에서 이미 쓰던 것과 같은 패턴 -> login.html에서 토스트 메시지로 활용 가능
 
         return "redirect:/member/login";
+    }
+
+    // 현재 회원이 이용약관과 개인정보 수집·이용에 모두 동의했는지 확인
+    private boolean isAgreementCompleted(MemberDto memberDto) {
+
+        boolean termsAgreed = "Y".equalsIgnoreCase(memberDto.getAgreePrivacyYn());
+
+        boolean privacyAgreed = "Y".equalsIgnoreCase(memberDto.getAgreePrivacyYn());
+
+        return termsAgreed && privacyAgreed;
     }
 }

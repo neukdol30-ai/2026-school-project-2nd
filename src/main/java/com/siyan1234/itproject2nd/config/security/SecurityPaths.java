@@ -4,7 +4,7 @@ import jakarta.servlet.http.HttpServletRequest;
 
 /**
  * Security와 Interceptor에서 공통으로 사용하는 URL 경로 모음입니다.
- *
+ * <p>
  * 목적:
  * - SecurityConfig의 requestMatchers를 짧게 유지
  * - 인증/권한 예외 Handler의 redirect 경로 중복 제거
@@ -14,6 +14,16 @@ public final class SecurityPaths {
 
     public static final String HOME = "/";
     public static final String MEMBER_LOGIN = "/member/login";
+
+    // 일반 회원가입과 소셜 약관 동의 화면에서 이용약관 전문을 열 때 사용하는 주소
+    public static final String MEMBER_TERMS = "/member/terms";
+
+    // 일반 회원가입과 소셜 약관 동의 화면에서 개인정보 전문을 열 때 사용하는 주소
+    public static final String MEMBER_PRIVACY = "/member/privacy";
+
+    // 신규 소셜 회원을 서비스 약관 동의 화면으로 보낼 때 사용하는 주소
+    public static final String MEMBER_TERMS_AGREE = "/member/terms-agree";
+
     public static final String ADMIN_LOGIN = "/admin/login";
     public static final String ADMIN_HOME = "/admin";
     public static final String ADMIN_CHATS = "/admin?view=chats";
@@ -23,6 +33,8 @@ public final class SecurityPaths {
             "/index.html",
             "/member/login", // 일반 사용자 로그인 화면
             "/member/signup", // 회원가입 화면
+            MEMBER_TERMS, // 로그인 전에도 이용약관 전문을 확인할 수 있도록 허용
+            MEMBER_PRIVACY, // 로그인 전에도 개인정보 전문을 확인할 수 있도록 허용
             "/member/exists", // 아이디 중복 확인
             "/member/exists-nickname", // 닉네임 중복 확인(회원가입 중 = 로그인 전에도 호출) 없으면 403
             // 비로그인 사용자 요청 -> Spring Security 필터 검사 -> PUBLIC_MATCHERS에 포함된 주소면 통과 -> 이후 MemberController가 요청 처리

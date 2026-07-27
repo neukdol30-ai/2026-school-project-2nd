@@ -262,3 +262,29 @@ body { /* body 태그 */
     color: #555;
     cursor: default;
 }
+
+/* 약관 체크박스와 전문 보기 링크를 한 줄에 배치 */
+.check-row {
+    display: flex;
+    align-content: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+/* 약관 체크박스 문구가 남은 공간을 사용할 수 있게 함 */
+.check-row .check-label {
+    flex: 1;
+}
+
+/* 이용약관과 개인정보 전문 보기 링크 */
+.policy-link {
+    flex-shrink: 0;
+    color: #222;
+    font-size: 13px;
+    font-weight: 700;
+    text-decoration: underline;
+}
+
+.policy-link:hover {
+    color: #666;
+}
