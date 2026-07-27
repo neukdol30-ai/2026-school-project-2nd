@@ -15,8 +15,8 @@ public class StockDto {
     private int id;
     private String symbol;
     private String name;
-    private long price;
-    private long changePrice;
+    private double price;
+    private double changePrice;
     private double changeRate;
     private List<StockPointDto> points;
 }

@@ -1,0 +1,55 @@
+/* 세계시간 3열 × 2행 카드 */
+.world-time-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
+}
+
+/* 도시 하나 */
+.world-time-item {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    min-width: 0;
+    min-height: 72px;
+    padding: 8px 10px;
+    border: 1px solid #e5e7eb;
+    border-radius: 6px;
+    background: #f8fafc;
+}
+
+.world-time-place {
+    display: flex;
+    align-items: baseline;
+    gap: 5px;
+    min-width: 0;
+}
+
+.world-time-place strong {
+    overflow: hidden;
+    color: #374151;
+    font-size: 13px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.world-time-place span {
+    overflow: hidden;
+    color: #9ca3af;
+    font-size: 11px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.world-time-clock {
+    margin-top: 6px;
+    font-size: 18px;
+}
+
+.world-time-zone {
+    display: flex;
+    gap: 5px;
+    margin-top: 4px;
+    color: #6b7280;
+    font-size: 11px;
+}
