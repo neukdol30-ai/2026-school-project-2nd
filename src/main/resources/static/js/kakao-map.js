@@ -1,366 +1,317 @@
 /*
  * kakao-map.js
- * 역할: 카카오맵 REST API 테스트 화면의 폼 제출과 결과 렌더링을 담당합니다.
+ * 정적 지도 테스트용 legacy JS입니다.
+ * 현재 사용자 화면은 kakao-dynamic-map.js를 사용합니다.
  */
-(() => {
-    const API = {
-        address: "/api/kakao-map/address",
-        coord: "/api/kakao-map/coord-to-address",
-        place: "/api/kakao-map/places",
-        staticMap: "/api/kakao-map/static"
+(() =>  {
+
+        const API =  {
+         address: "/api/kakao-map/address", coord: "/api/kakao-map/coord-to-address", place: "/api/kakao-map/places", staticMap: "/api/kakao-map/static", route: "/api/kakao-map/route"
     };
 
-    let currentStaticMapUrl = null;
+        let currentStaticMapUrl = null;
 
-    document.addEventListener("DOMContentLoaded", () => {
-        bindAddressForm();
-        bindCoordForm();
-        bindPlaceForm();
-        bindStaticMapForm();
+        document.addEventListener("DOMContentLoaded", () =>  {
+         bindAddressForm();
+         bindCoordForm();
+         bindPlaceForm();
+         bindStaticMapForm();
+         bindRouteForm();
+
     });
 
-    function bindAddressForm() {
-        const form = document.querySelector('[data-kakao-form="address"]');
-        const result = document.querySelector('[data-result="address"]');
+        function bindAddressForm() {
+        const f=document.querySelector('[data-kakao-form="address"]'),r=document.querySelector('[data-result="address"]');
+        if(!f||!r)return;
+        f.addEventListener('submit',async e=> {
+            e.preventDefault();
+            const query=f.querySelector('[name="query"]')?.value?.trim();
+            await submitForm(f,r,()=>requestJson(API.address, {
+                query
+            }),renderAddressResults);
 
-        if (!form || !result) {
-            return;
-        }
-
-        form.addEventListener("submit", async (event) => {
-            event.preventDefault();
-
-            const query = form.querySelector('[name="query"]')?.value?.trim();
-            await submitForm(form, result, () => requestJson(API.address, { query }), renderAddressResults);
         });
+
     }
+        function bindCoordForm() {
+        const f=document.querySelector('[data-kakao-form="coord"]'),r=document.querySelector('[data-result="coord"]');
+        if(!f||!r)return;
+        f.addEventListener('submit',async e=> {
+            e.preventDefault();
+            const x=f.querySelector('[name="x"]')?.value?.trim(),y=f.querySelector('[name="y"]')?.value?.trim();
+            await submitForm(f,r,()=>requestJson(API.coord, {
+                x,y
+            }),renderCoordResults);
 
-    function bindCoordForm() {
-        const form = document.querySelector('[data-kakao-form="coord"]');
-        const result = document.querySelector('[data-result="coord"]');
-
-        if (!form || !result) {
-            return;
-        }
-
-        form.addEventListener("submit", async (event) => {
-            event.preventDefault();
-
-            const x = form.querySelector('[name="x"]')?.value?.trim();
-            const y = form.querySelector('[name="y"]')?.value?.trim();
-            await submitForm(form, result, () => requestJson(API.coord, { x, y }), renderCoordResults);
         });
+
     }
-
-    function bindPlaceForm() {
-        const form = document.querySelector('[data-kakao-form="place"]');
-        const result = document.querySelector('[data-result="place"]');
-
-        if (!form || !result) {
-            return;
-        }
-
-        form.addEventListener("submit", async (event) => {
-            event.preventDefault();
-
-            const payload = {
-                query: form.querySelector('[name="query"]')?.value?.trim(),
-                x: form.querySelector('[name="x"]')?.value?.trim(),
-                y: form.querySelector('[name="y"]')?.value?.trim(),
-                radius: form.querySelector('[name="radius"]')?.value?.trim(),
-                sort: form.querySelector('[name="sort"]')?.value || "accuracy"
+        function bindPlaceForm() {
+        const f=document.querySelector('[data-kakao-form="place"]'),r=document.querySelector('[data-result="place"]');
+        if(!f||!r)return;
+        f.addEventListener('submit',async e=> {
+            e.preventDefault();
+            const p= {
+                query:f.querySelector('[name="query"]')?.value?.trim(),x:f.querySelector('[name="x"]')?.value?.trim(),y:f.querySelector('[name="y"]')?.value?.trim(),radius:f.querySelector('[name="radius"]')?.value?.trim(),sort:f.querySelector('[name="sort"]')?.value||'accuracy'
             };
+            await submitForm(f,r,()=>requestJson(API.place,p),renderPlaceResults);
 
-            await submitForm(form, result, () => requestJson(API.place, payload), renderPlaceResults);
         });
+
     }
-
-    function bindStaticMapForm() {
-        const form = document.querySelector('[data-kakao-form="staticMap"]');
-        const result = document.querySelector('[data-result="staticMap"]');
-
-        if (!form || !result) {
-            return;
-        }
-
-        form.addEventListener("submit", async (event) => {
-            event.preventDefault();
+        function bindStaticMapForm() {
+        const f=document.querySelector('[data-kakao-form="staticMap"]');
+        if(!f)return;
+        f.addEventListener('submit',async e=> {
+            e.preventDefault();
             await submitStaticMapForm();
+
         });
+
     }
+        function bindRouteForm() {
+        const f=document.querySelector('[data-kakao-form="route"]'),r=document.querySelector('[data-result="route"]');
+        if(!f||!r)return;
+        f.addEventListener('submit',async e=> {
+            e.preventDefault();
+            const p= {
+                type:f.querySelector('[name="type"]')?.value||'publictraffic',routeMode:f.querySelector('[name="routeMode"]')?.value||'BROAD_FIRST',startName:f.querySelector('[name="startName"]')?.value?.trim(),endName:f.querySelector('[name="endName"]')?.value?.trim(),startX:f.querySelector('[name="startX"]')?.value?.trim(),startY:f.querySelector('[name="startY"]')?.value?.trim(),endX:f.querySelector('[name="endX"]')?.value?.trim(),endY:f.querySelector('[name="endY"]')?.value?.trim()
+            };
+            await submitForm(f,r,()=>requestJson(API.route,p),renderRouteResults);
 
-    async function submitStaticMapForm() {
-        const form = document.querySelector('[data-kakao-form="staticMap"]');
-        const result = document.querySelector('[data-result="staticMap"]');
-        const image = document.querySelector("[data-static-map-image]");
+        });
 
-        if (!form || !result || !image) {
-            return;
-        }
-
-        const payload = {
-            x: form.querySelector('[name="x"]')?.value?.trim(),
-            y: form.querySelector('[name="y"]')?.value?.trim(),
-            width: form.querySelector('[name="width"]')?.value?.trim(),
-            height: form.querySelector('[name="height"]')?.value?.trim(),
-            level: form.querySelector('[name="level"]')?.value?.trim(),
-            format: form.querySelector('[name="format"]')?.value || "png"
+    }
+        async function submitStaticMapForm() {
+        const f=document.querySelector('[data-kakao-form="staticMap"]'),r=document.querySelector('[data-result="staticMap"]'),img=document.querySelector('[data-static-map-image]');
+        if(!f||!r||!img)return;
+        const p= {
+            x:f.querySelector('[name="x"]')?.value?.trim(),y:f.querySelector('[name="y"]')?.value?.trim(),width:f.querySelector('[name="width"]')?.value?.trim(),height:f.querySelector('[name="height"]')?.value?.trim(),level:f.querySelector('[name="level"]')?.value?.trim(),format:f.querySelector('[name="format"]')?.value||'png'
         };
-
-        setLoading(form, true);
-        result.innerHTML = messageTemplate("정적 지도 이미지를 불러오는 중입니다...", "");
-        image.hidden = true;
-
+        setLoading(f,true);
+        r.innerHTML=msg('정적 지도 이미지를 불러오는 중입니다...','');
+        img.hidden=true;
         try {
-            const objectUrl = await requestImageBlob(API.staticMap, payload);
+            const u=await requestImageBlob(API.staticMap,p);
+            if(currentStaticMapUrl)URL.revokeObjectURL(currentStaticMapUrl);
+            currentStaticMapUrl=u;
+            img.src=u;
+            img.hidden=false;
+            r.innerHTML=msg('정적 지도 조회가 완료되었습니다.','success');
 
-            if (currentStaticMapUrl) {
-                URL.revokeObjectURL(currentStaticMapUrl);
-            }
+        }catch(e) {
+            r.innerHTML=msg(e.message||'정적 지도 조회 중 오류가 발생했습니다.','error');
 
-            currentStaticMapUrl = objectUrl;
-            image.src = objectUrl;
-            image.hidden = false;
-            result.innerHTML = messageTemplate("정적 지도 조회가 완료되었습니다.", "success");
-        } catch (error) {
-            result.innerHTML = messageTemplate(error.message || "정적 지도 조회 중 오류가 발생했습니다.", "error");
-        } finally {
-            setLoading(form, false);
+        }finally {
+            setLoading(f,false);
+
         }
     }
-
-    async function submitForm(form, resultBox, requestCallback, renderCallback) {
-        setLoading(form, true);
-        resultBox.innerHTML = messageTemplate("요청 중입니다...", "");
-
+        async function submitForm(f,r,cb,render) {
+        setLoading(f,true);
+        r.innerHTML=msg('요청 중입니다...','');
         try {
-            const response = await requestCallback();
-            renderCallback(resultBox, response);
-        } catch (error) {
-            resultBox.innerHTML = messageTemplate(error.message || "요청 처리 중 오류가 발생했습니다.", "error");
-        } finally {
-            setLoading(form, false);
+            render(r,await cb());
+
+        }catch(e) {
+            r.innerHTML=msg(e.message||'요청 처리 중 오류가 발생했습니다.','error');
+
+        }finally {
+            setLoading(f,false);
+
         }
     }
-
-    async function requestJson(url, params) {
-        const requestUrl = buildRequestUrl(url, params);
-        const response = await fetch(requestUrl, {
-            method: "GET",
+        async function requestJson(url,params) {
+        const res=await fetch(buildUrl(url,params), {
             headers: {
-                "Accept": "application/json"
+                Accept:'application/json'
             }
         });
+        if(!res.ok)throw new Error(`서버 요청 실패: HTTP ${res.status}`);
+        return res.json();
 
-        if (!response.ok) {
-            throw new Error(`서버 요청 실패: HTTP ${response.status}`);
-        }
-
-        return response.json();
     }
-
-    async function requestImageBlob(url, params) {
-        const requestUrl = buildRequestUrl(url, params);
-        const response = await fetch(requestUrl, {
-            method: "GET",
+        async function requestImageBlob(url,params) {
+        const res=await fetch(buildUrl(url,params), {
             headers: {
-                "Accept": "image/png,image/jpeg,text/plain"
+                Accept:'image/png,image/jpeg,text/plain'
+            }
+        }),ct=res.headers.get('content-type')||'';
+        if(!res.ok||!ct.startsWith('image/'))throw new Error(await res.text()||`정적 지도 요청 실패: HTTP ${res.status}`);
+        return URL.createObjectURL(await res.blob());
+
+    }
+        function buildUrl(url,params) {
+        const q=new URLSearchParams();
+        Object.entries(params).filter(([,v])=>v!==undefined&&v!==null&&String(v).trim()!=='').forEach(([k,v])=>q.append(k,v));
+        return q.toString()?`${url}?${q}`:url;
+
+    }
+        function renderAddressResults(r,res) {
+        if(!res.success) {
+            r.innerHTML=msg(res.message,'error')+raw(res.data);
+            return;
+
+        }const docs=res.data?.documents||[];
+        if(!docs.length) {
+            r.innerHTML=msg('검색 결과가 없습니다.','');
+            return;
+
+        }r.innerHTML=msg(res.message,'success')+'<ul class="result-list">'+docs.map(item=> {
+            const addr=item.address?.address_name||item.address_name||'주소 없음',road=item.road_address?.address_name||'도로명 주소 없음';
+            return `<li class="result-item"><strong>${esc(addr)}</strong><span>${esc(road)}</span><small>x: ${esc(item.x)} / y: ${esc(item.y)}</small><div class="result-actions">${actionButtons(item.x,item.y,addr)}</div></li>`
+        }).join('')+'</ul>';
+        bindResultActions(r);
+
+    }
+        function renderCoordResults(r,res) {
+        if(!res.success) {
+            r.innerHTML=msg(res.message,'error')+raw(res.data);
+            return;
+
+        }const docs=res.data?.documents||[];
+        if(!docs.length) {
+            r.innerHTML=msg('좌표에 해당하는 주소 결과가 없습니다.','');
+            return;
+
+        }r.innerHTML=msg(res.message,'success')+'<ul class="result-list">'+docs.map(item=> {
+            const addr=item.address?.address_name||'주소 없음',road=item.road_address?.address_name||'도로명 주소 없음';
+            return `<li class="result-item"><strong>${esc(addr)}</strong><span>${esc(road)}</span></li>`
+        }).join('')+'</ul>';
+
+    }
+        function renderPlaceResults(r,res) {
+        if(!res.success) {
+            r.innerHTML=msg(res.message,'error')+raw(res.data);
+            return;
+
+        }const docs=res.data?.documents||[];
+        if(!docs.length) {
+            r.innerHTML=msg('장소 검색 결과가 없습니다.','');
+            return;
+
+        }r.innerHTML=msg(res.message,'success')+'<ul class="result-list">'+docs.map(item=> {
+            const addr=item.road_address_name||item.address_name||'주소 없음',dist=item.distance?`${Number(item.distance).toLocaleString()}m`:'거리 정보 없음';
+            return `<li class="result-item"><strong>${esc(item.place_name||'장소명 없음')}</strong><span>${esc(addr)}</span><small>${esc(item.category_name||'카테고리 없음')} · ${esc(dist)}</small><small>x: ${esc(item.x)} / y: ${esc(item.y)}</small><div class="result-actions">${actionButtons(item.x,item.y,item.place_name||'장소')}${item.place_url?`<a href="${attr(item.place_url)}" target="_blank" rel="noopener noreferrer">카카오맵 보기</a>`:''}</div></li>`
+        }).join('')+'</ul>';
+        bindResultActions(r);
+
+    }
+        function actionButtons(x,y,name) {
+        return `<button type="button" data-copy-coord="${attr(x)},${attr(y)}">좌표 복사</button><button type="button" data-static-map="${attr(x)},${attr(y)}">정적 지도 보기</button><button type="button" data-route-point="start" data-route-name="${attr(name)}" data-route-coord="${attr(x)},${attr(y)}">출발지로 설정</button><button type="button" data-route-point="end" data-route-name="${attr(name)}" data-route-coord="${attr(x)},${attr(y)}">도착지로 설정</button>`;
+
+    }
+        function renderRouteResults(r,res) {
+        if(!res.success) {
+            r.innerHTML=msg(res.message,'error')+raw(res.data);
+            return;
+
+        }const d=res.data|| {
+
+        },status=d.status||'UNKNOWN';
+        if(status!=='OK') {
+            r.innerHTML=msg(`경로 조회 결과가 없습니다. 상태: ${status}`,'error')+raw(d);
+            return;
+
+        }const type=document.querySelector('[data-kakao-form="route"] [name="type"]')?.value||'publictraffic';
+        type==='publictraffic'?renderTraffic(r,res.message,d):renderSimple(r,res.message,d,type);
+
+    }
+        function renderTraffic(r,message,d) {
+        const p=d.properties|| {
+
+        },routes=d.routes||[];
+        r.innerHTML=msg(message,'success')+summary([['전체 경로',p.total+'개'],['버스',p.bus+'개'],['지하철',p.subway+'개'],['버스+지하철',p.busAndSubway+'개']])+landing(p.landingURL)+'<div class="route-list">'+routes.slice(0,5).map((route,i)=> {
+            const rp=route.properties|| {
+
+            },fare=rp.fare?.value?`${fmt(rp.fare.value)}원`:'요금 정보 없음',steps=(route.steps||[]).slice(0,6).map(s=>`<li>${esc(s.properties?.guidance||s.properties?.type||'이동')} · ${dist(s.properties?.distance)} · ${time(s.properties?.time)}</li>`).join('');
+            return `<article class="route-item"><h3>추천 경로 ${i+1} · ${esc(rp.type||'대중교통')}</h3><div class="route-metrics"><span>${dist(rp.totalDistance)}</span><span>${time(rp.totalTime)}</span><span>환승 ${fmt(rp.transfers)}회</span><span>${fare}</span></div><ol class="route-steps">${steps}</ol></article>`
+        }).join('')+'</div>';
+
+    }
+        function renderSimple(r,message,d,type) {
+        const route=d.route|| {
+
+        },p=route.properties|| {
+
+        },steps=(route.legs||[]).flatMap(l=>l.steps||[]).slice(0,12).map(s=>`<li>${esc(s.properties?.guidance||'이동')} · ${dist(s.properties?.distance)} · ${time(s.properties?.time)}</li>`).join('');
+        r.innerHTML=msg(message,'success')+summary([['경로 종류',type==='walk'?'도보':'자전거'],['전체 거리',dist(p.totalDistance)],['예상 시간',time(p.totalTime)]])+landing(p.landingUrl)+`<article class="route-item"><h3>상세 안내</h3><ol class="route-steps">${steps}</ol></article>`;
+
+    }
+        function summary(items) {
+        return '<div class="route-summary">'+items.map(([a,b])=>`<div><span>${esc(a)}</span><strong>${esc(b)}</strong></div>`).join('')+'</div>';
+
+    }
+        function landing(url) {
+        return url?`<div class="route-link-row"><a href="${attr(url)}" target="_blank" rel="noopener noreferrer">카카오맵에서 경로 보기</a></div>`:'';
+
+    }
+        function bindResultActions(s) {
+        s.querySelectorAll('[data-copy-coord]').forEach(b=>b.onclick=async()=> {
+            try {
+                await navigator.clipboard.writeText(b.dataset.copyCoord||'');
+                b.textContent='복사 완료';
+                setTimeout(()=>b.textContent='좌표 복사',1200)
+            }catch(_) {
+                b.textContent=b.dataset.copyCoord||''
             }
         });
-
-        const contentType = response.headers.get("content-type") || "";
-
-        if (!response.ok || !contentType.startsWith("image/")) {
-            const message = await response.text();
-            throw new Error(message || `정적 지도 요청 실패: HTTP ${response.status}`);
-        }
-
-        const blob = await response.blob();
-        return URL.createObjectURL(blob);
-    }
-
-    function buildRequestUrl(url, params) {
-        const queryString = new URLSearchParams();
-
-        Object.entries(params)
-            .filter(([, value]) => value !== undefined && value !== null && String(value).trim() !== "")
-            .forEach(([key, value]) => queryString.append(key, value));
-
-        return queryString.toString() ? `${url}?${queryString}` : url;
-    }
-
-    function renderAddressResults(resultBox, response) {
-        if (!response.success) {
-            resultBox.innerHTML = messageTemplate(response.message, "error") + rawJsonTemplate(response.data);
-            return;
-        }
-
-        const documents = response.data?.documents || [];
-
-        if (documents.length === 0) {
-            resultBox.innerHTML = messageTemplate("검색 결과가 없습니다.", "");
-            return;
-        }
-
-        const items = documents.map((item) => {
-            const roadAddress = item.road_address?.address_name || "도로명 주소 없음";
-            const address = item.address?.address_name || item.address_name || "주소 없음";
-            return `
-                <li class="result-item">
-                    <strong>${escapeHtml(address)}</strong>
-                    <span>${escapeHtml(roadAddress)}</span>
-                    <small>x: ${escapeHtml(item.x)} / y: ${escapeHtml(item.y)}</small>
-                    <div class="result-actions">
-                        <button type="button" data-copy-coord="${escapeAttribute(item.x)},${escapeAttribute(item.y)}">좌표 복사</button>
-                        <button type="button" data-static-map="${escapeAttribute(item.x)},${escapeAttribute(item.y)}">정적 지도 보기</button>
-                    </div>
-                </li>
-            `;
-        }).join("");
-
-        resultBox.innerHTML = messageTemplate(response.message, "success") + `<ul class="result-list">${items}</ul>`;
-        bindResultActionButtons(resultBox);
-    }
-
-    function renderCoordResults(resultBox, response) {
-        if (!response.success) {
-            resultBox.innerHTML = messageTemplate(response.message, "error") + rawJsonTemplate(response.data);
-            return;
-        }
-
-        const documents = response.data?.documents || [];
-
-        if (documents.length === 0) {
-            resultBox.innerHTML = messageTemplate("좌표에 해당하는 주소 결과가 없습니다.", "");
-            return;
-        }
-
-        const items = documents.map((item) => {
-            const address = item.address?.address_name || "주소 없음";
-            const roadAddress = item.road_address?.address_name || "도로명 주소 없음";
-            const region = [item.address?.region_1depth_name, item.address?.region_2depth_name, item.address?.region_3depth_name]
-                .filter(Boolean)
-                .join(" ");
-
-            return `
-                <li class="result-item">
-                    <strong>${escapeHtml(address)}</strong>
-                    <span>${escapeHtml(roadAddress)}</span>
-                    <small>${escapeHtml(region || "행정구역 정보 없음")}</small>
-                </li>
-            `;
-        }).join("");
-
-        resultBox.innerHTML = messageTemplate(response.message, "success") + `<ul class="result-list">${items}</ul>`;
-    }
-
-    function renderPlaceResults(resultBox, response) {
-        if (!response.success) {
-            resultBox.innerHTML = messageTemplate(response.message, "error") + rawJsonTemplate(response.data);
-            return;
-        }
-
-        const documents = response.data?.documents || [];
-
-        if (documents.length === 0) {
-            resultBox.innerHTML = messageTemplate("장소 검색 결과가 없습니다.", "");
-            return;
-        }
-
-        const items = documents.map((item) => {
-            const address = item.road_address_name || item.address_name || "주소 없음";
-            const distance = item.distance ? `${Number(item.distance).toLocaleString()}m` : "거리 정보 없음";
-            return `
-                <li class="result-item">
-                    <strong>${escapeHtml(item.place_name || "장소명 없음")}</strong>
-                    <span>${escapeHtml(address)}</span>
-                    <small>${escapeHtml(item.category_name || "카테고리 없음")} · ${escapeHtml(distance)}</small>
-                    <small>x: ${escapeHtml(item.x)} / y: ${escapeHtml(item.y)}</small>
-                    <div class="result-actions">
-                        <button type="button" data-copy-coord="${escapeAttribute(item.x)},${escapeAttribute(item.y)}">좌표 복사</button>
-                        <button type="button" data-static-map="${escapeAttribute(item.x)},${escapeAttribute(item.y)}">정적 지도 보기</button>
-                        ${item.place_url ? `<a href="${escapeAttribute(item.place_url)}" target="_blank" rel="noopener noreferrer">카카오맵 보기</a>` : ""}
-                    </div>
-                </li>
-            `;
-        }).join("");
-
-        resultBox.innerHTML = messageTemplate(response.message, "success") + `<ul class="result-list">${items}</ul>`;
-        bindResultActionButtons(resultBox);
-    }
-
-    function bindResultActionButtons(scope) {
-        bindCopyButtons(scope);
-        bindStaticMapButtons(scope);
-    }
-
-    function bindCopyButtons(scope) {
-        scope.querySelectorAll("[data-copy-coord]").forEach((button) => {
-            button.addEventListener("click", async () => {
-                const value = button.dataset.copyCoord || "";
-
-                try {
-                    await navigator.clipboard.writeText(value);
-                    button.textContent = "복사 완료";
-                    setTimeout(() => button.textContent = "좌표 복사", 1200);
-                } catch (_) {
-                    button.textContent = value;
-                }
+        s.querySelectorAll('[data-static-map]').forEach(b=>b.onclick=async()=> {
+            const[x,y]=String(b.dataset.staticMap||'').split(','),f=document.querySelector('[data-kakao-form="staticMap"]');
+            if(!f||!x||!y)return;
+            f.querySelector('[name="x"]').value=x;
+            f.querySelector('[name="y"]').value=y;
+            await submitStaticMapForm();
+            document.querySelector('.static-map-card')?.scrollIntoView( {
+                behavior:'smooth',block:'start'
             });
+
         });
-    }
+        s.querySelectorAll('[data-route-point]').forEach(b=>b.onclick=()=> {
+            const[x,y]=String(b.dataset.routeCoord||'').split(','),f=document.querySelector('[data-kakao-form="route"]'),t=b.dataset.routePoint,n=b.dataset.routeName||(t==='start'?'출발':'도착');
+            if(!f||!x||!y)return;
+            if(t==='start') {
+                f.querySelector('[name="startX"]').value=x;
+                f.querySelector('[name="startY"]').value=y;
+                f.querySelector('[name="startName"]').value=n;
+                b.textContent='출발지 설정 완료'
+            }else {
+                f.querySelector('[name="endX"]').value=x;
+                f.querySelector('[name="endY"]').value=y;
+                f.querySelector('[name="endName"]').value=n;
+                b.textContent='도착지 설정 완료'
+            }setTimeout(()=>b.textContent=t==='start'?'출발지로 설정':'도착지로 설정',1200);
 
-    function bindStaticMapButtons(scope) {
-        scope.querySelectorAll("[data-static-map]").forEach((button) => {
-            button.addEventListener("click", async () => {
-                const [x, y] = String(button.dataset.staticMap || "").split(",");
-                const form = document.querySelector('[data-kakao-form="staticMap"]');
-
-                if (!form || !x || !y) {
-                    return;
-                }
-
-                form.querySelector('[name="x"]').value = x;
-                form.querySelector('[name="y"]').value = y;
-                await submitStaticMapForm();
-
-                document.querySelector(".static-map-card")?.scrollIntoView({
-                    behavior: "smooth",
-                    block: "start"
-                });
-            });
         });
+
+    }
+        function setLoading(f,l) {
+        f.querySelectorAll('button,input,select').forEach(e=>e.disabled=l)
+    } function msg(m,t) {
+        return `<div class="result-message ${t||''}">${esc(m||'')}</div>`
+    } function raw(d) {
+        return d?`<pre class="raw-json">${esc(JSON.stringify(d,null,2))}</pre>`:''
+    }
+        function dist(v) {
+        const n=Number(v);
+        if(!Number.isFinite(n))return '-';
+        return n>=1000?`${(n/1000).toFixed(1)}km`:`${fmt(n)}m`
+    } function time(v) {
+        const n=Number(v);
+        if(!Number.isFinite(n))return '-';
+        const m=Math.round(n/60);
+        if(m>=60) {
+            const h=Math.floor(m/60),r=m%60;
+            return r?`${h}시간 ${r}분`:`${h}시간`
+        }return `${m}분`
+    } function fmt(v) {
+        const n=Number(v);
+        return Number.isFinite(n)?n.toLocaleString():'-'
+    }
+        function esc(v) {
+        return String(v??'').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'",'&#039;')
+    } function attr(v) {
+        return esc(v).replaceAll('`','&#096;')
     }
 
-    function setLoading(form, loading) {
-        form.querySelectorAll("button, input, select").forEach((element) => {
-            element.disabled = loading;
-        });
-    }
-
-    function messageTemplate(message, type) {
-        const className = type ? `result-message ${type}` : "result-message";
-        return `<div class="${className}">${escapeHtml(message || "")}</div>`;
-    }
-
-    function rawJsonTemplate(data) {
-        if (!data) {
-            return "";
-        }
-
-        return `<pre class="raw-json">${escapeHtml(JSON.stringify(data, null, 2))}</pre>`;
-    }
-
-    function escapeHtml(value) {
-        return String(value ?? "")
-            .replaceAll("&", "&amp;")
-            .replaceAll("<", "&lt;")
-            .replaceAll(">", "&gt;")
-            .replaceAll('"', "&quot;")
-            .replaceAll("'", "&#039;");
-    }
-
-    function escapeAttribute(value) {
-        return escapeHtml(value).replaceAll("`", "&#096;");
-    }
 })();

@@ -932,10 +932,7 @@ function handleAction(event) {
         action
         === "append-calc"
     ) {
-        state.calculatorText +=
-            value;
-
-        refreshWidgetContent(6);
+        appendCalculatorValue(value);
 
         return;
     }
@@ -947,7 +944,43 @@ function handleAction(event) {
         state.calculatorText =
             "";
 
-        refreshWidgetContent(6);
+        updateCalculatorDisplay();
+
+        return;
+    }
+
+    if (
+        action
+        === "percent-calc"
+    ) {
+        applyCalculatorPercent();
+
+        return;
+    }
+
+    if (
+        action
+        === "backspace-calc"
+    ) {
+        removeCalculatorCharacter();
+
+        return;
+    }
+
+    if (
+        action
+        === "parentheses-calc"
+    ) {
+        appendCalculatorParenthesis();
+
+        return;
+    }
+
+    if (
+        action
+        === "decimal-calc"
+    ) {
+        appendCalculatorDecimal();
 
         return;
     }

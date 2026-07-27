@@ -15,3 +15,115 @@
     grid-template-columns: repeat(4, 1fr);
     gap: 6px;
 }
+
+/* 계산기 위젯 */
+[data-widget-id="6"] {
+    min-height: 370px;
+}
+
+[data-widget-id="6"] .widget-content {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+/* 계산기 표시창 */
+[data-widget-id="6"] .calculator-display {
+    width: 100%;
+    height: 62px;
+    padding: 0 18px;
+
+    box-sizing: border-box;
+    border: 1px solid #d9e2e8;
+    border-radius: 12px;
+    outline: none;
+
+    background: #fbfdff;
+    color: #172033;
+
+    font-family: inherit;
+    font-size: 25px;
+    font-weight: 700;
+    text-align: right;
+    letter-spacing: 0.5px;
+}
+
+/* 계산기 버튼 영역 */
+[data-widget-id="6"] .calculator-buttons {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 9px;
+    width: 100%;
+}
+
+/* 모든 계산기 버튼 */
+[data-widget-id="6"] .calculator-button {
+    height: 44px;
+    padding: 0;
+
+    border: 0;
+    border-radius: 11px;
+
+    background: #eef2f5;
+    color: #202938;
+
+    font-family: inherit;
+    font-size: 15px;
+    font-weight: 700;
+
+    cursor: pointer;
+    transition:
+            background-color 0.15s ease,
+            box-shadow 0.15s ease;
+}
+
+[data-widget-id="6"] .calculator-button:hover {
+    background: #e1e8ed;
+    box-shadow: 0 3px 8px rgba(50, 85, 105, 0.12);
+}
+
+[data-widget-id="6"] .calculator-button:active {
+    box-shadow: none;
+}
+
+/* 퍼센트, 괄호, 삭제 */
+[data-widget-id="6"] .calculator-button.is-function {
+    background: #e7f0f5;
+    color: #355a6d;
+}
+
+[data-widget-id="6"] .calculator-button.is-function:hover {
+    background: #d9e9f1;
+}
+
+/* 나누기, 곱하기, 빼기, 더하기 */
+[data-widget-id="6"] .calculator-button.is-operator {
+    background: #d9f1fb;
+    color: #087fac;
+    font-size: 18px;
+}
+
+[data-widget-id="6"] .calculator-button.is-operator:hover {
+    background: #c5e9f8;
+}
+
+/* 초기화 버튼 */
+[data-widget-id="6"] .calculator-button.is-clear {
+    background: #fff0f0;
+    color: #d34a4a;
+}
+
+[data-widget-id="6"] .calculator-button.is-clear:hover {
+    background: #ffe1e1;
+}
+
+/* 등호 버튼 */
+[data-widget-id="6"] .calculator-button.is-equals {
+    background: #159ccc;
+    color: #ffffff;
+    font-size: 18px;
+}
+
+[data-widget-id="6"] .calculator-button.is-equals:hover {
+    background: #087fac;
+}

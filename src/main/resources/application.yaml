@@ -77,10 +77,17 @@ kakao:
     redirect-uri: ${KAKAO_REDIRECT_URI:http://localhost:8080/kakao/callback}
     admin-refresh-token: ${KAKAO_ADMIN_REFRESH_TOKEN:}
     admin-room-base-url: ${KAKAO_ADMIN_ROOM_BASE_URL:http://localhost:8080/chat/admin}
+    admin-key:  ${kakao.admin-key:}
   map:
     rest-api-key: ${KAKAO_REST_API_KEY:}
+    javascript-key: ${KAKAO_MAP_JAVASCRIPT_KEY:}
     connect-timeout-seconds: 5
     read-timeout-seconds: 10
 
 file:
   board-image-dir: uploads/board-images
+
+# DEBUG 다시 켜고 싶으면 아래 세 줄 주석 해제하면 된다.
+#logging:
+#  level:
+#    com.siyan1234.itproject2nd.member.service.OAuth2DetailsService: DEBUG

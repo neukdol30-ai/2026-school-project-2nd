@@ -1,4 +1,24 @@
-// 메인 화면 렌더링
+function renderHeaderWorldTimeWidget() {
+    const worldTimeWidget =
+        state.widgets.find((widget) => {
+            return widget.title === "세계시간";
+        });
+
+    if (
+        !worldTimeWidget
+        || !worldTimeWidget.visible
+    ) {
+        return "";
+    }
+
+    return renderWidget(
+        worldTimeWidget,
+        0,
+        1
+    );
+}
+
+// 메인 화면 렌더
 // 최초 화면 전체 생성
 function renderInitialPage() {
     const app = document.querySelector("#app");
@@ -14,8 +34,8 @@ function renderInitialPage() {
     app.innerHTML = `
         <div class="container">
 
-            <header class="dashboard-header">
-
+           <header class="dashboard-header">
+            <div class="header-time-group">
                 <section
                     class="header-widget-slot"
                     data-header-widget
@@ -23,16 +43,18 @@ function renderInitialPage() {
                     ${renderHeaderWidget()}
                 </section>
 
-                <div class="header-logo-slot"></div>
+                <section class="header-world-time-slot">
+                    ${renderHeaderWorldTimeWidget()}
+                </section>
+            </div>
 
-                <div
-                    class="header-auth-slot"
-                    data-auth-widget
-                >
-                    ${renderAuthWidget()}
-                </div>
-
-            </header>
+            <div
+                class="header-auth-slot"
+                data-auth-widget
+            >
+                ${renderAuthWidget()}
+            </div>
+        </header>
 
             <div
                 class="page-actions"

@@ -4,55 +4,74 @@
 
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
     <title>게시글 삭제 확인</title>
+
+    <link rel="stylesheet" th:href="@{/css/main.css}">
+    <link rel="stylesheet" th:href="@{/css/board.css}">
 </head>
 
 <body>
 
-<section class="guest-delete-section">
+<main class="guest-delete-page">
 
-    <h1>게시글 삭제</h1>
+    <section class="guest-delete-card">
 
-    <p>
-        정말 이 게시글을 삭제하시겠습니까?
-    </p>
+        <div class="guest-delete-icon">
+            🗑️
+        </div>
 
-    <div class="delete-board-info">
+        <h1 class="guest-delete-title">
+            게시글을 삭제하시겠습니까?
+        </h1>
 
-        <p>
-            제목:
+        <p class="guest-delete-description">
+            삭제한 게시글은 복구할 수 없습니다.
+            <br>
+            정말 삭제하시겠습니까?
+        </p>
+
+        <div class="guest-delete-board">
+
+            <span>삭제 대상</span>
+
             <strong th:text="${board.title}">
                 게시글 제목
             </strong>
-        </p>
 
-        <p>
-            작성자:
-            <span th:text="${board.guestName}">
-                비회원
-            </span>
-        </p>
+        </div>
 
-    </div>
+        <form
+                th:action="@{/board/guest/delete/{no}(no=${board.no})}"
+                method="post">
 
-    <div class="button-group">
+            <div class="guest-delete-buttons">
 
-        <a th:href="@{/board/detail/{no}(no=${board.no})}">
-            취소
-        </a>
+                <a
+                        th:href="@{/board/detail/{no}(no=${board.no})}"
+                        class="guest-delete-cancel">
 
-        <form th:action="@{/board/guest/delete/{no}(no=${board.no})}"
-              method="post">
+                    취소
 
-            <button type="submit">
-                삭제하기
-            </button>
+                </a>
+
+                <button
+                        type="submit"
+                        class="guest-delete-submit">
+
+                    삭제하기
+
+                </button>
+
+            </div>
 
         </form>
 
-    </div>
+    </section>
 
-</section>
+</main>
 
 </body>
 </html>
