@@ -795,6 +795,17 @@ function handleAction(event) {
     const value =
         button.dataset.value;
 
+    if (action === "select-weather-day") {
+        const weatherDayIndex =
+            Number(value);
+
+        selectWeatherDay(
+            weatherDayIndex
+        );
+
+        return;
+    }
+
     if (
         action
         === "select-world-time"
