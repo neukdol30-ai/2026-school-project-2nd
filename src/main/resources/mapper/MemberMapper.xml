@@ -122,6 +122,8 @@
     </update>
 
     <insert id="insertSocialMember" parameterType="MemberDto">
+
+        <!-- 소셜 제공자의 약관 동의와 우리 서비스 약관 동의는 서로 다름. -> 우리 서비스 약관에 실제로 동의하기 전에는 N으로 저장 -->
         INSERT INTO member (
         member_id,
         password,
@@ -139,11 +141,10 @@
         #{nickname},
         #{email, jdbcType=VARCHAR},
         'USER',
-        'Y',
-        'Y'
+        'N',
+        'N'
         )
-        <!-- jdbcType=VARCHAR -> 둘 다 null일 수 있는 컬럼(카카오가 이메일 동의를 거부당하면 null) -->
-        <!-- role/agree_*를 값으로 박은 이유: 셋 다 NOT NULL이라, 소셜 로그인 등 화면을 거쳤으므로 'Y'로 본다. -->
+        <!-- 이름과 이메일은 소셜 제공 동의 여부에 따라 null일 수 있어 VARCHAR 타입을 명시 -->
     </insert>
 
     <!-- 로그인 성공 시 최근 로그인 시각 기록 // 영준-->
@@ -175,6 +176,14 @@
         UPDATE member
         SET password = #{password}
         WHERE email = #{email}
+    </update>
+
+    <!-- 현재 로그인한 회원이 우리 서비스 약관에 동의했을 때 Y/Y로 변경. -->
+    <update id="updateAgreement">
+        UPDATE member
+        SET agree_terms_yn = 'Y',
+        agree_privacy_yn = 'Y'
+        WHERE no = #{no, jdbcType=NUMERIC}
     </update>
 
 </mapper>

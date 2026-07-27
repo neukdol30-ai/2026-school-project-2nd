@@ -40,6 +40,12 @@ public final class MyPageMessages {
     public static final String WITHDRAW_CONFIRM_REQUIRED = "회원 탈퇴를 진행하려면 확인 문구에 '회원탈퇴'를 정확히 입력해 주세요.";
     public static final String WITHDRAW_PASSWORD_REQUIRED = "회원 탈퇴를 위해 현재 비밀번호를 입력해 주세요.";
 
+    // 카카오 외부 API 호출 실패해 DB 회원 삭제를 중단했을 때 화면에 표시
+    public static final String KAKAO_UNLINK_FAILED = "카카오 계정 연결 해제에 실패했습니다. 잠시 후 다시 시도해 주세요.";
+
+    // DELETE 조건에 맞는 회원이 없어 실제 회원 행이 삭제되지 않았을 때 표시
+    public static final String WITHDRAW_FAILED = "회원 탈퇴 처리에 실패했습니다. 잠시 후 다시 시도해 주세요,";
+
     private MyPageMessages() {
     }
 }

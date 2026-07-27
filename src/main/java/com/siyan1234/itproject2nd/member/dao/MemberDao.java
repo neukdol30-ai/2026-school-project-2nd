@@ -30,6 +30,9 @@ public interface MemberDao {
 
     int updateLastLoginDate(@Param("no") Integer no); // 로그인 성공 시 최근 로그인 시각 갱신 영준 추가
 
+    // 현재 로그인한 회원의 이용약관, 개인정보 등의 값을 Y/Y로 변경
+    int updateAgreement(@Param("no") Integer no); // 로그인한 회원의 member.no 값을 XML의 #{no}로 전달
+
     /** 관리자 회원 삭제용 DELETE 연결 */
     int deleteMember(@Param("no") Integer no); // 영준
 
