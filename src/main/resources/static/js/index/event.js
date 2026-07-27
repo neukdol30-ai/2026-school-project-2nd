@@ -41,6 +41,11 @@ function bindEvents() {
     );
 
     app.addEventListener(
+        "keydown",
+        handleWorldTimeKeydown
+    );
+
+    app.addEventListener(
         "dragstart",
         preventNativeWidgetDrag
     );
@@ -747,6 +752,29 @@ function handleInput(event) {
     }
 }
 
+// 세계시간 카드를 키보드로 선택
+function handleWorldTimeKeydown(event) {
+    if (
+        event.key !== "Enter"
+        && event.key !== " "
+    ) {
+        return;
+    }
+
+    const worldTimeItem =
+        event.target.closest(
+            '[data-action="select-world-time"]'
+        );
+
+    if (!worldTimeItem) {
+        return;
+    }
+
+    event.preventDefault();
+
+    worldTimeItem.click();
+}
+
 // 버튼 액션 처리
 function handleAction(event) {
     const button =
@@ -766,6 +794,35 @@ function handleAction(event) {
 
     const value =
         button.dataset.value;
+
+    if (
+        action
+        === "select-world-time"
+    ) {
+        const city =
+            button.dataset.city;
+
+        const country =
+            button.dataset.country;
+
+        const timeZone =
+            button.dataset.timeZone;
+
+        if (
+            typeof selectCurrentTimeCity
+            !== "function"
+        ) {
+            return;
+        }
+
+        selectCurrentTimeCity(
+            city,
+            country,
+            timeZone
+        );
+
+        return;
+    }
 
     if (
         action

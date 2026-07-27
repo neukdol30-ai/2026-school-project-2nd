@@ -3,6 +3,8 @@
     --side-widget-width: 450px;
     --header-widget-width: 450px;
     --header-card-height: 244px;
+    --auth-card-height: 200px;
+    --side-column-offset: -106px;
     --layout-gap: 30px;
     --dashboard-width: 1400px;
     --global-banner-height: 76px;
@@ -57,6 +59,11 @@
     margin-bottom: 24px;
 }
 
+/* 로그인 카드 바로 아래에서 사이드 위젯 시작 */
+.dashboard-layout .side-column {
+    margin-top: var(--side-column-offset);
+}
+
 /* 현재시간과 세계시간 묶음 */
 .header-time-group {
     display: grid;
@@ -76,10 +83,9 @@
     box-shadow: 0 8px 24px rgba(38, 105, 133, 0.08);
 }
 
-/* 상단 슬롯 높이 통일 */
+/* 상단 시간 슬롯 높이 유지 */
 .header-widget-slot,
-.header-world-time-slot,
-.header-auth-slot {
+.header-world-time-slot {
     display: flex;
     min-width: 0;
     min-height: var(--header-card-height);
@@ -87,8 +93,7 @@
 }
 
 .header-widget-slot > *,
-.header-world-time-slot > *,
-.header-auth-slot > * {
+.header-world-time-slot > * {
     width: 100% !important;
     max-width: none !important;
     min-width: 0 !important;
@@ -96,32 +101,70 @@
     margin: 0 !important;
 }
 
-/* 상단 계정 카드 */
+/* 로그인 카드는 시간 카드보다 낮게 사용 */
+.header-auth-slot {
+    display: flex;
+    min-width: 0;
+    min-height: 0;
+    align-self: start;
+    align-items: flex-start;
+}
+
+.header-auth-slot > * {
+    width: 100% !important;
+    max-width: none !important;
+    min-width: 0 !important;
+    height: var(--auth-card-height) !important;
+    min-height: var(--auth-card-height) !important;
+    margin: 0 !important;
+}
+
+/* 상단 로그인 카드 */
 .header-auth-slot .auth-widget {
     display: flex;
     flex-direction: column;
+    box-sizing: border-box;
+}
+
+/* 계정 제목은 숨기고 설명만 유지 */
+.header-auth-slot .auth-widget > .widget-header {
+    flex: 0 0 auto;
+    min-height: 0;
+    padding: 9px 20px 8px;
+    box-sizing: border-box;
+}
+
+.header-auth-slot .auth-widget > .widget-header .widget-title {
+    display: none;
+}
+
+.header-auth-slot .auth-widget > .widget-header .widget-desc {
+    margin: 0;
+    color: #617985;
+    font-size: 12px;
+    line-height: 1.45;
+    text-align: center;
+    transform: none;
 }
 
 /* 로그인 전 내용 */
 .header-auth-slot .auth-content.auth-logged-out {
     flex: 1;
-
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: stretch;
-
     width: 100%;
-    padding: 30px 38px;
+    min-height: 0;
+    padding: 22px 30px;
     box-sizing: border-box;
 }
 
 /* 로그인 안내 문구 */
 .header-auth-slot .auth-message {
-    margin: 0 0 20px;
-
+    margin: 0 0 14px;
     color: #617985;
-    font-size: 14px;
+    font-size: 13px;
     font-weight: 500;
     line-height: 1.5;
     text-align: center;
@@ -132,15 +175,12 @@
     display: flex;
     align-items: center;
     justify-content: center;
-
     width: 100%;
-    min-height: 50px;
+    min-height: 44px;
     padding: 0 20px;
     box-sizing: border-box;
-
-    border-radius: 10px;
-
-    font-size: 16px;
+    border-radius: 9px;
+    font-size: 15px;
     font-weight: 800;
 }
 
@@ -149,16 +189,13 @@
     display: flex;
     align-items: center;
     justify-content: center;
-
-    margin-top: 18px;
+    margin-top: 14px;
     gap: 0;
 }
 
 .header-auth-slot .auth-links a {
     position: relative;
-
     padding: 0 13px;
-
     color: #70858f;
     font-size: 12px;
     font-weight: 500;
@@ -172,16 +209,137 @@
     position: absolute;
     top: 50%;
     left: 0;
-
     width: 1px;
     height: 11px;
-
     background: #d5e0e5;
     transform: translateY(-50%);
 }
 
 .header-auth-slot .auth-links a:hover {
     color: #128eba;
+}
+
+/* 로그인 후 프로필 영역 */
+.header-auth-slot .auth-content.auth-logged-in {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+
+    min-height: 0;
+    padding: 24px 28px;
+    box-sizing: border-box;
+    gap: 20px;
+}
+
+/* 프로필과 로그아웃 한 줄 배치 */
+.header-auth-slot .auth-profile-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+}
+
+/* 이름과 프로필 아이콘 */
+.header-auth-slot .auth-profile-button {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+
+    min-width: 0;
+    padding: 0;
+
+    border: 0;
+    background: transparent;
+
+    font-family: inherit;
+    text-align: left;
+    cursor: pointer;
+}
+
+/* 원형 프로필 아이콘 */
+.header-auth-slot .auth-profile-avatar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 54px;
+
+    width: 54px;
+    height: 54px;
+
+    border-radius: 50%;
+    background: #e8f7fd;
+
+    color: #1597c7;
+    font-size: 20px;
+    font-weight: 800;
+}
+
+/* 이름과 로그인 유형 */
+.header-auth-slot .auth-profile-info {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 7px;
+    min-width: 0;
+}
+
+.header-auth-slot .auth-user-name {
+    overflow: hidden;
+
+    color: #213f4d;
+    font-size: 18px;
+    font-weight: 800;
+    line-height: 1.2;
+
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.header-auth-slot .auth-role-badge {
+    display: inline-flex;
+    align-items: center;
+
+    min-height: 25px;
+    padding: 0 11px;
+
+    border-radius: 999px;
+    background: #f0f6f8;
+
+    color: #647d89;
+    font-size: 11px;
+    font-weight: 700;
+}
+
+/* 로그아웃 버튼 */
+.header-auth-slot .auth-logout-button {
+    width: auto;
+    min-height: 36px;
+    height: auto;
+    padding: 0 14px;
+
+    border: 1px solid #d7e2e7;
+    border-radius: 7px;
+    background: #ffffff;
+
+    color: #5d737e;
+    font-family: inherit;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+/* 마이페이지 안내 */
+.header-auth-slot .auth-profile-desc {
+    margin: 0;
+    padding-top: 16px;
+
+    border-top: 1px solid #e4ecef;
+
+    color: #71858e;
+    font-size: 13px;
+    line-height: 1.5;
+    text-align: center;
 }
 
 /* 묶음 안쪽 기존 위젯 카드 스타일 제거 */
@@ -730,4 +888,29 @@
     font-size: 13px;
     font-weight: 600;
     white-space: nowrap;
+}
+
+/* 세계시간 선택 기능 보정 */
+.header-time-group .world-time-item {
+    cursor: pointer;
+}
+
+.header-time-group .world-time-item:first-child {
+    border-color: #e0e9ee;
+    background: #f8fafb;
+}
+
+.header-time-group .world-time-item.is-selected {
+    border-color: #a9dff3;
+    background: #eefaff;
+}
+
+.header-time-group .world-time-item:focus-visible {
+    outline: 2px solid #48b9e7;
+    outline-offset: 2px;
+}
+
+/* 선택한 도시명을 현재시간 제목 배지에 표시 */
+.header-widget-slot .widget-title::after {
+    content: attr(data-current-time-basis);
 }

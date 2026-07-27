@@ -301,9 +301,6 @@ function render() {
     renderDashboard();
 }
 
-
-
-// 구글 캘린더 자동 동기화
 // 메인 화면에서 구글 캘린더 자동 동기화
 async function autoSyncGoogleCalendarFromDashboard() {
 
@@ -408,9 +405,6 @@ async function refreshCalendarWidgets(
     }
 }
 
-
-
-// 캘린더 변경 신호 감지
 // 캘린더 팝업에서 BroadcastChannel 신호 받기
 if ("BroadcastChannel" in window) {
     const calendarChannel =
@@ -460,7 +454,6 @@ window.addEventListener(
     }
 );
 
-
 // BroadcastChannel 미지원 환경의 변경 신호
 window.addEventListener(
     "storage",
@@ -476,8 +469,6 @@ window.addEventListener(
     }
 );
 
-
-// 다른 화면이나 팝업에서
 // 메인 화면으로 돌아왔을 때 갱신
 window.addEventListener(
     "focus",
@@ -498,12 +489,8 @@ window.addEventListener(
     }
 );
 
-
-
-// 최초 실행
 // 최초 한 번만 전체 화면 생성
 renderInitialPage();
-
 
 // 팀원 담당 위젯 최초 실행
 startCurrentTimeClock();
@@ -512,7 +499,6 @@ fetchSunTime();
 fetchNews();
 fetchStocks();
 fetchWeather();
-
 
 // 오늘 일정과 미니 캘린더 최초 조회
 Promise.all([
