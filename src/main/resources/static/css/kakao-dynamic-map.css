@@ -729,7 +729,7 @@ select:disabled {
 }
 
 .route-result strong,
-.route-result span,
+.route-result span:not(.route-step-index),
 .route-result small {
     display: block;
 }
@@ -848,9 +848,17 @@ select:disabled {
 }
 
 .route-selected-guide > strong {
+    display: block;
+    width: auto;
+    height: auto;
+    margin: 0;
+    padding: 0;
+
     color: var(--map-text);
     font-size: 12px;
     font-weight: 900;
+    line-height: 1.4;
+    white-space: nowrap;
 }
 
 .route-step-list {
@@ -869,19 +877,31 @@ select:disabled {
     min-width: 0;
 }
 
-.route-step-index {
-    display: grid;
-    place-items: center;
+.route-result .route-step-index {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
     width: 24px;
     min-width: 24px;
+    max-width: 24px;
     height: 24px;
     min-height: 24px;
-    border-radius: 999px;
+    max-height: 24px;
+
+    margin: 0;
+    padding: 0;
+
+    border-radius: 50%;
     background: var(--map-accent-soft);
     color: var(--map-primary-dark);
+
     font-size: 11px;
     font-weight: 900;
     line-height: 1;
+    text-align: center;
+    text-indent: 0;
+    box-sizing: border-box;
     font-variant-numeric: tabular-nums;
 }
 
