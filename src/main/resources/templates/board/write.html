@@ -55,7 +55,7 @@
             </p>
         </div>
 
-        <a th:href="@{/board/list}"
+        <a th:href="@{/board/question}"
            class="board-main-link">
             목록으로
         </a>
@@ -71,9 +71,7 @@
               method="post"
               th:object="${boardDto}">
 
-            <!-- =================================
-                 로그인 회원용 카테고리
-            ================================== -->
+            <!-- 로그인 회원용 카테고리 -->
             <div class="board-form-group"
                  sec:authorize="isAuthenticated()">
 
@@ -105,10 +103,9 @@
 
             </div>
 
-            <!-- =================================
-                 비회원용 고정 카테고리
-            ================================== -->
-            <div sec:authorize="isAnonymous()">
+            <!-- 비회원용 고정 카테고리 -->
+            <div sec:authorize="isAnonymous()"
+                 class="guest-category-section">
 
                 <!-- 비회원은 QUESTION만 작성 가능 -->
                 <input type="hidden"
@@ -135,9 +132,7 @@
 
             </div>
 
-            <!-- =================================
-                 비회원 작성자 정보
-            ================================== -->
+            <!-- 비회원 작성자 정보 -->
             <div sec:authorize="isAnonymous()">
 
                 <!-- 비회원 이름 -->
@@ -247,7 +242,7 @@
             <!-- 하단 버튼 -->
             <div class="board-form-actions">
 
-                <a th:href="@{/board/list}"
+                <a th:href="@{/board/question}"
                    class="board-button board-button-secondary">
                     취소
                 </a>

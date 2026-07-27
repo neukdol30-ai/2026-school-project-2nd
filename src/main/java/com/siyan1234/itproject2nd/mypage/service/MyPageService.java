@@ -1,7 +1,10 @@
 package com.siyan1234.itproject2nd.mypage.service;
 
 import com.siyan1234.itproject2nd.member.dao.MemberDao;
+import com.siyan1234.itproject2nd.member.dao.SocialAccountDao;
 import com.siyan1234.itproject2nd.member.dto.MemberDto;
+import com.siyan1234.itproject2nd.member.dto.SocialAccountDto;
+import com.siyan1234.itproject2nd.member.service.KakaoUnlinkService;
 import com.siyan1234.itproject2nd.mypage.dao.MyPageDao;
 import com.siyan1234.itproject2nd.mypage.dto.MyPageActionResponseDto;
 import com.siyan1234.itproject2nd.mypage.dto.MyPageProfileDto;
@@ -18,6 +21,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -26,6 +30,13 @@ public class MyPageService {
     private final MyPageDao myPageDao;
     private final MemberDao memberDao;
     private final PasswordEncoder passwordEncoder;
+
+    // 현재 회원에게 연결된 social_account 목록 조회
+    private final SocialAccountDao socialAccountDao;
+
+    // 카카오 provider_id로 실제 카카오 앱 연결 해제를 처리
+    private final KakaoUnlinkService kakaoUnlinkService;
+
 
     /** 마이페이지 모달을 처음 열 때 필요한 모든 사용자 정보를 한 번에 조회합니다. */
     @Transactional(readOnly = true)
@@ -147,17 +158,67 @@ public class MyPageService {
     @Transactional
     public MyPageActionResponseDto withdraw(Integer memberNo, MyPageWithdrawDto withdrawDto) {
         MemberDto member = findMember(memberNo);
+
         if (member == null) {
             return failByMemberNo(memberNo);
         }
 
         String validationMessage = validateWithdraw(memberNo, member, withdrawDto);
+
         if (validationMessage != null) {
             return MyPageActionResponseDto.fail(validationMessage);
         }
 
-        myPageDao.deleteMe(memberNo);
+        // 카카오 계정 연결돼 있다면 DB 회원 삭제 전에 실제 카카오 연결부터 해제
+        boolean kakaoUnlinked = unlinkConnectedKakaoAccounts(memberNo);
+
+        // 카카오 연결 해제 실패하면 provider_id를 보존하기 위해 DB 회원 삭제를 중단
+        if (!kakaoUnlinked) {
+            return MyPageActionResponseDto.fail(MyPageMessages.KAKAO_UNLINK_FAILED);
+        }
+
+        // 카카오 연결 해제가 끝났거나 카카오 계정이 없는 경우 member 행 삭제
+        int deletedCount = myPageDao.deleteMe(memberNo);
+
+        // SQL의 role='USER' 조건 등에 걸려 실제 삭제 행이 0개라면 성공 처리 X
+        if (deletedCount < 1) {
+            return MyPageActionResponseDto.fail(MyPageMessages.WITHDRAW_FAILED);
+        }
+
+        // Controller가 응답 받은 뒤 SecurityContext와 세션 제거
         return MyPageActionResponseDto.successWithRedirect(MyPageMessages.WITHDRAW_COMPLETED, "/");
+    }
+
+    // 현재 회원에게 연결된 카카오 계정 찾아 실제 연결 해제
+    private boolean unlinkConnectedKakaoAccounts(Integer memberNo) {
+
+        // SocialAccountMapper.xml에서 현재 회원의 모든 소셜 연결 조회
+        List<SocialAccountDto> socialAccounts = socialAccountDao.findAllByMemberNo(memberNo);
+
+        if (socialAccounts == null || socialAccounts.isEmpty()) {
+            return true;
+        }
+
+        for (SocialAccountDto socialAccount : socialAccounts) {
+
+            if (socialAccount == null) {
+                continue;
+            }
+
+            if (!"kakao".equalsIgnoreCase(
+                    socialAccount.getProvider())) {
+                continue;
+            }
+
+            boolean unlinked = kakaoUnlinkService.unlinkByAdminKey(
+                    socialAccount.getProviderId());
+
+            if (!unlinked) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     private MyPageActionResponseDto checkMemberReady(Integer memberNo) {

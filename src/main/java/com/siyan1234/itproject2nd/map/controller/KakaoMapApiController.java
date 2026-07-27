@@ -51,6 +51,18 @@ public class KakaoMapApiController {
         return ResponseEntity.ok(kakaoMapService.searchPlaces(query, x, y, radius, page, size, sort));
     }
 
+    @GetMapping("/route")
+    public ResponseEntity<KakaoMapActionResponseDto> findRoute(@RequestParam(defaultValue = "publictraffic") String type,
+                                                               @RequestParam String startX,
+                                                               @RequestParam String startY,
+                                                               @RequestParam String endX,
+                                                               @RequestParam String endY,
+                                                               @RequestParam(required = false) String startName,
+                                                               @RequestParam(required = false) String endName,
+                                                               @RequestParam(defaultValue = "BROAD_FIRST") String routeMode) {
+        return ResponseEntity.ok(kakaoMapService.findRoute(type, startX, startY, endX, endY, startName, endName, routeMode));
+    }
+
     @GetMapping("/static")
     public ResponseEntity<byte[]> staticMap(@RequestParam String x,
                                             @RequestParam String y,

@@ -21,6 +21,8 @@ import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.Map;
 import java.util.stream.Collectors;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * 카카오 REST API를 실제로 호출하는 클라이언트입니다.
@@ -36,9 +38,13 @@ import java.util.stream.Collectors;
 @Component
 public class KakaoMapClient {
 
+    private static final Logger log =
+            LoggerFactory.getLogger(KakaoMapClient.class);
+
     private final KakaoMapApiProperties properties;
     private final ObjectMapper objectMapper;
     private final HttpClient httpClient;
+
 
     public KakaoMapClient(KakaoMapApiProperties properties, ObjectMapper objectMapper) {
         this.properties = properties;
@@ -55,6 +61,7 @@ public class KakaoMapClient {
         ensureApiKey();
 
         URI uri = buildUri(url, parameters);
+
         HttpRequest request = HttpRequest.newBuilder(uri)
                 .timeout(Duration.ofSeconds(properties.getReadTimeoutSeconds()))
                 .header("Authorization", properties.authorizationHeaderValue())
@@ -74,14 +81,62 @@ public class KakaoMapClient {
                 return body;
             }
 
-            throw new KakaoMapApiException("카카오 API 요청 실패: HTTP " + response.statusCode(),
+            /*
+             * 쿼리 파라미터를 제외하고
+             * 호출된 API 주소만 로그에 출력합니다.
+             *
+             * REST API 키는 Authorization 헤더에 들어가므로
+             * 아래 로그에는 API 키가 노출되지 않습니다.
+             */
+            String endpoint = uri.getScheme()
+                    + "://"
+                    + uri.getHost()
+                    + uri.getPath();
+
+            String requestId = response.headers()
+                    .firstValue("x-request-id")
+                    .orElse("-");
+
+            log.error(
+                    "카카오 REST API 요청 실패 - status={}, endpoint={}, requestId={}, responseBody={}",
                     response.statusCode(),
-                    body);
+                    endpoint,
+                    requestId,
+                    body
+            );
+
+            throw new KakaoMapApiException(
+                    "카카오 API 요청 실패: HTTP " + response.statusCode(),
+                    response.statusCode(),
+                    body
+            );
+
         } catch (IOException e) {
-            throw new IllegalStateException(KakaoMapMessages.KAKAO_API_ERROR + " " + e.getMessage(), e);
+            log.error(
+                    "카카오 REST API 통신 오류 - url={}, message={}",
+                    url,
+                    e.getMessage(),
+                    e
+            );
+
+            throw new IllegalStateException(
+                    KakaoMapMessages.KAKAO_API_ERROR + " " + e.getMessage(),
+                    e
+            );
+
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
-            throw new IllegalStateException(KakaoMapMessages.KAKAO_API_ERROR + " 요청이 중단되었습니다.", e);
+
+            log.error(
+                    "카카오 REST API 요청 중단 - url={}",
+                    url,
+                    e
+            );
+
+            throw new IllegalStateException(
+                    KakaoMapMessages.KAKAO_API_ERROR + " 요청이 중단되었습니다.",
+                    e
+            );
         }
     }
 
