@@ -1,8 +1,6 @@
 package com.siyan1234.itproject2nd.chat.support;
 
-/**
- * 상담방 상태 문자열을 한 곳에서 관리하는 클래스입니다.
- */
+/** 상담방 상태 코드 비교와 화면 표시 이름 변환을 담당합니다. */
 public final class ChatRoomStatus {
 
     public static final String OPEN = "OPEN";

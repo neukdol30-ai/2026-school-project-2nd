@@ -26,6 +26,10 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+/**
+ * 마이페이지 모달에서 사용하는 JSON API Controller입니다.
+ * 로그인 확인, 보안 재인증 세션, 탈퇴 후 세션 종료 같은 HTTP 경계 책임만 담당합니다.
+ */
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/mypage")

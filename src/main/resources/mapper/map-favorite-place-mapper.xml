@@ -4,6 +4,8 @@
         "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.siyan1234.itproject2nd.map.dao.MapFavoritePlaceDao">
 
+    <!-- 모든 조회·삭제 조건에 MEMBER_NO를 포함해 즐겨찾기 소유권을 SQL에서도 보장합니다. -->
+
     <sql id="favoriteColumns">
         favorite_no,
         member_no,

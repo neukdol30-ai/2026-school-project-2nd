@@ -11,6 +11,7 @@
     <link rel="stylesheet" th:href="@{/css/mypage-modal.css}">
 </head>
 <body class="map-service-page">
+<!-- 메인 화면과 동일한 전역 배너: 지도 화면에서는 지도 링크 대신 메인페이지 링크를 노출합니다. -->
 <div class="global-banner-area">
     <div data-global-banner>
         <nav class="global-banner" aria-label="전역 메뉴">
@@ -37,6 +38,7 @@
 
 <div class="map-page-shell">
     <main class="map-layout" data-map-root>
+        <!-- 왼쪽 패널: 상단 검색창은 고정하고 아래 작업 영역만 탭별로 전환합니다. -->
         <aside class="map-side-panel" aria-label="지도 검색 패널">
             <section class="map-search-dock" aria-label="장소 및 주소 검색">
                 <div class="map-search-dock-head">
@@ -368,6 +370,7 @@
             </div>
         </aside>
 
+        <!-- 오른쪽 동적지도: 검색, 주변 시설, 길찾기 오버레이를 같은 지도 인스턴스에 표시합니다. -->
         <section class="map-canvas-panel" aria-label="지도 영역">
             <div class="map-toolbar">
                 <div>
@@ -386,6 +389,7 @@
     </main>
 </div>
 
+<!-- 메인 화면과 공통으로 사용하는 서비스 풋터입니다. -->
 <footer class="global-footer">
     <div class="global-footer-inner">
         <section class="footer-notice">
@@ -406,6 +410,7 @@
     </div>
 </footer>
 
+<!-- 서버 설정값을 전역 구성 객체로 전달한 뒤 외부 SDK와 화면 스크립트를 로드합니다. -->
 <script th:inline="javascript">
     window.KAKAO_MAP_PAGE = {
         javascriptKey: /*[[${kakaoMapJavascriptKey}]]*/ "",

@@ -14,6 +14,10 @@ import java.math.RoundingMode;
 import java.util.List;
 import java.util.Locale;
 
+/**
+ * 지도 즐겨찾기의 회원 소유권, 중복 판정 키, 좌표 정규화 규칙을 담당합니다.
+ * 장소 검색 결과는 Kakao placeId로, 주소 검색 결과는 정규화한 좌표로 동일 장소를 판정합니다.
+ */
 @Service
 public class MapFavoritePlaceService {
 
@@ -49,6 +53,7 @@ public class MapFavoritePlaceService {
         try {
             inserted = mapFavoritePlaceDao.insert(favorite);
         } catch (DataIntegrityViolationException e) {
+            // 동시에 같은 장소를 저장한 경우에도 DB UNIQUE 제약조건을 최종 중복 방어선으로 사용합니다.
             throw new IllegalArgumentException("이미 즐겨찾기에 저장된 장소입니다.", e);
         }
 
@@ -76,6 +81,7 @@ public class MapFavoritePlaceService {
             throw new IllegalArgumentException("즐겨찾기 번호가 올바르지 않습니다.");
         }
 
+        // favoriteNo와 memberNo를 함께 조건으로 사용해 다른 회원의 즐겨찾기는 삭제할 수 없습니다.
         return mapFavoritePlaceDao.deleteByFavoriteNoAndMemberNo(favoriteNo, memberNo) == 1;
     }
 
@@ -108,6 +114,7 @@ public class MapFavoritePlaceService {
         return favorite;
     }
 
+    /** 장소 ID가 없는 주소 결과도 동일 좌표가 같은 키가 되도록 저장 좌표의 소수 자릿수를 고정합니다. */
     private String buildPlaceKey(String placeId, BigDecimal longitude, BigDecimal latitude) {
         if (StringUtils.hasText(placeId)) {
             return "KAKAO:" + placeId;

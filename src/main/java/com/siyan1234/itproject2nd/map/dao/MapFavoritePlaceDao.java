@@ -6,6 +6,7 @@ import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
 
+/** 회원별 지도 즐겨찾기 조회와 소유권 조건 삭제를 수행하는 MyBatis Mapper입니다. */
 @Mapper
 public interface MapFavoritePlaceDao {
 

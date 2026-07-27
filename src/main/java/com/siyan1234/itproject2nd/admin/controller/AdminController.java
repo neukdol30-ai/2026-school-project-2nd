@@ -102,6 +102,10 @@ public class AdminController {
         String cleanBoardKeyword = AdminPagingHelper.cleanText(boardKeyword);
         String cleanVisitKeyword = AdminPagingHelper.cleanText(visitKeyword);
 
+        /*
+         * 단일 관리자 화면이 모든 목록을 한 번에 조회하면 불필요한 DB 부하가 커집니다.
+         * 현재 선택된 view에 필요한 목록만 조회하고 나머지는 빈 목록으로 유지합니다.
+         */
         List<MemberDto> adminMemberList = List.of();
         long memberTotalCount = 0L;
         if (activeView == AdminView.MEMBERS || activeView == AdminView.MEMBER_EDIT) {
@@ -221,6 +225,7 @@ public class AdminController {
         if (activeView != AdminView.CHAT_ROOM || roomNo == null || loginAdmin == null) {
             return null;
         }
+        // 상담방을 처음 연 관리자를 담당자로 지정하되, 이미 배정된 방은 기존 담당자를 유지합니다.
         return adminChatService.assignAdminIfEmpty(roomNo, loginAdmin.getNo());
     }
 

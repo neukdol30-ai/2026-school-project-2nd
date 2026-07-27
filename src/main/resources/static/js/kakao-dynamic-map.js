@@ -35,6 +35,7 @@
         strokeStyle: "solid"
     };
 
+    /* 화면 전역 상태: 마커 종류를 분리해 한 기능의 초기화가 다른 기능 표시를 지우지 않도록 합니다. */
     const state = {
         map: null,
         places: null,
@@ -68,6 +69,7 @@
         activeSidebarTab: "search"
     };
 
+    /* 초기화: Kakao SDK가 준비된 뒤 지도, 이벤트, 서버 즐겨찾기를 순서대로 연결합니다. */
     document.addEventListener("DOMContentLoaded", () => {
         if (!window.kakao || !window.kakao.maps) {
             showLocationStatus("카카오 지도 SDK를 불러오지 못했습니다. JavaScript 키와 도메인을 확인해주세요.", "error");
@@ -167,6 +169,7 @@
         activateMapTab("search");
     }
 
+    /* 사이드바 탭 전환: hidden/aria-selected를 함께 갱신해 키보드와 화면 낭독기 상태를 맞춥니다. */
     function activateMapTab(tabName, focusTab = false) {
         const safeTabName = ["search", "route", "nearby", "favorite"].includes(tabName)
             ? tabName
@@ -219,6 +222,7 @@
         routeModeField?.classList.toggle("is-disabled", !walkMode);
     }
 
+    /* 주변 시설: 현재 지도 중심을 기준으로 카테고리 검색하고 전용 마커만 교체합니다. */
     function handleNearbyCategorySelect(event) {
         const button = event.currentTarget;
         const categoryCode = String(button.dataset.nearbyCategory || "").trim();
@@ -541,6 +545,7 @@
         updateNearbyRefreshState();
     }
 
+    /* 장소·주소 검색: 검색 종류에 따라 Places와 Geocoder 흐름을 분리합니다. */
     async function handleSearchSubmit(event) {
         event.preventDefault();
         activateMapTab("search");
@@ -841,6 +846,7 @@
         target?.scrollIntoView({ behavior: "smooth", block: "nearest" });
     }
 
+    /* 즐겨찾기: 서버 응답과 화면의 별 버튼 상태를 placeKey 기준으로 동기화합니다. */
     async function loadFavorites() {
         const loadVersion = state.favoriteMutationVersion;
         showFavoriteStatus("저장한 장소를 불러오는 중입니다.", "");
@@ -1167,6 +1173,7 @@
         }
     }
 
+    /* 길찾기: 선택 장소 좌표를 hidden field와 지도 마커에 동시에 반영합니다. */
     function setRoutePoint(type, place) {
         if (!place) {
             return;
@@ -1847,6 +1854,7 @@
         }, 80);
     }
 
+    /* 전체 초기화는 검색/주변/경로 오버레이와 패널 상태를 모두 기본값으로 되돌립니다. */
     function clearMapView() {
         clearSearchMarkers();
         clearNearbyMarkers();
@@ -1958,6 +1966,7 @@
         }
     }
 
+    /* 서버 통신 유틸: API별 오류 응답을 사용자 메시지로 정규화합니다. */
     async function requestFavoriteApi(url, options = {}) {
         const response = await fetch(url, {
             method: options.method || "GET",
@@ -2098,6 +2107,7 @@
         return "현재 위치를 가져오지 못했습니다.";
     }
 
+    /* API 장소명이 innerHTML 템플릿에 들어가므로 특수문자를 이스케이프해 스크립트 삽입을 방지합니다. */
     function escapeHtml(value) {
         return String(value ?? "")
             .replaceAll("&", "&amp;")

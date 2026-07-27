@@ -5,6 +5,8 @@
 
 <mapper namespace="com.siyan1234.itproject2nd.admin.dao.AdminChatDao">
 
+    <!-- 관리자 상담 목록은 마지막 메시지, 미읽음 수, 담당 관리자 정보를 한 번에 조회합니다. -->
+
     <!-- 관리자 콘솔 상담관리: 검색/필터/페이징 목록 -->
     <select id="findAdminChatRooms"
             resultType="com.siyan1234.itproject2nd.admin.dto.RecentChatRoomDto">

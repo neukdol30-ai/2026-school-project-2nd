@@ -36,6 +36,8 @@ public class VisitLogRequestFactory {
     }
 
     private String getClientIp(HttpServletRequest request) {
+        // 프록시/로드밸런서 뒤에서는 첫 번째 X-Forwarded-For 값이 원 요청 IP입니다.
+        // 이 헤더는 신뢰 가능한 프록시가 덮어쓰는 배포 환경에서만 방문 통계용으로 사용합니다.
         String forwardedFor = request.getHeader("X-Forwarded-For");
 
         if (forwardedFor != null && !forwardedFor.isBlank()) {
@@ -51,6 +53,7 @@ public class VisitLogRequestFactory {
         return request.getRemoteAddr();
     }
 
+    /** 요청 헤더가 DB 컬럼 길이를 초과해 방문 기록 전체 저장이 실패하지 않도록 자릅니다. */
     private String limit(String value, int maxLength) {
         if (value == null || value.length() <= maxLength) {
             return value;

@@ -23,6 +23,10 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 import java.util.List;
 
+/**
+ * 마이페이지 조회와 회원 본인 정보 변경 정책을 담당합니다.
+ * 기본 정보, 민감 정보, 비밀번호, 회원 탈퇴를 분리해 각 작업에 필요한 검증 수준을 다르게 적용합니다.
+ */
 @Service
 @RequiredArgsConstructor
 public class MyPageService {
@@ -241,6 +245,7 @@ public class MyPageService {
         return MyPageActionResponseDto.fail(MyPageMessages.MEMBER_NOT_FOUND);
     }
 
+    /** 변경 직후 최신 마이페이지 데이터를 함께 내려 모달 전체 상태를 다시 동기화합니다. */
     private MyPageActionResponseDto successWithMyPage(String message, Integer memberNo) {
         return MyPageActionResponseDto.success(message, getMyPage(memberNo));
     }

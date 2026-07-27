@@ -20,6 +20,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 
+/**
+ * 로그인 회원의 지도 즐겨찾기 목록·추가·삭제 API입니다.
+ * 회원 번호는 요청값으로 받지 않고 현재 인증 정보에서만 가져와 다른 회원 데이터 접근을 차단합니다.
+ */
 @RestController
 @RequestMapping("/api/kakao-map/favorites")
 public class MapFavoritePlaceApiController {
@@ -57,6 +61,7 @@ public class MapFavoritePlaceApiController {
         String message = result.isCreated()
                 ? "즐겨찾기에 추가했습니다."
                 : "이미 즐겨찾기에 저장된 장소입니다.";
+        // 최초 저장은 201, 이미 존재하는 멱등 요청은 기존 데이터를 반환하면서 200으로 응답합니다.
         HttpStatus status = result.isCreated() ? HttpStatus.CREATED : HttpStatus.OK;
 
         return ResponseEntity.status(status)

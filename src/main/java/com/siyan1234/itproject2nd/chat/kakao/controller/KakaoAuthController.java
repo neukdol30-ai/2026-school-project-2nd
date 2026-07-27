@@ -106,6 +106,7 @@ public class KakaoAuthController {
                 .body(new ParameterizedTypeReference<>() {
                 });
 
+        // 토큰이 포함된 응답이므로 개발 확인 후 운영 환경에서는 이 로그를 제거하거나 마스킹해야 합니다.
         log.info("카카오 토큰 응답 = {}", response);
 
         return response;

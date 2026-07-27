@@ -54,6 +54,7 @@ public class AdminMemberService {
         return updateRoleSafely(memberNo, loginAdminNo, ROLE_ADMIN);
     }
 
+    /** 마지막 활성 관리자 계정은 USER로 강등하지 않아 관리자 콘솔 접근 수단을 보존합니다. */
     @Transactional
     public int grantUser(Integer memberNo, Integer loginAdminNo) {
         if (!isActiveAdmin(loginAdminNo) || isLastActiveAdmin(memberNo)) {
@@ -96,6 +97,7 @@ public class AdminMemberService {
         return adminMemberDao.countActiveAdminsExcept(memberNo) == 0;
     }
 
+    /** 관리자 본인과 다른 관리자 계정은 직접 정지할 수 없도록 서비스 계층에서도 방어합니다. */
     @Transactional
     public int banMember(Integer memberNo, String banReason, Integer loginAdminNo) {
         if (!isActiveAdmin(loginAdminNo)
@@ -130,6 +132,7 @@ public class AdminMemberService {
         return memberService.deleteMember(memberNo);
     }
 
+    /** 선택 목록에 본인 또는 관리자 계정이 포함되어도 가능한 회원만 삭제하고 결과를 집계합니다. */
     @Transactional
     public AdminDeleteResultDto deleteMembers(List<Integer> memberNoList, Integer loginAdminNo) {
         if (memberNoList == null || memberNoList.isEmpty()) {
