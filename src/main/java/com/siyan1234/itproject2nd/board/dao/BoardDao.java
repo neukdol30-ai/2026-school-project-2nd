@@ -77,4 +77,8 @@ public interface BoardDao {
     int countCommentsByBoardNo(Long boardNo);
 
 
+    // 해당 게시글의 답변 개수를 확인해
+    // 답변 상태와 최근 답변 시간을 다시 계산한다.
+    int refreshAnswerStatus(Long boardNo);
+
 }

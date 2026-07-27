@@ -261,19 +261,33 @@ public class BoardService {
     // 비회원 작성자 정보 검사
     private void validateGuestAuthor(BoardDto boardDto) {
 
+        // 비회원 이름 검사
         if (boardDto.getGuestName() == null
-                || boardDto.getGuestName().trim().isEmpty()) {
+                || boardDto.getGuestName().isBlank()) {
 
             throw new IllegalArgumentException(
                     "비회원 이름을 입력해주세요."
             );
         }
 
-        if (boardDto.getGuestPassword() == null
-                || boardDto.getGuestPassword().trim().isEmpty()) {
+        String guestPassword =
+                boardDto.getGuestPassword();
+
+        // 비밀번호 입력 여부 검사
+        if (guestPassword == null
+                || guestPassword.isBlank()) {
 
             throw new IllegalArgumentException(
                     "비회원 비밀번호를 입력해주세요."
+            );
+        }
+
+        // 비밀번호 길이 검사
+        if (guestPassword.length() < 4
+                || guestPassword.length() > 20) {
+
+            throw new IllegalArgumentException(
+                    "비회원 비밀번호는 4자 이상 20자 이하로 입력해주세요."
             );
         }
     }
@@ -282,6 +296,13 @@ public class BoardService {
             Long boardNo,
             String guestPassword
     ) {
+
+        if (guestPassword == null
+                || guestPassword.isBlank()) {
+
+            return false;
+        }
+
 
         BoardDto boardDto = boardDao.findByNo(boardNo);
 

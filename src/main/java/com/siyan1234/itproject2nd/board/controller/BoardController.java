@@ -175,8 +175,9 @@ public class BoardController {
          */
         if (loginMember == null) {
 
+            // 비회원 이름 검사
             if (boardDto.getGuestName() == null
-                    || boardDto.getGuestName().trim().isEmpty()) {
+                    || boardDto.getGuestName().isBlank()) {
 
                 bindingResult.rejectValue(
                         "guestName",
@@ -185,13 +186,28 @@ public class BoardController {
                 );
             }
 
-            if (boardDto.getGuestPassword() == null
-                    || boardDto.getGuestPassword().trim().isEmpty()) {
+            String guestPassword =
+                    boardDto.getGuestPassword();
+
+            // 비밀번호 입력 여부 검사
+            if (guestPassword == null
+                    || guestPassword.isBlank()) {
 
                 bindingResult.rejectValue(
                         "guestPassword",
                         "required",
                         "비밀번호를 입력해주세요."
+                );
+            }
+
+            // 비밀번호 길이 검사
+            else if (guestPassword.length() < 4
+                    || guestPassword.length() > 20) {
+
+                bindingResult.rejectValue(
+                        "guestPassword",
+                        "size",
+                        "비밀번호는 4자 이상 20자 이하로 입력해주세요."
                 );
             }
         }

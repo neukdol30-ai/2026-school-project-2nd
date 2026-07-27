@@ -382,5 +382,25 @@
 
     </select>
 
+    <update id="refreshAnswerStatus">
+        UPDATE board b
+        SET (
+        b.answer_status,
+        b.answered_date
+        ) = (
+        SELECT
+        CASE
+        WHEN COUNT(bc.no) > 0
+        THEN 'ANSWERED'
+        ELSE 'WAITING'
+        END,
+        MAX(bc.created_date)
+        FROM board_comment bc
+        WHERE bc.board_no = b.no
+        )
+        WHERE b.no = #{boardNo}
+        AND b.category = 'QUESTION'
+    </update>
+
 
 </mapper>
