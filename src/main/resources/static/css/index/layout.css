@@ -3,8 +3,8 @@
     --side-widget-width: 450px;
     --header-widget-width: 450px;
     --header-card-height: 244px;
-    --auth-card-height: 200px;
-    --side-column-offset: -106px;
+    --auth-card-height: 218px;
+    --side-column-offset: -88px;
     --layout-gap: 30px;
     --dashboard-width: 1400px;
     --global-banner-height: 76px;
@@ -226,25 +226,27 @@
     flex-direction: column;
     justify-content: center;
 
+    width: 100%;
     min-height: 0;
-    padding: 24px 28px;
+    padding: 22px 20px 18px;
     box-sizing: border-box;
-    gap: 20px;
+    gap: 16px;
 }
 
 /* 프로필과 로그아웃 한 줄 배치 */
 .header-auth-slot .auth-profile-row {
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    gap: 20px;
+    width: 100%;
+    gap: 16px;
 }
 
-/* 이름과 프로필 아이콘 */
+/* 프로필 아이콘과 사용자 정보 */
 .header-auth-slot .auth-profile-button {
     display: flex;
     align-items: center;
-    gap: 15px;
+    flex: 1;
+    gap: 14px;
 
     min-width: 0;
     padding: 0;
@@ -262,10 +264,10 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    flex: 0 0 54px;
+    flex: 0 0 56px;
 
-    width: 54px;
-    height: 54px;
+    width: 56px;
+    height: 56px;
 
     border-radius: 50%;
     background: #e8f7fd;
@@ -275,15 +277,19 @@
     font-weight: 800;
 }
 
-/* 이름과 로그인 유형 */
+/* 이름과 로그인 유형을 같은 선상에 배치 */
 .header-auth-slot .auth-profile-info {
     display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 7px;
+    flex-direction: row;
+    align-items: center;
+    flex: 1;
+    gap: 9px;
+
     min-width: 0;
+    padding-top: 6px;
 }
 
+/* 사용자 이름 */
 .header-auth-slot .auth-user-name {
     overflow: hidden;
 
@@ -296,12 +302,14 @@
     white-space: nowrap;
 }
 
+/* 일반 로그인 표시 */
 .header-auth-slot .auth-role-badge {
     display: inline-flex;
     align-items: center;
+    flex: 0 0 auto;
 
-    min-height: 25px;
-    padding: 0 11px;
+    min-height: 24px;
+    padding: 0 10px;
 
     border-radius: 999px;
     background: #f0f6f8;
@@ -309,14 +317,15 @@
     color: #647d89;
     font-size: 11px;
     font-weight: 700;
+    white-space: nowrap;
 }
 
 /* 로그아웃 버튼 */
 .header-auth-slot .auth-logout-button {
-    width: auto;
+    flex: 0 0 auto;
     min-height: 36px;
-    height: auto;
     padding: 0 14px;
+    margin-left: auto;
 
     border: 1px solid #d7e2e7;
     border-radius: 7px;
@@ -331,15 +340,16 @@
 
 /* 마이페이지 안내 */
 .header-auth-slot .auth-profile-desc {
+    width: 100%;
     margin: 0;
-    padding-top: 16px;
+    padding: 15px 4px 0;
 
     border-top: 1px solid #e4ecef;
 
     color: #71858e;
     font-size: 13px;
     line-height: 1.5;
-    text-align: center;
+    text-align: left;
 }
 
 /* 묶음 안쪽 기존 위젯 카드 스타일 제거 */
@@ -884,6 +894,7 @@
 .global-calendar-label {
     display: inline-flex;
     align-items: center;
+    gap: 5px;
     color: #5f7d8b;
     font-size: 13px;
     font-weight: 600;
