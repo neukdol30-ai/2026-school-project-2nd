@@ -5,7 +5,12 @@ function renderGlobalBanner() {
 
             
 
-            <a href="/mypage">마이페이지</a>
+            <button
+                type="button"
+                data-mypage-open
+            >
+                마이페이지
+            </button>
             <button
                 type="button"
                 data-action="logout"
@@ -50,6 +55,10 @@ function renderGlobalBanner() {
             </a>
 
             <div class="global-right-menu">
+                <a class="global-service-link global-map-link" href="/map/kakao">
+                    지도
+                </a>
+
                 <span class="global-calendar-label">
                     캘린더
                 </span>

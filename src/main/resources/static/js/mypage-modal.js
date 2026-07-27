@@ -154,6 +154,10 @@
         if (typeof updateAuthWidget === "function") {
             updateAuthWidget();
         }
+
+        if (typeof updateGlobalBanner === "function") {
+            updateGlobalBanner();
+        }
     }
 
     /* =========================================================

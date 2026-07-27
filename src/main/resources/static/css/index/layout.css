@@ -731,3 +731,27 @@
     font-weight: 600;
     white-space: nowrap;
 }
+/* 지도 서비스 링크 */
+.global-service-link {
+    display: inline-flex;
+    align-items: center;
+    min-height: 36px;
+    padding: 0 3px;
+    border-radius: 6px;
+    color: #5f7d8b;
+    font-size: 13px;
+    font-weight: 700;
+    line-height: 1;
+    text-decoration: none;
+    white-space: nowrap;
+}
+
+.global-service-link:hover,
+.global-service-link:focus-visible {
+    color: #087fac;
+}
+
+.global-service-link:focus-visible {
+    outline: 2px solid #1aa8df;
+    outline-offset: 3px;
+}

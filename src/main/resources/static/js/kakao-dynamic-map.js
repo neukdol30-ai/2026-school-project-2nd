@@ -46,7 +46,8 @@
         },
         infoWindow: null,
         selectedPlace: null,
-        lastBounds: null
+        lastBounds: null,
+        activeSidebarTab: "search"
     };
 
     document.addEventListener("DOMContentLoaded", () => {
@@ -122,16 +123,111 @@
         const fitResultButton = document.querySelector("[data-fit-result-button]");
         const clearMapButton = document.querySelector("[data-clear-map-button]");
         const routeForm = document.querySelector("[data-route-form]");
+        const routeTypeSelect = routeForm?.querySelector('[name="type"]');
 
         searchForm?.addEventListener("submit", handleSearchSubmit);
         currentLocationButton?.addEventListener("click", moveToCurrentLocation);
         fitResultButton?.addEventListener("click", fitResultBounds);
         clearMapButton?.addEventListener("click", clearMapView);
         routeForm?.addEventListener("submit", handleRouteSubmit);
+        routeTypeSelect?.addEventListener("change", handleRouteTypeChange);
+
+        document.querySelectorAll("[data-map-tab]").forEach((button) => {
+            button.addEventListener("click", () => {
+                activateMapTab(button.dataset.mapTab, true);
+            });
+        });
+
+        syncRouteModeAvailability();
+        activateMapTab("search");
+    }
+
+    function activateMapTab(tabName, focusTab = false) {
+        const safeTabName = ["search", "route", "transit", "favorite"].includes(tabName)
+            ? tabName
+            : "search";
+        const panelName = safeTabName === "transit" ? "route" : safeTabName;
+        const workspace = document.querySelector(".map-side-workspace");
+
+        if (safeTabName === "transit") {
+            const routeTypeSelect = document.querySelector('[data-route-form] [name="type"]');
+            if (routeTypeSelect) {
+                routeTypeSelect.value = "publictraffic";
+            }
+            syncRouteModeAvailability();
+        }
+
+        state.activeSidebarTab = safeTabName;
+
+        document.querySelectorAll("[data-map-tab]").forEach((button) => {
+            const active = button.dataset.mapTab === safeTabName;
+            button.classList.toggle("active", active);
+            button.setAttribute("aria-selected", String(active));
+            button.tabIndex = active ? 0 : -1;
+        });
+
+        document.querySelectorAll("[data-map-tab-panel]").forEach((panel) => {
+            const active = panel.dataset.mapTabPanel === panelName;
+            panel.classList.toggle("active", active);
+            panel.hidden = !active;
+            panel.setAttribute("aria-hidden", String(!active));
+        });
+
+        updateRoutePanelCopy(safeTabName);
+
+        if (workspace) {
+            workspace.scrollTop = 0;
+        }
+
+        if (focusTab) {
+            document.querySelector(`[data-map-tab="${safeTabName}"]`)?.focus();
+        }
+
+        resizeMapAfterLayout();
+    }
+
+    function updateRoutePanelCopy(tabName) {
+        const title = document.querySelector("[data-route-panel-title]");
+        const intro = document.querySelector("[data-route-panel-intro]");
+        const transitMode = tabName === "transit";
+
+        if (title) {
+            title.textContent = transitMode ? "대중교통 경로" : "경로 조회";
+        }
+
+        if (intro) {
+            intro.textContent = transitMode
+                ? "버스와 지하철을 포함한 대중교통 경로를 조회합니다."
+                : "검색 결과에서 출발지와 도착지를 지정한 뒤 이동 방법을 선택하세요.";
+        }
+    }
+
+    function handleRouteTypeChange(event) {
+        if (state.activeSidebarTab === "transit" && event.currentTarget.value !== "publictraffic") {
+            activateMapTab("route");
+        }
+
+        syncRouteModeAvailability();
+    }
+
+    function syncRouteModeAvailability() {
+        const form = document.querySelector("[data-route-form]");
+        const routeModeField = document.querySelector("[data-route-mode-field]");
+
+        if (!form) {
+            return;
+        }
+
+        const walkMode = form.type?.value === "walk";
+        if (form.routeMode) {
+            form.routeMode.disabled = !walkMode;
+        }
+        routeModeField?.classList.toggle("is-disabled", !walkMode);
     }
 
     async function handleSearchSubmit(event) {
         event.preventDefault();
+        activateMapTab("search");
 
         const form = event.currentTarget;
         const keyword = form.keyword.value.trim();
@@ -712,9 +808,21 @@
     }
 
     function updateFavoriteCount() {
+        const count = state.favorites.length;
         const target = document.querySelector("[data-favorite-count]");
+        const tabBadge = document.querySelector("[data-favorite-tab-count]");
+        const tabButton = document.querySelector('[data-map-tab="favorite"]');
+
         if (target) {
-            target.textContent = `${state.favorites.length.toLocaleString()}개`;
+            target.textContent = `${count.toLocaleString()}개`;
+        }
+
+        if (tabBadge) {
+            tabBadge.textContent = count > 99 ? "99+" : String(count);
+        }
+
+        if (tabButton) {
+            tabButton.setAttribute("aria-label", `MY 즐겨찾기 ${count.toLocaleString()}개`);
         }
     }
 
@@ -1461,6 +1569,8 @@
             result.classList.remove("error");
             result.textContent = "출발지와 도착지를 선택하면 경로 요약을 확인할 수 있습니다.";
         }
+
+        syncRouteModeAvailability();
     }
 
     function clearSearchMarkers() {
