@@ -266,7 +266,7 @@ body { /* body 태그 */
 /* 약관 체크박스와 전문 보기 링크를 한 줄에 배치 */
 .check-row {
     display: flex;
-    align-content: center;
+    align-items: center;
     justify-content: space-between;
     gap: 12px;
 }

@@ -11,7 +11,7 @@
 <main class="policy-page">
     <article class="policy-card">
 
-        <header>
+        <header class="policy-header">
             <h1>이용약관</h1>
 
             <p class="temporary-notice">
@@ -43,7 +43,9 @@
         </section>
 
         <footer class="policy-footer">
-            <button type="button" class="back-button" onclick="history.back()">
+
+            <!-- policy.js가 이 버튼의 클릭 이벤트를 연결 -->
+            <button type="button" class="back-button">
                 이전 화면으로
             </button>
         </footer>
@@ -51,5 +53,6 @@
     </article>
 </main>
 
+<script th:src="@{/js/policy.js}"></script>
 </body>
 </html>

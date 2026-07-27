@@ -51,10 +51,16 @@
         </section>
 
         <footer class="policy-footer">
-            <button type="button" class="back-button" onclick="history.back()">이전 화면으로</button>
+
+            <!-- policy.js가 이 버튼의 클릭 이벤트를 연결 -->
+            <button type="button" class="back-button">
+                이전 화면으로
+            </button>
         </footer>
 
     </article>
 </main>
+
+<script th:src="@{/js/policy.js}"></script>
 </body>
 </html>
