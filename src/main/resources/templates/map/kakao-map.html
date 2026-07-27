@@ -421,8 +421,23 @@
 <script defer src="https://t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
 <script defer th:src="@{/js/kakao-map-layout.js}"></script>
 <script defer th:src="@{/js/common/address-search.js}"></script>
+
+<!-- 마이페이지 모듈 -->
+<script defer th:src="@{/js/mypage/mypage-config.js}"></script>
+<script defer th:src="@{/js/mypage/mypage-utils.js}"></script>
+<script defer th:src="@{/js/mypage/mypage-api.js}"></script>
+<script defer th:src="@{/js/mypage/mypage-validation.js}"></script>
+<script defer th:src="@{/js/mypage/mypage-renderer.js}"></script>
 <script defer th:src="@{/js/mypage-modal.js}"></script>
+
+<!-- 카카오 지도 SDK와 지도 화면 모듈 -->
 <script th:src="@{'https://dapi.kakao.com/v2/maps/sdk.js?autoload=false&appkey=' + ${kakaoMapJavascriptKey} + '&libraries=services'}"></script>
+<script defer th:src="@{/js/map/map-config.js}"></script>
+<script defer th:src="@{/js/map/map-state.js}"></script>
+<script defer th:src="@{/js/map/map-utils.js}"></script>
+<script defer th:src="@{/js/map/map-api.js}"></script>
+<script defer th:src="@{/js/map/map-route-view.js}"></script>
+<script defer th:src="@{/js/map/map-route-path.js}"></script>
 <script defer th:src="@{/js/kakao-dynamic-map.js}"></script>
 </body>
 </html>

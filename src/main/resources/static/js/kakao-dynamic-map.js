@@ -7,67 +7,48 @@
  * - 출발지·도착지 지정 및 경로 표시
  */
 (() => {
-    const ROUTE_API = "/api/kakao-map/route";
-    const FAVORITE_API = "/api/kakao-map/favorites";
-    const LOCATION_OPTIONS = {
-        enableHighAccuracy: true,
-        timeout: 15000,
-        maximumAge: 0
-    };
-    const DEFAULT_MAP_LEVEL = 4;
-    const MAX_MAP_LEVEL = 10;
-    const MAX_PUBLIC_ROUTE_CANDIDATES = 5;
-    const NEARBY_SEARCH_RADIUS = 3000;
-    const NEARBY_CATEGORY_LABELS = Object.freeze({
-        FD6: "음식점",
-        CE7: "카페",
-        CS2: "편의점",
-        PK6: "주차장",
-        OL7: "주유소",
-        SW8: "지하철역",
-        HP8: "병원",
-        PM9: "약국"
-    });
-    const ROUTE_LINE_OPTIONS = {
-        strokeWeight: 6,
-        strokeColor: "#2563eb",
-        strokeOpacity: 0.86,
-        strokeStyle: "solid"
-    };
+    const mapModules = window.SecondProMap;
+
+    if (!mapModules?.config || !mapModules?.state || !mapModules?.utils
+        || !mapModules?.api || !mapModules?.routeView || !mapModules?.routePath) {
+        console.error("지도 모듈을 불러오지 못했습니다. map 하위 스크립트 로드 순서를 확인해주세요.");
+        return;
+    }
+
+    const {
+        ROUTE_API,
+        FAVORITE_API,
+        LOCATION_OPTIONS,
+        DEFAULT_MAP_LEVEL,
+        MAX_MAP_LEVEL,
+        MAX_PUBLIC_ROUTE_CANDIDATES,
+        NEARBY_SEARCH_RADIUS,
+        NEARBY_CATEGORY_LABELS,
+        ROUTE_LINE_OPTIONS
+    } = mapModules.config;
+    const { createMapState } = mapModules.state;
+    const {
+        calculateDistanceBetweenCoordinates,
+        compactCategory,
+        formatDistance,
+        formatTime,
+        formatNumber,
+        resolveLocationErrorMessage,
+        escapeHtml,
+        escapeAttribute
+    } = mapModules.utils;
+    const { requestFavoriteApi, requestJson } = mapModules.api;
+    const {
+        buildPublicRouteCandidateCard,
+        buildPublicRouteStepList
+    } = mapModules.routeView;
+    const {
+        createLatLngFromPayload,
+        extractRoutePath
+    } = mapModules.routePath;
 
     /* 화면 전역 상태: 마커 종류를 분리해 한 기능의 초기화가 다른 기능 표시를 지우지 않도록 합니다. */
-    const state = {
-        map: null,
-        places: null,
-        geocoder: null,
-        currentPosition: null,
-        currentAccuracy: null,
-        currentMarker: null,
-        favoriteMarker: null,
-        resultMarkers: [],
-        searchResults: [],
-        nearbyMarkers: [],
-        nearbyResults: [],
-        nearbyCategoryCode: "",
-        nearbyCategoryLabel: "",
-        nearbySearchCenter: null,
-        nearbySearchLevel: null,
-        nearbyRequestVersion: 0,
-        nearbySearching: false,
-        favorites: [],
-        favoriteByKey: new Map(),
-        favoriteMutationVersion: 0,
-        routePolylines: [],
-        routeBounds: null,
-        routeMarkers: {
-            start: null,
-            end: null
-        },
-        infoWindow: null,
-        selectedPlace: null,
-        lastBounds: null,
-        activeSidebarTab: "search"
-    };
+    const state = createMapState();
 
     /* 초기화: Kakao SDK가 준비된 뒤 지도, 이벤트, 서버 즐겨찾기를 순서대로 연결합니다. */
     document.addEventListener("DOMContentLoaded", () => {
@@ -1332,157 +1313,13 @@
         });
     }
 
-    function buildPublicRouteCandidateCard(route, index, activeIndex) {
-        const routeProps = route.properties || {};
-        const fareText = routeProps.fare?.value ? `${formatNumber(routeProps.fare.value)}원` : "요금 정보 없음";
-        const activeClass = index === activeIndex ? " active" : "";
-        const transitOverview = buildPublicTransitOverview(route);
 
-        return `
-            <button type="button" class="route-candidate-card${activeClass}" data-route-candidate="${index}">
-                <span class="route-candidate-rank">${index + 1}</span>
-                <span class="route-candidate-content">
-                    <strong>${formatTime(routeProps.totalTime)} · ${formatDistance(routeProps.totalDistance)}</strong>
-                    <small>환승 ${formatNumber(routeProps.transfers)}회 · ${fareText}</small>
-                    ${transitOverview ? `<small class="route-candidate-guide">${escapeHtml(transitOverview)}</small>` : ""}
-                    <em>이 경로 보기</em>
-                </span>
-            </button>
-        `;
-    }
 
-    function buildPublicTransitOverview(route) {
-        const transitSteps = extractPublicTransitSteps(route)
-            .filter((step) => ["BUS", "SUBWAY"].includes(String(step.type || "").toUpperCase()));
 
-        if (transitSteps.length === 0) {
-            return "";
-        }
 
-        return transitSteps
-            .slice(0, 3)
-            .map((step) => {
-                const vehicleText = formatVehicles(step.vehicles);
-                const stopText = formatStopRange(step.stops);
 
-                if (vehicleText && stopText) {
-                    return `${vehicleText} · ${stopText}`;
-                }
 
-                return vehicleText || step.guidance || resolveRouteStepTypeLabel(step.type);
-            })
-            .filter(Boolean)
-            .join(" → ");
-    }
 
-    function buildPublicRouteStepList(route) {
-        const steps = extractPublicTransitSteps(route);
-
-        if (steps.length === 0) {
-            return `<p class="route-step-empty">상세 이동 안내 정보가 없습니다.</p>`;
-        }
-
-        const items = steps
-            .slice(0, 10)
-            .map((step, index) => {
-                const typeLabel = resolveRouteStepTypeLabel(step.type);
-                const title = formatRouteStepTitle(step);
-                const stopText = formatStopRange(step.stops);
-                const meta = [
-                    formatDistance(step.distance),
-                    formatTime(step.time)
-                ].filter(Boolean).join(" · ");
-
-                return `
-                    <li class="route-step-item">
-                        <span class="route-step-index">${index + 1}</span>
-                        <span class="route-step-content">
-                            <strong>${escapeHtml(title)}</strong>
-                            <small>${escapeHtml(typeLabel)}${meta ? ` · ${escapeHtml(meta)}` : ""}</small>
-                            ${stopText ? `<em>${escapeHtml(stopText)}</em>` : ""}
-                        </span>
-                    </li>
-                `;
-            })
-            .join("");
-
-        return `<ol class="route-step-list">${items}</ol>`;
-    }
-
-    function extractPublicTransitSteps(route) {
-        const steps = Array.isArray(route?.steps) ? route.steps : [];
-
-        return steps
-            .map((step) => step?.properties || {})
-            .filter((properties) => {
-                const type = String(properties.type || "").toUpperCase();
-                return type || properties.guidance || Array.isArray(properties.vehicles) || Array.isArray(properties.stops);
-            });
-    }
-
-    function formatRouteStepTitle(step) {
-        const type = String(step.type || "").toUpperCase();
-        const vehicleText = formatVehicles(step.vehicles);
-
-        if (type === "BUS" || type === "SUBWAY") {
-            return vehicleText ? `${vehicleText} 탑승` : (step.guidance || resolveRouteStepTypeLabel(step.type));
-        }
-
-        return step.guidance || resolveRouteStepTypeLabel(step.type);
-    }
-
-    function formatVehicles(vehicles) {
-        if (!Array.isArray(vehicles) || vehicles.length === 0) {
-            return "";
-        }
-
-        return vehicles
-            .map((vehicle) => {
-                const type = vehicle?.type ? String(vehicle.type).trim() : "";
-                const name = vehicle?.name ? String(vehicle.name).trim() : "";
-
-                if (type && name) {
-                    return `${type} ${name}`;
-                }
-
-                return name || type;
-            })
-            .filter(Boolean)
-            .join(", ");
-    }
-
-    function formatStopRange(stops) {
-        if (!Array.isArray(stops) || stops.length === 0) {
-            return "";
-        }
-
-        const firstStop = stops[0]?.name || "";
-        const lastStop = stops[stops.length - 1]?.name || "";
-
-        if (firstStop && lastStop && firstStop !== lastStop) {
-            return `${firstStop} → ${lastStop}`;
-        }
-
-        return firstStop || lastStop;
-    }
-
-    function resolveRouteStepTypeLabel(type) {
-        const normalizedType = String(type || "").toUpperCase();
-
-        if (normalizedType === "BUS") {
-            return "버스";
-        }
-
-        if (normalizedType === "SUBWAY") {
-            return "지하철";
-        }
-
-        if (normalizedType === "WALKING") {
-            return "도보";
-        }
-
-        return "이동";
-    }
 
     function drawRouteOnMap(routeData, payload, routeIndex = 0) {
         clearRouteLines();
@@ -1525,221 +1362,18 @@
         );
     }
 
-    function createLatLngFromPayload(latValue, lngValue) {
-        const lat = Number(latValue);
-        const lng = Number(lngValue);
 
-        if (!isValidKoreaCoordinate(lng, lat)) {
-            return null;
-        }
 
-        return new kakao.maps.LatLng(lat, lng);
-    }
 
-    function extractRoutePath(routeData, routeType, routeIndex) {
-        const source = resolveRoutePathSource(routeData, routeType, routeIndex);
-        const orderedPoints = extractOrderedPathPoints(source);
 
-        if (orderedPoints.length >= 2) {
-            return removeDuplicateLatLng(orderedPoints).slice(0, 3000);
-        }
 
-        const groups = [];
-        collectCoordinateGroups(source, groups);
 
-        const points = [];
-        groups.forEach((group) => {
-            group.forEach((point) => points.push(point));
-        });
 
-        return removeDuplicateLatLng(points).slice(0, 3000);
-    }
 
-    function resolveRoutePathSource(routeData, routeType, routeIndex) {
-        if (routeType === "publictraffic" && Array.isArray(routeData?.routes)) {
-            return routeData.routes[routeIndex] || routeData.routes[0] || routeData;
-        }
 
-        if (routeData?.route) {
-            return routeData.route;
-        }
 
-        return routeData;
-    }
 
-    function extractOrderedPathPoints(source) {
-        const points = [];
-        collectOrderedPathPoints(source, points);
-        return points;
-    }
 
-    function collectOrderedPathPoints(node, points) {
-        if (!node) {
-            return;
-        }
-
-        if (Array.isArray(node)) {
-            node.forEach((item) => collectOrderedPathPoints(item, points));
-            return;
-        }
-
-        if (typeof node !== "object") {
-            return;
-        }
-
-        if (node.path) {
-            appendPathObjectPoints(node.path, points);
-        }
-
-        if (node.geometry) {
-            appendPathObjectPoints(node.geometry, points);
-        }
-
-        Object.entries(node).forEach(([key, value]) => {
-            const lowerKey = key.toLowerCase();
-
-            if (["path", "geometry"].includes(lowerKey)) {
-                return;
-            }
-
-            if (["sections", "steps", "legs", "roads", "guides", "routes"].includes(lowerKey)) {
-                collectOrderedPathPoints(value, points);
-            }
-        });
-    }
-
-    function appendPathObjectPoints(pathObject, points) {
-        if (!pathObject) {
-            return;
-        }
-
-        if (Array.isArray(pathObject)) {
-            parseCoordinateArray(pathObject).forEach((point) => points.push(point));
-            return;
-        }
-
-        if (typeof pathObject !== "object") {
-            return;
-        }
-
-        ["points", "coordinates", "vertexes", "vertices", "path"].forEach((key) => {
-            if (Array.isArray(pathObject[key])) {
-                parseCoordinateArray(pathObject[key]).forEach((point) => points.push(point));
-            }
-        });
-    }
-
-    function collectCoordinateGroups(node, groups) {
-        if (!node) {
-            return;
-        }
-
-        if (Array.isArray(node)) {
-            const parsed = parseCoordinateArray(node);
-            if (parsed.length >= 2) {
-                groups.push(parsed);
-                return;
-            }
-
-            node.forEach((item) => collectCoordinateGroups(item, groups));
-            return;
-        }
-
-        if (typeof node !== "object") {
-            return;
-        }
-
-        Object.entries(node).forEach(([key, value]) => {
-            const lowerKey = key.toLowerCase();
-
-            if (Array.isArray(value) && ["coordinates", "vertexes", "vertices", "path", "points"].includes(lowerKey)) {
-                const parsed = parseCoordinateArray(value);
-                if (parsed.length >= 2) {
-                    groups.push(parsed);
-                    return;
-                }
-            }
-
-            if (["sections", "steps", "legs", "roads", "guides", "routes", "geometry", "path"].includes(lowerKey)) {
-                collectCoordinateGroups(value, groups);
-            }
-        });
-    }
-
-    function parseCoordinateArray(value) {
-        if (!Array.isArray(value)) {
-            return [];
-        }
-
-        if (isFlatNumberArray(value)) {
-            return parseFlatCoordinatePairs(value);
-        }
-
-        if (isCoordinatePair(value)) {
-            return [new kakao.maps.LatLng(Number(value[1]), Number(value[0]))];
-        }
-
-        const points = [];
-        value.forEach((item) => {
-            parseCoordinateArray(item).forEach((point) => points.push(point));
-        });
-        return points;
-    }
-
-    function parseFlatCoordinatePairs(values) {
-        const points = [];
-
-        for (let index = 0; index < values.length - 1; index += 2) {
-            const lng = Number(values[index]);
-            const lat = Number(values[index + 1]);
-
-            if (isValidKoreaCoordinate(lng, lat)) {
-                points.push(new kakao.maps.LatLng(lat, lng));
-            }
-        }
-
-        return points;
-    }
-
-    function isFlatNumberArray(value) {
-        return Array.isArray(value)
-            && value.length >= 4
-            && value.every((item) => Number.isFinite(Number(item)));
-    }
-
-    function isCoordinatePair(value) {
-        if (!Array.isArray(value) || value.length < 2) {
-            return false;
-        }
-
-        const lng = Number(value[0]);
-        const lat = Number(value[1]);
-        return isValidKoreaCoordinate(lng, lat);
-    }
-
-    function isValidKoreaCoordinate(lng, lat) {
-        return Number.isFinite(lng)
-            && Number.isFinite(lat)
-            && lng >= 123
-            && lng <= 132.5
-            && lat >= 32
-            && lat <= 39.8;
-    }
-
-    function removeDuplicateLatLng(points) {
-        const result = [];
-        const seen = new Set();
-
-        points.forEach((point) => {
-            const key = `${point.getLat().toFixed(6)},${point.getLng().toFixed(6)}`;
-            if (!seen.has(key)) {
-                seen.add(key);
-                result.push(point);
-            }
-        });
-
-        return result;
-    }
 
     function fitRoutePointBounds() {
         const positions = Object.values(state.routeMarkers)
@@ -1966,48 +1600,7 @@
         }
     }
 
-    /* 서버 통신 유틸: API별 오류 응답을 사용자 메시지로 정규화합니다. */
-    async function requestFavoriteApi(url, options = {}) {
-        const response = await fetch(url, {
-            method: options.method || "GET",
-            headers: options.headers || {
-                "Accept": "application/json"
-            },
-            body: options.body
-        });
-
-        const data = await response.json().catch(() => null);
-        if (!response.ok || data?.success === false) {
-            throw new Error(data?.message || `즐겨찾기 요청 실패: HTTP ${response.status}`);
-        }
-
-        return data;
-    }
-
-    async function requestJson(url, params) {
-        const requestUrl = buildRequestUrl(url, params);
-        const response = await fetch(requestUrl, {
-            method: "GET",
-            headers: {
-                "Accept": "application/json"
-            }
-        });
-
-        if (!response.ok) {
-            throw new Error(`서버 요청 실패: HTTP ${response.status}`);
-        }
-
-        return response.json();
-    }
-
-    function buildRequestUrl(url, params) {
-        const queryString = new URLSearchParams();
-        Object.entries(params)
-            .filter(([, value]) => value !== undefined && value !== null && String(value).trim() !== "")
-            .forEach(([key, value]) => queryString.append(key, value));
-        return queryString.toString() ? `${url}?${queryString}` : url;
-    }
-
+    /* 폼 로딩 상태는 지도 화면의 버튼·입력 요소를 한 번에 잠급니다. */
     function setFormLoading(form, loading) {
         form.querySelectorAll("button, input, select").forEach((element) => {
             element.disabled = loading;
@@ -2027,97 +1620,5 @@
         );
     }
 
-    function calculateDistanceBetweenCoordinates(startLat, startLng, endLat, endLng) {
-        if (![startLat, startLng, endLat, endLng].every(Number.isFinite)) {
-            return 0;
-        }
 
-        const earthRadius = 6371000;
-        const dLat = toRadian(endLat - startLat);
-        const dLng = toRadian(endLng - startLng);
-        const a = Math.sin(dLat / 2) ** 2
-            + Math.cos(toRadian(startLat)) * Math.cos(toRadian(endLat)) * Math.sin(dLng / 2) ** 2;
-        const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-        return earthRadius * c;
-    }
-
-    function toRadian(value) {
-        return value * Math.PI / 180;
-    }
-
-    function compactCategory(categoryName) {
-        if (!categoryName) {
-            return "";
-        }
-
-        const parts = String(categoryName).split(">").map((item) => item.trim()).filter(Boolean);
-        return parts.at(-1) || categoryName;
-    }
-
-    function formatDistance(value) {
-        const distance = Number(value);
-        if (!Number.isFinite(distance)) {
-            return "";
-        }
-
-        if (distance >= 1000) {
-            return `${(distance / 1000).toFixed(1)}km`;
-        }
-
-        return `${Math.round(distance).toLocaleString()}m`;
-    }
-
-    function formatTime(value) {
-        const seconds = Number(value);
-        if (!Number.isFinite(seconds)) {
-            return "-";
-        }
-
-        const minutes = Math.round(seconds / 60);
-        if (minutes >= 60) {
-            const hours = Math.floor(minutes / 60);
-            const restMinutes = minutes % 60;
-            return restMinutes > 0 ? `${hours}시간 ${restMinutes}분` : `${hours}시간`;
-        }
-        return `${minutes}분`;
-    }
-
-    function formatNumber(value) {
-        const number = Number(value);
-        return Number.isFinite(number) ? number.toLocaleString() : "-";
-    }
-
-    function resolveLocationErrorMessage(error) {
-        if (!error) {
-            return "현재 위치를 가져오지 못했습니다.";
-        }
-
-        if (error.code === error.PERMISSION_DENIED) {
-            return "위치 권한이 거부되었습니다. 브라우저 주소창의 위치 권한을 허용해주세요.";
-        }
-
-        if (error.code === error.POSITION_UNAVAILABLE) {
-            return "현재 위치 정보를 사용할 수 없습니다. Wi-Fi 또는 모바일 위치 설정을 확인해주세요.";
-        }
-
-        if (error.code === error.TIMEOUT) {
-            return "현재 위치 확인 시간이 초과되었습니다. 다시 시도해주세요.";
-        }
-
-        return "현재 위치를 가져오지 못했습니다.";
-    }
-
-    /* API 장소명이 innerHTML 템플릿에 들어가므로 특수문자를 이스케이프해 스크립트 삽입을 방지합니다. */
-    function escapeHtml(value) {
-        return String(value ?? "")
-            .replaceAll("&", "&amp;")
-            .replaceAll("<", "&lt;")
-            .replaceAll(">", "&gt;")
-            .replaceAll('"', "&quot;")
-            .replaceAll("'", "&#039;");
-    }
-
-    function escapeAttribute(value) {
-        return escapeHtml(value).replaceAll("`", "&#096;");
-    }
 })();
