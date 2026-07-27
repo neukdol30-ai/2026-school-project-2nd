@@ -12,7 +12,7 @@
         <div>
             <span class="map-eyebrow">MAP SERVICE</span>
             <h1>지도 검색</h1>
-            <p>장소를 검색하고 현재 위치 기준 가까운 결과를 확인할 수 있습니다.</p>
+            <p>장소를 검색하고 현재 위치 기준 가까운 결과를 확인해 즐겨찾기에 저장할 수 있습니다.</p>
         </div>
         <a class="map-home-link" href="/index.html">메인으로</a>
     </header>
@@ -60,6 +60,24 @@
             <section class="map-panel-section selected-place-section" data-selected-section hidden>
                 <span class="section-kicker">SELECTED</span>
                 <div class="selected-place-card" data-selected-place-card></div>
+            </section>
+
+            <section class="map-panel-section favorite-section">
+                <div class="section-title-row compact">
+                    <div>
+                        <span class="section-kicker">FAVORITES</span>
+                        <h2>내 즐겨찾기</h2>
+                    </div>
+                    <span class="result-count" data-favorite-count>0개</span>
+                </div>
+                <p class="favorite-status" data-favorite-status>
+                    저장한 장소를 불러오는 중입니다.
+                </p>
+                <div class="favorite-list" data-favorite-list>
+                    <div class="empty-state loading">
+                        <strong>즐겨찾기를 불러오는 중입니다...</strong>
+                    </div>
+                </div>
             </section>
 
             <section class="map-panel-section result-section">

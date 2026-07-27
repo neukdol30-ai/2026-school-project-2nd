@@ -9,6 +9,7 @@
  */
 (() => {
     const ROUTE_API = "/api/kakao-map/route";
+    const FAVORITE_API = "/api/kakao-map/favorites";
     const LOCATION_OPTIONS = {
         enableHighAccuracy: true,
         timeout: 15000,
@@ -31,7 +32,12 @@
         currentPosition: null,
         currentAccuracy: null,
         currentMarker: null,
+        favoriteMarker: null,
         resultMarkers: [],
+        searchResults: [],
+        favorites: [],
+        favoriteByKey: new Map(),
+        favoriteMutationVersion: 0,
         routePolylines: [],
         routeBounds: null,
         routeMarkers: {
@@ -52,6 +58,7 @@
         window.kakao.maps.load(() => {
             initializeMap();
             bindEvents();
+            loadFavorites();
         });
     });
 
@@ -288,6 +295,7 @@
             return;
         }
 
+        state.searchResults = results;
         updateResultCount(results.length);
 
         const sortedLabel = distanceSorted ? "내 위치 기준 가까운 순" : "정확도순";
@@ -302,6 +310,12 @@
                     </span>
                 </button>
                 <div class="result-card-actions">
+                    <button type="button"
+                            class="favorite-toggle-button${isFavoritePlace(place) ? " active" : ""}"
+                            data-favorite-toggle="${index}"
+                            aria-pressed="${isFavoritePlace(place)}">
+                        ${isFavoritePlace(place) ? "★ 저장됨" : "☆ 즐겨찾기"}
+                    </button>
                     <button type="button" data-route-point="start" data-result-index="${index}">출발지</button>
                     <button type="button" data-route-point="end" data-result-index="${index}">도착지</button>
                     ${place.url ? `<a href="${escapeAttribute(place.url)}" target="_blank" rel="noopener noreferrer">상세</a>` : ""}
@@ -322,6 +336,13 @@
             });
         });
 
+        resultList.querySelectorAll("[data-favorite-toggle]").forEach((button) => {
+            button.addEventListener("click", async () => {
+                const index = Number(button.dataset.favoriteToggle);
+                await toggleFavorite(results[index], button);
+            });
+        });
+
         resultList.querySelectorAll("[data-route-point]").forEach((button) => {
             button.addEventListener("click", () => {
                 const index = Number(button.dataset.resultIndex);
@@ -331,6 +352,10 @@
     }
 
     function selectPlace(place, marker, markerNumber) {
+        if (marker !== state.favoriteMarker) {
+            clearFavoriteMarker();
+        }
+
         state.selectedPlace = place;
 
         const position = new kakao.maps.LatLng(place.lat, place.lng);
@@ -376,12 +401,21 @@
                 ${place.phone ? `<span>${escapeHtml(place.phone)}</span>` : ""}
             </div>
             <div class="selected-actions">
+                <button type="button"
+                        class="favorite-toggle-button${isFavoritePlace(place) ? " active" : ""}"
+                        data-selected-favorite
+                        aria-pressed="${isFavoritePlace(place)}">
+                    ${isFavoritePlace(place) ? "★ 즐겨찾기 삭제" : "☆ 즐겨찾기 추가"}
+                </button>
                 <button type="button" data-selected-route="start">출발지로 설정</button>
                 <button type="button" data-selected-route="end">도착지로 설정</button>
                 <button type="button" data-selected-center>지도 중앙</button>
             </div>
         `;
 
+        card.querySelector("[data-selected-favorite]")?.addEventListener("click", async (event) => {
+            await toggleFavorite(place, event.currentTarget);
+        });
         card.querySelector('[data-selected-route="start"]')?.addEventListener("click", () => setRoutePoint("start", place));
         card.querySelector('[data-selected-route="end"]')?.addEventListener("click", () => setRoutePoint("end", place));
         card.querySelector("[data-selected-center]")?.addEventListener("click", () => state.map.panTo(new kakao.maps.LatLng(place.lat, place.lng)));
@@ -393,6 +427,315 @@
         const target = document.querySelector(`[data-result-index="${index}"]`);
         target?.classList.add("active");
         target?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    }
+
+    async function loadFavorites() {
+        const loadVersion = state.favoriteMutationVersion;
+        showFavoriteStatus("저장한 장소를 불러오는 중입니다.", "");
+
+        try {
+            const response = await requestFavoriteApi(FAVORITE_API);
+            if (loadVersion !== state.favoriteMutationVersion) {
+                return;
+            }
+
+            state.favorites = Array.isArray(response.data)
+                ? response.data.map(normalizeFavoritePlace).filter(Boolean)
+                : [];
+            rebuildFavoriteIndex();
+            renderFavoriteList();
+            refreshFavoriteButtons();
+            showFavoriteStatus(
+                state.favorites.length > 0
+                    ? "즐겨찾기를 누르면 지도 이동과 경로 설정을 바로 사용할 수 있습니다."
+                    : "검색 결과에서 ☆ 즐겨찾기를 눌러 장소를 저장해보세요.",
+                state.favorites.length > 0 ? "success" : ""
+            );
+        } catch (error) {
+            state.favorites = [];
+            rebuildFavoriteIndex();
+            renderFavoriteList(error.message || "즐겨찾기를 불러오지 못했습니다.");
+            showFavoriteStatus(error.message || "즐겨찾기를 불러오지 못했습니다.", "error");
+        }
+    }
+
+    function normalizeFavoritePlace(item) {
+        const lat = Number(item?.latitude);
+        const lng = Number(item?.longitude);
+
+        if (!item || !Number.isFinite(lat) || !Number.isFinite(lng)) {
+            return null;
+        }
+
+        return {
+            favoriteNo: Number(item.favoriteNo),
+            placeKey: item.placeKey || buildFavoritePlaceKey({
+                id: item.placeId,
+                source: String(item.sourceType || "ADDRESS").toLowerCase(),
+                lat,
+                lng
+            }),
+            id: item.placeId || item.placeKey || `favorite-${item.favoriteNo}`,
+            title: item.placeName || "장소명 없음",
+            address: item.addressName || "주소 정보 없음",
+            category: item.categoryName || "",
+            phone: item.phone || "",
+            url: item.placeUrl || "",
+            lat,
+            lng,
+            distance: state.currentPosition ? calculateDistanceFromCurrent(lat, lng) : null,
+            source: String(item.sourceType || "ADDRESS").toLowerCase()
+        };
+    }
+
+    function rebuildFavoriteIndex() {
+        state.favoriteByKey = new Map();
+        state.favorites.forEach((favorite) => {
+            state.favoriteByKey.set(favorite.placeKey, favorite);
+        });
+        updateFavoriteCount();
+    }
+
+    function renderFavoriteList(errorMessage) {
+        const favoriteList = document.querySelector("[data-favorite-list]");
+
+        if (!favoriteList) {
+            return;
+        }
+
+        if (errorMessage) {
+            favoriteList.innerHTML = `
+                <div class="empty-state">
+                    <strong>즐겨찾기를 불러오지 못했습니다.</strong>
+                    <p>${escapeHtml(errorMessage)}</p>
+                </div>
+            `;
+            return;
+        }
+
+        if (state.favorites.length === 0) {
+            favoriteList.innerHTML = `
+                <div class="empty-state">
+                    <strong>저장된 즐겨찾기가 없습니다.</strong>
+                    <p>장소 또는 주소 검색 결과에서 별 버튼을 눌러 추가할 수 있습니다.</p>
+                </div>
+            `;
+            return;
+        }
+
+        favoriteList.innerHTML = state.favorites.map((favorite, index) => `
+            <article class="favorite-card" data-favorite-no="${favorite.favoriteNo}">
+                <button type="button" class="favorite-main-button" data-select-favorite="${index}">
+                    <span class="favorite-star" aria-hidden="true">★</span>
+                    <span class="favorite-card-content">
+                        <strong>${escapeHtml(favorite.title)}</strong>
+                        <span>${escapeHtml(favorite.address)}</span>
+                        ${favorite.category ? `<small>${escapeHtml(favorite.category)}</small>` : ""}
+                    </span>
+                </button>
+                <div class="favorite-card-actions">
+                    <button type="button" data-favorite-route="start" data-favorite-index="${index}">출발지</button>
+                    <button type="button" data-favorite-route="end" data-favorite-index="${index}">도착지</button>
+                    <button type="button" class="favorite-delete-button" data-delete-favorite="${favorite.favoriteNo}">삭제</button>
+                </div>
+            </article>
+        `).join("");
+
+        favoriteList.querySelectorAll("[data-select-favorite]").forEach((button) => {
+            button.addEventListener("click", () => {
+                const index = Number(button.dataset.selectFavorite);
+                focusFavoritePlace(state.favorites[index]);
+            });
+        });
+
+        favoriteList.querySelectorAll("[data-favorite-route]").forEach((button) => {
+            button.addEventListener("click", () => {
+                const index = Number(button.dataset.favoriteIndex);
+                setRoutePoint(button.dataset.favoriteRoute, state.favorites[index]);
+            });
+        });
+
+        favoriteList.querySelectorAll("[data-delete-favorite]").forEach((button) => {
+            button.addEventListener("click", async () => {
+                await deleteFavorite(Number(button.dataset.deleteFavorite), button);
+            });
+        });
+    }
+
+    function focusFavoritePlace(place) {
+        if (!place || !state.map) {
+            return;
+        }
+
+        clearFavoriteMarker();
+        const position = new kakao.maps.LatLng(place.lat, place.lng);
+        state.favoriteMarker = new kakao.maps.Marker({
+            map: state.map,
+            position,
+            title: place.title
+        });
+        state.map.setLevel(3);
+        selectPlace(place, state.favoriteMarker, "★");
+        setMapGuide("즐겨찾기 장소로 이동했습니다.");
+    }
+
+    async function toggleFavorite(place, button) {
+        if (!place || button?.disabled) {
+            return;
+        }
+
+        const existing = findFavorite(place);
+        button && (button.disabled = true);
+
+        try {
+            if (existing) {
+                await deleteFavorite(existing.favoriteNo, button);
+                return;
+            }
+
+            const response = await requestFavoriteApi(FAVORITE_API, {
+                method: "POST",
+                headers: {
+                    "Accept": "application/json",
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(buildFavoriteRequest(place))
+            });
+            const saved = normalizeFavoritePlace(response.data);
+
+            if (saved) {
+                state.favoriteMutationVersion += 1;
+                state.favorites = [saved, ...state.favorites.filter((item) => item.placeKey !== saved.placeKey)];
+                rebuildFavoriteIndex();
+                renderFavoriteList();
+                refreshFavoriteButtons();
+                showFavoriteStatus(response.message || "즐겨찾기에 추가했습니다.", "success");
+            }
+        } catch (error) {
+            showFavoriteStatus(error.message || "즐겨찾기 처리 중 오류가 발생했습니다.", "error");
+        } finally {
+            if (button?.isConnected) {
+                button.disabled = false;
+            }
+        }
+    }
+
+    async function deleteFavorite(favoriteNo, button) {
+        if (!Number.isFinite(favoriteNo) || favoriteNo <= 0) {
+            showFavoriteStatus("삭제할 즐겨찾기 정보가 올바르지 않습니다.", "error");
+            return;
+        }
+
+        button && (button.disabled = true);
+
+        try {
+            const response = await requestFavoriteApi(`${FAVORITE_API}/${favoriteNo}`, {
+                method: "DELETE",
+                headers: {
+                    "Accept": "application/json"
+                }
+            });
+            state.favoriteMutationVersion += 1;
+            state.favorites = state.favorites.filter((favorite) => favorite.favoriteNo !== favoriteNo);
+            rebuildFavoriteIndex();
+            renderFavoriteList();
+            refreshFavoriteButtons();
+            showFavoriteStatus(response.message || "즐겨찾기에서 삭제했습니다.", "success");
+        } catch (error) {
+            showFavoriteStatus(error.message || "즐겨찾기 삭제 중 오류가 발생했습니다.", "error");
+        } finally {
+            if (button?.isConnected) {
+                button.disabled = false;
+            }
+        }
+    }
+
+    function buildFavoriteRequest(place) {
+        return {
+            placeId: place.source === "place" ? String(place.id || "") : null,
+            placeName: place.title,
+            addressName: place.address,
+            categoryName: place.category || null,
+            phone: place.phone || null,
+            placeUrl: place.url || null,
+            longitude: Number(place.lng),
+            latitude: Number(place.lat),
+            sourceType: place.source === "place" ? "PLACE" : "ADDRESS"
+        };
+    }
+
+    function findFavorite(place) {
+        return state.favoriteByKey.get(buildFavoritePlaceKey(place)) || null;
+    }
+
+    function isFavoritePlace(place) {
+        return Boolean(findFavorite(place));
+    }
+
+    function buildFavoritePlaceKey(place) {
+        if (place?.source === "place" && place.id) {
+            return `KAKAO:${String(place.id).trim()}`;
+        }
+
+        const lng = Number(place?.lng);
+        const lat = Number(place?.lat);
+        return `COORD:${formatFavoriteCoordinate(lng)},${formatFavoriteCoordinate(lat)}`;
+    }
+
+    function formatFavoriteCoordinate(value) {
+        return Number.isFinite(value) ? value.toFixed(8) : "";
+    }
+
+    function refreshFavoriteButtons() {
+        document.querySelectorAll("[data-favorite-toggle]").forEach((button) => {
+            const index = Number(button.dataset.favoriteToggle);
+            updateFavoriteButton(button, state.searchResults[index], false);
+        });
+
+        const selectedButton = document.querySelector("[data-selected-favorite]");
+        if (selectedButton && state.selectedPlace) {
+            updateFavoriteButton(selectedButton, state.selectedPlace, true);
+        }
+    }
+
+    function updateFavoriteButton(button, place, selectedCard) {
+        if (!button || !place) {
+            return;
+        }
+
+        const active = isFavoritePlace(place);
+        button.classList.toggle("active", active);
+        button.setAttribute("aria-pressed", String(active));
+        button.textContent = selectedCard
+            ? (active ? "★ 즐겨찾기 삭제" : "☆ 즐겨찾기 추가")
+            : (active ? "★ 저장됨" : "☆ 즐겨찾기");
+    }
+
+    function updateFavoriteCount() {
+        const target = document.querySelector("[data-favorite-count]");
+        if (target) {
+            target.textContent = `${state.favorites.length.toLocaleString()}개`;
+        }
+    }
+
+    function showFavoriteStatus(message, type) {
+        const target = document.querySelector("[data-favorite-status]");
+        if (!target) {
+            return;
+        }
+
+        target.textContent = message;
+        target.classList.remove("success", "error");
+        if (type) {
+            target.classList.add(type);
+        }
+    }
+
+    function clearFavoriteMarker() {
+        if (state.favoriteMarker) {
+            state.favoriteMarker.setMap(null);
+            state.favoriteMarker = null;
+        }
     }
 
     function setRoutePoint(type, place) {
@@ -1077,9 +1420,11 @@
 
     function clearMapView() {
         clearSearchMarkers();
+        clearFavoriteMarker();
         clearRouteOverlays();
         state.infoWindow?.close();
         state.selectedPlace = null;
+        state.searchResults = [];
         state.lastBounds = null;
         setFitButtonEnabled(false);
         updateResultCount(0);
@@ -1170,6 +1515,23 @@
         if (type) {
             target.classList.add(type);
         }
+    }
+
+    async function requestFavoriteApi(url, options = {}) {
+        const response = await fetch(url, {
+            method: options.method || "GET",
+            headers: options.headers || {
+                "Accept": "application/json"
+            },
+            body: options.body
+        });
+
+        const data = await response.json().catch(() => null);
+        if (!response.ok || data?.success === false) {
+            throw new Error(data?.message || `즐겨찾기 요청 실패: HTTP ${response.status}`);
+        }
+
+        return data;
     }
 
     async function requestJson(url, params) {

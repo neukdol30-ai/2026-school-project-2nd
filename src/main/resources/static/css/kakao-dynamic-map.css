@@ -396,6 +396,134 @@ select:disabled {
     white-space: nowrap;
 }
 
+/* 즐겨찾기 */
+.favorite-section {
+    background: linear-gradient(180deg, #ffffff 0%, #fffdf2 100%);
+}
+
+.favorite-status {
+    margin: 0 0 10px;
+    padding: 10px 12px;
+    border-radius: 14px;
+    background: #fff7d6;
+    color: #854d0e;
+    font-size: 12px;
+    font-weight: 800;
+    line-height: 1.45;
+}
+
+.favorite-status.success {
+    background: #ecfdf5;
+    color: var(--map-success);
+}
+
+.favorite-status.error {
+    background: #fef2f2;
+    color: #b91c1c;
+}
+
+.favorite-list {
+    display: grid;
+    gap: 9px;
+    max-height: 250px;
+    overflow-y: auto;
+    padding-right: 4px;
+}
+
+.favorite-card {
+    display: grid;
+    gap: 8px;
+    padding: 11px;
+    border: 1px solid #fde68a;
+    border-radius: 17px;
+    background: #ffffff;
+}
+
+.favorite-main-button {
+    display: flex;
+    align-items: flex-start;
+    gap: 9px;
+    width: 100%;
+    min-width: 0;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    text-align: left;
+}
+
+.favorite-star {
+    display: inline-grid;
+    place-items: center;
+    flex: 0 0 28px;
+    width: 28px;
+    height: 28px;
+    border-radius: 999px;
+    background: #fef3c7;
+    color: #d97706;
+    font-size: 16px;
+    line-height: 1;
+}
+
+.favorite-card-content {
+    display: grid;
+    gap: 3px;
+    min-width: 0;
+}
+
+.favorite-card-content strong {
+    color: var(--map-text);
+    font-size: 13px;
+    font-weight: 900;
+    line-height: 1.4;
+}
+
+.favorite-card-content span,
+.favorite-card-content small {
+    color: var(--map-muted);
+    font-size: 11px;
+    font-weight: 800;
+    line-height: 1.45;
+    overflow-wrap: anywhere;
+}
+
+.favorite-card-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 7px;
+}
+
+.favorite-card-actions button,
+.favorite-toggle-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 32px;
+    padding: 0 11px;
+    border: 0;
+    border-radius: 999px;
+    background: #fff7d6;
+    color: #854d0e;
+    font-size: 12px;
+    font-weight: 900;
+    white-space: nowrap;
+}
+
+.favorite-toggle-button.active {
+    background: #f59e0b;
+    color: #ffffff;
+}
+
+.favorite-delete-button {
+    background: #fef2f2 !important;
+    color: #b91c1c !important;
+}
+
+.favorite-card-actions button:disabled,
+.favorite-toggle-button:disabled {
+    cursor: wait;
+    opacity: 0.58;
+}
+
 /* 검색 결과 */
 .result-count {
     display: inline-flex;
@@ -893,18 +1021,21 @@ select:disabled {
 
 /* 스크롤바 */
 .map-side-panel::-webkit-scrollbar,
-.result-list::-webkit-scrollbar {
+.result-list::-webkit-scrollbar,
+.favorite-list::-webkit-scrollbar {
     width: 8px;
 }
 
 .map-side-panel::-webkit-scrollbar-thumb,
-.result-list::-webkit-scrollbar-thumb {
+.result-list::-webkit-scrollbar-thumb,
+.favorite-list::-webkit-scrollbar-thumb {
     border-radius: 999px;
     background: #b7dff5;
 }
 
 .map-side-panel::-webkit-scrollbar-track,
-.result-list::-webkit-scrollbar-track {
+.result-list::-webkit-scrollbar-track,
+.favorite-list::-webkit-scrollbar-track {
     background: transparent;
 }
 
