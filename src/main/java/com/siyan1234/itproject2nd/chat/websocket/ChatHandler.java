@@ -33,11 +33,6 @@ import java.time.LocalDateTime;
 @RequiredArgsConstructor
 public class ChatHandler extends TextWebSocketHandler {
 
-    private static final String TYPE_ADMIN_LIST_JOIN = "ADMIN_LIST_JOIN";
-    private static final String TYPE_JOIN = "JOIN";
-    private static final String TYPE_READ = "READ";
-    private static final String TYPE_MESSAGE = "MESSAGE";
-
     private final ChatRedisService chatRedisService;
     private final ChatService chatService;
     private final ChatWebSocketSessionRegistry sessionRegistry;
@@ -63,10 +58,10 @@ public class ChatHandler extends TextWebSocketHandler {
         String type = payloadParser.getType(root);
 
         switch (type) {
-            case TYPE_ADMIN_LIST_JOIN -> handleAdminListJoin(session, loginUser);
-            case TYPE_JOIN -> handleJoin(session, root, loginUser);
-            case TYPE_READ -> handleRead(session, root, loginUser);
-            case TYPE_MESSAGE -> handleMessage(session, root, loginUser);
+            case ChatWebSocketEventType.ADMIN_LIST_JOIN -> handleAdminListJoin(session, loginUser);
+            case ChatWebSocketEventType.JOIN -> handleJoin(session, root, loginUser);
+            case ChatWebSocketEventType.READ -> handleRead(session, root, loginUser);
+            case ChatWebSocketEventType.MESSAGE -> handleMessage(session, root, loginUser);
             default -> log.debug("지원하지 않는 WebSocket 이벤트 type={}", type);
         }
     }
