@@ -5,6 +5,7 @@ import com.siyan1234.itproject2nd.chat.dto.ChatMessageDto;
 import com.siyan1234.itproject2nd.chat.dto.ChatRoomDto;
 import com.siyan1234.itproject2nd.chat.support.ChatCategory;
 import com.siyan1234.itproject2nd.chat.support.ChatReadStatus;
+import com.siyan1234.itproject2nd.chat.support.ChatRoomLockManager;
 import com.siyan1234.itproject2nd.chat.support.ChatRoomStatus;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -14,33 +15,31 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 /**
- * ChatService의 실제 구현 클래스
+ * ChatService의 실제 구현 클래스입니다.
  *
  * 상담방 생성, 메시지 저장, 관리자 목록 조회, 읽음 처리,
- * 상담 종료, 삭제, 문의 유형 변경 등의 비즈니스 로직을 담당한다.
+ * 상담 종료, 삭제, 문의 유형 변경 등의 비즈니스 로직을 담당합니다.
  */
 @Service
 @RequiredArgsConstructor
 @Transactional
 public class ChatServiceImpl implements ChatService {
 
+    private static final int MESSAGE_BATCH_SIZE = 100;
+
     private final ChatDao chatDao;
     private final ChatRedisService chatRedisService;
+    private final ChatRoomLockManager roomLockManager;
 
-    /**
-     * 문의 유형이 없는 기본 상담방 생성 메서드
-     * 기본 문의 유형을 ETC로 설정해서 category 포함 메서드로 위임한다.
-     */
+    /** 문의 유형이 없는 요청은 기본 유형인 ETC로 처리합니다. */
     @Override
     public ChatRoomDto getOrCreateRoom(Integer userNo) {
         return getOrCreateRoom(userNo, ChatCategory.DEFAULT);
     }
 
     /**
-     * 사용자의 OPEN 상담방을 조회하거나 새로 생성한다.
-     *
-     * 이미 OPEN 상담방이 있으면 새 방을 만들지 않고 기존 방을 반환한다.
-     * 사용자가 문의 유형을 다르게 선택한 경우 기존 방의 category만 변경한다.
+     * 사용자의 OPEN 상담방을 조회하거나 새로 생성합니다.
+     * 이미 OPEN 상담방이 있으면 새 방을 만들지 않고 문의 유형만 갱신합니다.
      */
     @Override
     public ChatRoomDto getOrCreateRoom(Integer userNo, String category) {
@@ -67,18 +66,12 @@ public class ChatServiceImpl implements ChatService {
         return chatDao.findRoomByUserNo(userNo);
     }
 
-    /**
-     * 사용자의 진행 중인 OPEN 상담방 조회
-     */
     @Override
     @Transactional(readOnly = true)
     public ChatRoomDto findOpenRoomByUserNo(Integer userNo) {
         return chatDao.findRoomByUserNo(userNo);
     }
 
-    /**
-     * roomNo로 상담방 상세 조회
-     */
     @Override
     @Transactional(readOnly = true)
     public ChatRoomDto findRoomByRoomNo(Integer roomNo) {
@@ -86,86 +79,86 @@ public class ChatServiceImpl implements ChatService {
     }
 
     /**
-     * 전체 상담방 조회
-     * Scheduler가 Redis 메시지를 Oracle로 저장할 때 사용한다.
-     */
-    @Override
-    @Transactional(readOnly = true)
-    public List<ChatRoomDto> findAllRooms() {
-        return chatDao.findAllRooms();
-    }
-
-    /**
-     * 메시지를 Oracle DB에 저장한다.
-     *
-     * Redis에 임시 저장된 메시지를 Scheduler가 Oracle로 옮길 때 사용한다.
-     * 메시지 저장 후 관리자 목록에 표시할 마지막 메시지도 함께 갱신한다.
+     * HTTP 테스트 API처럼 Redis를 거치지 않는 단건 메시지를 Oracle에 저장합니다.
+     * 같은 상담방의 읽음 처리와 저장 순서가 뒤섞이지 않도록 상담방 Lock 안에서 실행합니다.
      */
     @Override
     public void saveMessage(ChatMessageDto chatMessageDto) {
-        if (chatMessageDto == null) {
+        if (!isValidMessage(chatMessageDto)) {
             return;
         }
 
-        if (chatMessageDto.getRoomNo() == null) {
-            return;
-        }
-
-        if (chatMessageDto.getMessageContent() == null || chatMessageDto.getMessageContent().isBlank()) {
-            return;
-        }
-
-        if (chatMessageDto.getCreatedDate() == null) {
-            chatMessageDto.setCreatedDate(LocalDateTime.now());
-        }
-
-        chatMessageDto.setReadYn(ChatReadStatus.normalize(chatMessageDto.getReadYn()));
-
-        chatDao.saveMessage(chatMessageDto);
-
-        ChatRoomDto chatRoomDto = new ChatRoomDto();
-        chatRoomDto.setRoomNo(chatMessageDto.getRoomNo());
-        chatRoomDto.setLastMessage(chatMessageDto.getMessageContent());
-
-        chatDao.updateLastMessage(chatRoomDto);
+        roomLockManager.execute(chatMessageDto.getRoomNo(), () -> {
+            normalizeMessage(chatMessageDto);
+            chatDao.saveMessage(chatMessageDto);
+            updateLastMessageInternal(
+                    chatMessageDto.getRoomNo(),
+                    chatMessageDto.getMessageContent(),
+                    chatMessageDto.getCreatedDate()
+            );
+        });
     }
 
     /**
-     * Oracle DB에 저장된 특정 상담방 메시지 조회
+     * Scheduler가 한 상담방의 Redis 메시지를 Oracle INSERT ALL 문으로 묶어서 저장합니다.
+     * 모든 메시지가 유효해야만 SQL을 실행하며 마지막 메시지 정보는 한 번만 갱신합니다.
      */
+    @Override
+    public int saveMessages(List<ChatMessageDto> messages) {
+        if (messages == null || messages.isEmpty()) {
+            return 0;
+        }
+
+        Integer roomNo = messages.getFirst() == null ? null : messages.getFirst().getRoomNo();
+        if (roomNo == null) {
+            throw new IllegalArgumentException("저장할 채팅 메시지에 상담방 번호가 없습니다.");
+        }
+
+        return roomLockManager.execute(roomNo, () -> {
+            for (ChatMessageDto message : messages) {
+                if (!isValidMessage(message) || !roomNo.equals(message.getRoomNo())) {
+                    throw new IllegalArgumentException("같은 상담방의 유효한 메시지만 일괄 저장할 수 있습니다.");
+                }
+
+                normalizeMessage(message);
+            }
+
+            for (int start = 0; start < messages.size(); start += MESSAGE_BATCH_SIZE) {
+                int end = Math.min(start + MESSAGE_BATCH_SIZE, messages.size());
+                chatDao.saveMessages(messages.subList(start, end));
+            }
+
+            ChatMessageDto lastMessage = messages.getLast();
+            updateLastMessageInternal(
+                    roomNo,
+                    lastMessage.getMessageContent(),
+                    lastMessage.getCreatedDate()
+            );
+
+            return messages.size();
+        });
+    }
+
     @Override
     @Transactional(readOnly = true)
     public List<ChatMessageDto> findMessagesByRoomNo(Integer roomNo) {
         return chatDao.findMessagesByRoomNo(roomNo);
     }
 
-    /**
-     * 상담방 상태를 CLOSED로 변경한다.
-     */
     @Override
     public void closeRoom(Integer roomNo) {
-        if (roomNo == null) {
-            return;
+        if (roomNo != null) {
+            chatDao.closeRoom(roomNo);
         }
-
-        chatDao.closeRoom(roomNo);
     }
 
-    /**
-     * 종료된 상담방 단건 하드 DELETE
-     */
     @Override
     public void deleteRoom(Integer roomNo) {
-        if (roomNo == null) {
-            return;
+        if (roomNo != null) {
+            chatDao.deleteRoom(roomNo);
         }
-
-        chatDao.deleteRoom(roomNo);
     }
 
-    /**
-     * 종료된 상담방 다중 하드 DELETE
-     */
     @Override
     public int deleteClosedRooms(List<Integer> roomNoList) {
         if (roomNoList == null || roomNoList.isEmpty()) {
@@ -176,7 +169,10 @@ public class ChatServiceImpl implements ChatService {
     }
 
     /**
-     * 현재 접속자가 상대방 메시지를 읽은 것으로 처리한다.
+     * Oracle과 Redis의 상대방 메시지를 하나의 상담방 Lock 안에서 함께 읽음 처리합니다.
+     *
+     * Scheduler가 Redis 메시지를 DB로 옮기는 순간과 읽음 처리가 겹쳐
+     * 이미 읽은 메시지가 DB에 N으로 들어가는 경쟁 상태를 방지합니다.
      */
     @Override
     public void updateReadYn(Integer roomNo, Integer viewerNo) {
@@ -184,14 +180,14 @@ public class ChatServiceImpl implements ChatService {
             return;
         }
 
-        chatDao.updateReadYn(roomNo, viewerNo);
+        roomLockManager.execute(roomNo, () -> {
+            chatDao.updateReadYn(roomNo, viewerNo);
+            chatRedisService.updateReadYn(roomNo, viewerNo);
+        });
     }
 
     /**
-     * 관리자 상담 목록 조회
-     *
-     * Oracle DB에 저장된 안읽음 개수와 Redis에 아직 남아있는 안읽음 개수를 합산한다.
-     * 메시지가 Redis에 먼저 저장되기 때문에 둘을 합쳐야 관리자 목록의 안읽음 개수가 정확하다.
+     * 관리자 상담 목록의 DB 안읽음 개수와 Redis Hash 카운터를 합산합니다.
      */
     @Override
     @Transactional(readOnly = true)
@@ -225,54 +221,45 @@ public class ChatServiceImpl implements ChatService {
         for (ChatRoomDto room : roomList) {
             int dbUnreadCount = room.getUnreadCount() == null ? 0 : room.getUnreadCount();
             int redisUnreadCount = chatRedisService.countUnreadMessages(room.getRoomNo(), viewerNo);
-
             room.setUnreadCount(dbUnreadCount + redisUnreadCount);
         }
 
         return roomList;
     }
 
-    /**
-     * 관리자 목록 페이징 계산을 위한 전체 상담방 개수 조회
-     */
     @Override
     @Transactional(readOnly = true)
     public int countAdminRooms(String status, String category, String keyword) {
         return chatDao.countAdminRooms(status, category, keyword);
     }
 
-    /**
-     * 관리자 목록의 마지막 메시지와 마지막 메시지 시간을 갱신한다.
-     */
     @Override
     public void updateLastMessage(Integer roomNo, String lastMessage) {
+        updateLastMessage(roomNo, lastMessage, null);
+    }
+
+    @Override
+    public void updateLastMessage(
+            Integer roomNo,
+            String lastMessage,
+            LocalDateTime lastMessageDate
+    ) {
         if (roomNo == null) {
             return;
         }
 
-        ChatRoomDto chatRoomDto = new ChatRoomDto();
-        chatRoomDto.setRoomNo(roomNo);
-        chatRoomDto.setLastMessage(lastMessage);
-
-        chatDao.updateLastMessage(chatRoomDto);
+        updateLastMessageInternal(roomNo, lastMessage, lastMessageDate);
     }
 
-    /**
-     * 담당 관리자가 없는 상담방에 관리자를 배정한다.
-     */
     @Override
     public void assignAdmin(Integer roomNo, Integer adminNo) {
-        if (roomNo == null || adminNo == null) {
-            return;
+        if (roomNo != null && adminNo != null) {
+            chatDao.assignAdmin(roomNo, adminNo);
         }
-
-        chatDao.assignAdmin(roomNo, adminNo);
     }
 
     /**
-     * 사용자 문의 유형 변경
-     *
-     * 상담방이 OPEN 상태이고, 요청한 사용자가 해당 상담방의 주인일 때만 category를 변경한다.
+     * OPEN 상태이며 로그인 사용자가 소유한 상담방만 문의 유형을 변경합니다.
      */
     @Override
     public void changeCategory(Integer roomNo, Integer userNo, String category) {
@@ -280,15 +267,10 @@ public class ChatServiceImpl implements ChatService {
 
         ChatRoomDto chatRoom = chatDao.findRoomByRoomNo(roomNo);
 
-        if (chatRoom == null) {
-            return;
-        }
-
-        if (!ChatRoomStatus.isOpen(chatRoom.getStatus())) {
-            return;
-        }
-
-        if (chatRoom.getUserNo() == null || !chatRoom.getUserNo().equals(userNo)) {
+        if (chatRoom == null
+                || !ChatRoomStatus.isOpen(chatRoom.getStatus())
+                || chatRoom.getUserNo() == null
+                || !chatRoom.getUserNo().equals(userNo)) {
             return;
         }
 
@@ -296,25 +278,14 @@ public class ChatServiceImpl implements ChatService {
     }
 
     /**
-     * 문의 유형 값 정리
-     *
-     * null, 빈 문자열, 허용되지 않은 값이 들어오면 ETC로 처리한다.
-     * DB CHECK 제약조건 오류를 사전에 방지하기 위한 방어 코드이다.
+     * null, 빈 문자열, 허용되지 않은 문의 유형은 ETC로 정규화합니다.
      */
     private String normalizeCategory(String category) {
         return ChatCategory.normalize(category);
     }
 
     /**
-     * 사용자 본인의 상담내역 목록 조회
-     *
-     * 보안 기준:
-     * - userNo는 Controller에서 로그인 사용자 번호로 넘긴다.
-     * - SQL에서도 WHERE r.user_no = #{userNo} 조건으로 본인 상담방만 조회한다.
-     *
-     * unreadCount:
-     * - 관리자가 보냈고 사용자가 아직 읽지 않은 메시지 개수이다.
-     * - Oracle DB에 저장된 메시지와 Redis에 남아있는 메시지 개수를 합산한다.
+     * 사용자 본인의 상담내역 목록에 DB와 Redis의 안읽음 개수를 합산합니다.
      */
     @Override
     @Transactional(readOnly = true)
@@ -329,6 +300,7 @@ public class ChatServiceImpl implements ChatService {
         if (size < 1) {
             size = 10;
         }
+
         int pageStart = (page - 1) * size;
         int pageEnd = size;
 
@@ -337,13 +309,12 @@ public class ChatServiceImpl implements ChatService {
         for (ChatRoomDto room : roomList) {
             int dbUnreadCount = room.getUnreadCount() == null ? 0 : room.getUnreadCount();
             int redisUnreadCount = chatRedisService.countUnreadMessages(room.getRoomNo(), userNo);
-
             room.setUnreadCount(dbUnreadCount + redisUnreadCount);
         }
+
         return roomList;
     }
 
-    //사용자 본인의 상담내역 전체 개수 조회
     @Override
     @Transactional(readOnly = true)
     public int countUserRooms(Integer userNo) {
@@ -351,5 +322,33 @@ public class ChatServiceImpl implements ChatService {
             return 0;
         }
         return chatDao.countUserRooms(userNo);
+    }
+
+    private boolean isValidMessage(ChatMessageDto message) {
+        return message != null
+                && message.getRoomNo() != null
+                && message.getMessageContent() != null
+                && !message.getMessageContent().isBlank();
+    }
+
+    private void normalizeMessage(ChatMessageDto message) {
+        if (message.getCreatedDate() == null) {
+            message.setCreatedDate(LocalDateTime.now());
+        }
+
+        message.setMessageContent(message.getMessageContent().trim());
+        message.setReadYn(ChatReadStatus.normalize(message.getReadYn()));
+    }
+
+    private void updateLastMessageInternal(
+            Integer roomNo,
+            String lastMessage,
+            LocalDateTime lastMessageDate
+    ) {
+        ChatRoomDto chatRoomDto = new ChatRoomDto();
+        chatRoomDto.setRoomNo(roomNo);
+        chatRoomDto.setLastMessage(lastMessage);
+        chatRoomDto.setLastMessageDate(lastMessageDate);
+        chatDao.updateLastMessage(chatRoomDto);
     }
 }

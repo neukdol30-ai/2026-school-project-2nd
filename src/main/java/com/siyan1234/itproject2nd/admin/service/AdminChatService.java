@@ -113,10 +113,6 @@ public class AdminChatService {
         return response;
     }
 
-    /**
-     * 담당자가 없는 상담방만 현재 관리자로 배정합니다.
-     * 배정 직후 관리자 목록 갱신 이벤트를 전송해 다른 관리자 화면에도 상태를 반영합니다.
-     */
     @Transactional
     public ChatRoomDto assignAdminIfEmpty(Integer roomNo, Integer adminNo) {
         ChatRoomDto chatRoom = chatService.findRoomByRoomNo(roomNo);
@@ -143,11 +139,14 @@ public class AdminChatService {
         }
 
         chatService.closeRoom(roomNo);
-        // 종료 안내도 일반 메시지와 같은 저장·브로드캐스트 흐름을 사용해 새로고침 후에도 유지합니다.
         ChatMessageDto closeMessage = ChatMessageFactory.closeMessage(roomNo, adminNo);
 
         chatRedisService.saveMessage(closeMessage);
-        chatService.updateLastMessage(roomNo, closeMessage.getMessageContent());
+        chatService.updateLastMessage(
+                roomNo,
+                closeMessage.getMessageContent(),
+                closeMessage.getCreatedDate()
+        );
         chatWebSocketBroadcaster.broadcastClose(roomNo, closeMessage);
         chatWebSocketBroadcaster.broadcastAdminListRefresh(roomNo);
         return true;
@@ -161,7 +160,6 @@ public class AdminChatService {
             return false;
         }
 
-        // DB 방을 먼저 지우면 Redis에 고아 메시지가 남을 수 있으므로 임시 메시지 저장소부터 정리합니다.
         chatRedisService.deleteMessages(roomNo);
         chatService.deleteRoom(roomNo);
         chatWebSocketBroadcaster.broadcastAdminListRefresh(roomNo);

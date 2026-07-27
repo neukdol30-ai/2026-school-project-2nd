@@ -63,30 +63,6 @@
         WHERE room_no = #{roomNo, jdbcType=NUMERIC}
     </select>
 
-    <!-- 전체 상담방 조회: Scheduler에서 Redis 메시지를 Oracle에 저장할 때 사용 -->
-    <select id="findAllRooms"
-            resultType="com.siyan1234.itproject2nd.chat.dto.ChatRoomDto">
-        SELECT
-        room_no,
-        user_no,
-        admin_no,
-        status,
-        category,
-        last_message,
-        last_message_date,
-        created_date,
-        closed_date
-        FROM chat_room
-        ORDER BY
-        CASE status
-        WHEN 'OPEN' THEN 1
-        WHEN 'CLOSED' THEN 2
-        ELSE 3
-        END,
-        last_message_date DESC NULLS LAST,
-        created_date DESC
-    </select>
-
     <!-- 사용자 상담내역 목록 조회: 로그인 사용자 본인의 상담방만 조회 -->
     <select id="findUserRooms"
             resultType="com.siyan1234.itproject2nd.chat.dto.ChatRoomDto">
@@ -221,7 +197,14 @@
         UPDATE chat_room
         SET
         last_message = #{lastMessage, jdbcType=VARCHAR},
-        last_message_date = SYSTIMESTAMP
+        <choose>
+            <when test="lastMessageDate != null">
+                last_message_date = #{lastMessageDate, jdbcType=TIMESTAMP}
+            </when>
+            <otherwise>
+                last_message_date = SYSTIMESTAMP
+            </otherwise>
+        </choose>
         WHERE room_no = #{roomNo, jdbcType=NUMERIC}
     </update>
 
@@ -281,6 +264,27 @@
         #{readYn, jdbcType=CHAR},
         #{createdDate, jdbcType=TIMESTAMP}
         )
+    </insert>
+
+    <!-- Redis 메시지 일괄 저장: 한 상담방의 메시지를 한 번의 Oracle SQL로 저장 -->
+    <insert id="saveMessages">
+        INSERT ALL
+        <foreach collection="messages" item="message">
+            INTO chat_message (
+                room_no,
+                sender_no,
+                message_content,
+                read_yn,
+                created_date
+            ) VALUES (
+                #{message.roomNo, jdbcType=NUMERIC},
+                #{message.senderNo, jdbcType=NUMERIC},
+                #{message.messageContent, jdbcType=VARCHAR},
+                #{message.readYn, jdbcType=CHAR},
+                #{message.createdDate, jdbcType=TIMESTAMP}
+            )
+        </foreach>
+        SELECT 1 FROM dual
     </insert>
 
     <!-- 특정 상담방 메시지 조회 -->

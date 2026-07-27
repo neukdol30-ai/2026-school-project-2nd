@@ -145,7 +145,11 @@ public class ChatHandler extends TextWebSocketHandler {
         chatRedisService.saveMessage(chatMessageDto);
 
         // 관리자 목록 정렬과 마지막 메시지 표시를 위해 chat_room은 즉시 갱신합니다.
-        chatService.updateLastMessage(roomNo, chatMessageDto.getMessageContent());
+        chatService.updateLastMessage(
+                roomNo,
+                chatMessageDto.getMessageContent(),
+                chatMessageDto.getCreatedDate()
+        );
 
         broadcaster.broadcastMessage(roomNo, chatMessageDto);
         broadcaster.broadcastAdminListRefresh(roomNo);
@@ -159,8 +163,8 @@ public class ChatHandler extends TextWebSocketHandler {
     }
 
     private void updateReadAndBroadcast(Integer roomNo, Integer viewerNo) {
+        // ChatService가 Oracle과 Redis를 같은 상담방 Lock 안에서 함께 읽음 처리합니다.
         chatService.updateReadYn(roomNo, viewerNo);
-        chatRedisService.updateReadYn(roomNo, viewerNo);
         broadcaster.broadcastRead(roomNo, viewerNo);
     }
 
