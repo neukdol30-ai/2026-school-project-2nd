@@ -1412,3 +1412,318 @@ select:disabled {
         max-height: 700px;
     }
 }
+
+/* =========================================================
+ * 주변 시설 탭
+ * - 지도 중심 반경 3km 카테고리 검색
+ * - 왼쪽 목록 + 오른쪽 번호 마커 연동
+ * ======================================================= */
+.nearby-section {
+    background: linear-gradient(180deg, #ffffff 0%, #f3fbff 100%);
+}
+
+.nearby-intro {
+    margin: -2px 0 12px;
+    padding: 11px 12px;
+    border: 1px solid var(--map-border-strong);
+    border-radius: 14px;
+    background: var(--map-surface-blue);
+    color: var(--map-primary-dark);
+    font-size: 12px;
+    font-weight: 800;
+    line-height: 1.5;
+}
+
+.nearby-category-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 8px;
+}
+
+.nearby-category-button {
+    display: grid;
+    place-items: center;
+    align-content: center;
+    gap: 5px;
+    min-width: 0;
+    min-height: 70px;
+    padding: 8px 4px;
+    border: 1px solid var(--map-border);
+    border-radius: 14px;
+    background: #ffffff;
+    color: #475569;
+    font-size: 11px;
+    font-weight: 900;
+    line-height: 1.2;
+    transition: border-color 0.18s ease, background 0.18s ease, color 0.18s ease, transform 0.18s ease;
+}
+
+.nearby-category-button:hover {
+    border-color: var(--map-primary);
+    background: #f0f9ff;
+    color: var(--map-primary-dark);
+    transform: translateY(-1px);
+}
+
+.nearby-category-button.active {
+    border-color: var(--map-primary);
+    background: var(--map-primary);
+    color: #ffffff;
+    box-shadow: 0 8px 16px rgba(14, 165, 233, 0.18);
+}
+
+.nearby-category-button:focus-visible {
+    outline: 3px solid rgba(14, 165, 233, 0.25);
+    outline-offset: 2px;
+}
+
+.nearby-category-icon {
+    display: inline-grid;
+    place-items: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 10px;
+    background: var(--map-accent-soft);
+    color: var(--map-primary-dark);
+    font-size: 12px;
+    font-weight: 900;
+    line-height: 1;
+}
+
+.nearby-category-button.active .nearby-category-icon {
+    background: rgba(255, 255, 255, 0.2);
+    color: #ffffff;
+}
+
+.nearby-refresh-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 10px;
+    margin-top: 12px;
+    padding: 11px 12px;
+    border: 1px solid var(--map-border);
+    border-radius: 15px;
+    background: #ffffff;
+}
+
+.nearby-refresh-row > div {
+    display: grid;
+    gap: 3px;
+    min-width: 0;
+}
+
+.nearby-refresh-row strong {
+    color: var(--map-text);
+    font-size: 12px;
+    font-weight: 900;
+    line-height: 1.4;
+}
+
+.nearby-refresh-row small {
+    color: var(--map-muted);
+    font-size: 10px;
+    font-weight: 800;
+    line-height: 1.4;
+}
+
+.nearby-refresh-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 34px;
+    padding: 0 11px;
+    border: 1px solid var(--map-border);
+    border-radius: 999px;
+    background: #f8fcff;
+    color: var(--map-primary-dark);
+    font-size: 11px;
+    font-weight: 900;
+    white-space: nowrap;
+}
+
+.nearby-refresh-button.ready {
+    border-color: var(--map-primary);
+    background: var(--map-primary);
+    color: #ffffff;
+    box-shadow: 0 7px 14px rgba(14, 165, 233, 0.18);
+}
+
+.nearby-refresh-button:disabled {
+    cursor: default;
+    opacity: 0.5;
+}
+
+.nearby-status {
+    margin: 10px 0;
+    padding: 10px 12px;
+    border-radius: 14px;
+    background: #eff6ff;
+    color: var(--map-primary-dark);
+    font-size: 11px;
+    font-weight: 800;
+    line-height: 1.45;
+}
+
+.nearby-status.success {
+    background: #ecfdf5;
+    color: var(--map-success);
+}
+
+.nearby-status.warning {
+    background: #fff7ed;
+    color: #c2410c;
+}
+
+.nearby-status.error {
+    background: #fef2f2;
+    color: #b91c1c;
+}
+
+.nearby-list {
+    display: grid;
+    gap: 9px;
+}
+
+.nearby-card {
+    display: grid;
+    gap: 9px;
+    min-width: 0;
+    padding: 11px;
+    border: 1px solid var(--map-border);
+    border-radius: 17px;
+    background: #ffffff;
+    transition: border-color 0.18s ease, box-shadow 0.18s ease, transform 0.18s ease;
+}
+
+.nearby-card.active {
+    border-color: var(--map-primary);
+    box-shadow: 0 9px 20px rgba(14, 165, 233, 0.14);
+    transform: translateY(-1px);
+}
+
+.nearby-main-button {
+    display: grid;
+    grid-template-columns: 28px minmax(0, 1fr);
+    align-items: flex-start;
+    gap: 9px;
+    width: 100%;
+    min-width: 0;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    text-align: left;
+}
+
+.nearby-rank {
+    display: inline-grid;
+    place-items: center;
+    width: 28px;
+    min-width: 28px;
+    height: 28px;
+    min-height: 28px;
+    margin: 0;
+    padding: 0;
+    border-radius: 999px;
+    background: var(--map-primary);
+    color: #ffffff;
+    font-size: 11px;
+    font-weight: 900;
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+}
+
+.nearby-card-content {
+    display: grid;
+    gap: 3px;
+    min-width: 0;
+}
+
+.nearby-card-content strong {
+    color: var(--map-text);
+    font-size: 13px;
+    font-weight: 900;
+    line-height: 1.4;
+    overflow-wrap: anywhere;
+    word-break: keep-all;
+}
+
+.nearby-card-content span,
+.nearby-card-content small {
+    color: var(--map-muted);
+    font-size: 11px;
+    font-weight: 800;
+    line-height: 1.45;
+    overflow-wrap: anywhere;
+    word-break: keep-all;
+}
+
+.nearby-card-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 7px;
+}
+
+.nearby-card-actions button,
+.nearby-card-actions a {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 31px;
+    padding: 0 10px;
+    border: 0;
+    border-radius: 999px;
+    background: var(--map-accent-soft);
+    color: var(--map-primary-dark);
+    font-size: 11px;
+    font-weight: 900;
+    text-decoration: none;
+    white-space: nowrap;
+}
+
+.nearby-map-marker {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 26px;
+    min-width: 26px;
+    height: 26px;
+    min-height: 26px;
+    margin: 0;
+    padding: 0;
+    border: 2px solid #ffffff;
+    border-radius: 999px;
+    background: var(--map-primary);
+    color: #ffffff;
+    font-size: 11px;
+    font-weight: 900;
+    line-height: 1;
+    text-align: center;
+    box-shadow: 0 4px 10px rgba(15, 76, 129, 0.28);
+}
+
+.nearby-map-marker:hover,
+.nearby-map-marker:focus-visible {
+    background: var(--map-primary-deep);
+    transform: translateY(-1px);
+}
+
+@media (max-width: 640px) {
+    .nearby-category-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .nearby-category-button {
+        min-height: 58px;
+        grid-template-columns: 28px auto;
+        justify-content: center;
+    }
+
+    .nearby-refresh-row {
+        grid-template-columns: 1fr;
+    }
+
+    .nearby-refresh-button {
+        width: 100%;
+    }
+}

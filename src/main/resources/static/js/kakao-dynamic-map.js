@@ -1,11 +1,10 @@
 /*
  * kakao-dynamic-map.js
- * 5차 패치 역할
- * - 현재 위치 정확도 옵션 개선
- * - 현재 위치 기준 거리순 장소 검색
- * - 검색 결과를 왼쪽 상단 영역에 표시
- * - 검색 결과 전체를 동적지도 마커로 표시
- * - 화면에는 위도/경도 숫자를 노출하지 않음
+ * 지도 통합 화면 역할
+ * - 장소·주소 검색, 길찾기, 즐겨찾기
+ * - 지도 중심 기준 주변 시설 빠른 조회
+ * - 검색/주변 결과 목록과 동적지도 마커 연동
+ * - 출발지·도착지 지정 및 경로 표시
  */
 (() => {
     const ROUTE_API = "/api/kakao-map/route";
@@ -18,6 +17,17 @@
     const DEFAULT_MAP_LEVEL = 4;
     const MAX_MAP_LEVEL = 10;
     const MAX_PUBLIC_ROUTE_CANDIDATES = 5;
+    const NEARBY_SEARCH_RADIUS = 3000;
+    const NEARBY_CATEGORY_LABELS = Object.freeze({
+        FD6: "음식점",
+        CE7: "카페",
+        CS2: "편의점",
+        PK6: "주차장",
+        OL7: "주유소",
+        SW8: "지하철역",
+        HP8: "병원",
+        PM9: "약국"
+    });
     const ROUTE_LINE_OPTIONS = {
         strokeWeight: 6,
         strokeColor: "#2563eb",
@@ -35,6 +45,14 @@
         favoriteMarker: null,
         resultMarkers: [],
         searchResults: [],
+        nearbyMarkers: [],
+        nearbyResults: [],
+        nearbyCategoryCode: "",
+        nearbyCategoryLabel: "",
+        nearbySearchCenter: null,
+        nearbySearchLevel: null,
+        nearbyRequestVersion: 0,
+        nearbySearching: false,
         favorites: [],
         favoriteByKey: new Map(),
         favoriteMutationVersion: 0,
@@ -86,6 +104,7 @@
         const zoomControl = new kakao.maps.ZoomControl();
         state.map.addControl(zoomControl, kakao.maps.ControlPosition.RIGHT);
         kakao.maps.event.addListener(state.map, "zoom_changed", enforceMaxMapLevel);
+        kakao.maps.event.addListener(state.map, "idle", updateNearbyRefreshState);
         resizeMapAfterLayout();
     }
 
@@ -124,6 +143,7 @@
         const clearMapButton = document.querySelector("[data-clear-map-button]");
         const routeForm = document.querySelector("[data-route-form]");
         const routeTypeSelect = routeForm?.querySelector('[name="type"]');
+        const nearbyRefreshButton = document.querySelector("[data-nearby-refresh-button]");
 
         searchForm?.addEventListener("submit", handleSearchSubmit);
         currentLocationButton?.addEventListener("click", moveToCurrentLocation);
@@ -131,6 +151,11 @@
         clearMapButton?.addEventListener("click", clearMapView);
         routeForm?.addEventListener("submit", handleRouteSubmit);
         routeTypeSelect?.addEventListener("change", handleRouteTypeChange);
+        nearbyRefreshButton?.addEventListener("click", searchNearbyCategory);
+
+        document.querySelectorAll("[data-nearby-category]").forEach((button) => {
+            button.addEventListener("click", handleNearbyCategorySelect);
+        });
 
         document.querySelectorAll("[data-map-tab]").forEach((button) => {
             button.addEventListener("click", () => {
@@ -143,19 +168,10 @@
     }
 
     function activateMapTab(tabName, focusTab = false) {
-        const safeTabName = ["search", "route", "transit", "favorite"].includes(tabName)
+        const safeTabName = ["search", "route", "nearby", "favorite"].includes(tabName)
             ? tabName
             : "search";
-        const panelName = safeTabName === "transit" ? "route" : safeTabName;
         const workspace = document.querySelector(".map-side-workspace");
-
-        if (safeTabName === "transit") {
-            const routeTypeSelect = document.querySelector('[data-route-form] [name="type"]');
-            if (routeTypeSelect) {
-                routeTypeSelect.value = "publictraffic";
-            }
-            syncRouteModeAvailability();
-        }
 
         state.activeSidebarTab = safeTabName;
 
@@ -167,13 +183,11 @@
         });
 
         document.querySelectorAll("[data-map-tab-panel]").forEach((panel) => {
-            const active = panel.dataset.mapTabPanel === panelName;
+            const active = panel.dataset.mapTabPanel === safeTabName;
             panel.classList.toggle("active", active);
             panel.hidden = !active;
             panel.setAttribute("aria-hidden", String(!active));
         });
-
-        updateRoutePanelCopy(safeTabName);
 
         if (workspace) {
             workspace.scrollTop = 0;
@@ -186,27 +200,7 @@
         resizeMapAfterLayout();
     }
 
-    function updateRoutePanelCopy(tabName) {
-        const title = document.querySelector("[data-route-panel-title]");
-        const intro = document.querySelector("[data-route-panel-intro]");
-        const transitMode = tabName === "transit";
-
-        if (title) {
-            title.textContent = transitMode ? "대중교통 경로" : "경로 조회";
-        }
-
-        if (intro) {
-            intro.textContent = transitMode
-                ? "버스와 지하철을 포함한 대중교통 경로를 조회합니다."
-                : "검색 결과에서 출발지와 도착지를 지정한 뒤 이동 방법을 선택하세요.";
-        }
-    }
-
-    function handleRouteTypeChange(event) {
-        if (state.activeSidebarTab === "transit" && event.currentTarget.value !== "publictraffic") {
-            activateMapTab("route");
-        }
-
+    function handleRouteTypeChange() {
         syncRouteModeAvailability();
     }
 
@@ -223,6 +217,328 @@
             form.routeMode.disabled = !walkMode;
         }
         routeModeField?.classList.toggle("is-disabled", !walkMode);
+    }
+
+    function handleNearbyCategorySelect(event) {
+        const button = event.currentTarget;
+        const categoryCode = String(button.dataset.nearbyCategory || "").trim();
+        const categoryLabel = String(button.dataset.nearbyLabel || NEARBY_CATEGORY_LABELS[categoryCode] || "주변 시설").trim();
+
+        if (!NEARBY_CATEGORY_LABELS[categoryCode]) {
+            showNearbyStatus("지원하지 않는 시설 종류입니다.", "error");
+            return;
+        }
+
+        state.nearbyCategoryCode = categoryCode;
+        state.nearbyCategoryLabel = categoryLabel;
+
+        document.querySelectorAll("[data-nearby-category]").forEach((item) => {
+            const active = item.dataset.nearbyCategory === categoryCode;
+            item.classList.toggle("active", active);
+            item.setAttribute("aria-pressed", String(active));
+        });
+
+        searchNearbyCategory();
+    }
+
+    function searchNearbyCategory() {
+        if (!state.map || !state.places || !state.nearbyCategoryCode || state.nearbySearching) {
+            return;
+        }
+
+        const requestVersion = ++state.nearbyRequestVersion;
+        const searchCenter = state.map.getCenter();
+        const categoryCode = state.nearbyCategoryCode;
+        const categoryLabel = state.nearbyCategoryLabel || NEARBY_CATEGORY_LABELS[categoryCode] || "주변 시설";
+        const options = {
+            location: searchCenter,
+            radius: NEARBY_SEARCH_RADIUS,
+            size: 15,
+            sort: kakao.maps.services.SortBy.DISTANCE
+        };
+
+        clearNearbyMarkers();
+        state.infoWindow?.close();
+        state.nearbyResults = [];
+        state.nearbySearching = true;
+        state.nearbySearchCenter = new kakao.maps.LatLng(searchCenter.getLat(), searchCenter.getLng());
+        state.nearbySearchLevel = state.map.getLevel();
+        setNearbyLoading(true);
+        updateNearbySearchHeader(categoryLabel, "현재 지도 중심 기준 · 반경 3km · 가까운 순");
+        showNearbyStatus(`${categoryLabel}을(를) 검색하고 있습니다.`, "");
+        renderNearbyLoading(`${categoryLabel} 검색 중입니다...`);
+        updateNearbyCount(0);
+
+        state.places.categorySearch(categoryCode, (data, status) => {
+            if (requestVersion !== state.nearbyRequestVersion) {
+                return;
+            }
+
+            state.nearbySearching = false;
+            setNearbyLoading(false);
+
+            if (status === kakao.maps.services.Status.OK) {
+                const results = normalizePlaceResults(data).map((place) => ({
+                    ...place,
+                    nearbyCategoryCode: categoryCode,
+                    nearbyCategoryLabel: categoryLabel
+                }));
+
+                state.nearbyResults = results;
+                renderNearbyResults(results, categoryLabel);
+                drawNearbyMarkers(results, categoryLabel);
+                showNearbyStatus(`현재 지도 중심 주변의 ${categoryLabel} ${results.length.toLocaleString()}곳을 표시했습니다.`, "success");
+                updateNearbyRefreshState();
+                return;
+            }
+
+            clearNearbyMarkers();
+            state.nearbyResults = [];
+            updateNearbyCount(0);
+
+            if (status === kakao.maps.services.Status.ZERO_RESULT) {
+                renderNearbyEmpty(`${categoryLabel} 검색 결과가 없습니다.`, "지도를 이동한 뒤 ‘이 지역에서 다시 검색’을 눌러보세요.");
+                showNearbyStatus(`반경 3km 안에서 ${categoryLabel}을(를) 찾지 못했습니다.`, "warning");
+                updateNearbyRefreshState();
+                return;
+            }
+
+            renderNearbyEmpty("주변 시설 검색 중 오류가 발생했습니다.", "잠시 후 다시 시도해주세요.");
+            showNearbyStatus("카카오 주변 시설 검색에 실패했습니다.", "error");
+            updateNearbyRefreshState();
+        }, options);
+    }
+
+    function renderNearbyResults(results, categoryLabel) {
+        const list = document.querySelector("[data-nearby-list]");
+        if (!list) {
+            return;
+        }
+
+        updateNearbyCount(results.length);
+        list.innerHTML = results.map((place, index) => `
+            <article class="nearby-card" data-nearby-index="${index}">
+                <button type="button" class="nearby-main-button" data-select-nearby="${index}">
+                    <span class="nearby-rank">${index + 1}</span>
+                    <span class="nearby-card-content">
+                        <strong>${escapeHtml(place.title)}</strong>
+                        <span>${escapeHtml(place.address)}</span>
+                        <small>${escapeHtml(place.category || categoryLabel)}${place.distance ? ` · ${formatDistance(place.distance)}` : ""}</small>
+                        ${place.phone ? `<small>${escapeHtml(place.phone)}</small>` : ""}
+                    </span>
+                </button>
+                <div class="nearby-card-actions">
+                    <button type="button"
+                            class="favorite-toggle-button${isFavoritePlace(place) ? " active" : ""}"
+                            data-nearby-favorite-toggle="${index}"
+                            aria-pressed="${isFavoritePlace(place)}">
+                        ${isFavoritePlace(place) ? "★ 저장됨" : "☆ 즐겨찾기"}
+                    </button>
+                    <button type="button" data-nearby-route="start" data-nearby-index="${index}">출발지</button>
+                    <button type="button" data-nearby-route="end" data-nearby-index="${index}">도착지</button>
+                    ${place.url ? `<a href="${escapeAttribute(place.url)}" target="_blank" rel="noopener noreferrer">상세</a>` : ""}
+                </div>
+            </article>
+        `).join("");
+
+        list.querySelectorAll("[data-select-nearby]").forEach((button) => {
+            button.addEventListener("click", () => selectNearbyPlace(Number(button.dataset.selectNearby)));
+        });
+
+        list.querySelectorAll("[data-nearby-favorite-toggle]").forEach((button) => {
+            button.addEventListener("click", async () => {
+                const index = Number(button.dataset.nearbyFavoriteToggle);
+                await toggleFavorite(state.nearbyResults[index], button);
+            });
+        });
+
+        list.querySelectorAll("[data-nearby-route]").forEach((button) => {
+            button.addEventListener("click", () => {
+                const index = Number(button.dataset.nearbyIndex);
+                setRoutePoint(button.dataset.nearbyRoute, state.nearbyResults[index]);
+            });
+        });
+    }
+
+    function drawNearbyMarkers(results, categoryLabel) {
+        clearNearbyMarkers();
+
+        if (!state.map || results.length === 0) {
+            return;
+        }
+
+        const bounds = new kakao.maps.LatLngBounds();
+
+        results.forEach((place, index) => {
+            const position = new kakao.maps.LatLng(place.lat, place.lng);
+            const marker = new kakao.maps.Marker({
+                map: state.map,
+                position,
+                title: place.title
+            });
+            const badge = document.createElement("button");
+            badge.type = "button";
+            badge.className = "nearby-map-marker";
+            badge.textContent = String(index + 1);
+            badge.title = `${index + 1}. ${place.title}`;
+            badge.setAttribute("aria-label", `${index + 1}번 ${place.title}`);
+
+            const label = new kakao.maps.CustomOverlay({
+                map: state.map,
+                position,
+                content: badge,
+                xAnchor: 0.5,
+                yAnchor: 2.15,
+                zIndex: 4
+            });
+
+            kakao.maps.event.addListener(marker, "click", () => selectNearbyPlace(index));
+            badge.addEventListener("click", () => selectNearbyPlace(index));
+            marker.__place = place;
+
+            state.nearbyMarkers.push({ marker, label, place });
+            bounds.extend(position);
+        });
+
+        state.lastBounds = bounds;
+        setFitButtonEnabled(true);
+        setMapGuide(`${categoryLabel} 목록과 번호 마커가 동적지도에 표시되었습니다.`);
+    }
+
+    function selectNearbyPlace(index) {
+        const entry = state.nearbyMarkers[index];
+        const place = state.nearbyResults[index];
+
+        if (!place) {
+            return;
+        }
+
+        selectPlace(place, entry?.marker || null, index + 1);
+        highlightNearbyCard(index);
+        setMapGuide(`${place.title} 위치를 선택했습니다.`);
+    }
+
+    function highlightNearbyCard(index) {
+        document.querySelectorAll(".nearby-card").forEach((card) => card.classList.remove("active"));
+        const target = document.querySelector(`.nearby-card[data-nearby-index="${index}"]`);
+        target?.classList.add("active");
+        target?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    }
+
+    function updateNearbySearchHeader(title, description) {
+        const titleTarget = document.querySelector("[data-nearby-search-title]");
+        const descriptionTarget = document.querySelector("[data-nearby-search-description]");
+
+        if (titleTarget) {
+            titleTarget.textContent = title;
+        }
+        if (descriptionTarget) {
+            descriptionTarget.textContent = description;
+        }
+    }
+
+    function updateNearbyRefreshState() {
+        const refreshButton = document.querySelector("[data-nearby-refresh-button]");
+        if (!refreshButton) {
+            return;
+        }
+
+        if (!state.map || !state.nearbyCategoryCode || !state.nearbySearchCenter) {
+            refreshButton.disabled = true;
+            refreshButton.classList.remove("ready");
+            return;
+        }
+
+        const center = state.map.getCenter();
+        const movedDistance = calculateDistanceBetweenCoordinates(
+            state.nearbySearchCenter.getLat(),
+            state.nearbySearchCenter.getLng(),
+            center.getLat(),
+            center.getLng()
+        );
+        const levelChanged = state.nearbySearchLevel !== state.map.getLevel();
+        const needsRefresh = movedDistance >= 120 || levelChanged;
+
+        refreshButton.disabled = state.nearbySearching || !needsRefresh;
+        refreshButton.classList.toggle("ready", needsRefresh && !state.nearbySearching);
+
+        if (needsRefresh && !state.nearbySearching) {
+            showNearbyStatus("지도를 이동했습니다. 이 지역을 기준으로 다시 검색할 수 있습니다.", "warning");
+        }
+    }
+
+    function setNearbyLoading(loading) {
+        document.querySelectorAll("[data-nearby-category]").forEach((button) => {
+            button.disabled = loading;
+        });
+
+        const refreshButton = document.querySelector("[data-nearby-refresh-button]");
+        if (refreshButton) {
+            refreshButton.disabled = loading || !state.nearbyCategoryCode;
+        }
+    }
+
+    function showNearbyStatus(message, type) {
+        const target = document.querySelector("[data-nearby-status]");
+        if (!target) {
+            return;
+        }
+
+        target.textContent = message;
+        target.classList.remove("success", "warning", "error");
+        if (type) {
+            target.classList.add(type);
+        }
+    }
+
+    function renderNearbyLoading(message) {
+        const list = document.querySelector("[data-nearby-list]");
+        if (list) {
+            list.innerHTML = `<div class="empty-state loading"><strong>${escapeHtml(message)}</strong></div>`;
+        }
+    }
+
+    function renderNearbyEmpty(title, description) {
+        const list = document.querySelector("[data-nearby-list]");
+        if (!list) {
+            return;
+        }
+
+        list.innerHTML = `
+            <div class="empty-state">
+                <strong>${escapeHtml(title)}</strong>
+                <p>${escapeHtml(description || "")}</p>
+            </div>
+        `;
+    }
+
+    function updateNearbyCount(count) {
+        const target = document.querySelector("[data-nearby-count]");
+        if (target) {
+            target.textContent = `${Number(count || 0).toLocaleString()}개`;
+        }
+    }
+
+    function resetNearbyPanel() {
+        state.nearbyRequestVersion += 1;
+        state.nearbySearching = false;
+        state.nearbyResults = [];
+        state.nearbyCategoryCode = "";
+        state.nearbyCategoryLabel = "";
+        state.nearbySearchCenter = null;
+        state.nearbySearchLevel = null;
+
+        document.querySelectorAll("[data-nearby-category]").forEach((button) => {
+            button.disabled = false;
+            button.classList.remove("active");
+            button.setAttribute("aria-pressed", "false");
+        });
+
+        updateNearbyCount(0);
+        updateNearbySearchHeader("시설 종류를 선택해주세요.", "지도를 이동한 뒤 다시 검색할 수도 있습니다.");
+        showNearbyStatus("위 버튼에서 조회할 주변 시설을 선택해주세요.", "");
+        renderNearbyEmpty("주변 시설을 선택해주세요.", "음식점, 카페, 편의점 등 원하는 종류를 누르면 목록과 지도 마커가 함께 표시됩니다.");
+        updateNearbyRefreshState();
     }
 
     async function handleSearchSubmit(event) {
@@ -786,6 +1102,11 @@
         document.querySelectorAll("[data-favorite-toggle]").forEach((button) => {
             const index = Number(button.dataset.favoriteToggle);
             updateFavoriteButton(button, state.searchResults[index], false);
+        });
+
+        document.querySelectorAll("[data-nearby-favorite-toggle]").forEach((button) => {
+            const index = Number(button.dataset.nearbyFavoriteToggle);
+            updateFavoriteButton(button, state.nearbyResults[index], false);
         });
 
         const selectedButton = document.querySelector("[data-selected-favorite]");
@@ -1528,6 +1849,7 @@
 
     function clearMapView() {
         clearSearchMarkers();
+        clearNearbyMarkers();
         clearFavoriteMarker();
         clearRouteOverlays();
         state.infoWindow?.close();
@@ -1538,8 +1860,9 @@
         updateResultCount(0);
         renderEmptyResult("검색 결과가 초기화되었습니다.", "다시 검색하면 결과와 마커가 표시됩니다.");
         document.querySelector("[data-selected-section]")?.setAttribute("hidden", "hidden");
+        resetNearbyPanel();
         resetRoutePanel();
-        setMapGuide("검색 결과와 선택 장소가 지도에 표시됩니다.");
+        setMapGuide("검색 결과, 주변 시설과 선택 장소가 지도에 표시됩니다.");
     }
 
     function resetRoutePanel() {
@@ -1576,6 +1899,14 @@
     function clearSearchMarkers() {
         state.resultMarkers.forEach((marker) => marker.setMap(null));
         state.resultMarkers = [];
+    }
+
+    function clearNearbyMarkers() {
+        state.nearbyMarkers.forEach((entry) => {
+            entry.marker?.setMap(null);
+            entry.label?.setMap(null);
+        });
+        state.nearbyMarkers = [];
     }
 
     function renderLoadingResult(message) {
@@ -1679,13 +2010,24 @@
             return null;
         }
 
-        const currentLat = state.currentPosition.getLat();
-        const currentLng = state.currentPosition.getLng();
+        return calculateDistanceBetweenCoordinates(
+            state.currentPosition.getLat(),
+            state.currentPosition.getLng(),
+            lat,
+            lng
+        );
+    }
+
+    function calculateDistanceBetweenCoordinates(startLat, startLng, endLat, endLng) {
+        if (![startLat, startLng, endLat, endLng].every(Number.isFinite)) {
+            return 0;
+        }
+
         const earthRadius = 6371000;
-        const dLat = toRadian(lat - currentLat);
-        const dLng = toRadian(lng - currentLng);
+        const dLat = toRadian(endLat - startLat);
+        const dLng = toRadian(endLng - startLng);
         const a = Math.sin(dLat / 2) ** 2
-            + Math.cos(toRadian(currentLat)) * Math.cos(toRadian(lat)) * Math.sin(dLng / 2) ** 2;
+            + Math.cos(toRadian(startLat)) * Math.cos(toRadian(endLat)) * Math.sin(dLng / 2) ** 2;
         const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
         return earthRadius * c;
     }
