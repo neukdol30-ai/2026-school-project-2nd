@@ -24,6 +24,9 @@ public final class SecurityPaths {
     // 신규 소셜 회원을 서비스 약관 동의 화면으로 보낼 때 사용하는 주소
     public static final String MEMBER_TERMS_AGREE = "/member/terms-agree";
 
+    // 신규 소셜 사용자가 약관에 동의하지 않고 가입을 취소할 때 쓰는 POST 요청 주소
+    public static final String MEMBER_TERMS_AGREE_CANCEL = "/member/terms-agree/cancel";
+
     public static final String ADMIN_LOGIN = "/admin/login";
     public static final String ADMIN_HOME = "/admin";
     public static final String ADMIN_CHATS = "/admin?view=chats";
