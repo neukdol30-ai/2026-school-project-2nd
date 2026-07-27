@@ -1478,20 +1478,38 @@ select:disabled {
 }
 
 .nearby-category-icon {
-    display: inline-grid;
-    place-items: center;
-    width: 28px;
-    height: 28px;
-    border-radius: 10px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 30px;
+    width: 30px;
+    min-width: 30px;
+    height: 30px;
+    min-height: 30px;
+    margin: 0;
+    padding: 0;
+    border-radius: 50%;
     background: var(--map-accent-soft);
     color: var(--map-primary-dark);
-    font-size: 12px;
-    font-weight: 900;
     line-height: 1;
+    box-sizing: border-box;
+}
+
+.nearby-category-icon svg {
+    display: block;
+    width: 17px;
+    height: 17px;
+    margin: 0;
+    padding: 0;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
 }
 
 .nearby-category-button.active .nearby-category-icon {
-    background: rgba(255, 255, 255, 0.2);
+    background: rgba(255, 255, 255, 0.22);
     color: #ffffff;
 }
 
@@ -1727,3 +1745,125 @@ select:disabled {
         width: 100%;
     }
 }
+
+/* =========================================================
+ * 메인페이지 공통 배너 / 풋터 연결
+ * - 지도 전용 소개 배너를 제거하고 메인페이지 글로벌 메뉴 사용
+ * - 메인페이지의 "지도" 위치에는 "메인페이지" 링크 표시
+ * - 기존 고정 1400px 스타일은 지도 화면 너비에 맞게 유연하게 보정
+ * ======================================================= */
+.map-service-page {
+    overflow-x: hidden;
+}
+
+.map-service-page .global-banner-area,
+.map-service-page .global-footer {
+    min-width: 0;
+}
+
+.map-service-page .global-banner-area [data-global-banner],
+.map-service-page .global-footer-inner {
+    width: min(var(--dashboard-width), calc(100% - 32px));
+    min-width: 0;
+}
+
+.map-service-page .global-banner {
+    grid-template-columns: minmax(0, 1fr) auto !important;
+}
+
+.map-service-page .global-home-link {
+    grid-column: 1;
+}
+
+.map-service-page .global-right-menu {
+    grid-column: 2;
+}
+
+.map-service-page .global-main-link {
+    color: var(--map-primary-deep);
+    font-weight: 900;
+}
+
+.map-service-page .global-calendar-link {
+    color: #5f7d8b;
+}
+
+.map-service-page .global-user-menu form {
+    display: inline-flex;
+    margin: 0;
+}
+
+.map-service-page .global-user-loading {
+    display: inline-flex;
+    align-items: center;
+    min-height: 36px;
+    color: #70858f;
+    font-size: 13px;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.map-service-page .global-footer {
+    margin-top: 34px;
+}
+
+@media (max-width: 920px) {
+    .map-service-page .global-banner-area {
+        height: auto;
+        min-height: var(--global-banner-height);
+    }
+
+    .map-service-page .global-banner-area [data-global-banner],
+    .map-service-page .global-footer-inner {
+        width: min(calc(100% - 24px), var(--dashboard-width));
+    }
+
+    .map-service-page .global-banner {
+        grid-template-columns: auto minmax(0, 1fr) !important;
+        min-height: var(--global-banner-height);
+    }
+
+    .map-service-page .global-home-link {
+        margin-left: 0;
+    }
+
+    .map-service-page .global-right-menu {
+        justify-self: end;
+        flex-wrap: wrap;
+        justify-content: flex-end;
+        gap: 10px;
+        height: auto;
+        margin-right: 0;
+        padding: 9px 0;
+    }
+
+    .map-service-page .global-user-menu {
+        gap: 9px;
+    }
+}
+
+@media (max-width: 640px) {
+    .map-service-page .global-logo-text {
+        min-width: 38px;
+        height: 42px;
+        font-size: 26px;
+    }
+
+    .map-service-page .global-right-menu,
+    .map-service-page .global-user-menu {
+        gap: 7px;
+    }
+
+    .map-service-page .global-service-link,
+    .map-service-page .global-user-menu a,
+    .map-service-page .global-user-menu button {
+        min-height: 32px;
+        font-size: 12px;
+    }
+
+    .map-service-page .global-footer-inner {
+        padding-right: 4px;
+        padding-left: 4px;
+    }
+}
+

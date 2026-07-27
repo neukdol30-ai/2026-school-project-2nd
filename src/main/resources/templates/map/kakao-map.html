@@ -4,19 +4,38 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>지도</title>
+    <link rel="stylesheet" th:href="@{/css/index/layout/banner.css}">
+    <link rel="stylesheet" th:href="@{/css/index/layout/footer.css}">
+    <link rel="stylesheet" th:href="@{/css/index/layout.css}">
     <link rel="stylesheet" th:href="@{/css/kakao-dynamic-map.css}">
+    <link rel="stylesheet" th:href="@{/css/mypage-modal.css}">
 </head>
-<body>
-<div class="map-page-shell">
-    <header class="map-page-header">
-        <div>
-            <span class="map-eyebrow">MAP SERVICE</span>
-            <h1>지도 검색</h1>
-            <p>장소 검색, 길찾기, 주변 시설 조회와 즐겨찾기를 한 화면에서 이용할 수 있습니다.</p>
-        </div>
-        <a class="map-home-link" href="/index.html">메인으로</a>
-    </header>
+<body class="map-service-page">
+<div class="global-banner-area">
+    <div data-global-banner>
+        <nav class="global-banner" aria-label="전역 메뉴">
+            <a class="global-home-link" href="/index.html" aria-label="메인페이지로 이동">
+                <span class="global-logo-text" aria-hidden="true">
+                    <span class="global-logo-letter">더</span>
+                </span>
+            </a>
 
+            <div class="global-right-menu">
+                <a class="global-service-link global-main-link" href="/index.html">
+                    메인페이지
+                </a>
+                <a class="global-service-link global-calendar-link" href="/calendar">
+                    캘린더
+                </a>
+                <div class="global-user-menu" data-map-global-user-menu aria-live="polite">
+                    <span class="global-user-loading">계정 확인 중</span>
+                </div>
+            </div>
+        </nav>
+    </div>
+</div>
+
+<div class="map-page-shell">
     <main class="map-layout" data-map-root>
         <aside class="map-side-panel" aria-label="지도 검색 패널">
             <section class="map-search-dock" aria-label="장소 및 주소 검색">
@@ -211,35 +230,89 @@
 
                         <div class="nearby-category-grid" aria-label="주변 시설 종류">
                             <button type="button" class="nearby-category-button" data-nearby-category="FD6" data-nearby-label="음식점">
-                                <span class="nearby-category-icon" aria-hidden="true">식</span>
+                                <span class="nearby-category-icon" aria-hidden="true">
+                                <svg viewBox="0 0 24 24" focusable="false">
+                                    <path d="M6 3v7"></path>
+                                    <path d="M3.5 3v4.5A2.5 2.5 0 0 0 6 10a2.5 2.5 0 0 0 2.5-2.5V3"></path>
+                                    <path d="M6 10v11"></path>
+                                    <path d="M16 3v18"></path>
+                                    <path d="M16 3c2.8 2.1 4 4.8 4 8h-4"></path>
+                                </svg>
+                            </span>
                                 <span>음식점</span>
                             </button>
                             <button type="button" class="nearby-category-button" data-nearby-category="CE7" data-nearby-label="카페">
-                                <span class="nearby-category-icon" aria-hidden="true">카</span>
+                                <span class="nearby-category-icon" aria-hidden="true">
+                                <svg viewBox="0 0 24 24" focusable="false">
+                                    <path d="M4 8h12v5a5 5 0 0 1-5 5H9a5 5 0 0 1-5-5V8Z"></path>
+                                    <path d="M16 10h2a2 2 0 0 1 0 4h-2"></path>
+                                    <path d="M6 21h12"></path>
+                                    <path d="M7 3c0 1 1 1 1 2S7 6 7 7"></path>
+                                    <path d="M11 3c0 1 1 1 1 2s-1 1-1 2"></path>
+                                </svg>
+                            </span>
                                 <span>카페</span>
                             </button>
                             <button type="button" class="nearby-category-button" data-nearby-category="CS2" data-nearby-label="편의점">
-                                <span class="nearby-category-icon" aria-hidden="true">편</span>
+                                <span class="nearby-category-icon" aria-hidden="true">
+                                <svg viewBox="0 0 24 24" focusable="false">
+                                    <path d="M4 10v10h16V10"></path>
+                                    <path d="M3 10 5 4h14l2 6"></path>
+                                    <path d="M3 10h18"></path>
+                                    <path d="M8 20v-6h8v6"></path>
+                                    <path d="M7 4v6M12 4v6M17 4v6"></path>
+                                </svg>
+                            </span>
                                 <span>편의점</span>
                             </button>
                             <button type="button" class="nearby-category-button" data-nearby-category="PK6" data-nearby-label="주차장">
-                                <span class="nearby-category-icon" aria-hidden="true">P</span>
+                                <span class="nearby-category-icon" aria-hidden="true">
+                                <svg viewBox="0 0 24 24" focusable="false">
+                                    <rect x="4" y="3" width="16" height="18" rx="4"></rect>
+                                    <path d="M9 17V7h4a3 3 0 0 1 0 6H9"></path>
+                                </svg>
+                            </span>
                                 <span>주차장</span>
                             </button>
                             <button type="button" class="nearby-category-button" data-nearby-category="OL7" data-nearby-label="주유소">
-                                <span class="nearby-category-icon" aria-hidden="true">유</span>
+                                <span class="nearby-category-icon" aria-hidden="true">
+                                <svg viewBox="0 0 24 24" focusable="false">
+                                    <path d="M5 21V5a2 2 0 0 1 2-2h6a2 2 0 0 1 2 2v16"></path>
+                                    <path d="M7 8h6"></path>
+                                    <path d="M4 21h12"></path>
+                                    <path d="M15 9h2l3 3v6a2 2 0 0 1-4 0v-2"></path>
+                                    <path d="m18 10 2-2"></path>
+                                </svg>
+                            </span>
                                 <span>주유소</span>
                             </button>
                             <button type="button" class="nearby-category-button" data-nearby-category="SW8" data-nearby-label="지하철역">
-                                <span class="nearby-category-icon" aria-hidden="true">역</span>
+                                <span class="nearby-category-icon" aria-hidden="true">
+                                <svg viewBox="0 0 24 24" focusable="false">
+                                    <rect x="5" y="3" width="14" height="15" rx="4"></rect>
+                                    <path d="M8 7h8"></path>
+                                    <path d="M8 14h.01M16 14h.01"></path>
+                                    <path d="m8 18-2 3M16 18l2 3M8 21h8"></path>
+                                </svg>
+                            </span>
                                 <span>지하철역</span>
                             </button>
                             <button type="button" class="nearby-category-button" data-nearby-category="HP8" data-nearby-label="병원">
-                                <span class="nearby-category-icon" aria-hidden="true">병</span>
+                                <span class="nearby-category-icon" aria-hidden="true">
+                                <svg viewBox="0 0 24 24" focusable="false">
+                                    <rect x="3" y="3" width="18" height="18" rx="4"></rect>
+                                    <path d="M12 7v10M7 12h10"></path>
+                                </svg>
+                            </span>
                                 <span>병원</span>
                             </button>
                             <button type="button" class="nearby-category-button" data-nearby-category="PM9" data-nearby-label="약국">
-                                <span class="nearby-category-icon" aria-hidden="true">약</span>
+                                <span class="nearby-category-icon" aria-hidden="true">
+                                <svg viewBox="0 0 24 24" focusable="false">
+                                    <path d="M8.5 4.5a4.24 4.24 0 0 1 6 0l5 5a4.24 4.24 0 0 1-6 6l-5-5a4.24 4.24 0 0 1 0-6Z"></path>
+                                    <path d="m10.5 12.5 5-5"></path>
+                                </svg>
+                            </span>
                                 <span>약국</span>
                             </button>
                         </div>
@@ -313,6 +386,26 @@
     </main>
 </div>
 
+<footer class="global-footer">
+    <div class="global-footer-inner">
+        <section class="footer-notice">
+            <a href="/board/notice" class="footer-notice-title">공지사항</a>
+            <a href="/board/notice">포털 서비스 이용 안내</a>
+        </section>
+
+        <nav class="footer-links" aria-label="하단 메뉴">
+            <a href="/board/question">문의 일람</a>
+            <a href="/board/write">고객센터</a>
+        </nav>
+
+        <section class="footer-company">
+            <p>2026 IT Project 2nd</p>
+            <p>이 사이트는 학습 및 포트폴리오 목적으로 제작되었습니다.</p>
+            <p>Copyright © 2026 IT Project 2nd. All rights reserved.</p>
+        </section>
+    </div>
+</footer>
+
 <script th:inline="javascript">
     window.KAKAO_MAP_PAGE = {
         javascriptKey: /*[[${kakaoMapJavascriptKey}]]*/ "",
@@ -320,6 +413,10 @@
         defaultLng: 126.9786567
     };
 </script>
+<script defer src="https://t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
+<script defer th:src="@{/js/kakao-map-layout.js}"></script>
+<script defer th:src="@{/js/common/address-search.js}"></script>
+<script defer th:src="@{/js/mypage-modal.js}"></script>
 <script th:src="@{'https://dapi.kakao.com/v2/maps/sdk.js?autoload=false&appkey=' + ${kakaoMapJavascriptKey} + '&libraries=services'}"></script>
 <script defer th:src="@{/js/kakao-dynamic-map.js}"></script>
 </body>
