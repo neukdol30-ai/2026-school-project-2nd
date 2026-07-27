@@ -81,4 +81,9 @@ public interface BoardDao {
     // 답변 상태와 최근 답변 시간을 다시 계산한다.
     int refreshAnswerStatus(Long boardNo);
 
+
+    List<Long> findExpiredGuestBoardNos(
+            @Param("retentionDays") int retentionDays
+    );
+
 }

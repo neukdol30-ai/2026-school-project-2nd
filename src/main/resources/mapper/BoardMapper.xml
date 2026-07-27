@@ -402,5 +402,28 @@
         AND b.category = 'QUESTION'
     </update>
 
+    <!--
+    답변 완료 후 지정된 보관 기간이 지난
+    비회원 문의글 번호 조회
+    -->
+    <select id="findExpiredGuestBoardNos"
+            resultType="java.lang.Long">
+
+        SELECT no
+        FROM board
+        WHERE guest_author_no IS NOT NULL
+        AND category = 'QUESTION'
+        AND answer_status = 'ANSWERED'
+        AND answered_date IS NOT NULL
+        AND answered_date <![CDATA[ <= ]]>
+        SYSTIMESTAMP
+        - NUMTODSINTERVAL(
+        #{retentionDays},
+        'DAY'
+        )
+        ORDER BY no
+
+    </select>
+
 
 </mapper>

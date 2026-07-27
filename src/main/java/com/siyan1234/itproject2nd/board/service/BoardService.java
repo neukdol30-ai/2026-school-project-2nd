@@ -19,6 +19,9 @@ public class BoardService {
     private final GuestAuthorDao guestAuthorDao;
     private final PasswordEncoder passwordEncoder;
 
+    // 비회원 문의글 답변 완료 후 보관 기간
+    private static final int GUEST_BOARD_RETENTION_DAYS = 30;
+
     // 게시글 목록
     public List<BoardDto> findAll() {
         return boardDao.findAll();
@@ -237,6 +240,51 @@ public class BoardService {
 
         return result;
     }
+
+    /*
+     * 답변 완료 후 30일이 지난
+     * 비회원 문의글 자동 삭제
+     */
+    @Transactional
+    public int deleteExpiredGuestBoards() {
+
+        // 자동 삭제 대상 게시글 번호 조회
+        List<Long> expiredBoardNos =
+                boardDao.findExpiredGuestBoardNos(
+                        GUEST_BOARD_RETENTION_DAYS
+                );
+
+        // 삭제 대상이 없으면 0 반환
+        if (expiredBoardNos == null
+                || expiredBoardNos.isEmpty()) {
+
+            return 0;
+        }
+
+        int deletedCount = 0;
+
+        for (Long boardNo : expiredBoardNos) {
+
+            if (boardNo == null) {
+                continue;
+            }
+
+            /*
+             * 기존 게시글 삭제 메서드를 재사용한다.
+             *
+             * board 삭제
+             * → board_comment는 ON DELETE CASCADE로 삭제
+             * → guest_author도 기존 delete()에서 삭제
+             */
+            delete(boardNo);
+
+            deletedCount++;
+        }
+
+        return deletedCount;
+    }
+
+
 
     // 게시글 제목과 본문 검사
     private void validateBoard(BoardDto boardDto) {
