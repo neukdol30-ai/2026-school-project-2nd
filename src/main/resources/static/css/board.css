@@ -1665,39 +1665,6 @@
     transform: translateY(-1px) scale(1.08);
 }
 
-/* 아이콘별 기본 색상 */
-.my-post-icon-button.heart {
-    color: #ef4444;
-}
-
-.my-post-icon-button.star {
-    color: #eab308;
-}
-
-.my-post-icon-button.clover {
-    color: #16a34a;
-}
-
-/* 선택된 아이콘은 조금 더 크게 표시 */
-.my-post-icon-button.active {
-    border: none;
-    background: transparent;
-    box-shadow: none;
-    transform: scale(1.18);
-}
-
-/* 내 글 배지 아이콘별 색상 */
-.my-post-marker.heart {
-    color: #ef4444;
-}
-
-.my-post-marker.star {
-    color: #ca8a04;
-}
-
-.my-post-marker.clover {
-    color: #16a34a;
-}
 
 
 /* =========================

@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <title>서비스 약관 동의</title>
+    <link rel="stylesheet" th:href="@{/css/terms-agree.css}">
+</head>
+
+<body>
+
+<main class="agreement-page">
+    <section class="agreement-card">
+
+        <header class="agreement-header">
+
+            <h1>서비스 약관 동의</h1>
+
+            <p>
+                소셜 계정 연결이 완료되었습니다.
+                secondpro 서비스를 이용하려면 아래 필수 항목에 동의해 주세요.
+            </p>
+        </header>
+
+        <!-- Controller가 전달한 오류 메시지가 있을 때만 표시 -->
+        <div th:if="${agreementError != null}"
+             class="agreement-error"
+             th:text="${agreementError}">
+        </div>
+
+        <!-- 두 약관 동의 값을 Controller로 보내는 폼 -->
+        <form th:action="@{/member/terms-agree}"
+              method="post"
+              class="agreement-form">
+
+            <!-- SecurityConfig에서 CSRF가 비활성화돼 있어 CSRF hidden input은 사용하지 않음 -->
+
+            <div class="agreement-item">
+
+                <label class="agreement-label"
+                       for="agreeTermsYn">
+
+                    <input id="agreeTermsYn"
+                           type="checkbox"
+                           name="agreeTermsYn"
+                           value="Y"
+                           required>
+
+                    <span>
+                        이용약관에 동의합니다.
+                        <strong class="required">필수</strong>
+                    </span>
+                </label>
+
+                <!-- 이용약관 전문을 새 탭에서 오픈 -->
+                <a th:href="@{/member/terms}"
+                   target="_blank"
+                   rel="noopener noreferrer"
+                   class="policy-link">
+                    이용약관 보기
+                </a>
+            </div>
+
+            <!-- 개인정보 수집 이용 동의 항목 -->
+            <div class="agreement-item">
+
+                <label class="agreement-label"
+                       for="agreePrivacyYn">
+
+                    <!-- 체크되면 agreePrivacyYn=Y가 서버로 전송 -->
+                    <input id="agreePrivacyYn"
+                           type="checkbox"
+                           name="agreePrivacyYn"
+                           value="Y"
+                           required>
+
+                    <span>
+                        개인정보 수집 및 이용에 동의합니다.
+                        <strong class="required">필수</strong>
+                    </span>
+                </label>
+
+                <a th:href="@{/member/privacy}"
+                   target="_blank"
+                   rel="noopener noreferrer"
+                   class="policy-link">
+                    개인정보 내용 보기
+                </a>
+            </div>
+
+            <!-- 두 체크박스가 모두 선택돼야 브라우저가 제출 허용 -->
+            <button type="submit"
+                    class="agree-button">
+                동의하고 시작하기
+            </button>
+        </form>
+
+        <form th:action="@{/member/logout}"
+              method="post"
+              class="logout-form">
+
+            <!-- 소셜 로그인 상태를 종료하는 버튼 -->
+            <button type="submit"
+                    class="logout-button">
+                동의하지 않고 로그아웃
+            </button>
+        </form>
+
+    </section>
+</main>
+
+</body>
+</html>

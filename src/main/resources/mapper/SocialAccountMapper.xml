@@ -32,4 +32,16 @@
         <!-- no(PK)와 created_date는 안 적음. DB가 자동으로 채우기 때문. -->
     </insert>
 
+    <select id="findAllByMemberNo" parameterType="int" resultType="SocialAccountDto">
+        SELECT no,
+        member_no,
+        provider,
+        provider_id,
+        created_date
+        FROM social_account
+        WHERE member_no = #{memberNo, jdbcType=NUMERIC}
+        ORDER BY no
+        <!-- 기존 DAO에는 소셜 계정 전체 조회 메서드 없음. 이 조회 필요. -->
+    </select>
+
 </mapper>
