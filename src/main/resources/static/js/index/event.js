@@ -42,6 +42,11 @@ function bindEvents() {
     );
 
     app.addEventListener(
+        "keydown",
+        handleMemoKeydown
+    );
+
+    app.addEventListener(
         "dragstart",
         preventNativeWidgetDrag
     );
@@ -485,6 +490,15 @@ function handleInput(event) {
         state.memoText =
             event.target.value;
 
+        if (
+            typeof updateMemoCount
+            === "function"
+        ) {
+            updateMemoCount(
+                event.target.value
+            );
+        }
+
         return;
     }
 
@@ -506,6 +520,23 @@ function handleInput(event) {
     ) {
         state.loginForm.password =
             event.target.value;
+    }
+}
+
+// Ctrl + Enter로 메모 저장
+function handleMemoKeydown(event) {
+    if (
+        !event.ctrlKey
+        || event.key !== "Enter"
+        || !event.target.matches("#memoInput")
+    ) {
+        return;
+    }
+
+    event.preventDefault();
+
+    if (typeof addMemo === "function") {
+        addMemo();
     }
 }
 
@@ -551,6 +582,24 @@ function handleAction(event) {
 
     const value =
         button.dataset.value;
+
+    if (action === "save-memo") {
+        if (typeof addMemo === "function") {
+            addMemo();
+        }
+
+        return;
+    }
+
+    if (action === "delete-memo") {
+        if (typeof deleteMemo === "function") {
+            deleteMemo(
+                button.dataset.memoId
+            );
+        }
+
+        return;
+    }
 
     if (action === "select-weather-day") {
         const weatherDayIndex =
@@ -728,7 +777,6 @@ function handleAction(event) {
         fetchStocks();
         return;
     }
-
 
     if (
         action === "move-up"
