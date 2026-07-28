@@ -9,7 +9,7 @@
           content="width=device-width, initial-scale=1.0">
 
     <title>게시글 목록</title>
-    <link rel="stylesheet" href="/css/cookie-consent.css">
+    <link rel="stylesheet" th:href="@{/css/cookie-consent.css}">
 
     <!-- 공통 CSS -->
     <link rel="stylesheet"
@@ -21,7 +21,6 @@
 </head>
 
 <body>
-
 <main class="board-page">
 
 
@@ -242,38 +241,90 @@
 
 
     <!-- 게시판 페이징 -->
-
-    <section th:if="${pageUrl != null and totalPage > 0}"
+    <section th:if="${totalPage != null and totalPage > 1}"
              class="board-pagination">
 
-        <!-- 이전 페이지 -->
-        <a th:if="${currentPage > 1}"
-           th:href="@{${pageUrl}(page=${currentPage - 1})}"
-           class="board-page-link">
-            이전
-        </a>
+        <!-- 검색 결과 페이징 -->
+        <th:block th:if="${searchMode == true}">
 
-        <!-- 페이지 번호 -->
-        <a th:each="pageNum : ${#numbers.sequence(1, totalPage)}"
-           th:href="@{${pageUrl}(page=${pageNum})}"
-           th:text="${pageNum}"
-           class="board-page-link"
-           th:classappend="${pageNum == currentPage}
+            <!-- 이전 페이지 -->
+            <a th:if="${currentPage > 1}"
+               th:href="@{/board/search(
+                keyword=${keyword},
+                category=${category},
+                page=${currentPage - 1}
+           )}"
+               class="board-page-link">
+                이전
+            </a>
+
+            <!-- 페이지 번호 -->
+            <a th:each="pageNum : ${#numbers.sequence(1, totalPage)}"
+               th:href="@{/board/search(
+                keyword=${keyword},
+                category=${category},
+                page=${pageNum}
+           )}"
+               th:text="${pageNum}"
+               class="board-page-link"
+               th:classappend="${pageNum == currentPage}
                 ? ' active'
                 : ''">
-        </a>
+            </a>
 
-        <!-- 다음 페이지 -->
-        <a th:if="${currentPage < totalPage}"
-           th:href="@{${pageUrl}(page=${currentPage + 1})}"
-           class="board-page-link">
-            다음
-        </a>
+            <!-- 다음 페이지 -->
+            <a th:if="${currentPage < totalPage}"
+               th:href="@{/board/search(
+                keyword=${keyword},
+                category=${category},
+                page=${currentPage + 1}
+           )}"
+               class="board-page-link">
+                다음
+            </a>
+
+        </th:block>
+
+
+        <!-- 일반 게시판 목록 페이징 -->
+        <th:block th:unless="${searchMode == true}">
+
+            <!-- 이전 페이지 -->
+            <a th:if="${currentPage > 1}"
+               th:href="@{${pageUrl}(
+                page=${currentPage - 1}
+           )}"
+               class="board-page-link">
+                이전
+            </a>
+
+            <!-- 페이지 번호 -->
+            <a th:each="pageNum : ${#numbers.sequence(1, totalPage)}"
+               th:href="@{${pageUrl}(
+                page=${pageNum}
+           )}"
+               th:text="${pageNum}"
+               class="board-page-link"
+               th:classappend="${pageNum == currentPage}
+                ? ' active'
+                : ''">
+            </a>
+
+            <!-- 다음 페이지 -->
+            <a th:if="${currentPage < totalPage}"
+               th:href="@{${pageUrl}(
+                page=${currentPage + 1}
+           )}"
+               class="board-page-link">
+                다음
+            </a>
+
+        </th:block>
 
     </section>
 
 </main>
 
-    <script src="/js/cookie-consent.js"></script>
+<script th:src="@{/js/cookie-consent.js}"></script>
 </body>
 </html>

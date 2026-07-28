@@ -119,11 +119,16 @@
     </select>
 
 
-    <!-- 게시글 검색 -->
+    <!-- 전체 게시글 검색 결과 페이징 조회 -->
     <select id="search"
-            parameterType="string"
             resultType="BoardDto">
 
+        SELECT *
+        FROM (
+        SELECT
+        ROWNUM AS rn,
+        board_data.*
+        FROM (
         SELECT
         b.no,
         b.writer_no,
@@ -135,32 +140,90 @@
         b.view_count,
         b.created_date,
         b.modified_date,
+
         m.name AS writer_name,
         m.nickname AS writer_nickname,
         g.guest_name,
+
         (
         SELECT COUNT(*)
         FROM board_comment bc
         WHERE bc.board_no = b.no
         ) AS answer_count
+
         FROM board b
+
         LEFT JOIN member m
         ON b.writer_no = m.no
+
         LEFT JOIN guest_author g
         ON b.guest_author_no = g.no
+
         WHERE (
-        b.title LIKE '%' || #{keyword} || '%'
-        OR m.nickname LIKE '%' || #{keyword} || '%'
-        OR g.guest_name LIKE '%' || #{keyword} || '%'
+        UPPER(b.title)
+        LIKE '%' || UPPER(TRIM(#{keyword})) || '%'
+
+        OR UPPER(NVL(m.name, ''))
+        LIKE '%' || UPPER(TRIM(#{keyword})) || '%'
+
+        OR UPPER(NVL(m.nickname, ''))
+        LIKE '%' || UPPER(TRIM(#{keyword})) || '%'
+
+        OR UPPER(NVL(g.guest_name, ''))
+        LIKE '%' || UPPER(TRIM(#{keyword})) || '%'
         )
+
         ORDER BY b.no DESC
+        ) board_data
+
+        WHERE ROWNUM &lt;= #{endRow}
+        )
+
+        WHERE rn &gt;= #{startRow}
+
+    </select>
+
+    <!-- 전체 게시글 검색 결과 개수 조회 -->
+    <select id="countSearch"
+            resultType="int">
+
+        SELECT COUNT(*)
+
+        FROM board b
+
+        LEFT JOIN member m
+        ON b.writer_no = m.no
+
+        LEFT JOIN guest_author g
+        ON b.guest_author_no = g.no
+
+        WHERE (
+        UPPER(b.title)
+        LIKE '%' || UPPER(TRIM(#{keyword})) || '%'
+
+        OR UPPER(NVL(m.name, ''))
+        LIKE '%' || UPPER(TRIM(#{keyword})) || '%'
+
+        OR UPPER(NVL(m.nickname, ''))
+        LIKE '%' || UPPER(TRIM(#{keyword})) || '%'
+
+        OR UPPER(NVL(g.guest_name, ''))
+        LIKE '%' || UPPER(TRIM(#{keyword})) || '%'
+        )
 
     </select>
 
 
+    <!-- 카테고리별 게시글 검색 결과 페이징 조회 -->
     <select id="searchByCategory"
             resultType="BoardDto">
 
+        SELECT *
+        FROM (
+        SELECT
+        ROWNUM AS rn,
+        board_data.*
+        FROM (
         SELECT
         b.no,
         b.writer_no,
@@ -173,14 +236,10 @@
         b.created_date,
         b.modified_date,
 
-        -- 회원 작성자 정보
         m.name AS writer_name,
         m.nickname AS writer_nickname,
-
-        -- 비회원 작성자 이름
         g.guest_name,
 
-        -- 게시글 답변 개수
         (
         SELECT COUNT(*)
         FROM board_comment bc
@@ -189,21 +248,65 @@
 
         FROM board b
 
-        -- 회원 작성자 연결
         LEFT JOIN member m
         ON b.writer_no = m.no
 
-        -- 비회원 작성자 연결
         LEFT JOIN guest_author g
         ON b.guest_author_no = g.no
 
         WHERE b.category = #{category}
         AND (
-        b.title LIKE '%' || #{keyword} || '%'
-        OR b.content LIKE '%' || #{keyword} || '%'
+        UPPER(b.title)
+        LIKE '%' || UPPER(TRIM(#{keyword})) || '%'
+
+        OR UPPER(NVL(m.name, ''))
+        LIKE '%' || UPPER(TRIM(#{keyword})) || '%'
+
+        OR UPPER(NVL(m.nickname, ''))
+        LIKE '%' || UPPER(TRIM(#{keyword})) || '%'
+
+        OR UPPER(NVL(g.guest_name, ''))
+        LIKE '%' || UPPER(TRIM(#{keyword})) || '%'
         )
 
         ORDER BY b.no DESC
+        ) board_data
+
+        WHERE ROWNUM &lt;= #{endRow}
+        )
+
+        WHERE rn &gt;= #{startRow}
+
+    </select>
+
+    <!-- 카테고리별 게시글 검색 결과 개수 조회 -->
+    <select id="countSearchByCategory"
+            resultType="int">
+
+        SELECT COUNT(*)
+
+        FROM board b
+
+        LEFT JOIN member m
+        ON b.writer_no = m.no
+
+        LEFT JOIN guest_author g
+        ON b.guest_author_no = g.no
+
+        WHERE b.category = #{category}
+        AND (
+        UPPER(b.title)
+        LIKE '%' || UPPER(TRIM(#{keyword})) || '%'
+
+        OR UPPER(NVL(m.name, ''))
+        LIKE '%' || UPPER(TRIM(#{keyword})) || '%'
+
+        OR UPPER(NVL(m.nickname, ''))
+        LIKE '%' || UPPER(TRIM(#{keyword})) || '%'
+
+        OR UPPER(NVL(g.guest_name, ''))
+        LIKE '%' || UPPER(TRIM(#{keyword})) || '%'
+        )
 
     </select>
 

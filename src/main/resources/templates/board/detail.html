@@ -25,7 +25,7 @@
     <!-- TOAST UI Editor JS -->
     <script src="https://uicdn.toast.com/editor/latest/toastui-editor-all.min.js"></script>
     <script src="https://uicdn.toast.com/editor/latest/i18n/ko-kr.js"></script>
-    <link rel="stylesheet" href="/css/cookie-consent.css">
+    <link rel="stylesheet" th:href="@{/css/cookie-consent.css}">
 </head>
 
 <body>
@@ -766,6 +766,6 @@
 
 </script>
 
-<script src="/js/cookie-consent.js"></script>
+<script th:src="@{/js/cookie-consent.js}"></script>
 </body>
 </html>

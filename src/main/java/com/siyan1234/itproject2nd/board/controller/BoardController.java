@@ -369,28 +369,110 @@ public class BoardController {
 
 
 
-    // 게시글 검색
+    // 게시글 검색 결과 페이징
     @GetMapping("/search")
     public String search(
-            @RequestParam String keyword,
-            @RequestParam(required = false) String category,
+            @RequestParam(
+                    name = "keyword",
+                    defaultValue = ""
+            ) String keyword,
+
+            @RequestParam(
+                    name = "category",
+                    required = false
+            ) String category,
+
+            @RequestParam(
+                    name = "page",
+                    defaultValue = "1"
+            ) int page,
+
             Model model
     ) {
 
         /*
-         * category가 있으면
-         * 해당 게시판 안에서만 검색한다.
-         *
-         * category가 없으면
-         * 전체 게시글을 검색한다.
+         * 검색어와 카테고리 앞뒤 공백 제거
          */
-        if (category != null && !category.isBlank()) {
+        String cleanKeyword =
+                keyword.trim();
+
+        String cleanCategory =
+                category == null
+                        ? ""
+                        : category.trim();
+
+        /*
+         * 검색어가 비어 있다면
+         * 검색하지 않고 원래 게시판으로 이동
+         */
+        if (cleanKeyword.isBlank()) {
+
+            if ("NOTICE".equals(cleanCategory)) {
+                return "redirect:/board/notice";
+            }
+
+            if ("QUESTION".equals(cleanCategory)) {
+                return "redirect:/board/question";
+            }
+
+            return "redirect:/board/list";
+        }
+
+        /*
+         * 전체 검색 결과 개수를 먼저 조회한다.
+         */
+        int totalCount;
+
+        if (!cleanCategory.isBlank()) {
+
+            totalCount =
+                    boardService.countSearchByCategory(
+                            cleanKeyword,
+                            cleanCategory
+                    );
+
+        } else {
+
+            totalCount =
+                    boardService.countSearch(
+                            cleanKeyword
+                    );
+        }
+
+        /*
+         * 전체 페이지 수 계산
+         */
+        int totalPage =
+                boardService.calculateTotalPage(
+                        totalCount
+                );
+
+        /*
+         * 잘못된 페이지 번호 보정
+         *
+         * page가 0 이하이면 1페이지,
+         * 전체 페이지보다 크면 마지막 페이지
+         */
+        int currentPage =
+                Math.max(page, 1);
+
+        currentPage =
+                Math.min(
+                        currentPage,
+                        totalPage
+                );
+
+        /*
+         * 현재 페이지에 표시할 검색 결과 조회
+         */
+        if (!cleanCategory.isBlank()) {
 
             model.addAttribute(
                     "boardList",
                     boardService.searchByCategory(
-                            keyword,
-                            category
+                            cleanKeyword,
+                            cleanCategory,
+                            currentPage
                     )
             );
 
@@ -398,14 +480,18 @@ public class BoardController {
 
             model.addAttribute(
                     "boardList",
-                    boardService.search(keyword)
+                    boardService.search(
+                            cleanKeyword,
+                            currentPage
+                    )
             );
         }
 
         /*
-         * 검색한 게시판에 맞는 제목 설정
+         * 검색한 게시판에 맞는 제목과
+         * 카테고리 메뉴 활성화 주소 설정
          */
-        if ("NOTICE".equals(category)) {
+        if ("NOTICE".equals(cleanCategory)) {
 
             model.addAttribute(
                     "pageTitle",
@@ -417,12 +503,16 @@ public class BoardController {
                     "공지사항에서 검색한 결과입니다."
             );
 
+            /*
+             * 카테고리 메뉴에서
+             * 공지사항을 활성화하기 위한 값
+             */
             model.addAttribute(
                     "pageUrl",
                     "/board/notice"
             );
 
-        } else if ("QUESTION".equals(category)) {
+        } else if ("QUESTION".equals(cleanCategory)) {
 
             model.addAttribute(
                     "pageTitle",
@@ -434,6 +524,10 @@ public class BoardController {
                     "문의 게시판에서 검색한 결과입니다."
             );
 
+            /*
+             * 카테고리 메뉴에서
+             * 문의 게시판을 활성화하기 위한 값
+             */
             model.addAttribute(
                     "pageUrl",
                     "/board/question"
@@ -447,36 +541,51 @@ public class BoardController {
             );
 
             model.addAttribute(
+                    "pageDescription",
+                    "전체 게시글에서 검색한 결과입니다."
+            );
+
+            model.addAttribute(
                     "pageUrl",
                     "/board/list"
             );
         }
 
         /*
-         * 검색어와 카테고리를 다시 화면으로 전달
+         * 검색 조건과 페이징 정보를 화면으로 전달
          */
         model.addAttribute(
                 "keyword",
-                keyword
+                cleanKeyword
         );
 
         model.addAttribute(
                 "category",
-                category
+                cleanCategory
         );
 
-        /*
-         * 현재 검색 결과는 페이징을 적용하지 않으므로
-         * list.html 오류 방지를 위해 기본값 설정
-         */
         model.addAttribute(
                 "currentPage",
-                1
+                currentPage
         );
 
         model.addAttribute(
                 "totalPage",
-                1
+                totalPage
+        );
+
+        model.addAttribute(
+                "totalCount",
+                totalCount
+        );
+
+        /*
+         * 일반 목록과 검색 결과의
+         * 페이지 링크를 구분하기 위한 값
+         */
+        model.addAttribute(
+                "searchMode",
+                true
         );
 
         return "board/list";
