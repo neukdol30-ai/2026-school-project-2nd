@@ -158,6 +158,56 @@
     </select>
 
 
+    <select id="searchByCategory"
+            resultType="BoardDto">
+
+        SELECT
+        b.no,
+        b.writer_no,
+        b.guest_author_no,
+        b.category,
+        b.answer_status,
+        b.title,
+        b.content,
+        b.view_count,
+        b.created_date,
+        b.modified_date,
+
+        -- 회원 작성자 정보
+        m.name AS writer_name,
+        m.nickname AS writer_nickname,
+
+        -- 비회원 작성자 이름
+        g.guest_name,
+
+        -- 게시글 답변 개수
+        (
+        SELECT COUNT(*)
+        FROM board_comment bc
+        WHERE bc.board_no = b.no
+        ) AS answer_count
+
+        FROM board b
+
+        -- 회원 작성자 연결
+        LEFT JOIN member m
+        ON b.writer_no = m.no
+
+        -- 비회원 작성자 연결
+        LEFT JOIN guest_author g
+        ON b.guest_author_no = g.no
+
+        WHERE b.category = #{category}
+        AND (
+        b.title LIKE '%' || #{keyword} || '%'
+        OR b.content LIKE '%' || #{keyword} || '%'
+        )
+
+        ORDER BY b.no DESC
+
+    </select>
+
+
     <!-- 카테고리별 게시글 개수 조회 -->
     <select id="countByCategory"
             parameterType="string"
@@ -329,6 +379,49 @@
         SELECT COUNT(*)
         FROM board_comment
         WHERE board_no = #{boardNo}
+
+    </select>
+
+    <update id="refreshAnswerStatus">
+        UPDATE board b
+        SET (
+        b.answer_status,
+        b.answered_date
+        ) = (
+        SELECT
+        CASE
+        WHEN COUNT(bc.no) > 0
+        THEN 'ANSWERED'
+        ELSE 'WAITING'
+        END,
+        MAX(bc.created_date)
+        FROM board_comment bc
+        WHERE bc.board_no = b.no
+        )
+        WHERE b.no = #{boardNo}
+        AND b.category = 'QUESTION'
+    </update>
+
+    <!--
+    답변 완료 후 지정된 보관 기간이 지난
+    비회원 문의글 번호 조회
+    -->
+    <select id="findExpiredGuestBoardNos"
+            resultType="java.lang.Long">
+
+        SELECT no
+        FROM board
+        WHERE guest_author_no IS NOT NULL
+        AND category = 'QUESTION'
+        AND answer_status = 'ANSWERED'
+        AND answered_date IS NOT NULL
+        AND answered_date <![CDATA[ <= ]]>
+        SYSTIMESTAMP
+        - NUMTODSINTERVAL(
+        #{retentionDays},
+        'DAY'
+        )
+        ORDER BY no
 
     </select>
 

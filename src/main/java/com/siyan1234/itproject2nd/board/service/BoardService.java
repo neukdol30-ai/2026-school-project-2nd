@@ -19,6 +19,9 @@ public class BoardService {
     private final GuestAuthorDao guestAuthorDao;
     private final PasswordEncoder passwordEncoder;
 
+    // 비회원 문의글 답변 완료 후 보관 기간
+    private static final int GUEST_BOARD_RETENTION_DAYS = 30;
+
     // 게시글 목록
     public List<BoardDto> findAll() {
         return boardDao.findAll();
@@ -33,6 +36,19 @@ public class BoardService {
     public List<BoardDto> search(String keyword) {
         return boardDao.search(keyword);
     }
+
+
+    public List<BoardDto> searchByCategory(
+            String keyword,
+            String category
+    ) {
+
+        return boardDao.searchByCategory(
+                keyword,
+                category
+        );
+    }
+
 
     // 게시글 한 개 조회
     public BoardDto findByNo(Long no) {
@@ -225,6 +241,51 @@ public class BoardService {
         return result;
     }
 
+    /*
+     * 답변 완료 후 30일이 지난
+     * 비회원 문의글 자동 삭제
+     */
+    @Transactional
+    public int deleteExpiredGuestBoards() {
+
+        // 자동 삭제 대상 게시글 번호 조회
+        List<Long> expiredBoardNos =
+                boardDao.findExpiredGuestBoardNos(
+                        GUEST_BOARD_RETENTION_DAYS
+                );
+
+        // 삭제 대상이 없으면 0 반환
+        if (expiredBoardNos == null
+                || expiredBoardNos.isEmpty()) {
+
+            return 0;
+        }
+
+        int deletedCount = 0;
+
+        for (Long boardNo : expiredBoardNos) {
+
+            if (boardNo == null) {
+                continue;
+            }
+
+            /*
+             * 기존 게시글 삭제 메서드를 재사용한다.
+             *
+             * board 삭제
+             * → board_comment는 ON DELETE CASCADE로 삭제
+             * → guest_author도 기존 delete()에서 삭제
+             */
+            delete(boardNo);
+
+            deletedCount++;
+        }
+
+        return deletedCount;
+    }
+
+
+
     // 게시글 제목과 본문 검사
     private void validateBoard(BoardDto boardDto) {
 
@@ -248,19 +309,33 @@ public class BoardService {
     // 비회원 작성자 정보 검사
     private void validateGuestAuthor(BoardDto boardDto) {
 
+        // 비회원 이름 검사
         if (boardDto.getGuestName() == null
-                || boardDto.getGuestName().trim().isEmpty()) {
+                || boardDto.getGuestName().isBlank()) {
 
             throw new IllegalArgumentException(
                     "비회원 이름을 입력해주세요."
             );
         }
 
-        if (boardDto.getGuestPassword() == null
-                || boardDto.getGuestPassword().trim().isEmpty()) {
+        String guestPassword =
+                boardDto.getGuestPassword();
+
+        // 비밀번호 입력 여부 검사
+        if (guestPassword == null
+                || guestPassword.isBlank()) {
 
             throw new IllegalArgumentException(
                     "비회원 비밀번호를 입력해주세요."
+            );
+        }
+
+        // 비밀번호 길이 검사
+        if (guestPassword.length() < 4
+                || guestPassword.length() > 20) {
+
+            throw new IllegalArgumentException(
+                    "비회원 비밀번호는 4자 이상 20자 이하로 입력해주세요."
             );
         }
     }
@@ -269,6 +344,13 @@ public class BoardService {
             Long boardNo,
             String guestPassword
     ) {
+
+        if (guestPassword == null
+                || guestPassword.isBlank()) {
+
+            return false;
+        }
+
 
         BoardDto boardDto = boardDao.findByNo(boardNo);
 

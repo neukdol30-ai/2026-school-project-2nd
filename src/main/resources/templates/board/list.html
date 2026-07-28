@@ -73,6 +73,10 @@
                   method="get"
                   class="board-search-form">
 
+                <input type="hidden"
+                       name="category"
+                       th:value="${category}">
+
                 <input type="text"
                        name="keyword"
                        class="board-search-input"
