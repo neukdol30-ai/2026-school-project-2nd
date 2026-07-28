@@ -1,13 +1,9 @@
 // 이벤트 연결 상태
 let eventsBound = false;
 
-// 더블클릭으로 선택한 위젯 정보
+// 더블클릭으로 선택한 배치 항목
 let widgetMoveSession = null;
 
-// 예정 일정과 월간 캘린더는 함께 이동
-const SCHEDULE_CALENDAR_GROUP_IDS = [3, 7];
-
-// 메인 화면 이벤트 연결
 function bindEvents() {
     if (eventsBound) {
         return;
@@ -61,11 +57,9 @@ function bindEvents() {
     );
 
     syncLayoutEditClass();
-
     eventsBound = true;
 }
 
-// 배치 편집 상태 표시
 function syncLayoutEditClass() {
     const app = document.querySelector("#app");
 
@@ -79,128 +73,37 @@ function syncLayoutEditClass() {
     );
 }
 
-// 이동할 위젯 카드 목록 조회
-function getWidgetMoveCards(widgetCard) {
-    const widgetList =
-        widgetCard.closest("[data-widget-list]");
+function getMovableLayoutItem(target) {
+    const item = target.closest(
+        "[data-layout-item]"
+    );
 
-    if (!widgetList) {
-        return [];
+    if (!item || item.dataset.layoutFixed) {
+        return null;
     }
 
-    const widgetId =
-        Number(widgetCard.dataset.widgetId);
-
-    if (
-        !SCHEDULE_CALENDAR_GROUP_IDS.includes(
-            widgetId
-        )
-    ) {
-        return [widgetCard];
+    if (item.dataset.layoutPlaceholder === "true") {
+        return null;
     }
 
-    const groupCards =
-        SCHEDULE_CALENDAR_GROUP_IDS
-            .map((id) => {
-                return widgetList.querySelector(
-                    `:scope > [data-widget-id="${id}"]`
-                );
-            })
-            .filter(Boolean);
-
-    return groupCards.length === 2
-        ? groupCards
-        : [widgetCard];
+    return item;
 }
 
-// 이동할 카드 묶음의 전체 영역 계산
-function getWidgetMoveGroupRect(cards) {
-    const rects = cards.map((card) => {
-        return card.getBoundingClientRect();
-    });
-
-    const left = Math.min(
-        ...rects.map((rect) => rect.left)
-    );
-
-    const top = Math.min(
-        ...rects.map((rect) => rect.top)
-    );
-
-    const right = Math.max(
-        ...rects.map((rect) => rect.right)
-    );
-
-    const bottom = Math.max(
-        ...rects.map((rect) => rect.bottom)
-    );
-
-    return {
-        left: left,
-        top: top,
-        right: right,
-        bottom: bottom,
-        width: right - left,
-        height: bottom - top
-    };
-}
-
-// 카드 묶음 중 DOM에서 가장 앞에 있는 카드 조회
-function getFirstMoveCardInDom(
-    widgetList,
-    cards
-) {
-    const cardSet = new Set(cards);
-
-    return [
-        ...widgetList.querySelectorAll(
-            ":scope > [data-widget-id]"
-        )
-    ].find((card) => {
-        return cardSet.has(card);
-    });
-}
-
-// 카드 묶음 중 DOM에서 가장 뒤에 있는 카드 조회
-function getLastMoveCardInDom(
-    widgetList,
-    cards
-) {
-    const cardSet = new Set(cards);
-
-    return [
-        ...widgetList.querySelectorAll(
-            ":scope > [data-widget-id]"
-        )
-    ]
-        .reverse()
-        .find((card) => {
-            return cardSet.has(card);
-        });
-}
-
-// 배치 편집 중 클릭 처리
 function handleEditModeClick(event) {
     if (!state.isEditMode) {
         return;
     }
 
-    // 이동 중에는 같은 열을 한 번 클릭하면 배치한다.
     if (widgetMoveSession) {
-        const targetList =
-            event.target.closest(
-                "[data-widget-list]"
-            );
+        const board = event.target.closest(
+            "[data-dashboard-board]"
+        );
 
-        if (
-            targetList
-            === widgetMoveSession.list
-        ) {
+        if (board === widgetMoveSession.board) {
             updateMovePlaceholder(
                 event.clientX,
                 event.clientY
             );
-
             finishWidgetMove(true);
 
             event.preventDefault();
@@ -208,11 +111,9 @@ function handleEditModeClick(event) {
             return;
         }
 
-        // 배치 완료 같은 화면 바깥 버튼은 정상 작동시킨다.
-        const actionButton =
-            event.target.closest(
-                "[data-action]"
-            );
+        const actionButton = event.target.closest(
+            "[data-action]"
+        );
 
         if (actionButton) {
             return;
@@ -223,51 +124,44 @@ function handleEditModeClick(event) {
         return;
     }
 
-    const widgetCard =
-        event.target.closest(
-            "[data-widget-id]"
-        );
+    const layoutItem = getMovableLayoutItem(
+        event.target
+    );
 
-    if (!widgetCard) {
+    if (!layoutItem) {
         return;
     }
 
-    // 숨김 버튼은 편집 중에도 사용할 수 있다.
-    const hideButton =
-        event.target.closest(
-            '[data-action="toggle-widget"]'
-        );
+    const hideButton = event.target.closest(
+        '[data-action="toggle-widget"]'
+    );
 
     if (hideButton) {
         return;
     }
 
-    // 일반 클릭으로 위젯 내부 기능이 실행되는 것을 막는다.
     event.preventDefault();
     event.stopPropagation();
 }
 
-// 위젯 더블클릭으로 이동 시작
 function handleWidgetDoubleClick(event) {
     if (!state.isEditMode) {
         return;
     }
 
-    const hideButton =
+    if (
         event.target.closest(
             '[data-action="toggle-widget"]'
-        );
-
-    if (hideButton) {
+        )
+    ) {
         return;
     }
 
-    const widgetCard =
-        event.target.closest(
-            "[data-widget-id]"
-        );
+    const layoutItem = getMovableLayoutItem(
+        event.target
+    );
 
-    if (!widgetCard) {
+    if (!layoutItem) {
         return;
     }
 
@@ -275,12 +169,7 @@ function handleWidgetDoubleClick(event) {
     event.stopPropagation();
 
     if (widgetMoveSession) {
-        // 선택한 일정 또는 캘린더를 다시 더블클릭하면 둘 다 취소
-        if (
-            widgetMoveSession.cards.includes(
-                widgetCard
-            )
-        ) {
+        if (widgetMoveSession.item === layoutItem) {
             finishWidgetMove(false);
             return;
         }
@@ -289,302 +178,214 @@ function handleWidgetDoubleClick(event) {
     }
 
     startWidgetMove(
-        widgetCard,
+        layoutItem,
         event.clientX,
         event.clientY
     );
 }
 
-// 위젯 이동 시작
 function startWidgetMove(
-    widgetCard,
+    layoutItem,
     pointerX,
     pointerY
 ) {
-    const widgetList =
-        widgetCard.closest(
-            "[data-widget-list]"
-        );
+    const board = layoutItem.closest(
+        "[data-dashboard-board]"
+    );
 
-    if (!widgetList) {
+    if (!board) {
         return;
     }
 
-    const cards =
-        getWidgetMoveCards(widgetCard);
-
-    if (!cards.length) {
-        return;
-    }
-
-    const groupRect =
-        getWidgetMoveGroupRect(cards);
-
-    const firstCard =
-        getFirstMoveCardInDom(
-            widgetList,
-            cards
-        );
-
-    const lastCard =
-        getLastMoveCardInDom(
-            widgetList,
-            cards
-        );
-
-    if (!firstCard || !lastCard) {
-        return;
-    }
-
+    const rect = layoutItem.getBoundingClientRect();
+    const span = Number(
+        layoutItem.dataset.layoutSpan
+    ) === 2 ? 2 : 1;
+    const originalColumn = Number(
+        layoutItem.dataset.layoutColumn
+    ) || 1;
     const originalNextSibling =
-        lastCard.nextElementSibling;
+        layoutItem.nextElementSibling;
 
-    const cardStates =
-        cards.map((card, index) => {
-            const rect =
-                card.getBoundingClientRect();
-
-            return {
-                card: card,
-                rect: rect,
-
-                relativeLeft:
-                    rect.left
-                    - groupRect.left,
-
-                relativeTop:
-                    rect.top
-                    - groupRect.top,
-
-                zIndex:
-                    1000 + index
-            };
-        });
-
-    const placeholder =
-        document.createElement("div");
-
+    const placeholder = document.createElement("div");
     placeholder.className =
-        "widget-move-placeholder";
+        "widget-move-placeholder dashboard-layout-item";
+    placeholder.dataset.layoutItem = "";
+    placeholder.dataset.layoutPlaceholder = "true";
+    placeholder.dataset.layoutKey = "move-placeholder";
+    placeholder.dataset.layoutSpan = String(span);
+    placeholder.dataset.layoutColumn =
+        String(originalColumn);
+    placeholder.style.height = `${rect.height}px`;
+    placeholder.setAttribute("aria-hidden", "true");
 
-    placeholder.style.height =
-        `${groupRect.height}px`;
-
-    // 일정과 캘린더 묶음은 한 줄 전체의 빈자리로 표시
-    if (cards.length > 1) {
-        placeholder.style.gridColumn =
-            "1 / -1";
-    }
-
-    widgetList.insertBefore(
+    board.insertBefore(
         placeholder,
-        firstCard
+        layoutItem
     );
 
     widgetMoveSession = {
-        cards: cards,
-        cardStates: cardStates,
-        list: widgetList,
-        zone:
-        widgetList.dataset.widgetList,
-        placeholder: placeholder,
-
-        offsetX:
-            pointerX
-            - groupRect.left,
-
-        offsetY:
-            pointerY
-            - groupRect.top,
-
-        originalNextSibling:
-        originalNextSibling
+        item: layoutItem,
+        board,
+        placeholder,
+        span,
+        originalColumn,
+        originalNextSibling,
+        offsetX: pointerX - rect.left,
+        offsetY: pointerY - rect.top
     };
 
-    cardStates.forEach((cardState) => {
-        const card =
-            cardState.card;
+    layoutItem.dataset.layoutFloating = "true";
+    layoutItem.classList.add("is-move-selected");
+    layoutItem.style.position = "fixed";
+    layoutItem.style.left = `${rect.left}px`;
+    layoutItem.style.top = `${rect.top}px`;
+    layoutItem.style.width = `${rect.width}px`;
+    layoutItem.style.height = `${rect.height}px`;
+    layoutItem.style.margin = "0";
+    layoutItem.style.zIndex = "1200";
+    layoutItem.style.pointerEvents = "none";
+    layoutItem.style.transition = "none";
+    layoutItem.style.transform = "none";
 
-        const rect =
-            cardState.rect;
+    board.classList.add("is-widget-move-board");
+    document.body.classList.add("is-widget-move-mode");
 
-        card.classList.add(
-            "is-move-selected"
-        );
-
-        card.style.position =
-            "fixed";
-
-        card.style.left =
-            `${rect.left}px`;
-
-        card.style.top =
-            `${rect.top}px`;
-
-        card.style.width =
-            `${rect.width}px`;
-
-        card.style.height =
-            `${rect.height}px`;
-
-        card.style.margin =
-            "0";
-
-        card.style.zIndex =
-            String(cardState.zIndex);
-
-        card.style.pointerEvents =
-            "none";
-
-        card.style.transition =
-            "none";
-
-        card.style.transform =
-            "none";
-    });
-
-    widgetList.classList.add(
-        "is-widget-move-list"
-    );
-
-    document.body.classList.add(
-        "is-widget-move-mode"
-    );
+    updateMovePlaceholder(pointerX, pointerY);
+    scheduleDashboardLayout();
 }
 
-// 선택한 위젯이 마우스를 따라 이동
 function handleWidgetMovePointer(event) {
     if (!widgetMoveSession) {
         return;
     }
 
-    const session =
-        widgetMoveSession;
+    const session = widgetMoveSession;
+    const left = event.clientX - session.offsetX;
+    const top = event.clientY - session.offsetY;
 
-    const groupLeft =
-        event.clientX
-        - session.offsetX;
-
-    const groupTop =
-        event.clientY
-        - session.offsetY;
-
-    session.cardStates.forEach(
-        (cardState) => {
-            cardState.card.style.left =
-                `${
-                    groupLeft
-                    + cardState.relativeLeft
-                }px`;
-
-            cardState.card.style.top =
-                `${
-                    groupTop
-                    + cardState.relativeTop
-                }px`;
-        }
-    );
+    session.item.style.left = `${left}px`;
+    session.item.style.top = `${top}px`;
 
     updateMovePlaceholder(
         event.clientX,
         event.clientY
     );
 
-    autoScrollWidgetMove(
-        event.clientY
-    );
+    autoScrollWidgetMove(event.clientY);
 }
 
-// 마우스 위치에 맞춰 들어갈 자리 표시
+function getLayoutItemVisualOrder(items) {
+    return [...items].sort((first, second) => {
+        const firstRect = first.getBoundingClientRect();
+        const secondRect = second.getBoundingClientRect();
+        const topDifference = firstRect.top - secondRect.top;
+
+        if (Math.abs(topDifference) > 8) {
+            return topDifference;
+        }
+
+        return firstRect.left - secondRect.left;
+    });
+}
+
 function updateMovePlaceholder(
     pointerX,
     pointerY
 ) {
-    const session =
-        widgetMoveSession;
+    const session = widgetMoveSession;
 
     if (!session) {
         return;
     }
 
-    const listRect =
-        session.list.getBoundingClientRect();
+    const boardRect =
+        session.board.getBoundingClientRect();
 
-    // 다른 열로 마우스가 넘어가면 위치를 바꾸지 않는다.
     if (
-        pointerX < listRect.left
-        || pointerX > listRect.right
+        pointerX < boardRect.left - 40
+        || pointerX > boardRect.right + 40
     ) {
         return;
     }
 
-    const otherCards = [
-        ...session.list.querySelectorAll(
-            ":scope > [data-widget-id]"
+    const targetColumn = getDashboardColumnFromPointer(
+        pointerX,
+        session.span
+    );
+
+    session.placeholder.dataset.layoutColumn =
+        String(targetColumn);
+
+    const candidates = getLayoutItemVisualOrder(
+        session.board.querySelectorAll(
+            ":scope > [data-layout-item]"
         )
-    ].filter((card) => {
-        return !session.cards.includes(
-            card
+    ).filter((item) => {
+        if (
+            item === session.placeholder
+            || item === session.item
+            || item.dataset.layoutFloating === "true"
+        ) {
+            return false;
+        }
+
+        const itemColumn = Number(
+            item.dataset.layoutColumn
+        ) || 1;
+        const itemSpan = Number(
+            item.dataset.layoutSpan
+        ) === 2 ? 2 : 1;
+
+        return dashboardColumnRangesOverlap(
+            targetColumn,
+            session.span,
+            itemColumn,
+            itemSpan
         );
     });
 
-    let referenceCard = null;
+    let referenceItem = null;
 
-    for (const card of otherCards) {
-        const rect =
-            card.getBoundingClientRect();
-
-        const middleY =
-            rect.top
-            + rect.height / 2;
+    for (const candidate of candidates) {
+        const rect = candidate.getBoundingClientRect();
+        const middleY = rect.top + rect.height / 2;
 
         if (pointerY < middleY) {
-            referenceCard = card;
+            referenceItem = candidate;
             break;
         }
     }
 
-    if (referenceCard) {
-        session.list.insertBefore(
+    if (referenceItem) {
+        session.board.insertBefore(
             session.placeholder,
-            referenceCard
+            referenceItem
         );
-
-        return;
+    } else {
+        session.board.append(session.placeholder);
     }
 
-    session.list.append(
-        session.placeholder
-    );
+    scheduleDashboardLayout();
 }
 
-// 화면 위아래 근처에서 자동 스크롤
 function autoScrollWidgetMove(pointerY) {
     const edgeSize = 80;
     const scrollSpeed = 14;
 
     if (pointerY < edgeSize) {
-        window.scrollBy(
-            0,
-            -scrollSpeed
-        );
-
+        window.scrollBy(0, -scrollSpeed);
         return;
     }
 
     if (
         pointerY
-        > window.innerHeight
-        - edgeSize
+        > window.innerHeight - edgeSize
     ) {
-        window.scrollBy(
-            0,
-            scrollSpeed
-        );
+        window.scrollBy(0, scrollSpeed);
     }
 }
 
-// Esc 키로 이동 취소
 function handleWidgetMoveKeydown(event) {
     if (
         event.key !== "Escape"
@@ -594,126 +395,82 @@ function handleWidgetMoveKeydown(event) {
     }
 
     event.preventDefault();
-
     finishWidgetMove(false);
 }
 
-// 이동 완료 또는 취소
-function finishWidgetMove(saveOrder) {
-    const session =
-        widgetMoveSession;
+function finishWidgetMove(saveLayout) {
+    const session = widgetMoveSession;
 
     if (!session) {
         return;
     }
 
-    if (saveOrder) {
-        // 일정과 캘린더를 같은 위치에 순서대로 배치
-        session.cards.forEach((card) => {
-            session.list.insertBefore(
-                card,
-                session.placeholder
-            );
-        });
+    if (saveLayout) {
+        session.item.dataset.layoutColumn =
+            session.placeholder.dataset.layoutColumn;
+
+        session.board.insertBefore(
+            session.item,
+            session.placeholder
+        );
     } else if (
         session.originalNextSibling
         && session.originalNextSibling.parentElement
-        === session.list
+        === session.board
     ) {
-        // 취소하면 기존 위치로 둘 다 복원
-        session.cards.forEach((card) => {
-            session.list.insertBefore(
-                card,
-                session.originalNextSibling
-            );
-        });
+        session.board.insertBefore(
+            session.item,
+            session.originalNextSibling
+        );
+        session.item.dataset.layoutColumn =
+            String(session.originalColumn);
     } else {
-        session.cards.forEach((card) => {
-            session.list.append(card);
-        });
+        session.board.append(session.item);
+        session.item.dataset.layoutColumn =
+            String(session.originalColumn);
     }
 
     session.placeholder.remove();
+    resetWidgetMoveStyle(session.item);
 
-    session.cards.forEach((card) => {
-        resetWidgetMoveStyle(card);
-    });
-
-    session.list.classList.remove(
-        "is-widget-move-list"
+    session.board.classList.remove(
+        "is-widget-move-board"
     );
-
     document.body.classList.remove(
         "is-widget-move-mode"
     );
 
-    if (saveOrder) {
-        saveWidgetOrderFromDom(
-            session.zone
-        );
+    widgetMoveSession = null;
 
-        syncWidgetList(
-            session.zone
-        );
+    if (saveLayout) {
+        saveDashboardLayoutFromDom();
     }
 
-    widgetMoveSession = null;
+    observeDashboardBoardItems();
 }
 
-// 선택된 위젯 스타일 복구
-function resetWidgetMoveStyle(card) {
-    card.classList.remove(
-        "is-move-selected"
-    );
+function resetWidgetMoveStyle(item) {
+    item.classList.remove("is-move-selected");
+    delete item.dataset.layoutFloating;
 
-    card.style.removeProperty(
-        "position"
-    );
-
-    card.style.removeProperty(
-        "left"
-    );
-
-    card.style.removeProperty(
-        "top"
-    );
-
-    card.style.removeProperty(
-        "width"
-    );
-
-    card.style.removeProperty(
-        "height"
-    );
-
-    card.style.removeProperty(
-        "margin"
-    );
-
-    card.style.removeProperty(
-        "z-index"
-    );
-
-    card.style.removeProperty(
-        "pointer-events"
-    );
-
-    card.style.removeProperty(
-        "transition"
-    );
-
-    card.style.removeProperty(
+    [
+        "position",
+        "left",
+        "top",
+        "width",
+        "height",
+        "margin",
+        "z-index",
+        "pointer-events",
+        "transition",
         "transform"
-    );
+    ].forEach((property) => {
+        item.style.removeProperty(property);
+    });
 }
 
-// 브라우저 기본 드래그 차단
 function preventNativeWidgetDrag(event) {
-    if (
-        event.target.closest(
-            "[data-widget-id]"
-        )
-    ) {
+    if (event.target.closest("[data-layout-item]")) {
         event.preventDefault();
     }
 }
@@ -865,11 +622,11 @@ function handleAction(event) {
     if (action === "toggle-edit") {
         finishWidgetMove(false);
 
-        state.isSettingsOpen =
-            true;
+        state.isSettingsOpen = true;
 
-        render();
-        syncLayoutEditClass();
+        updateSettingsDrawer();
+        updateControlBox();
+        updateGlobalBanner();
 
         return;
     }
@@ -877,11 +634,11 @@ function handleAction(event) {
     if (action === "close-edit") {
         finishWidgetMove(false);
 
-        state.isSettingsOpen =
-            false;
+        state.isSettingsOpen = false;
 
-        render();
-        syncLayoutEditClass();
+        updateSettingsDrawer();
+        updateControlBox();
+        updateGlobalBanner();
 
         return;
     }
@@ -892,14 +649,13 @@ function handleAction(event) {
     ) {
         finishWidgetMove(false);
 
-        state.isSettingsOpen =
-            false;
+        state.isSettingsOpen = false;
+        state.isEditMode = true;
 
-        state.isEditMode =
-            true;
-
-        render();
-        syncLayoutEditClass();
+        updateSettingsDrawer();
+        updateControlBox();
+        updateGlobalBanner();
+        updateDashboardEditModeUi();
 
         return;
     }
@@ -910,11 +666,10 @@ function handleAction(event) {
     ) {
         finishWidgetMove(true);
 
-        state.isEditMode =
-            false;
+        state.isEditMode = false;
 
-        render();
-        syncLayoutEditClass();
+        updateGlobalBanner();
+        updateDashboardEditModeUi();
 
         return;
     }
@@ -975,24 +730,10 @@ function handleAction(event) {
     }
 
 
-    if (action === "move-up") {
-        moveWidget(
-            id,
-            "up"
-        );
-
-        return;
-    }
-
     if (
-        action
-        === "move-down"
+        action === "move-up"
+        || action === "move-down"
     ) {
-        moveWidget(
-            id,
-            "down"
-        );
-
         return;
     }
 

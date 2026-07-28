@@ -16,15 +16,15 @@ function renderControlBox() {
                 ${state.widgets
         .map((widget) => {
             return `
-                            <button
-                                type="button"
-                                class="${widget.visible ? "active" : ""}"
-                                data-action="toggle-widget"
-                                data-id="${widget.id}"
-                            >
-                                ${widget.title}
-                            </button>
-                        `;
+                    <button
+                        type="button"
+                        class="${widget.visible ? "active" : ""}"
+                        data-action="toggle-widget"
+                        data-id="${widget.id}"
+                    >
+                        ${widget.title}
+                    </button>
+                `;
         })
         .join("")}
             </div>
@@ -32,19 +32,21 @@ function renderControlBox() {
     `;
 }
 
-// 일정과 캘린더는 네 기존 제목 디자인 사용
 function isScheduleCalendarWidget(widget) {
-    return widget.id === 3 || widget.id === 7;
+    return widget.id === SCHEDULE_WIDGET_ID
+        || widget.id === CALENDAR_WIDGET_ID;
 }
 
-// 위젯 공통 헤더
 function renderWidgetHeader(
     widget,
     index,
-    widgetCount
+    widgetCount,
+    options = {}
 ) {
     const useCalendarDesign =
         isScheduleCalendarWidget(widget);
+    const suppressActions =
+        Boolean(options.suppressActions);
 
     return `
         <div class="widget-header">
@@ -60,120 +62,118 @@ function renderWidgetHeader(
                 ${
         useCalendarDesign && widget.description
             ? `
-                            <div class="widget-desc">
-                                ${widget.description}
-                            </div>
-                        `
+                    <div class="widget-desc">
+                        ${widget.description}
+                    </div>
+                `
             : ""
     }
             </div>
 
-            <div class="widget-actions">
-                ${widget.type === "stock" && !state.isEditMode ? `
-                <div class="stock-header-tools">
-                    <span class="stock-header-updated">
-                        ${formatStockUpdatedAt(state.stockUpdatedAt)}
-                    </span>
-        
-                    <button
-                        class="stock-refresh-button"
-                        type="button"
-                        data-action="refresh-stocks"
-                        aria-label="증권 정보 새로고침"
-                        title="새로고침"
-                    >
-                        ↻
-                    </button>
-                </div>
-                ` : ""}
-                ${
-        state.isEditMode
-            ? `
-                            <span
-                                class="widget-move-guide"
-                                title="더블클릭하여 이동"
-                            >
-                                ↕
+            ${suppressActions ? "" : `
+                <div class="widget-actions">
+                    ${widget.type === "stock" && !state.isEditMode ? `
+                        <div class="stock-header-tools">
+                            <span class="stock-header-updated">
+                                ${formatStockUpdatedAt(state.stockUpdatedAt)}
                             </span>
 
                             <button
-                                class="danger"
+                                class="stock-refresh-button"
                                 type="button"
-                                data-action="toggle-widget"
-                                data-id="${widget.id}"
+                                data-action="refresh-stocks"
+                                aria-label="증권 정보 새로고침"
+                                title="새로고침"
                             >
-                                숨김
+                                ↻
                             </button>
-                        `
-            : ""
-    }
-            </div>
+                        </div>
+                    ` : ""}
+
+                    ${state.isEditMode ? `
+                        <span
+                            class="widget-move-guide"
+                            title="더블클릭하여 이동"
+                        >
+                            ↕
+                        </span>
+
+                        <button
+                            class="danger"
+                            type="button"
+                            data-action="toggle-widget"
+                            data-id="${widget.id}"
+                        >
+                            숨김
+                        </button>
+                    ` : ""}
+                </div>
+            `}
         </div>
     `;
 }
 
-// 위젯 카드
 function renderWidget(
     widget,
     index,
-    widgetCount
+    widgetCount,
+    options = {}
 ) {
+    const span = options.span
+        || getDashboardWidgetSpan(widget);
+    const sizeClass = options.sizeClass
+        || (span === 2
+            ? "main-widget"
+            : "side-widget");
+    const descriptor = options.descriptor || null;
+    const layoutItem = Boolean(options.layoutItem);
+    const groupChild = Boolean(options.groupChild);
+    const layoutEntry = descriptor?.entry || null;
+    const layoutAttributes = layoutItem && layoutEntry
+        ? `
+            data-layout-item
+            data-layout-key="${descriptor.key}"
+            data-layout-span="${span}"
+            data-layout-column="${layoutEntry.column}"
+        `
+        : "";
+
     return `
         <article
-            class="widget ${
-        widget.zone === "main"
-            ? "main-widget"
-            : "side-widget"
+            class="widget ${sizeClass} ${
+        layoutItem ? "dashboard-layout-item" : ""
     } ${
-        state.isEditMode
-            ? "is-layout-editing"
-            : ""
+        groupChild ? "dashboard-group-child" : ""
+    } ${
+        state.isEditMode ? "is-layout-editing" : ""
     }"
             data-widget-id="${widget.id}"
+            ${layoutAttributes}
         >
             ${renderWidgetHeader(
         widget,
         index,
-        widgetCount
+        widgetCount,
+        options
     )}
 
-            ${
-        widget.collapsed
-            ? ""
-            : `
-                        <div
-                            class="widget-content"
-                            data-widget-content="${widget.id}"
-                        >
-                            ${renderWidgetContent(widget)}
-                        </div>
-                    `
-    }
+            ${widget.collapsed ? "" : `
+                <div
+                    class="widget-content"
+                    data-widget-content="${widget.id}"
+                >
+                    ${renderWidgetContent(widget)}
+                </div>
+            `}
         </article>
     `;
 }
 
-// 상단 현재시간 위젯
 function renderHeaderWidget() {
-    const headerWidget =
-        state.widgets.find((widget) => {
-            return widget.id
-                === state.headerWidgetId;
-        });
+    const headerWidget = getCurrentTimeWidget();
 
-    if (
-        !headerWidget
-        || !headerWidget.visible
-    ) {
-        return `
-            <article class="widget header-widget">
-                <div class="widget-content">
-                    <p class="widget-desc">
-                        상단 위젯이 비어 있습니다.
-                    </p>
-                </div>
-            </article>
-        `;
+    if (!headerWidget || !headerWidget.visible) {
+        return "";
     }
 
     return `
@@ -186,8 +186,7 @@ function renderHeaderWidget() {
                     <div
                         class="widget-title"
                         data-current-time-basis="${
-        typeof getSelectedCurrentTimeCity
-        === "function"
+        typeof getSelectedCurrentTimeCity === "function"
             ? `${getSelectedCurrentTimeCity()} 기준`
             : "서울 기준"
     }"
@@ -201,15 +200,158 @@ function renderHeaderWidget() {
                 class="widget-content"
                 data-widget-content="${headerWidget.id}"
             >
-                ${renderWidgetContent(
-        headerWidget
-    )}
+                ${renderWidgetContent(headerWidget)}
             </div>
         </article>
     `;
 }
 
-// 위젯 내용 연결
+function renderHeaderWorldTimeWidget() {
+    const worldTimeWidget = getWorldTimeWidget();
+
+    if (!worldTimeWidget || !worldTimeWidget.visible) {
+        return "";
+    }
+
+    return renderWidget(
+        worldTimeWidget,
+        0,
+        1,
+        {
+            layoutItem: false,
+            groupChild: true,
+            span: 1,
+            suppressActions: true
+        }
+    );
+}
+
+function renderTimeGroupLayoutItem(descriptor) {
+    const currentVisible =
+        Boolean(descriptor.currentTimeWidget?.visible);
+    const worldVisible =
+        Boolean(descriptor.worldTimeWidget?.visible);
+    const singleClass = currentVisible && worldVisible
+        ? ""
+        : "is-single-time";
+
+    return `
+        <section
+            class="header-time-group dashboard-layout-item dashboard-time-item ${singleClass} ${
+        state.isEditMode ? "is-layout-editing" : ""
+    }"
+            data-layout-item
+            data-layout-key="${descriptor.key}"
+            data-layout-span="2"
+            data-layout-column="${descriptor.entry.column}"
+        >
+            ${state.isEditMode ? `
+                <span class="dashboard-group-move-guide">
+                    ↔ 더블클릭으로 이동
+                </span>
+            ` : ""}
+
+            ${currentVisible ? `
+                <section
+                    class="header-widget-slot"
+                    data-time-current-slot
+                >
+                    ${renderHeaderWidget()}
+                </section>
+            ` : ""}
+
+            ${worldVisible ? `
+                <section
+                    class="header-world-time-slot"
+                    data-time-world-slot
+                >
+                    ${renderHeaderWorldTimeWidget()}
+                </section>
+            ` : ""}
+        </section>
+    `;
+}
+
+function renderScheduleCalendarGroupItem(descriptor) {
+    const widgets = [
+        descriptor.scheduleWidget,
+        descriptor.calendarWidget
+    ].filter((widget) => widget?.visible);
+    const singleClass = widgets.length === 1
+        ? "is-single-group"
+        : "";
+
+    return `
+        <section
+            class="schedule-calendar-group dashboard-layout-item ${singleClass} ${
+        state.isEditMode ? "is-layout-editing" : ""
+    }"
+            data-layout-item
+            data-layout-key="${descriptor.key}"
+            data-layout-span="2"
+            data-layout-column="${descriptor.entry.column}"
+        >
+            ${state.isEditMode ? `
+                <span class="dashboard-group-move-guide">
+                    ↔ 묶음 이동
+                </span>
+            ` : ""}
+
+            ${widgets.map((widget, index) => {
+        return renderWidget(
+            widget,
+            index,
+            widgets.length,
+            {
+                layoutItem: false,
+                groupChild: true,
+                span: 1,
+                sizeClass: "main-widget"
+            }
+        );
+    }).join("")}
+        </section>
+    `;
+}
+
+function renderDashboardLayoutItem(descriptor) {
+    if (descriptor.kind === "time-group") {
+        return renderTimeGroupLayoutItem(descriptor);
+    }
+
+    if (descriptor.kind === "schedule-group") {
+        return renderScheduleCalendarGroupItem(descriptor);
+    }
+
+    return renderWidget(
+        descriptor.widget,
+        0,
+        1,
+        {
+            layoutItem: true,
+            descriptor,
+            span: descriptor.span
+        }
+    );
+}
+
+function renderDashboardBoardContent() {
+    const items = getVisibleDashboardLayoutItems();
+
+    return `
+        <section
+            class="header-auth-slot dashboard-auth-item"
+            data-layout-fixed="auth"
+            data-layout-key="${DASHBOARD_AUTH_KEY}"
+            data-auth-widget
+        >
+            ${renderAuthWidget()}
+        </section>
+
+        ${items.map(renderDashboardLayoutItem).join("")}
+    `;
+}
+
 function renderWidgetContent(widget) {
     if (widget.type === "news") {
         return renderNewsWidget();

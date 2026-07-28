@@ -925,3 +925,266 @@
 .header-widget-slot .widget-title::after {
     content: attr(data-current-time-basis);
 }
+/* 3칸 자유 배치판 */
+:root {
+    --dashboard-board-width: 1390px;
+    --dashboard-column-width: 450px;
+    --dashboard-column-gap: 20px;
+    --dashboard-row-gap: 20px;
+}
+
+.container {
+    min-width: var(--dashboard-width);
+}
+
+.dashboard-board {
+    position: relative;
+    width: var(--dashboard-board-width);
+    min-width: var(--dashboard-board-width);
+    min-height: var(--header-card-height);
+    margin: 0 auto;
+}
+
+.dashboard-board > [data-layout-item],
+.dashboard-board > [data-layout-fixed] {
+    position: absolute;
+    top: 0;
+    left: 0;
+    box-sizing: border-box;
+    will-change: transform;
+}
+
+.dashboard-board > [data-layout-item] {
+    transition:
+            box-shadow 0.2s ease,
+            opacity 0.2s ease;
+}
+
+/* 실제 배치 이동이 필요할 때만 한 번 부드럽게 이동 */
+.dashboard-board.is-layout-animating
+> [data-layout-item] {
+    transition:
+            transform 0.25s ease,
+            box-shadow 0.2s ease,
+            opacity 0.2s ease;
+}
+
+.dashboard-board > [data-layout-item][data-layout-span="1"] {
+    width: var(--dashboard-column-width);
+}
+
+.dashboard-board > [data-layout-item][data-layout-span="2"] {
+    width: calc(
+            var(--dashboard-column-width) * 2
+            + var(--dashboard-column-gap)
+    );
+}
+
+.dashboard-auth-item {
+    width: var(--dashboard-column-width);
+    min-height: var(--auth-card-height);
+}
+
+.dashboard-auth-item > * {
+    width: 100% !important;
+    max-width: none !important;
+    min-width: 0 !important;
+    height: var(--auth-card-height) !important;
+    min-height: var(--auth-card-height) !important;
+    margin: 0 !important;
+}
+
+.dashboard-layout-item.widget {
+    margin: 0;
+}
+
+/* 현재시간과 세계시간은 원래 크기와 가로 구성을 유지 */
+.dashboard-time-item {
+    width: calc(
+            var(--dashboard-column-width) * 2
+            + var(--dashboard-column-gap)
+    );
+}
+
+.header-time-group.is-single-time {
+    grid-template-columns: 1fr;
+}
+
+.header-time-group.is-single-time
+.header-world-time-slot::before {
+    display: none;
+}
+
+/* 일정과 달력도 하나의 2칸 묶음으로 이동 */
+.schedule-calendar-group {
+    position: relative;
+    display: grid;
+    grid-template-columns:
+        minmax(0, 2.25fr)
+        minmax(250px, 0.95fr);
+    gap: 0;
+    width: calc(
+            var(--dashboard-column-width) * 2
+            + var(--dashboard-column-gap)
+    );
+    align-items: stretch;
+    background: transparent;
+}
+
+.schedule-calendar-group.is-single-group {
+    grid-template-columns: 1fr;
+}
+
+.schedule-calendar-group > .widget {
+    width: 100% !important;
+    min-width: 0;
+    margin: 0 !important;
+}
+
+.schedule-calendar-group
+> [data-widget-id="3"] {
+    position: relative;
+    min-height: 310px;
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+    border-right: 0;
+}
+
+.schedule-calendar-group
+> [data-widget-id="7"] {
+    position: relative;
+    min-height: 310px;
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+}
+
+.schedule-calendar-group:not(.is-single-group)
+> [data-widget-id="7"]::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 1;
+    width: 1px;
+    background: #e5e7eb;
+}
+
+.schedule-calendar-group.is-single-group > .widget {
+    border-radius: 14px;
+    border-right: 1px solid #e5e7eb;
+}
+
+.schedule-calendar-group
+> [data-widget-id="3"]
+.widget-content {
+    min-height: 220px;
+}
+
+.schedule-calendar-group
+> [data-widget-id="7"]
+.widget-content {
+    min-width: 0;
+}
+
+/* 기존 2열 전용 배치는 새 배치판에서는 사용하지 않음 */
+.dashboard-header,
+.dashboard-layout,
+.widget-column,
+.widget-list[data-widget-list="main"],
+.widget-list[data-widget-list="side"] {
+    position: static;
+}
+
+/* 배치 편집 표시 */
+.is-layout-edit-mode
+.dashboard-board > [data-layout-item] {
+    cursor: grab;
+    outline: 2px dashed rgba(20, 142, 186, 0.34);
+    outline-offset: 4px;
+}
+
+.is-layout-edit-mode
+.dashboard-board > [data-layout-item]:hover {
+    outline-color: #1597c7;
+    box-shadow: 0 12px 28px rgba(25, 121, 158, 0.14);
+}
+
+.dashboard-group-move-guide {
+    position: absolute;
+    top: 8px;
+    left: 50%;
+    z-index: 20;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 26px;
+    padding: 0 10px;
+    border: 1px solid rgba(20, 142, 186, 0.26);
+    border-radius: 999px;
+    background: rgba(247, 252, 255, 0.94);
+    color: #197da1;
+    font-size: 11px;
+    font-weight: 800;
+    pointer-events: none;
+    transform: translateX(-50%);
+}
+
+.widget-move-guide {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.widget-move-placeholder {
+    min-height: 90px;
+    border: 2px dashed #28aedd;
+    border-radius: 14px;
+    background:
+            repeating-linear-gradient(
+                    -45deg,
+                    rgba(40, 174, 221, 0.08),
+                    rgba(40, 174, 221, 0.08) 10px,
+                    rgba(255, 255, 255, 0.72) 10px,
+                    rgba(255, 255, 255, 0.72) 20px
+            );
+    box-sizing: border-box;
+    pointer-events: none;
+}
+
+.dashboard-board > [data-layout-floating="true"] {
+    opacity: 0.94;
+    outline: 3px solid #1ba8d9;
+    outline-offset: 4px;
+    box-shadow: 0 24px 58px rgba(15, 89, 119, 0.28);
+    cursor: grabbing;
+}
+
+body.is-widget-move-mode,
+body.is-widget-move-mode * {
+    cursor: grabbing !important;
+    user-select: none !important;
+}
+
+/* 1칸 위젯은 옮겨도 기존 사이드 크기를 유지 */
+.dashboard-board
+> .dashboard-layout-item.side-widget {
+    width: var(--dashboard-column-width) !important;
+    max-width: var(--dashboard-column-width) !important;
+}
+
+/* 2칸 위젯은 오른쪽으로 옮겨도 원본 920px 크기를 유지 */
+.dashboard-board
+> .dashboard-layout-item.main-widget {
+    width: calc(
+            var(--dashboard-column-width) * 2
+            + var(--dashboard-column-gap)
+    ) !important;
+    max-width: none !important;
+}
+
+/* 기존 sticky 컬럼은 자유 배치판에서 해제 */
+.widget-column.is-follow-column > .widget-list {
+    position: static;
+    top: auto;
+}

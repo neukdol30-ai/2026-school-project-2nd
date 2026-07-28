@@ -1,182 +1,603 @@
-// 예정 일정과 월간 캘린더 위젯 ID
+// 일정과 캘린더 위젯 ID
 const SCHEDULE_WIDGET_ID = 3;
 const CALENDAR_WIDGET_ID = 7;
 
-// 예정 일정과 월간 캘린더를 메인 영역에서 항상 붙여 배치
-function normalizeScheduleCalendarGroup() {
-    const scheduleWidget =
-        state.widgets.find((widget) => {
-            return widget.id === SCHEDULE_WIDGET_ID;
-        });
+// 대시보드 배치 기본값
+const DASHBOARD_TIME_GROUP_KEY = "time-group";
+const DASHBOARD_SCHEDULE_GROUP_KEY = "schedule-calendar";
+const DASHBOARD_AUTH_KEY = "auth-fixed";
+const DASHBOARD_LAYOUT_VERSION = 1;
+const DASHBOARD_COLUMN_COUNT = 3;
+const DASHBOARD_COLUMN_WIDTH = 450;
+const DASHBOARD_COLUMN_GAP = 20;
+const DASHBOARD_ROW_GAP = 20;
+const DASHBOARD_BOARD_WIDTH =
+    DASHBOARD_COLUMN_WIDTH * DASHBOARD_COLUMN_COUNT
+    + DASHBOARD_COLUMN_GAP * (DASHBOARD_COLUMN_COUNT - 1);
 
-    const calendarWidget =
-        state.widgets.find((widget) => {
-            return widget.id === CALENDAR_WIDGET_ID;
-        });
+const dashboardLayoutEntries = new Map();
+let dashboardLayoutInitialized = false;
+let dashboardLayoutFrameId = null;
+let dashboardResizeObserver = null;
+let dashboardResizeBound = false;
+let dashboardLayoutPendingAnimate = false;
+let dashboardLayoutAnimationActive = false;
+let dashboardLayoutAnimationTimerId = null;
+let dashboardSilentLayoutQueued = false;
+let loadedWidgetOrderMemberId = "";
 
-    if (!scheduleWidget || !calendarWidget) {
-        return;
-    }
+function normalizeWidgetType(widget) {
+    return String(widget?.type || "")
+        .toLowerCase()
+        .replace(/[\s_-]/g, "");
+}
 
-    scheduleWidget.zone = "main";
-    calendarWidget.zone = "main";
+function normalizeWidgetTitle(widget) {
+    return String(widget?.title || "")
+        .replace(/\s/g, "");
+}
 
-    const mainWidgets =
-        state.widgets
-            .filter((widget) => {
-                return widget.zone === "main";
-            })
-            .sort((a, b) => {
-                return a.orderNo - b.orderNo;
-            });
-
-    const scheduleIndex =
-        mainWidgets.findIndex((widget) => {
-            return widget.id === SCHEDULE_WIDGET_ID;
-        });
-
-    const calendarIndex =
-        mainWidgets.findIndex((widget) => {
-            return widget.id === CALENDAR_WIDGET_ID;
-        });
-
-    const existingIndexes = [
-        scheduleIndex,
-        calendarIndex
-    ].filter((index) => {
-        return index >= 0;
-    });
-
-    const groupIndex =
-        existingIndexes.length > 0
-            ? Math.min(...existingIndexes)
-            : mainWidgets.length;
-
-    const arrangedWidgets =
-        mainWidgets.filter((widget) => {
-            return widget.id !== SCHEDULE_WIDGET_ID
-                && widget.id !== CALENDAR_WIDGET_ID;
-        });
-
-    arrangedWidgets.splice(
-        Math.min(
-            groupIndex,
-            arrangedWidgets.length
-        ),
-        0,
-        scheduleWidget,
-        calendarWidget
-    );
-
-    arrangedWidgets.forEach((widget, index) => {
-        widget.orderNo = index + 1;
+function getCurrentTimeWidget() {
+    return state.widgets.find((widget) => {
+        return widget.id === state.headerWidgetId
+            || normalizeWidgetType(widget) === "currenttime"
+            || normalizeWidgetTitle(widget) === "현재시간";
     });
 }
 
-// 메인 위젯 조회
-function getMainWidgets() {
-    normalizeScheduleCalendarGroup();
+function getWorldTimeWidget() {
+    return state.widgets.find((widget) => {
+        return normalizeWidgetType(widget) === "worldtime"
+            || normalizeWidgetTitle(widget) === "세계시간";
+    });
+}
 
+function getScheduleWidget() {
+    return state.widgets.find((widget) => {
+        return widget.id === SCHEDULE_WIDGET_ID;
+    });
+}
+
+function getCalendarWidget() {
+    return state.widgets.find((widget) => {
+        return widget.id === CALENDAR_WIDGET_ID;
+    });
+}
+
+function isSpecialDashboardWidget(widget) {
+    if (!widget) {
+        return true;
+    }
+
+    return widget.id === SCHEDULE_WIDGET_ID
+        || widget.id === CALENDAR_WIDGET_ID
+        || widget.id === state.headerWidgetId
+        || normalizeWidgetType(widget) === "currenttime"
+        || normalizeWidgetType(widget) === "worldtime";
+}
+
+function getDashboardWidgetKey(widget) {
+    return `widget:${widget.id}`;
+}
+
+// 기존 메인 위젯은 2칸, 기존 사이드 위젯은 1칸 크기를 유지한다.
+function getDashboardWidgetSpan(widget) {
+    const savedSpan = Number(widget?.dashboardSpan);
+
+    if (savedSpan === 1 || savedSpan === 2) {
+        return savedSpan;
+    }
+
+    const span = widget?.zone === "main" ? 2 : 1;
+
+    if (widget) {
+        widget.dashboardSpan = span;
+    }
+
+    return span;
+}
+
+function clampDashboardColumn(column, span) {
+    const safeSpan = span === 2 ? 2 : 1;
+    const maxColumn = DASHBOARD_COLUMN_COUNT - safeSpan + 1;
+    const numericColumn = Number(column);
+
+    if (!Number.isFinite(numericColumn)) {
+        return 1;
+    }
+
+    return Math.min(
+        Math.max(Math.round(numericColumn), 1),
+        maxColumn
+    );
+}
+
+function createDashboardLayoutEntry(
+    key,
+    span,
+    column,
+    order
+) {
+    return {
+        key,
+        span: span === 2 ? 2 : 1,
+        column: clampDashboardColumn(column, span),
+        order: Number.isFinite(Number(order))
+            ? Number(order)
+            : 9999
+    };
+}
+
+function ensureDashboardLayoutEntry(
+    key,
+    span,
+    column,
+    order
+) {
+    const existing = dashboardLayoutEntries.get(key);
+
+    if (existing) {
+        existing.span = span === 2 ? 2 : 1;
+        existing.column = clampDashboardColumn(
+            existing.column,
+            existing.span
+        );
+        return existing;
+    }
+
+    const entry = createDashboardLayoutEntry(
+        key,
+        span,
+        column,
+        order
+    );
+
+    dashboardLayoutEntries.set(key, entry);
+    return entry;
+}
+
+function getDefaultWidgetOrder(widget) {
+    const orderNo = Number(widget?.orderNo) || 999;
+    const zoneOffset = widget?.zone === "side" ? 1 : 0;
+
+    return 100 + orderNo * 10 + zoneOffset;
+}
+
+function ensureDashboardLayoutModel() {
+    const validKeys = new Set();
+
+    ensureDashboardLayoutEntry(
+        DASHBOARD_TIME_GROUP_KEY,
+        2,
+        1,
+        0
+    );
+    validKeys.add(DASHBOARD_TIME_GROUP_KEY);
+
+    const scheduleWidget = getScheduleWidget();
+    const calendarWidget = getCalendarWidget();
+
+    if (scheduleWidget || calendarWidget) {
+        const scheduleOrder = Math.min(
+            Number(scheduleWidget?.orderNo) || 999,
+            Number(calendarWidget?.orderNo) || 999
+        );
+
+        ensureDashboardLayoutEntry(
+            DASHBOARD_SCHEDULE_GROUP_KEY,
+            2,
+            1,
+            100 + scheduleOrder * 10
+        );
+        validKeys.add(DASHBOARD_SCHEDULE_GROUP_KEY);
+    }
+
+    state.widgets.forEach((widget) => {
+        if (isSpecialDashboardWidget(widget)) {
+            return;
+        }
+
+        const key = getDashboardWidgetKey(widget);
+        const span = getDashboardWidgetSpan(widget);
+        const defaultColumn = span === 2
+            ? 1
+            : widget.zone === "side"
+                ? 3
+                : 1;
+
+        ensureDashboardLayoutEntry(
+            key,
+            span,
+            defaultColumn,
+            getDefaultWidgetOrder(widget)
+        );
+        validKeys.add(key);
+    });
+
+    [...dashboardLayoutEntries.keys()].forEach((key) => {
+        if (!validKeys.has(key)) {
+            dashboardLayoutEntries.delete(key);
+        }
+    });
+
+    dashboardLayoutInitialized = true;
+}
+
+function getDashboardLayoutEntry(key) {
+    if (!dashboardLayoutInitialized) {
+        ensureDashboardLayoutModel();
+    }
+
+    return dashboardLayoutEntries.get(key) || null;
+}
+
+function setDashboardLayoutColumn(key, column) {
+    const entry = getDashboardLayoutEntry(key);
+
+    if (!entry) {
+        return;
+    }
+
+    entry.column = clampDashboardColumn(
+        column,
+        entry.span
+    );
+}
+
+function getVisibleDashboardLayoutItems() {
+    ensureDashboardLayoutModel();
+
+    const items = [];
+    const currentTimeWidget = getCurrentTimeWidget();
+    const worldTimeWidget = getWorldTimeWidget();
+
+    if (
+        currentTimeWidget?.visible
+        || worldTimeWidget?.visible
+    ) {
+        const entry = getDashboardLayoutEntry(
+            DASHBOARD_TIME_GROUP_KEY
+        );
+
+        items.push({
+            kind: "time-group",
+            key: DASHBOARD_TIME_GROUP_KEY,
+            entry,
+            span: 2,
+            currentTimeWidget,
+            worldTimeWidget
+        });
+    }
+
+    const scheduleWidget = getScheduleWidget();
+    const calendarWidget = getCalendarWidget();
+
+    if (
+        scheduleWidget?.visible
+        || calendarWidget?.visible
+    ) {
+        const entry = getDashboardLayoutEntry(
+            DASHBOARD_SCHEDULE_GROUP_KEY
+        );
+
+        items.push({
+            kind: "schedule-group",
+            key: DASHBOARD_SCHEDULE_GROUP_KEY,
+            entry,
+            span: 2,
+            scheduleWidget,
+            calendarWidget
+        });
+    }
+
+    state.widgets.forEach((widget) => {
+        if (
+            !widget.visible
+            || isSpecialDashboardWidget(widget)
+        ) {
+            return;
+        }
+
+        const key = getDashboardWidgetKey(widget);
+        const entry = getDashboardLayoutEntry(key);
+
+        items.push({
+            kind: "widget",
+            key,
+            entry,
+            span: entry?.span || getDashboardWidgetSpan(widget),
+            widget
+        });
+    });
+
+    return items.sort((a, b) => {
+        return (a.entry?.order ?? 9999)
+            - (b.entry?.order ?? 9999);
+    });
+}
+
+// 기존 호출과의 호환을 위해 남겨둔다.
+function normalizeScheduleCalendarGroup() {
+    ensureDashboardLayoutModel();
+}
+
+function getMainWidgets() {
     return state.widgets
         .filter((widget) => {
             return widget.visible
-                && widget.zone === "main"
-                && widget.id !== state.headerWidgetId;
+                && !isSpecialDashboardWidget(widget)
+                && getDashboardWidgetSpan(widget) === 2;
         })
-        .sort((a, b) => {
-            return a.orderNo - b.orderNo;
-        });
+        .sort((a, b) => a.orderNo - b.orderNo);
 }
 
 function getSideWidgets() {
     return state.widgets
         .filter((widget) => {
-            const type = String(widget.type || "")
-                .toLowerCase()
-                .replace(/[\s_-]/g, "");
-
-            const title = String(widget.title || "")
-                .replace(/\s/g, "");
-
-            const isWorldTime =
-                type === "worldtime"
-                || title === "세계시간";
-
             return widget.visible
-                && widget.zone === "side"
-                && widget.id !== state.headerWidgetId
-                && !isWorldTime;
+                && !isSpecialDashboardWidget(widget)
+                && getDashboardWidgetSpan(widget) === 1;
         })
         .sort((a, b) => a.orderNo - b.orderNo);
 }
 
-// 더 짧은 위젯 컬럼이 스크롤을 따라가도록 설정
-function updateFollowColumn() {
-    const mainColumn =
-        document.querySelector(".main-column");
+function getDashboardItemSpan(element) {
+    return Number(element?.dataset.layoutSpan) === 2
+        ? 2
+        : 1;
+}
 
-    const sideColumn =
-        document.querySelector(".side-column");
-
-    const mainList =
-        document.querySelector(
-            '[data-widget-list="main"]'
-        );
-
-    const sideList =
-        document.querySelector(
-            '[data-widget-list="side"]'
-        );
-
-    if (
-        !mainColumn
-        || !sideColumn
-        || !mainList
-        || !sideList
-    ) {
-        return;
-    }
-
-    mainColumn.classList.remove(
-        "is-follow-column"
-    );
-
-    sideColumn.classList.remove(
-        "is-follow-column"
-    );
-
-    const mainHeight =
-        mainList.getBoundingClientRect().height;
-
-    const sideHeight =
-        sideList.getBoundingClientRect().height;
-
-    if (Math.abs(mainHeight - sideHeight) < 1) {
-        return;
-    }
-
-    if (mainHeight < sideHeight) {
-        mainColumn.classList.add(
-            "is-follow-column"
-        );
-
-        return;
-    }
-
-    sideColumn.classList.add(
-        "is-follow-column"
+function getDashboardItemColumn(element) {
+    return clampDashboardColumn(
+        element?.dataset.layoutColumn,
+        getDashboardItemSpan(element)
     );
 }
 
-// 위젯 위치 저장
+function getDashboardColumnX(column) {
+    return (column - 1)
+        * (DASHBOARD_COLUMN_WIDTH + DASHBOARD_COLUMN_GAP);
+}
+
+function setDashboardElementWidth(element, span) {
+    const width = DASHBOARD_COLUMN_WIDTH * span
+        + DASHBOARD_COLUMN_GAP * (span - 1);
+
+    element.style.width = `${width}px`;
+}
+
+function positionDashboardElement(
+    element,
+    column,
+    top,
+    span
+) {
+    const left = getDashboardColumnX(column);
+
+    setDashboardElementWidth(element, span);
+    element.style.transform =
+        `translate3d(${left}px, ${top}px, 0)`;
+    element.dataset.layoutY = String(top);
+}
+
+function layoutDashboardBoard() {
+    dashboardLayoutFrameId = null;
+
+    const board = document.querySelector(
+        "[data-dashboard-board]"
+    );
+
+    if (!board) {
+        return;
+    }
+
+    board.style.width = `${DASHBOARD_BOARD_WIDTH}px`;
+
+    const columnHeights = Array(
+        DASHBOARD_COLUMN_COUNT
+    ).fill(0);
+
+    const authItem = board.querySelector(
+        ":scope > [data-layout-fixed=\"auth\"]"
+    );
+
+    if (authItem) {
+        const authColumn = 3;
+        const authSpan = 1;
+
+        positionDashboardElement(
+            authItem,
+            authColumn,
+            0,
+            authSpan
+        );
+
+        const authHeight = authItem.offsetHeight;
+        columnHeights[authColumn - 1] =
+            authHeight + DASHBOARD_ROW_GAP;
+    }
+
+    const layoutItems = [
+        ...board.querySelectorAll(
+            ":scope > [data-layout-item]"
+        )
+    ].filter((item) => {
+        return item.dataset.layoutFloating !== "true";
+    });
+
+    layoutItems.forEach((item) => {
+        const span = getDashboardItemSpan(item);
+        const column = getDashboardItemColumn(item);
+        const coveredHeights = columnHeights.slice(
+            column - 1,
+            column - 1 + span
+        );
+        const top = Math.max(0, ...coveredHeights);
+
+        item.dataset.layoutColumn = String(column);
+
+        positionDashboardElement(
+            item,
+            column,
+            top,
+            span
+        );
+
+        const itemHeight = item.offsetHeight;
+        const nextHeight =
+            top + itemHeight + DASHBOARD_ROW_GAP;
+
+        for (
+            let index = column - 1;
+            index < column - 1 + span;
+            index++
+        ) {
+            columnHeights[index] = nextHeight;
+        }
+    });
+
+    const tallestColumn = Math.max(
+        0,
+        ...columnHeights
+    );
+
+    board.style.height = `${Math.max(
+        tallestColumn - DASHBOARD_ROW_GAP,
+        0
+    )}px`;
+
+}
+
+function scheduleDashboardLayout(options = {}) {
+    const animate = typeof options === "boolean"
+        ? options
+        : options.animate !== false;
+
+    if (!animate && dashboardLayoutAnimationActive) {
+        dashboardSilentLayoutQueued = true;
+        return;
+    }
+
+    dashboardLayoutPendingAnimate =
+        dashboardLayoutPendingAnimate || animate;
+
+    if (dashboardLayoutFrameId !== null) {
+        cancelAnimationFrame(dashboardLayoutFrameId);
+    }
+
+    dashboardLayoutFrameId = requestAnimationFrame(() => {
+        const board = document.querySelector(
+            "[data-dashboard-board]"
+        );
+
+        const shouldAnimate =
+            dashboardLayoutPendingAnimate;
+
+        dashboardLayoutPendingAnimate = false;
+
+        if (board) {
+            board.classList.toggle(
+                "is-layout-animating",
+                shouldAnimate
+            );
+        }
+
+        layoutDashboardBoard();
+
+        if (!shouldAnimate || !board) {
+            return;
+        }
+
+        dashboardLayoutAnimationActive = true;
+
+        if (dashboardLayoutAnimationTimerId !== null) {
+            clearTimeout(
+                dashboardLayoutAnimationTimerId
+            );
+        }
+
+        dashboardLayoutAnimationTimerId = setTimeout(() => {
+            board.classList.remove(
+                "is-layout-animating"
+            );
+
+            dashboardLayoutAnimationActive = false;
+            dashboardLayoutAnimationTimerId = null;
+
+            if (!dashboardSilentLayoutQueued) {
+                return;
+            }
+
+            dashboardSilentLayoutQueued = false;
+            scheduleDashboardLayout({
+                animate: false
+            });
+        }, 280);
+    });
+}
+
+function observeDashboardBoardItems(options = {}) {
+    const board = document.querySelector(
+        "[data-dashboard-board]"
+    );
+
+    const animate = options.animate !== true;
+
+    if (!board) {
+        return;
+    }
+
+    if (dashboardResizeObserver) {
+        dashboardResizeObserver.disconnect();
+    }
+
+    if ("ResizeObserver" in window) {
+        dashboardResizeObserver = new ResizeObserver(() => {
+            scheduleDashboardLayout({
+                animate: false
+            });
+        });
+
+        board.querySelectorAll(
+            ":scope > [data-layout-item], "
+            + ":scope > [data-layout-fixed]"
+        ).forEach((element) => {
+            dashboardResizeObserver.observe(element);
+        });
+    }
+
+    if (!dashboardResizeBound) {
+        window.addEventListener(
+            "resize",
+            () => {
+                scheduleDashboardLayout({
+                    animate: false
+                });
+            }
+        );
+        dashboardResizeBound = true;
+    }
+
+    scheduleDashboardLayout({
+        animate: animate
+    });
+}
+
+// 기존 짧은 컬럼 sticky 대신 새 3칸 배치를 다시 계산한다.
+function updateFollowColumn() {
+    scheduleDashboardLayout({
+        animate: false
+    });
+}
+
 function captureWidgetPositions() {
     const positions = new Map();
 
     document
-        .querySelectorAll("[data-widget-id]")
+        .querySelectorAll("[data-layout-key]")
         .forEach((element) => {
             positions.set(
-                element.dataset.widgetId,
+                element.dataset.layoutKey,
                 element.getBoundingClientRect()
             );
         });
@@ -184,326 +605,110 @@ function captureWidgetPositions() {
     return positions;
 }
 
-// 위젯 이동 애니메이션
-function animateWidgetChanges(prevPositions) {
-    document
-        .querySelectorAll("[data-widget-id]")
-        .forEach((element) => {
-            const prevRect =
-                prevPositions.get(
-                    element.dataset.widgetId
-                );
-
-            if (!prevRect) {
-                return;
-            }
-
-            const nextRect =
-                element.getBoundingClientRect();
-
-            const deltaX =
-                prevRect.left - nextRect.left;
-
-            const deltaY =
-                prevRect.top - nextRect.top;
-
-            if (
-                deltaX === 0
-                && deltaY === 0
-            ) {
-                return;
-            }
-
-            element.animate(
-                [
-                    {
-                        transform:
-                            `translate(${deltaX}px, ${deltaY}px)`
-                    },
-                    {
-                        transform:
-                            "translate(0, 0)"
-                    }
-                ],
-                {
-                    duration: 250,
-                    easing: "ease"
-                }
-            );
-        });
+// 위치 전환은 transform transition으로 처리한다.
+function animateWidgetChanges() {
+    scheduleDashboardLayout({
+        animate: true
+    });
 }
 
-// 위젯 표시 숨김
 function toggleWidget(id) {
-    const widget =
-        state.widgets.find((item) => {
-            return item.id === id;
-        });
+    const widget = state.widgets.find((item) => {
+        return item.id === id;
+    });
 
     if (!widget) {
         return;
     }
 
     widget.visible = !widget.visible;
-
-    normalizeScheduleCalendarGroup();
     render();
 }
 
-// 위젯 접기 펼치기
 function toggleCollapse(id) {
-    const widget =
-        state.widgets.find((item) => {
-            return item.id === id;
-        });
+    const widget = state.widgets.find((item) => {
+        return item.id === id;
+    });
 
     if (!widget) {
         return;
     }
 
     widget.collapsed = !widget.collapsed;
-
     render();
 }
 
-// 새 위젯 카드 DOM 생성
-function createWidgetElement(
-    widget,
-    index,
-    widgetCount
-) {
-    const template =
-        document.createElement("template");
-
-    template.innerHTML =
-        renderWidget(
-            widget,
-            index,
-            widgetCount
-        ).trim();
-
-    return template.content.firstElementChild;
-}
-
-// 이미 화면에 있는 위젯의 공통 영역 갱신
-function updateWidgetFrame(
-    card,
-    widget,
-    index,
-    widgetCount
-) {
-    card.className = `widget ${
-        widget.zone === "main"
-            ? "main-widget"
-            : "side-widget"
-    } ${
-        state.isEditMode
-            ? "is-layout-editing"
-            : ""
-    }`;
-
-    const header =
-        card.querySelector(".widget-header");
-
-    if (header) {
-        header.outerHTML =
-            renderWidgetHeader(
-                widget,
-                index,
-                widgetCount
-            );
+function destroyStockWidgetRuntime() {
+    if (typeof rememberStockSwiperIndex === "function") {
+        rememberStockSwiperIndex();
     }
 
-    const content =
-        card.querySelector(".widget-content");
-
-    if (widget.collapsed) {
-        content?.remove();
-        return;
-    }
-
-    if (content) {
-        if (
-            widget.type === "news"
-            || widget.type === "weather"
-        ) {
-            content.innerHTML =
-                renderWidgetContent(widget);
-        }
-
-        return;
-    }
-
-    const widgetHeader =
-        card.querySelector(".widget-header");
-
-    if (!widgetHeader) {
-        return;
-    }
-
-    widgetHeader.insertAdjacentHTML(
-        "afterend",
-        `
-            <div
-                class="widget-content"
-                data-widget-content="${widget.id}"
-            >
-                ${renderWidgetContent(widget)}
-            </div>
-        `
-    );
-}
-
-// 특정 영역의 위젯 목록 동기화
-function syncWidgetList(zone) {
-    if (zone === "main") {
-        normalizeScheduleCalendarGroup();
-    }
-
-    const widgetList =
-        document.querySelector(
-            `[data-widget-list="${zone}"]`
-        );
-
-    if (!widgetList) {
-        return;
-    }
-
-    const widgets =
-        zone === "main"
-            ? getMainWidgets()
-            : getSideWidgets();
-
-    let stockWidgetChanged = false;
-
-    const existingCards = new Map(
-        [
-            ...widgetList.querySelectorAll(
-                ":scope > [data-widget-id]"
-            )
-        ].map((card) => {
-            return [
-                card.dataset.widgetId,
-                card
-            ];
-        })
-    );
-
-    widgets.forEach((widget, index) => {
-        const widgetId =
-            String(widget.id);
-
-        let card =
-            existingCards.get(widgetId);
-
-        if (card) {
-            updateWidgetFrame(
-                card,
-                widget,
-                index,
-                widgets.length
-            );
-
-            existingCards.delete(widgetId);
-        } else {
-            card = createWidgetElement(
-                widget,
-                index,
-                widgets.length
-            );
-
-            if (widget.type === "stock") {
-                stockWidgetChanged = true;
-            }
-        }
-
-        widgetList.append(card);
-    });
-
-    existingCards.forEach((card) => {
-        if (
-            card.querySelector(
-                ".stock-swiper"
-            )
-        ) {
-            stockWidgetChanged = true;
-        }
-
-        card.remove();
-    });
-
-    if (stockWidgetChanged) {
-        state.stockCharts.forEach(
-            (chart) => {
+    if (Array.isArray(state.stockCharts)) {
+        state.stockCharts.forEach((chart) => {
+            if (typeof chart?.destroy === "function") {
                 chart.destroy();
             }
-        );
-
+        });
         state.stockCharts = [];
-
-        initStockSwiper();
     }
 
-    requestAnimationFrame(
-        updateFollowColumn
-    );
+    if (state.stockSwiper?.destroy) {
+        state.stockSwiper.destroy(true, true);
+        state.stockSwiper = null;
+    }
 }
 
-// 특정 위젯 내용만 다시 그리기
 function refreshWidgetContent(widgetId) {
-    const widget =
-        state.widgets.find((item) => {
-            return item.id === widgetId;
-        });
+    const widget = state.widgets.find((item) => {
+        return item.id === widgetId;
+    });
 
     if (!widget) {
         return;
     }
 
-    const content =
-        document.querySelector(
-            `[data-widget-content="${widgetId}"]`
-        );
+    const content = document.querySelector(
+        `[data-widget-content="${widgetId}"]`
+    );
 
     if (!content) {
         return;
     }
 
     if (widget.type === "stock") {
-        rememberStockSwiperIndex();
-
-        state.stockCharts.forEach(
-            (chart) => {
-                chart.destroy();
-            }
-        );
-
-        state.stockCharts = [];
-
-        content.innerHTML =
-            renderWidgetContent(widget);
-
+        destroyStockWidgetRuntime();
+        content.innerHTML = renderWidgetContent(widget);
         initStockSwiper();
-
-        requestAnimationFrame(
-            updateFollowColumn
-        );
-
+        observeDashboardBoardItems({
+            animate: false
+        });
         return;
     }
 
-    content.innerHTML =
-        renderWidgetContent(widget);
+    content.innerHTML = renderWidgetContent(widget);
 
-    requestAnimationFrame(
-        updateFollowColumn
-    );
+    if (widget.type === "currentTime") {
+        if (typeof updateCurrentTimeWidget === "function") {
+            updateCurrentTimeWidget();
+        }
+
+        if (typeof updateSunTimeWidget === "function") {
+            updateSunTimeWidget();
+        }
+    }
+
+    if (
+        widget.type === "worldTime"
+        && typeof updateWorldTimeWidget === "function"
+    ) {
+        updateWorldTimeWidget();
+    }
+
+    scheduleDashboardLayout({
+        animate: false
+    });
 }
 
-// 현재 순서를 불러온 회원 아이디
-let loadedWidgetOrderMemberId = "";
-
-// 현재 로그인 회원 아이디 조회
 function getWidgetOrderMemberId() {
     return String(
         state.currentUser?.username
@@ -512,224 +717,221 @@ function getWidgetOrderMemberId() {
     ).trim();
 }
 
-// 회원별 위젯 순서 저장 키
 function getWidgetOrderStorageKey(memberId) {
-    return `dashboardWidgetOrder:${memberId}`;
+    return `dashboardFlexibleLayout:v${DASHBOARD_LAYOUT_VERSION}:${memberId}`;
 }
 
-// 현재 위젯 순서를 회원별로 저장
+function normalizeDashboardLayoutOrders() {
+    [...dashboardLayoutEntries.values()]
+        .sort((a, b) => a.order - b.order)
+        .forEach((entry, index) => {
+            entry.order = index + 1;
+        });
+}
+
 function saveWidgetOrderToStorage() {
-    const memberId =
-        getWidgetOrderMemberId();
+    const memberId = getWidgetOrderMemberId();
 
     if (!memberId) {
         return;
     }
 
-    normalizeScheduleCalendarGroup();
+    ensureDashboardLayoutModel();
+    normalizeDashboardLayoutOrders();
 
-    const savedOrder = {
-        main: state.widgets
-            .filter((widget) => {
-                return widget.zone === "main";
-            })
-            .sort((a, b) => {
-                return a.orderNo - b.orderNo;
-            })
-            .map((widget) => {
-                return widget.id;
-            }),
-
-        side: state.widgets
-            .filter((widget) => {
-                return widget.zone === "side";
-            })
-            .sort((a, b) => {
-                return a.orderNo - b.orderNo;
-            })
-            .map((widget) => {
-                return widget.id;
+    const savedLayout = {
+        version: DASHBOARD_LAYOUT_VERSION,
+        items: [...dashboardLayoutEntries.values()]
+            .sort((a, b) => a.order - b.order)
+            .map((entry) => {
+                return {
+                    key: entry.key,
+                    column: entry.column,
+                    order: entry.order
+                };
             })
     };
 
     localStorage.setItem(
         getWidgetOrderStorageKey(memberId),
-        JSON.stringify(savedOrder)
+        JSON.stringify(savedLayout)
     );
 }
 
-// 저장된 영역 순서를 state에 적용
-function applySavedWidgetOrder(
-    zone,
-    savedIds
-) {
-    if (!Array.isArray(savedIds)) {
-        return;
+function applySavedDashboardLayout(savedLayout) {
+    if (!Array.isArray(savedLayout?.items)) {
+        return false;
     }
 
-    const orderMap = new Map(
-        savedIds.map((id, index) => {
-            return [
-                Number(id),
-                index + 1
-            ];
-        })
-    );
+    let applied = false;
 
-    const zoneWidgets =
-        state.widgets
-            .filter((widget) => {
-                return widget.zone === zone;
-            })
-            .sort((a, b) => {
-                return a.orderNo - b.orderNo;
-            });
+    savedLayout.items.forEach((savedItem) => {
+        const entry = dashboardLayoutEntries.get(
+            String(savedItem?.key || "")
+        );
 
-    let nextOrderNo =
-        savedIds.length + 1;
-
-    zoneWidgets.forEach((widget) => {
-        const savedOrderNo =
-            orderMap.get(widget.id);
-
-        if (savedOrderNo) {
-            widget.orderNo =
-                savedOrderNo;
-
+        if (!entry) {
             return;
         }
 
-        widget.orderNo =
-            nextOrderNo;
+        entry.column = clampDashboardColumn(
+            savedItem.column,
+            entry.span
+        );
 
-        nextOrderNo++;
+        if (Number.isFinite(Number(savedItem.order))) {
+            entry.order = Number(savedItem.order);
+        }
+
+        applied = true;
     });
+
+    normalizeDashboardLayoutOrders();
+    return applied;
 }
 
-// 현재 로그인 회원의 저장 순서 불러오기
 function loadWidgetOrderForCurrentUser() {
-    const memberId =
-        getWidgetOrderMemberId();
+    const memberId = getWidgetOrderMemberId();
 
     if (!memberId) {
-        normalizeScheduleCalendarGroup();
+        loadedWidgetOrderMemberId = "";
+        ensureDashboardLayoutModel();
         return false;
     }
 
-    if (
-        loadedWidgetOrderMemberId
-        === memberId
-    ) {
-        normalizeScheduleCalendarGroup();
+    if (loadedWidgetOrderMemberId === memberId) {
         return false;
     }
 
-    const storageKey =
-        getWidgetOrderStorageKey(
-            memberId
-        );
+    ensureDashboardLayoutModel();
+    loadedWidgetOrderMemberId = memberId;
 
-    const savedText =
-        localStorage.getItem(
-            storageKey
-        );
-
-    loadedWidgetOrderMemberId =
-        memberId;
+    const savedText = localStorage.getItem(
+        getWidgetOrderStorageKey(memberId)
+    );
 
     if (!savedText) {
-        normalizeScheduleCalendarGroup();
         return false;
     }
 
     try {
-        const savedOrder =
-            JSON.parse(savedText);
-
-        applySavedWidgetOrder(
-            "main",
-            savedOrder.main
-        );
-
-        applySavedWidgetOrder(
-            "side",
-            savedOrder.side
-        );
-
-        normalizeScheduleCalendarGroup();
-        saveWidgetOrderToStorage();
-
-        return true;
+        const savedLayout = JSON.parse(savedText);
+        return applySavedDashboardLayout(savedLayout);
     } catch (error) {
-        console.error(
-            "위젯 순서 불러오기 실패:",
-            error
-        );
-
+        console.error("위젯 배치 불러오기 실패:", error);
         localStorage.removeItem(
-            storageKey
+            getWidgetOrderStorageKey(memberId)
         );
-
-        normalizeScheduleCalendarGroup();
-
         return false;
     }
 }
 
-// 현재 화면 카드 순서를 state와 브라우저에 저장
-function saveWidgetOrderFromDom(zone) {
-    const widgetList =
-        document.querySelector(
-            `[data-widget-list="${zone}"]`
-        );
+function saveDashboardLayoutFromDom() {
+    const board = document.querySelector(
+        "[data-dashboard-board]"
+    );
 
-    if (!widgetList) {
+    if (!board) {
         return;
     }
 
-    const visibleWidgets = [
-        ...widgetList.querySelectorAll(
-            ":scope > [data-widget-id]"
-        )
-    ]
-        .map((card) => {
-            const widgetId =
-                Number(
-                    card.dataset.widgetId
-                );
+    ensureDashboardLayoutModel();
 
-            return state.widgets.find(
-                (widget) => {
-                    return widget.id
-                        === widgetId;
-                }
-            );
-        })
-        .filter(Boolean);
+    const visibleKeys = new Set();
+    let nextOrder = 1;
 
-    const hiddenWidgets =
-        state.widgets
-            .filter((widget) => {
-                return widget.zone === zone
-                    && !widget.visible;
-            })
-            .sort((a, b) => {
-                return a.orderNo
-                    - b.orderNo;
-            });
+    board.querySelectorAll(
+        ":scope > [data-layout-item]:not([data-layout-placeholder])"
+    ).forEach((item) => {
+        if (item.dataset.layoutFloating === "true") {
+            return;
+        }
 
-    [
-        ...visibleWidgets,
-        ...hiddenWidgets
-    ].forEach((widget, index) => {
-        widget.orderNo =
-            index + 1;
+        const key = item.dataset.layoutKey;
+        const entry = dashboardLayoutEntries.get(key);
+
+        if (!entry) {
+            return;
+        }
+
+        entry.column = clampDashboardColumn(
+            item.dataset.layoutColumn,
+            entry.span
+        );
+        entry.order = nextOrder;
+        visibleKeys.add(key);
+        nextOrder++;
     });
 
-    normalizeScheduleCalendarGroup();
-    saveWidgetOrderToStorage();
+    [...dashboardLayoutEntries.values()]
+        .filter((entry) => !visibleKeys.has(entry.key))
+        .sort((a, b) => a.order - b.order)
+        .forEach((entry) => {
+            entry.order = nextOrder;
+            nextOrder++;
+        });
 
-    requestAnimationFrame(
-        updateFollowColumn
+    saveWidgetOrderToStorage();
+    scheduleDashboardLayout({
+        animate: true
+    });
+}
+
+// 이전 함수명을 호출하는 코드와 호환한다.
+function saveWidgetOrderFromDom() {
+    saveDashboardLayoutFromDom();
+}
+
+function syncWidgetList() {
+    if (typeof syncDashboardBoard === "function") {
+        syncDashboardBoard();
+    }
+}
+
+function getDashboardColumnFromPointer(
+    pointerX,
+    span
+) {
+    const board = document.querySelector(
+        "[data-dashboard-board]"
     );
+
+    if (!board) {
+        return 1;
+    }
+
+    const rect = board.getBoundingClientRect();
+    const safeSpan = span === 2 ? 2 : 1;
+    const maxStart = DASHBOARD_COLUMN_COUNT - safeSpan + 1;
+    let nearestColumn = 1;
+    let nearestDistance = Infinity;
+
+    for (let column = 1; column <= maxStart; column++) {
+        const itemWidth = DASHBOARD_COLUMN_WIDTH * safeSpan
+            + DASHBOARD_COLUMN_GAP * (safeSpan - 1);
+        const center = rect.left
+            + getDashboardColumnX(column)
+            + itemWidth / 2;
+        const distance = Math.abs(pointerX - center);
+
+        if (distance < nearestDistance) {
+            nearestDistance = distance;
+            nearestColumn = column;
+        }
+    }
+
+    return nearestColumn;
+}
+
+function dashboardColumnRangesOverlap(
+    firstColumn,
+    firstSpan,
+    secondColumn,
+    secondSpan
+) {
+    const firstEnd = firstColumn + firstSpan - 1;
+    const secondEnd = secondColumn + secondSpan - 1;
+
+    return firstColumn <= secondEnd
+        && secondColumn <= firstEnd;
 }
