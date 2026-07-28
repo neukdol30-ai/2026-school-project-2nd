@@ -1,27 +1,5 @@
 // 상단 글로벌 배너
 function renderGlobalBanner() {
-    const userMenu = state.currentUser
-        ? `
-
-            
-
-            <button
-                type="button"
-                data-mypage-open
-            >
-                마이페이지
-            </button>
-            <button
-                type="button"
-                data-action="logout"
-            >
-                로그아웃
-            </button>
-        `
-        : `
-            <a href="/login">로그인</a>
-        `;
-
     const settingsMenu = state.isEditMode
         ? `
             <button
@@ -56,15 +34,27 @@ function renderGlobalBanner() {
 
             <div class="global-right-menu">
                 <a class="global-service-link global-map-link" href="/map/kakao">
-                    지도
+                    <span
+                        class="global-map-icon"
+                        aria-hidden="true"
+                    >
+                        📍
+                    </span>
+                    <span>지도</span>
                 </a>
 
-                <span class="global-calendar-label">
-                    캘린더
-                </span>
-                
+                <span
+                    class="global-menu-divider"
+                    aria-hidden="true"
+                ></span>
+
                 <div class="global-user-menu">
-                    ${userMenu}
+                    <button
+                        type="button"
+                        data-mypage-open
+                    >
+                        마이페이지
+                    </button>
                 </div>
 
                 <span
@@ -80,7 +70,7 @@ function renderGlobalBanner() {
     `;
 }
 
-// 로그인 및 설정 상태 변경 시 상단 메뉴 갱신
+// 상단 메뉴 갱신
 function updateGlobalBanner() {
     const globalBanner = document.querySelector(
         "[data-global-banner]"
