@@ -15,6 +15,12 @@ public class CalendarDayDto {
     // 해당 날짜에 일정이 있는지 확인
     private boolean hasEvent;
 
+    // 해당 날짜에 표시할 첫 번째 일정 제목
+    private String eventTitle;
+
+    // 해당 날짜의 전체 일정 개수
+    private int eventCount;
+
     // 해당 날짜가 대한민국 휴일인지 확인
     private boolean holiday;
 

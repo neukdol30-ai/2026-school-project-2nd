@@ -1680,7 +1680,6 @@ function renderSidebarUpcoming(eventList) {
 
     const upcomingList =
         [...(eventList || [])]
-            .sort(compareAgendaEvents)
             .slice(0, 5);
 
     element.sidebarUpcomingCount.textContent =
@@ -1698,7 +1697,7 @@ function renderSidebarUpcoming(eventList) {
     }
 
     element.sidebarUpcomingMessage.textContent =
-        "오늘 이후 가까운 일정 5개입니다.";
+        "최근 추가한 예정 일정 5개입니다.";
 
     element.sidebarUpcomingList.innerHTML =
         upcomingList
@@ -2113,6 +2112,483 @@ function setTimePickerValue(
             }
         );
 }
+
+
+
+// 시간 선택 목록 생성
+function createTimePickerOptions(picker) {
+
+    const optionList =
+        picker?.querySelector(
+            ".time-option-list"
+        );
+
+    if (!optionList) {
+        return;
+    }
+
+
+    // 다시 초기화돼도 같은 버튼을 중복 생성하지 않는다.
+    if (
+        optionList.querySelector(
+            ".time-option"
+        )
+    ) {
+        return;
+    }
+
+
+    const fragment =
+        document.createDocumentFragment();
+
+
+    for (
+        let totalMinute = 0;
+        totalMinute < 24 * 60;
+        totalMinute += 30
+    ) {
+
+        const hour =
+            Math.floor(
+                totalMinute / 60
+            );
+
+        const minute =
+            totalMinute % 60;
+
+        const value =
+            `${pad(hour)}:${pad(minute)}`;
+
+
+        const optionButton =
+            document.createElement(
+                "button"
+            );
+
+        optionButton.type =
+            "button";
+
+        optionButton.className =
+            "time-option";
+
+        optionButton.dataset.value =
+            value;
+
+        optionButton.textContent =
+            formatTimeText(
+                value
+            );
+
+
+        fragment.appendChild(
+            optionButton
+        );
+    }
+
+
+    optionList.appendChild(
+        fragment
+    );
+}
+
+
+// 시간 선택기를 닫는다.
+function closeTimePicker(picker) {
+
+    if (!picker) {
+        return;
+    }
+
+
+    const button =
+        picker.querySelector(
+            ".time-picker-button"
+        );
+
+    const panel =
+        picker.querySelector(
+            ".time-picker-panel"
+        );
+
+
+    if (panel) {
+        panel.hidden = true;
+    }
+
+
+    button?.setAttribute(
+        "aria-expanded",
+        "false"
+    );
+}
+
+
+// 지정한 선택기를 제외하고 모두 닫는다.
+function closeAllTimePickers(
+    exceptPicker = null
+) {
+
+    document
+        .querySelectorAll(
+            "[data-time-picker]"
+        )
+        .forEach(
+            (picker) => {
+
+                if (
+                    picker
+                    === exceptPicker
+                ) {
+                    return;
+                }
+
+                closeTimePicker(
+                    picker
+                );
+            }
+        );
+}
+
+
+// 직접 입력한 시간을 HH:mm 형식으로 정리한다.
+function normalizeDirectTime(value) {
+
+    const match =
+        String(value || "")
+            .trim()
+            .match(
+                /^(\d{1,2}):(\d{2})$/
+            );
+
+    if (!match) {
+        return "";
+    }
+
+
+    const hour =
+        Number(match[1]);
+
+    const minute =
+        Number(match[2]);
+
+
+    if (
+        hour < 0
+        || hour > 23
+        || minute < 0
+        || minute > 59
+    ) {
+        return "";
+    }
+
+
+    return `${pad(hour)}:${pad(minute)}`;
+}
+
+
+// 시간 선택기 하나를 초기화한다.
+function initializeTimePicker(picker) {
+
+    if (
+        !picker
+        || picker.dataset.timePickerInitialized
+        === "true"
+    ) {
+        return;
+    }
+
+
+    const hiddenInput =
+        picker.querySelector(
+            "#eventStartTime, "
+            + "#eventEndTime, "
+            + "input[type=\"hidden\"]"
+        );
+
+    const openButton =
+        picker.querySelector(
+            ".time-picker-button"
+        );
+
+    const panel =
+        picker.querySelector(
+            ".time-picker-panel"
+        );
+
+    const optionList =
+        picker.querySelector(
+            ".time-option-list"
+        );
+
+    const directInput =
+        picker.querySelector(
+            ".time-direct-input"
+        );
+
+    const directApplyButton =
+        picker.querySelector(
+            ".time-direct-apply"
+        );
+
+    const clearButton =
+        picker.querySelector(
+            ".time-clear-button"
+        );
+
+
+    if (
+        !hiddenInput
+        || !openButton
+        || !panel
+        || !optionList
+    ) {
+        console.warn(
+            "[시간 선택기 초기화 실패]",
+            picker
+        );
+
+        return;
+    }
+
+
+    picker.dataset.timePickerInitialized =
+        "true";
+
+
+    createTimePickerOptions(
+        picker
+    );
+
+
+    openButton.addEventListener(
+        "click",
+        function (event) {
+
+            event.preventDefault();
+            event.stopPropagation();
+
+
+            // 화면 생성 시 누락됐어도 클릭할 때 다시 확인한다.
+            createTimePickerOptions(
+                picker
+            );
+
+
+            const willOpen =
+                panel.hidden;
+
+
+            closeAllTimePickers(
+                picker
+            );
+
+
+            panel.hidden =
+                !willOpen;
+
+
+            openButton.setAttribute(
+                "aria-expanded",
+                String(willOpen)
+            );
+
+
+            if (!willOpen) {
+                return;
+            }
+
+
+            requestAnimationFrame(
+                function () {
+
+                    const selectedOption =
+                        optionList.querySelector(
+                            ".time-option.is-selected"
+                        );
+
+
+                    selectedOption
+                        ?.scrollIntoView({
+                            block: "nearest"
+                        });
+                }
+            );
+        }
+    );
+
+
+    optionList.addEventListener(
+        "click",
+        function (event) {
+
+            const optionButton =
+                event.target.closest(
+                    ".time-option"
+                );
+
+
+            if (!optionButton) {
+                return;
+            }
+
+
+            const value =
+                optionButton.dataset.value
+                || "";
+
+
+            setTimePickerValue(
+                hiddenInput,
+                value
+            );
+
+
+            closeTimePicker(
+                picker
+            );
+        }
+    );
+
+
+    function applyDirectTime() {
+
+        const normalizedValue =
+            normalizeDirectTime(
+                directInput?.value
+            );
+
+
+        if (!normalizedValue) {
+
+            showMessage(
+                "시간을 HH:mm 형식으로 입력해주세요.",
+                true
+            );
+
+            directInput?.focus();
+
+            return;
+        }
+
+
+        setTimePickerValue(
+            hiddenInput,
+            normalizedValue
+        );
+
+
+        closeTimePicker(
+            picker
+        );
+
+        showMessage("");
+    }
+
+
+    directApplyButton
+        ?.addEventListener(
+            "click",
+            function (event) {
+
+                event.preventDefault();
+
+                applyDirectTime();
+            }
+        );
+
+
+    directInput
+        ?.addEventListener(
+            "keydown",
+            function (event) {
+
+                if (
+                    event.key
+                    !== "Enter"
+                ) {
+                    return;
+                }
+
+
+                event.preventDefault();
+
+                applyDirectTime();
+            }
+        );
+
+
+    clearButton
+        ?.addEventListener(
+            "click",
+            function (event) {
+
+                event.preventDefault();
+
+
+                setTimePickerValue(
+                    hiddenInput,
+                    ""
+                );
+
+
+                closeTimePicker(
+                    picker
+                );
+
+                showMessage("");
+            }
+        );
+}
+
+
+// 시작 시간과 종료 시간 선택기를 모두 연결한다.
+function initializeCalendarTimePickers() {
+
+    document
+        .querySelectorAll(
+            "[data-time-picker]"
+        )
+        .forEach(
+            initializeTimePicker
+        );
+}
+
+
+// 선택기 밖을 누르면 목록을 닫는다.
+document.addEventListener(
+    "click",
+    function (event) {
+
+        if (
+            event.target.closest(
+                "[data-time-picker]"
+            )
+        ) {
+            return;
+        }
+
+
+        closeAllTimePickers();
+    }
+);
+
+
+// Esc 키로 시간 목록을 닫는다.
+document.addEventListener(
+    "keydown",
+    function (event) {
+
+        if (
+            event.key
+            !== "Escape"
+        ) {
+            return;
+        }
+
+
+        closeAllTimePickers();
+    }
+);
 
 
 // 폼을 일정 추가 상태로 초기화
@@ -2655,6 +3131,7 @@ async function autoSyncGoogleCalendar() {
 
 // 최초 실행
 
+initializeCalendarTimePickers();
 renderCalendar();
 
 if (element.detailPanel) {

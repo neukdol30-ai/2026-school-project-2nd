@@ -100,4 +100,10 @@ public interface CalendarDao {
             @Param("startDate") String startDate,
             @Param("endDate") String endDate
     );
+
+    List<CalendarEventDto> findMonthEvents(
+            @Param("memberNo") int memberNo,
+            @Param("startDate") String startDate,
+            @Param("endDate") String endDate
+    );
 }
