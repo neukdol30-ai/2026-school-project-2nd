@@ -5,7 +5,9 @@ import com.siyan1234.itproject2nd.config.security.PasswordPolicy;
 import com.siyan1234.itproject2nd.config.security.SecurityPaths;
 import com.siyan1234.itproject2nd.member.dto.CustomUserDetails;
 import com.siyan1234.itproject2nd.member.dto.MemberDto;
+import com.siyan1234.itproject2nd.member.dto.PendingSocialSignupDto;
 import com.siyan1234.itproject2nd.member.dto.SignupDto;
+import com.siyan1234.itproject2nd.member.service.KakaoUnlinkService;
 import com.siyan1234.itproject2nd.member.service.MailService;
 import com.siyan1234.itproject2nd.member.service.MemberService;
 import com.siyan1234.itproject2nd.member.service.PendingSocialSignupService;
@@ -36,6 +38,9 @@ public class MemberController {
 
     // Redis 소셜 가입 대기정보 조회, 삭제 담당 (동의 완료 후 정리용)
     private final PendingSocialSignupService pendingSocialSignupService;
+
+    // 카카오 서버 쪽 연결(연동) 자체를 끊는 API 호출 담당
+    private final KakaoUnlinkService kakaoUnlinkService;
 
     // 아이디, 비밀번호 찾기 재작업
     private static final String FIND_ID_RESULT_SESSION_KEY = "findIdResultMemberId";
@@ -246,13 +251,28 @@ public class MemberController {
 
             String pendingToken = loginUser.getPendingSocialToken();
 
-            // TTL 10분을 기다리지 않고 즉시 삭제. (가입 취소했는데 10분간 개인정보가 Redis에 남아 있을 이유가 없음)
+            // Redis를 지우기 전에 먼저 조회해서 provider, providerId 확보
+            PendingSocialSignupDto pendingInfo = pendingSocialSignupService.find(pendingToken);
+
+            // provider가 카카오면 카카오 서버 쪽 연결 자체도 끊음
+            if (pendingInfo != null && "kakao".equals(pendingInfo.getProvider())) {
+
+                boolean unlinked = kakaoUnlinkService.unlinkByAdminKey(pendingInfo.getProviderId());
+
+                // 카카오 서버 장애 등으로 실패해도 로그아웃 자체는 막지 않는다 (실패해도 계속 진행)
+                if (!unlinked) {
+
+                    log.warn("카카오 연결 해제 실패. 가입 취소는 계속 진행함. providerId={}",
+                            pendingInfo.getProviderId());
+                }
+            }
+            // 네이버는 로컬 DB만 정리 대상이라 여기서 API 호출 없음.
             pendingSocialSignupService.delete(pendingToken);
         }
 
         SecurityContextHolder.clearContext(); // 이번 요청의 인증 정보 제거
 
-        session.invalidate(); // 세션 자체를 폐기(가입 대기 세션이든 정식 로그인 세션이든 동일하게 종료)
+        session.invalidate(); // 세션 자체를 폐기
 
         return "redirect:" + SecurityPaths.MEMBER_LOGIN;
     }
