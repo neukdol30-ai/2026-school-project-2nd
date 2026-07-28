@@ -16,10 +16,6 @@ public class BoardCommentService {
     private final BoardCommentDao boardCommentDao;
     private final BoardDao boardDao;
 
-    // 답변 상태
-    private static final String WAITING = "WAITING";
-    private static final String ANSWERED = "ANSWERED";
-
 
     // 답변 HTML의 최대 저장 길이
     // DB 컬럼은 CLOB이지만 지나치게 큰 입력을 제한하기 위한 값
@@ -81,15 +77,18 @@ public class BoardCommentService {
             );
         }
 
+        /*
+         * 답변 등록 후 남아 있는 답변을 기준으로
+         * 답변 상태와 최근 답변 시간을 다시 계산
+         */
         int statusResult =
-                boardDao.updateAnswerStatus(
-                        commentDto.getBoardNo(),
-                        ANSWERED
+                boardDao.refreshAnswerStatus(
+                        commentDto.getBoardNo()
                 );
 
         if (statusResult != 1) {
             throw new IllegalStateException(
-                    "게시글 답변 상태 변경에 실패했습니다."
+                    "게시글 답변 상태와 답변 시간을 갱신하지 못했습니다."
             );
         }
 
@@ -152,24 +151,17 @@ public class BoardCommentService {
             );
         }
 
-        // 삭제 후 남은 답변 개수 확인
-        int commentCount =
-                boardDao.countCommentsByBoardNo(boardNo);
+        /*
+         * 답변 삭제 후 남아 있는 답변을 기준으로
+         * 상태와 최근 답변 시간을 다시 계산
+         */
+        int statusResult =
+                boardDao.refreshAnswerStatus(boardNo);
 
-        // 남은 답변이 없으면 WAITING으로 변경
-        if (commentCount == 0) {
-
-            int statusResult =
-                    boardDao.updateAnswerStatus(
-                            boardNo,
-                            WAITING
-                    );
-
-            if (statusResult != 1) {
-                throw new IllegalStateException(
-                        "게시글 답변 상태 변경에 실패했습니다."
-                );
-            }
+        if (statusResult != 1) {
+            throw new IllegalStateException(
+                    "게시글 답변 상태와 답변 시간을 갱신하지 못했습니다."
+            );
         }
 
         return result;

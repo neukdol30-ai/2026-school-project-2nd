@@ -3,6 +3,7 @@ package com.siyan1234.itproject2nd.admin.controller;
 import com.siyan1234.itproject2nd.admin.dto.AdminDeleteResultDto;
 import com.siyan1234.itproject2nd.admin.service.AdminMemberService;
 import com.siyan1234.itproject2nd.admin.support.AdminFlashMessage;
+import com.siyan1234.itproject2nd.admin.support.AdminMemberActionResult;
 import com.siyan1234.itproject2nd.admin.support.AdminRoutes;
 import com.siyan1234.itproject2nd.config.security.LoginMemberResolver;
 import com.siyan1234.itproject2nd.member.dto.CustomUserDetails;
@@ -40,17 +41,19 @@ public class AdminMemberController {
             @AuthenticationPrincipal CustomUserDetails customUserDetails,
             RedirectAttributes redirectAttributes
     ) {
-        Integer loginAdminNo = resolveLoginAdminNo(customUserDetails);
-        int updatedCount = adminMemberService.grantAdmin(no, loginAdminNo);
+        AdminMemberActionResult result = adminMemberService.grantAdmin(
+                no,
+                resolveLoginAdminNo(customUserDetails)
+        );
 
-        if (isSelf(no, loginAdminNo)) {
-            redirectAttributes.addFlashAttribute("adminErrorMessage", AdminFlashMessage.MEMBER_ROLE_SELF_DENIED);
-        } else if (adminMemberService.isBanned(no)) {
-            redirectAttributes.addFlashAttribute("adminErrorMessage", AdminFlashMessage.MEMBER_ROLE_BANNED_DENIED);
-        } else if (updatedCount == 0) {
-            redirectAttributes.addFlashAttribute("adminErrorMessage", AdminFlashMessage.MEMBER_ROLE_CHANGE_FAILED);
+        if (result.isSuccess()) {
+            addSuccess(redirectAttributes, AdminFlashMessage.memberPromoted(no));
+        } else if (result == AdminMemberActionResult.SELF_ACTION_DENIED) {
+            addError(redirectAttributes, AdminFlashMessage.MEMBER_ROLE_SELF_DENIED);
+        } else if (result == AdminMemberActionResult.BANNED_MEMBER_DENIED) {
+            addError(redirectAttributes, AdminFlashMessage.MEMBER_ROLE_BANNED_DENIED);
         } else {
-            redirectAttributes.addFlashAttribute("adminMessage", AdminFlashMessage.memberPromoted(no));
+            addError(redirectAttributes, AdminFlashMessage.MEMBER_ROLE_CHANGE_FAILED);
         }
 
         return AdminRoutes.ADMIN_MEMBERS;
@@ -62,17 +65,19 @@ public class AdminMemberController {
             @AuthenticationPrincipal CustomUserDetails customUserDetails,
             RedirectAttributes redirectAttributes
     ) {
-        Integer loginAdminNo = resolveLoginAdminNo(customUserDetails);
-        int updatedCount = adminMemberService.grantUser(no, loginAdminNo);
+        AdminMemberActionResult result = adminMemberService.grantUser(
+                no,
+                resolveLoginAdminNo(customUserDetails)
+        );
 
-        if (isSelf(no, loginAdminNo)) {
-            redirectAttributes.addFlashAttribute("adminErrorMessage", AdminFlashMessage.MEMBER_ROLE_SELF_DENIED);
-        } else if (adminMemberService.isLastActiveAdmin(no)) {
-            redirectAttributes.addFlashAttribute("adminErrorMessage", AdminFlashMessage.MEMBER_ROLE_LAST_ADMIN_DENIED);
-        } else if (updatedCount == 0) {
-            redirectAttributes.addFlashAttribute("adminErrorMessage", AdminFlashMessage.MEMBER_ROLE_CHANGE_FAILED);
+        if (result.isSuccess()) {
+            addSuccess(redirectAttributes, AdminFlashMessage.memberDemoted(no));
+        } else if (result == AdminMemberActionResult.SELF_ACTION_DENIED) {
+            addError(redirectAttributes, AdminFlashMessage.MEMBER_ROLE_SELF_DENIED);
+        } else if (result == AdminMemberActionResult.LAST_ADMIN_DENIED) {
+            addError(redirectAttributes, AdminFlashMessage.MEMBER_ROLE_LAST_ADMIN_DENIED);
         } else {
-            redirectAttributes.addFlashAttribute("adminMessage", AdminFlashMessage.memberDemoted(no));
+            addError(redirectAttributes, AdminFlashMessage.MEMBER_ROLE_CHANGE_FAILED);
         }
 
         return AdminRoutes.ADMIN_MEMBERS;
@@ -85,17 +90,20 @@ public class AdminMemberController {
             @AuthenticationPrincipal CustomUserDetails customUserDetails,
             RedirectAttributes redirectAttributes
     ) {
-        Integer loginAdminNo = resolveLoginAdminNo(customUserDetails);
-        int updatedCount = adminMemberService.banMember(no, banReason, loginAdminNo);
+        AdminMemberActionResult result = adminMemberService.banMember(
+                no,
+                banReason,
+                resolveLoginAdminNo(customUserDetails)
+        );
 
-        if (isSelf(no, loginAdminNo)) {
-            redirectAttributes.addFlashAttribute("adminErrorMessage", AdminFlashMessage.MEMBER_BAN_SELF_DENIED);
-        } else if (adminMemberService.isAdminAccount(no)) {
-            redirectAttributes.addFlashAttribute("adminErrorMessage", AdminFlashMessage.MEMBER_BAN_ADMIN_DENIED);
-        } else if (updatedCount == 0) {
-            redirectAttributes.addFlashAttribute("adminErrorMessage", AdminFlashMessage.MEMBER_BAN_FAILED);
+        if (result.isSuccess()) {
+            addSuccess(redirectAttributes, AdminFlashMessage.memberBanned(no));
+        } else if (result == AdminMemberActionResult.SELF_ACTION_DENIED) {
+            addError(redirectAttributes, AdminFlashMessage.MEMBER_BAN_SELF_DENIED);
+        } else if (result == AdminMemberActionResult.ADMIN_ACCOUNT_DENIED) {
+            addError(redirectAttributes, AdminFlashMessage.MEMBER_BAN_ADMIN_DENIED);
         } else {
-            redirectAttributes.addFlashAttribute("adminMessage", AdminFlashMessage.memberBanned(no));
+            addError(redirectAttributes, AdminFlashMessage.MEMBER_BAN_FAILED);
         }
 
         return AdminRoutes.ADMIN_MEMBERS;
@@ -107,13 +115,15 @@ public class AdminMemberController {
             @AuthenticationPrincipal CustomUserDetails customUserDetails,
             RedirectAttributes redirectAttributes
     ) {
-        Integer loginAdminNo = resolveLoginAdminNo(customUserDetails);
-        int updatedCount = adminMemberService.unbanMember(no, loginAdminNo);
+        AdminMemberActionResult result = adminMemberService.unbanMember(
+                no,
+                resolveLoginAdminNo(customUserDetails)
+        );
 
-        if (updatedCount == 0) {
-            redirectAttributes.addFlashAttribute("adminErrorMessage", AdminFlashMessage.MEMBER_UNBAN_FAILED);
+        if (result.isSuccess()) {
+            addSuccess(redirectAttributes, AdminFlashMessage.memberUnbanned(no));
         } else {
-            redirectAttributes.addFlashAttribute("adminMessage", AdminFlashMessage.memberUnbanned(no));
+            addError(redirectAttributes, AdminFlashMessage.MEMBER_UNBAN_FAILED);
         }
 
         return AdminRoutes.ADMIN_MEMBERS;
@@ -125,17 +135,19 @@ public class AdminMemberController {
             @AuthenticationPrincipal CustomUserDetails customUserDetails,
             RedirectAttributes redirectAttributes
     ) {
-        Integer loginAdminNo = resolveLoginAdminNo(customUserDetails);
-        int deletedCount = adminMemberService.deleteMember(no, loginAdminNo);
+        AdminMemberActionResult result = adminMemberService.deleteMember(
+                no,
+                resolveLoginAdminNo(customUserDetails)
+        );
 
-        if (isSelf(no, loginAdminNo)) {
-            redirectAttributes.addFlashAttribute("adminErrorMessage", AdminFlashMessage.MEMBER_DELETE_SELF_DENIED);
-        } else if (adminMemberService.isAdminAccount(no)) {
-            redirectAttributes.addFlashAttribute("adminErrorMessage", AdminFlashMessage.MEMBER_DELETE_ADMIN_DENIED);
-        } else if (deletedCount == 0) {
-            redirectAttributes.addFlashAttribute("adminErrorMessage", AdminFlashMessage.MEMBER_DELETE_NOT_FOUND);
+        if (result.isSuccess()) {
+            addSuccess(redirectAttributes, AdminFlashMessage.memberDeleted(no));
+        } else if (result == AdminMemberActionResult.SELF_ACTION_DENIED) {
+            addError(redirectAttributes, AdminFlashMessage.MEMBER_DELETE_SELF_DENIED);
+        } else if (result == AdminMemberActionResult.ADMIN_ACCOUNT_DENIED) {
+            addError(redirectAttributes, AdminFlashMessage.MEMBER_DELETE_ADMIN_DENIED);
         } else {
-            redirectAttributes.addFlashAttribute("adminMessage", AdminFlashMessage.memberDeleted(no));
+            addError(redirectAttributes, AdminFlashMessage.MEMBER_DELETE_NOT_FOUND);
         }
 
         return AdminRoutes.ADMIN_MEMBERS;
@@ -151,14 +163,14 @@ public class AdminMemberController {
         AdminDeleteResultDto result = adminMemberService.deleteMembers(memberNoList, loginAdminNo);
 
         if (result.getRequestedCount() == 0) {
-            redirectAttributes.addFlashAttribute("adminErrorMessage", AdminFlashMessage.MEMBER_DELETE_NOT_SELECTED);
+            addError(redirectAttributes, AdminFlashMessage.MEMBER_DELETE_NOT_SELECTED);
             return AdminRoutes.ADMIN_MEMBERS;
         }
 
         if (!result.hasDeletedItem()) {
-            redirectAttributes.addFlashAttribute("adminErrorMessage", AdminFlashMessage.MEMBER_DELETE_NO_RESULT);
+            addError(redirectAttributes, AdminFlashMessage.MEMBER_DELETE_NO_RESULT);
         } else {
-            redirectAttributes.addFlashAttribute("adminMessage", AdminFlashMessage.selectedMembersDeleted(result));
+            addSuccess(redirectAttributes, AdminFlashMessage.selectedMembersDeleted(result));
         }
 
         return AdminRoutes.ADMIN_MEMBERS;
@@ -199,7 +211,11 @@ public class AdminMemberController {
         return loginAdmin == null ? null : loginAdmin.getNo();
     }
 
-    private boolean isSelf(Integer memberNo, Integer loginAdminNo) {
-        return memberNo != null && loginAdminNo != null && memberNo.equals(loginAdminNo);
+    private void addSuccess(RedirectAttributes redirectAttributes, String message) {
+        redirectAttributes.addFlashAttribute("adminMessage", message);
+    }
+
+    private void addError(RedirectAttributes redirectAttributes, String message) {
+        redirectAttributes.addFlashAttribute("adminErrorMessage", message);
     }
 }

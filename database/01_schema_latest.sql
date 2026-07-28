@@ -4,7 +4,7 @@
 -- 1. 테이블이 없는 빈 DB 또는 00_reset_local.sql 실행 후 사용
 -- 2. 기존 테이블이 남아 있으면 이미 존재하는 객체 오류 발생
 -- 3. 이 파일에는 현재 최신 구조가 모두 반영
--- 4. 이 파일을 실행하면 V001~V007 마이그레이션 파일은 실행하지 않음
+-- 4. 이 파일을 실행하면 V001~V009 마이그레이션 파일은 실행하지 않음
 -- 5. 실행 후 샘플 데이터가 필요하면 02_seed_data.sql을 실행
 -- ════════════════════════════════════════════════════════════
 -- 실행 순서: member → social_account → chat_room → chat_message
@@ -219,6 +219,7 @@ CREATE TABLE board (
     view_count       NUMBER DEFAULT 0 NOT NULL,
     created_date     TIMESTAMP DEFAULT SYSTIMESTAMP NOT NULL,
     modified_date    TIMESTAMP,
+    answered_date    TIMESTAMP,
 
     CONSTRAINT pk_board PRIMARY KEY (no),
     CONSTRAINT ck_board_category CHECK (category IN ('NOTICE', 'QUESTION')),
@@ -386,6 +387,10 @@ CREATE INDEX idx_visit_log_created_date
 CREATE INDEX idx_visit_log_request_uri
     ON visit_log(request_uri);
 
+-- 동일 IP는 하루에 한 건만 저장하여 동시 요청에서도 방문자 수가 중복되지 않도록 합니다.
+CREATE UNIQUE INDEX uk_visit_log_ip_day
+    ON visit_log (ip_address, TRUNC(CAST(created_date AS DATE)));
+
 
 -- ════════════════════════════════════════════════════════════
 -- [16] 인덱스 - 게시판
@@ -398,6 +403,10 @@ CREATE INDEX idx_board_created_date
 
 CREATE INDEX idx_board_category_status
     ON board(category, answer_status);
+
+-- 비회원 문의글 자동 삭제 대상 조회용
+CREATE INDEX idx_board_guest_cleanup
+    ON board (category, answer_status, answered_date, guest_author_no);
 
 CREATE INDEX idx_board_file_board_no
     ON board_file(board_no);

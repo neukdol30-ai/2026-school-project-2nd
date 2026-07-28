@@ -29,6 +29,13 @@ public interface BoardDao {
     // 제목, 내용, 작성자 닉네임을 기준으로 검색
     List<BoardDto> search(String keyword);
 
+
+    List<BoardDto> searchByCategory(
+            @Param("keyword") String keyword,
+            @Param("category") String category
+    );
+
+
     // 게시글 상세
     BoardDto findByNo(Long no);
 
@@ -69,5 +76,14 @@ public interface BoardDao {
     // 게시글에 등록된 답변 개수 조회
     int countCommentsByBoardNo(Long boardNo);
 
+
+    // 해당 게시글의 답변 개수를 확인해
+    // 답변 상태와 최근 답변 시간을 다시 계산한다.
+    int refreshAnswerStatus(Long boardNo);
+
+
+    List<Long> findExpiredGuestBoardNos(
+            @Param("retentionDays") int retentionDays
+    );
 
 }

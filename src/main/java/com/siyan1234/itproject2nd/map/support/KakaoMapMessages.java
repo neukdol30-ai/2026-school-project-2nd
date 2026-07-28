@@ -1,8 +1,6 @@
 package com.siyan1234.itproject2nd.map.support;
 
-/**
- * 카카오맵 기능에서 사용하는 사용자 안내 메시지입니다.
- */
+/** 카카오맵 API 응답과 화면에서 사용하는 사용자 안내 문구를 한 곳에서 관리합니다. */
 public final class KakaoMapMessages {
 
     public static final String API_KEY_MISSING = "카카오 REST API 키가 설정되어 있지 않습니다.";

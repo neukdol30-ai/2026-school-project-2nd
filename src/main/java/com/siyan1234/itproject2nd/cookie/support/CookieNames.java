@@ -1,6 +1,6 @@
 package com.siyan1234.itproject2nd.cookie.support;
 
-/** 쿠키 이름을 한 곳에서 관리합니다. */
+/** 브라우저와 서버가 공유하는 쿠키 이름을 오타 없이 사용하도록 모아둔 상수 클래스입니다. */
 public final class CookieNames {
 
     public static final String COOKIE_CONSENT = "SECONDPRO_COOKIE_CONSENT";

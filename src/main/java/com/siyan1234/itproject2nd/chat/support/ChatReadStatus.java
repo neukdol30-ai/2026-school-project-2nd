@@ -1,8 +1,6 @@
 package com.siyan1234.itproject2nd.chat.support;
 
-/**
- * 채팅 메시지 읽음 여부 값을 한 곳에서 관리하는 클래스입니다.
- */
+/** 채팅 메시지의 읽음 여부에 사용하는 Y/N 값과 기본값 보정 규칙을 관리합니다. */
 public final class ChatReadStatus {
 
     public static final String READ = "Y";

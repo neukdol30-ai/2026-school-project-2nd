@@ -2,6 +2,7 @@
     box-sizing: border-box;
 }
 
+/* 소셜 약관 동의 화면 전체의 기본 스타일 */
 body {
     margin: 0;
     min-height: 100vh;
@@ -11,6 +12,7 @@ body {
     word-break: keep-all;
 }
 
+/* 약관 동의 카드를 화면 가운데 배치 */
 .agreement-page {
     min-height: 100vh;
     display: flex;
@@ -19,6 +21,7 @@ body {
     padding: 40px 16px;
 }
 
+/* 약관 동의 내용을 담는 흰색 카드 */
 .agreement-card {
     width: 100%;
     max-width: 620px;
@@ -29,16 +32,19 @@ body {
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
 }
 
+/* 카드 상단 설명 영역 */
 .agreement-header {
     margin-bottom: 26px;
     text-align: center;
 }
 
+/* 카드 제목 */
 .agreement-header h1 {
     margin: 0;
     font-size: 28px;
 }
 
+/* 카드 설명 문구 */
 .agreement-header p {
     margin: 12px 0 0;
     color: #555;
@@ -46,6 +52,7 @@ body {
     line-height: 1.7;
 }
 
+/* 서버 검증 오류 메시지 */
 .agreement-error {
     margin-bottom: 18px;
     padding: 12px 14px;
@@ -56,10 +63,12 @@ body {
     font-size: 14px;
 }
 
+/* 약관 동의 form */
 .agreement-form {
     width: 100%;
 }
 
+/* 약관 한 항목을 감싸는 영역 */
 .agreement-item {
     display: flex;
     align-items: center;
@@ -73,6 +82,7 @@ body {
     background-color: #fafafa;
 }
 
+/* 체크박스와 동의 문구 영역 */
 .agreement-label {
     display: flex;
     align-items: center;
@@ -81,18 +91,20 @@ body {
     cursor: pointer;
 }
 
+/* 약관 체크박스 */
 .agreement-label input {
     width: 18px;
     height: 18px;
     flex-shrink: 0;
 }
 
+/* 필수 표시 */
 .required {
     margin-left: 4px;
     color: #e02424;
     font-size: 12px;
 }
-
+/* 약관 전문 보기 링크 */
 .policy-link {
     flex-shrink: 0;
     color: #222;
@@ -105,6 +117,7 @@ body {
     color: #555;
 }
 
+/* 약관 동의 제출 버튼 */
 .agree-button {
     width: 100%;
     height: 48px;
@@ -122,10 +135,12 @@ body {
     background-color: #444;
 }
 
+/* 로그아웃 form 영역 */
 .logout-form {
     margin-top: 12px;
 }
 
+/* 약관에 동의하지 않고 로그아웃하는 버튼 */
 .logout-button {
     width: 100%;
     height: 44px;
@@ -139,15 +154,4 @@ body {
 
 .logout-button:hover {
     background-color: #f3f3f3;
-}
-
-@media (max-width: 560px) {
-    .agreement-card {
-        padding: 26px 18px;
-    }
-
-    .agreement-item {
-        align-items: flex-start;
-        flex-direction: column;
-    }
 }

@@ -157,10 +157,18 @@ function updateCalculatorDisplay() {
 
 // 오류 상태에서 새 입력을 시작
 function resetCalculatorError() {
+    const errorMessages = [
+        "Error",
+        "Infinity",
+        "NaN",
+        "0으로 나눌 수 없습니다.",
+        "잘못된 계산식입니다."
+    ];
+
     if (
-        state.calculatorText === "Error"
-        || state.calculatorText === "Infinity"
-        || state.calculatorText === "NaN"
+        errorMessages.includes(
+            state.calculatorText
+        )
     ) {
         state.calculatorText = "";
     }
@@ -195,12 +203,35 @@ function appendCalculatorValue(value) {
             return;
         }
 
-        // 연산자를 연속으로 누르면 추가 입력을 무시
-        if (
-            /[+\-*/]$/.test(text)
-            || lastCharacter === "."
-            || lastCharacter === "("
-        ) {
+        if (lastCharacter === ".") {
+            return;
+        }
+
+        // 여는 괄호 뒤에는 음수 입력용 -만 허용
+        if (lastCharacter === "(") {
+            if (value === "-") {
+                state.calculatorText +=
+                    value;
+
+                updateCalculatorDisplay();
+            }
+
+            return;
+        }
+
+        // 곱하기나 나누기 뒤에는 음수 입력용 - 한 번만 허용
+        if (/[+\-*/]$/.test(text)) {
+            const canStartNegativeNumber =
+                value === "-"
+                && /[*/]$/.test(text);
+
+            if (canStartNegativeNumber) {
+                state.calculatorText +=
+                    value;
+
+                updateCalculatorDisplay();
+            }
+
             return;
         }
 
@@ -430,6 +461,61 @@ function applyCalculatorPercent() {
     updateCalculatorDisplay();
 }
 
+// 잘못된 연산자 조합 확인
+function hasInvalidCalculatorOperatorSequence(
+    expression
+) {
+    const compactExpression =
+        expression.replace(/\s/g, "");
+
+    for (
+        let index = 0;
+        index < compactExpression.length;
+        index++
+    ) {
+        const character =
+            compactExpression[index];
+
+        if (!/[+\-*/]/.test(character)) {
+            continue;
+        }
+
+        if (index === 0) {
+            if (character !== "-") {
+                return true;
+            }
+
+            continue;
+        }
+
+        const previousCharacter =
+            compactExpression[index - 1];
+
+        if (previousCharacter === "(") {
+            if (character !== "-") {
+                return true;
+            }
+
+            continue;
+        }
+
+        if (/[+\-*/]/.test(previousCharacter)) {
+            const isNegativeNumberStart =
+                character === "-"
+                && (
+                    previousCharacter === "*"
+                    || previousCharacter === "/"
+                );
+
+            if (!isNegativeNumberStart) {
+                return true;
+            }
+        }
+    }
+
+    return false;
+}
+
 // 계산 수행
 function calculate() {
     const expression =
@@ -456,26 +542,20 @@ function calculate() {
         (expression.match(/\)/g) || [])
             .length;
 
-    // 괄호 개수가 맞지 않으면 계산하지 않음
-    if (openCount !== closeCount) {
-        return;
-    }
-
-    // 사용할 수 없는 문자가 있으면 계산하지 않음
     if (
-        !/^[0-9+\-*/.() ]+$/.test(
+        openCount !== closeCount
+        || !/^[0-9+\-*/.() ]+$/.test(
+            expression
+        )
+        || hasInvalidCalculatorOperatorSequence(
             expression
         )
     ) {
-        return;
-    }
+        state.calculatorText =
+            "잘못된 계산식입니다.";
 
-    // 연산자가 연속으로 들어간 식은 계산하지 않음
-    if (
-        /[+\-*/]{2,}/.test(
-            expression
-        )
-    ) {
+        updateCalculatorDisplay();
+
         return;
     }
 
@@ -490,25 +570,36 @@ function calculate() {
             || !Number.isFinite(result)
         ) {
             state.calculatorText =
-                "Error";
+                expression.includes("/")
+                    ? "0으로 나눌 수 없습니다."
+                    : "잘못된 계산식입니다.";
 
             updateCalculatorDisplay();
 
             return;
         }
 
+        const normalizedResult =
+            Object.is(result, -0)
+                ? 0
+                : result;
+
         state.calculatorText =
             String(
-                Number.isInteger(result)
-                    ? result
+                Number.isInteger(
+                    normalizedResult
+                )
+                    ? normalizedResult
                     : Number(
-                        result.toFixed(10)
+                        normalizedResult.toFixed(10)
                     )
             );
 
         updateCalculatorDisplay();
     } catch (error) {
-        // 잘못된 수식은 Error로 바꾸지 않고 입력값 유지
-        return;
+        state.calculatorText =
+            "잘못된 계산식입니다.";
+
+        updateCalculatorDisplay();
     }
 }

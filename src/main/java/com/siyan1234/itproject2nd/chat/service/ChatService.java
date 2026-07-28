@@ -3,6 +3,7 @@ package com.siyan1234.itproject2nd.chat.service;
 import com.siyan1234.itproject2nd.chat.dto.ChatMessageDto;
 import com.siyan1234.itproject2nd.chat.dto.ChatRoomDto;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 /**
@@ -34,12 +35,6 @@ public interface ChatService {
      */
     ChatRoomDto findRoomByRoomNo(Integer roomNo);
 
-    /**
-     * 전체 상담방 조회
-     * Scheduler가 Redis 메시지를 Oracle로 저장할 때 상담방 목록을 순회하기 위해 사용한다.
-     */
-    List<ChatRoomDto> findAllRooms();
-
     //사용자 본인의 상담내역 목록 조회
     List<ChatRoomDto> findUserRooms(
             Integer userNo,
@@ -57,6 +52,12 @@ public interface ChatService {
     void saveMessage(ChatMessageDto chatMessageDto);
 
     /**
+     * 한 상담방의 Redis 메시지를 Oracle 일괄 실행 블록으로 저장합니다.
+     * 반환값은 정상 저장된 메시지 개수입니다.
+     */
+    int saveMessages(List<ChatMessageDto> messages);
+
+    /**
      * 특정 상담방의 Oracle DB 저장 메시지 조회
      */
     List<ChatMessageDto> findMessagesByRoomNo(Integer roomNo);
@@ -65,6 +66,11 @@ public interface ChatService {
      * 관리자 목록에 표시할 마지막 메시지와 마지막 메시지 시간을 갱신한다.
      */
     void updateLastMessage(Integer roomNo, String lastMessage);
+
+    /**
+     * 메시지 생성 시각을 유지하면서 마지막 메시지 정보를 갱신합니다.
+     */
+    void updateLastMessage(Integer roomNo, String lastMessage, LocalDateTime lastMessageDate);
 
     /**
      * 담당 관리자가 없는 상담방에 관리자를 배정한다.

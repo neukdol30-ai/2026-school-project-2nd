@@ -3,7 +3,7 @@
 
     사용 위치:
     - chat.html
-    - admin-chat-room.html
+    - admin/dashboard.html의 관리자 상담 상세 화면
 
     역할:
     - WebSocket 연결
@@ -23,6 +23,14 @@
 
 let socket = null;
 let isChatClosed = typeof roomStatus !== "undefined" && roomStatus === "CLOSED";
+
+/* 서버 ChatWebSocketEventType과 동일한 이벤트 이름을 사용합니다. */
+const CHAT_WEBSOCKET_EVENT = Object.freeze({
+    JOIN: "JOIN",
+    READ: "READ",
+    MESSAGE: "MESSAGE",
+    CLOSE: "CLOSE"
+});
 
 const chatBody = document.getElementById("chatBody");
 const messageInput = document.getElementById("messageInput");
@@ -52,7 +60,7 @@ function connectWebSocket() {
         console.log("WebSocket 연결 성공");
 
         socket.send(JSON.stringify({
-            type: "JOIN",
+            type: CHAT_WEBSOCKET_EVENT.JOIN,
             roomNo: roomNo,
             viewerNo: senderNo
         }));
@@ -63,7 +71,7 @@ function connectWebSocket() {
     socket.onmessage = function (event) {
         const data = JSON.parse(event.data);
 
-        if (data.type === "MESSAGE") {
+        if (data.type === CHAT_WEBSOCKET_EVENT.MESSAGE) {
             appendMessage(data.message);
 
             // 상대방 메시지를 받으면 읽음 이벤트 전송
@@ -74,7 +82,7 @@ function connectWebSocket() {
             return;
         }
 
-        if (data.type === "READ") {
+        if (data.type === CHAT_WEBSOCKET_EVENT.READ) {
             // 상대방이 읽었을 때 내가 보낸 메시지를 읽음으로 변경
             if (Number(data.viewerNo) !== Number(senderNo)) {
                 markMyMessagesAsRead();
@@ -83,7 +91,7 @@ function connectWebSocket() {
             return;
         }
 
-        if (data.type === "CLOSE") {
+        if (data.type === CHAT_WEBSOCKET_EVENT.CLOSE) {
             isChatClosed = true;
 
             if (data.message) {
@@ -166,7 +174,7 @@ function sendMessage() {
     };
 
     socket.send(JSON.stringify({
-        type: "MESSAGE",
+        type: CHAT_WEBSOCKET_EVENT.MESSAGE,
         message: message
     }));
 
@@ -183,7 +191,7 @@ function sendReadEvent() {
     }
 
     socket.send(JSON.stringify({
-        type: "READ",
+        type: CHAT_WEBSOCKET_EVENT.READ,
         roomNo: roomNo,
         viewerNo: senderNo
     }));

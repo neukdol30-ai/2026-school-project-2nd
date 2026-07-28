@@ -49,7 +49,8 @@
     gap: 8px;
 }
 
-.admin-form-grid label > span {
+.admin-form-grid label > span,
+.admin-form-grid .admin-field-label{
     color: #475467;
     font-size: 12px;
     font-weight: 900;

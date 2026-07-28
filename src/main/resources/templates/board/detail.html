@@ -158,10 +158,20 @@
                 and #authentication.principal.memberDto.no.equals(board.writerNo)}"
                  class="board-owner-actions">
 
-                <a th:href="@{/board/update/{no}(no=${board.no})}"
-                   class="board-button board-button-edit">
-                    수정
-                </a>
+                <form th:action="@{/board/update/{no}(no=${board.no})}"
+                      method="get"
+                      class="board-inline-form">
+
+                    <input type="hidden"
+                           name="category"
+                           th:value="${board.category}">
+
+                    <button type="submit"
+                            class="board-button board-button-edit">
+                        수정
+                    </button>
+
+                </form>
 
                 <form th:action="@{/board/delete/{no}(no=${board.no})}"
                       method="post"

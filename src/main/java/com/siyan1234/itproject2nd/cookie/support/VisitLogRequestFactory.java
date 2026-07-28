@@ -15,6 +15,7 @@ import java.time.LocalDateTime;
 public class VisitLogRequestFactory {
 
     private final LoginMemberResolver loginMemberResolver;
+    private final ClientIpResolver clientIpResolver;
 
     public VisitLogDto create(HttpServletRequest request) {
         VisitLogDto visitLogDto = new VisitLogDto();
@@ -24,7 +25,7 @@ public class VisitLogRequestFactory {
         visitLogDto.setQueryString(limit(request.getQueryString(), 1000));
         visitLogDto.setRequestMethod(limit(request.getMethod(), 20));
         visitLogDto.setUserAgent(limit(request.getHeader("User-Agent"), 1000));
-        visitLogDto.setIpAddress(limit(getClientIp(request), 100));
+        visitLogDto.setIpAddress(limit(clientIpResolver.resolve(request), 100));
         visitLogDto.setReferer(limit(request.getHeader("Referer"), 1000));
         visitLogDto.setCreatedDate(LocalDateTime.now());
         return visitLogDto;
@@ -35,22 +36,7 @@ public class VisitLogRequestFactory {
         return session == null ? null : session.getId();
     }
 
-    private String getClientIp(HttpServletRequest request) {
-        String forwardedFor = request.getHeader("X-Forwarded-For");
-
-        if (forwardedFor != null && !forwardedFor.isBlank()) {
-            return forwardedFor.split(",")[0].trim();
-        }
-
-        String realIp = request.getHeader("X-Real-IP");
-
-        if (realIp != null && !realIp.isBlank()) {
-            return realIp;
-        }
-
-        return request.getRemoteAddr();
-    }
-
+    /** 요청 헤더가 DB 컬럼 길이를 초과해 방문 기록 전체 저장이 실패하지 않도록 자릅니다. */
     private String limit(String value, int maxLength) {
         if (value == null || value.length() <= maxLength) {
             return value;

@@ -4,6 +4,7 @@ import com.siyan1234.itproject2nd.member.dao.MemberDao;
 import com.siyan1234.itproject2nd.member.dao.SocialAccountDao;
 import com.siyan1234.itproject2nd.member.dto.CustomUserDetails;
 import com.siyan1234.itproject2nd.member.dto.MemberDto;
+import com.siyan1234.itproject2nd.member.dto.PendingSocialSignupDto;
 import com.siyan1234.itproject2nd.member.dto.SocialAccountDto;
 import com.siyan1234.itproject2nd.member.social.KakaoUserInfo;
 import com.siyan1234.itproject2nd.member.social.NaverUserInfo;
@@ -35,10 +36,9 @@ public class OAuth2DetailsService extends DefaultOAuth2UserService {
 
     private final MemberDao memberDao; // member 테이블 접근
     private final SocialAccountDao socialAccountDao; // social_account 테이블 접근
-    private final PasswordEncoder passwordEncoder; // BCrypt 해싱 도구 (기존 설정에 이미 빈 등록되어 있음)
+    private final PendingSocialSignupService pendingSocialSignupService;
 
     @Override
-    @Transactional
     public OAuth2User loadUser(OAuth2UserRequest userRequest) throws OAuth2AuthenticationException {
 
         // super.loadUser(...) = 부모 클래스(DefaultOAuth2UserService)의 원래 기능을 그대로 실행.
@@ -74,9 +74,9 @@ public class OAuth2DetailsService extends DefaultOAuth2UserService {
 
         String email = socialUserInfo.getEmail(); // null일 수 있음.
 
-        // 2단계 : 이 소셜 계정이 social_account 테이블에 이미 연결되어 있는지 확인.
-        SocialAccountDto socialAccount =
-                socialAccountDao.findByProviderAndProviderId(provider, providerId); // 두 값을 조건으로 기존 연결 정보 1건 조회
+        // 2단계 : 이 provider+providerId 조합으로 이미 연결된 계정이 있는지 조회
+        SocialAccountDto socialAccount = socialAccountDao.findByProviderAndProviderId(provider, providerId);
+
 
         // socialAccount가 null이 아니면 이전 로그인에서 이미 우리 회원가 연결된 소셜 계정.
         if (socialAccount != null) {
@@ -85,39 +85,22 @@ public class OAuth2DetailsService extends DefaultOAuth2UserService {
 
             // 1. 방어 검사 : social_account 연결 정보는 있는데 member 회원 정보가 없는 경우
             if (memberDto == null) {
-                // 사용자 화면이 아닌 서버 콘솔에 문제 상황과 대상 회원 번호 기록
-                log.warn(
-                        "소셜 연결 정보는 있지만 회원 정보가 없음 memberNo={}",
-                        socialAccount.getMemberNo());
-                // OAuth2AuthenticationException을 던지면 소셜 인증은 실패로 종료
-                throw new OAuth2AuthenticationException(
-                        new OAuth2Error(
-                                ERROR_MEMBER_NOT_FOUND,
-                                "회원 정보를 찾을 수 없습니다. 관리자에게 문의해 주세요.",
-                                null));
-            } // 회원 정보 없음 검사 종료
+                log.warn("소셜 연결 정보는 있지만 회원 정보가 없음 memberNo={}", socialAccount.getMemberNo());
+                throw new OAuth2AuthenticationException(new OAuth2Error(
+                        ERROR_MEMBER_NOT_FOUND, "회원 정보를 찾을 수 없습니다. 관리자에게 문의해 주세요.", null));
+            }
 
             // 2. 보안 검사 : 관리자가 정지한 회원인지 확인
             // OAuth2DetailsService에서 직접 memberDto.isBanned()를 확인
-            if (memberDto.isBanned()) { // banYn 값이 "Y" -> true 반환.
-                // 정지 회원 로그인 시도를 회원 번호와 함께 서버 로그에 기록
-                log.warn(
-                        "정지 회원의 소셜 로그인 차단 memberNo={}",
-                        memberDto.getNo());
-
-                // 소셜 로그인 실패 예외 발생시켜 이후 로그인 성공 처리 막음
+            if (memberDto.isBanned()) {
+                log.warn("정지 회원의 소셜 로그인 차단 memberNo={}", memberDto.getNo());
                 throw new OAuth2AuthenticationException(
-                        new OAuth2Error(
-                                ERROR_MEMBER_BANNED,
-                                memberDto.displayBanReason(), // 사유 있으면 정지 사유, 없으면 기본 정지 문구 반환
-                                null));
-            } // 정지 회원 검사 종료
+                        new OAuth2Error(ERROR_MEMBER_BANNED, memberDto.displayBanReason(), null));
+            }
 
-            // 회원 정보가 존재하고 정지 상태도 아니면 정상적인 기존 소셜 회원.
-            return new CustomUserDetails(
-                    memberDto, // 우리 member 테이블에서 조회한 로그인 회원 정보.
-                    attributes); // 카카오, 네이버가 반환한 사용자 정보 Map 객체
+            return new CustomUserDetails(memberDto, attributes);
         }
+
 
         // 3단계 : 이메일이 같은 기존 회원이 있으면 연동하지 않고 로그인 차단.
         // 우리 일반 회원가입은 이메일 소유 인증 X -> 이메일만 믿고 자동 연동하면, 공격자가 선점형 계정 탈취
@@ -125,115 +108,48 @@ public class OAuth2DetailsService extends DefaultOAuth2UserService {
 
             MemberDto duplicatedMember = memberDao.findByEmail(email); // 있으면 MemberDto, 없으면 null
 
-            if (duplicatedMember != null) { // 이메일이 겹치는 회원이 이미 있음.
-
+            if (duplicatedMember != null) {
                 log.warn("소셜 로그인 이메일 중복 차단 provider={}, email={}", provider, email); // 개발자용 기록
 
                 // OAuth2Error(오류 코드, 화면에 보일 설명, 참고 URL) 순서로 담는다.
                 // 이 예외 던지면 Security가 OAuth2LoginFailureHandler 호출
-                throw new OAuth2AuthenticationException(
-                        new OAuth2Error(
-                                ERROR_EMAIL_ALREADY_REGISTERED, // 화이트 리스트에 등록된 코드
-                                "이미 가입된 이메일입니다. 기존에 사용하던 로그인 방법으로 로그인해 주세요.",
-                                null)); // 참고 URL은 쓰지 않음
+                throw new OAuth2AuthenticationException(new OAuth2Error(ERROR_EMAIL_ALREADY_REGISTERED, // 화이트 리스트에 등록된 코드
+                        "이미 가입된 이메일입니다. 기존에 사용하던 로그인 방법으로 로그인해 주세요.", null)); // 참고 URL은 쓰지 않음
             }
         }
 
-        // 4단계 : 여기까지 왔으면 확실한 신규 회원. -> member 테이블에 INSERT (이제 연동 분기가 없으므로 여기서 만듦)
-        MemberDto memberDto = new MemberDto();
-
-        // (가) member_id 생성. UNIQUE, CustomUserDetails.getUsername()이 이 값을 반환.
-        String memberId = provider + "_" + providerId; // 예 : "kakao_3948573"
-
-        // (나) 소셜 회원은 비밀번호로 로그인 X -> 컬럼 비우면 빈 비밀번호 시도 위험 있음. -> 무작위 문자열 BCrypt 해싱
-        String randomPassword = passwordEncoder.encode(UUID.randomUUID().toString());
-
-        // (다) nickname은 NOT NULL, UNIQUE라 반드시 겹치지 않아야 함.
-        String nickname = generateUniqueNickname(socialUserInfo.getNickname(), provider, providerId);
-
-        // (라) MemberDto 조립. @Setter가 있어 set으로 채움.
-        memberDto.setMemberId(memberId);
-        memberDto.setPassword(randomPassword);
-        memberDto.setName(socialUserInfo.getName()); // null 가능 (컬럼이 nullable)
-        memberDto.setNickname(nickname);
-        memberDto.setEmail(email); // null 가능
-
-        memberDao.insertSocialMember(memberDto); // -> MemberMapper.xml의 <insert id="insertSocialMember">
-
-        // INSERT 직후 memberDto의 no는 아직 비어 있음.
-        // member_id가 UNIQUE이므로 그 값으로 다시 조회하면 no가 채워진 완전한 객체 얻음.
-        memberDto = memberDao.findByMemberId(memberId);
-
-        log.info("소셜 신규 회원 생성 memberId = {}, nickname = {}", memberId, nickname);
-
-        // 5단계 : social_account에 연결 정보 저장
-        SocialAccountDto newSocialAccount = SocialAccountDto.builder() // @BUilder 있어서 .필드(값) 조립 가능
-                .memberNo(memberDto.getNo())
+        // 4단계 : 신규 소셜 사용자의 최소 정보를 Redis 가입 대기 영역에 저장 / 아직 member 테이블에 INSERT하지 않음
+        PendingSocialSignupDto pendingSignup = PendingSocialSignupDto.builder()
                 .provider(provider)
                 .providerId(providerId)
-                .build(); // build()를 호출해야 실제 객체가 만들어진다.
+                .name(socialUserInfo.getName())
+                .nickname(socialUserInfo.getNickname())
+                .email(email)
+                .build();
 
-        socialAccountDao.insertSocialAccount(newSocialAccount);
+        String pendingSocialToken = pendingSocialSignupService.save(pendingSignup);
 
-        // @AuthenticationPrincipal CustomUserDetails로 어디서든 꺼내 쓸 수 있음.
-        return new CustomUserDetails(memberDto, attributes);
+        MemberDto pendingMemberDto = createPendingMemberDto(provider, providerId);
+
+        log.info("신규 소셜 사용자를 약관 동의 대기 상태로 전환 provider={}", provider);
+
+        return new CustomUserDetails(pendingMemberDto, Map.of(), pendingSocialToken);
     }
 
-    // 닉네임 중복 회피
-    private String generateUniqueNickname(String rawNickname, String provider, String providerId) {
-        // (1) 기준 닉네임 정하기
-        // 카카오/네이버에서 닉네임 동의 거부당하면 rawNickname이 null로. 그 때는 절대 겹치지 않는 대체값(예: "kakao_39485")을 사용
-        String base;
+        private MemberDto createPendingMemberDto (String provider, String providerId) {
 
-        if (rawNickname == null || rawNickname.isBlank()) {
-            // providerId가 길 수 있으니 앞 5글자만 사용. Math.min으로 길이 초과 예외 막음.
-            String shortId = providerId.substring(0, Math.min(5, providerId.length()));
-            base = provider + "_" + shortId; // 예: "kakao_39485"
-        } else {
-            base = rawNickname.trim(); // 앞뒤 공백 제거
+            MemberDto pendingMemberDto = new MemberDto();
+
+            pendingMemberDto.setMemberId(provider + "_" + providerId);
+
+            pendingMemberDto.setPassword("PENDING_SOCIAL_SIGNUP");
+
+            pendingMemberDto.setNickname(provider + "_pending");
+
+            pendingMemberDto.setRole("USER");
+            pendingMemberDto.setAgreeTermsYn("N");
+            pendingMemberDto.setAgreePrivacyYn("N");
+
+            return pendingMemberDto;
         }
-
-        // (2) 길이 제한
-        // 컬럼 여유 있어도 화면 표시 안 깨지게 20자로 자르기 + 뒤에 숫자 붙일 여유
-        if (base.length() > 20) {
-            base = base.substring(0, 20); // 0번째부터 19번째 글자까지 (20번째 미포함)
-        }
-
-        // (3) 중복일 때 뒤에 숫자 붙이기
-        String candidate = base; // 첫 시도는 숫자 없이 원본
-        int suffix = 1; // 붙일 숫자. 1부터 시작
-
-        while (memberDao.findByNickname(candidate) != null) {
-            candidate = base + suffix; // 문자열 + 숫자 => "홍길동" + 1 => "홍길동1"
-            suffix = suffix + 1;
-
-            // 무한 루프 방지.
-            if (suffix > 10000) {
-                candidate = base + UUID.randomUUID().toString().substring(0, 8);
-                break;
-            }
-        }
-        // 흐름 예시:
-        //   DB에 "홍길동" 없음        → 1회차 조건 거짓 → 반복 안 함 → "홍길동" 반환
-        //   DB에 "홍길동" 있음        → 1회차 참 → candidate="홍길동1", suffix=2
-        //   DB에 "홍길동1"도 있음     → 2회차 참 → candidate="홍길동2", suffix=3
-        //   DB에 "홍길동2" 없음       → 3회차 거짓 → "홍길동2" 반환
-        return candidate;
     }
-
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

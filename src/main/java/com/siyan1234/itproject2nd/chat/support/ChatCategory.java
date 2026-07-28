@@ -4,10 +4,8 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * 상담 문의 유형 문자열을 한 곳에서 관리하는 클래스입니다.
- *
- * DB의 chat_room.category CHECK 제약조건과 화면 표시 이름/아이콘이
- * 서로 달라지지 않도록 category 관련 값을 이 클래스에서 관리합니다.
+ * 상담 문의 유형 문자열을 한 곳에서 관리합니다.
+ * DB CHECK 제약조건과 화면 표시 이름·아이콘이 달라지지 않도록 코드와 표시값을 함께 보관합니다.
  */
 public final class ChatCategory {
 
