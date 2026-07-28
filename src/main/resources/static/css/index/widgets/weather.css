@@ -1,74 +1,470 @@
-/*날씨 관련*/
+/* 현재 날씨 카드 */
 .weather-current {
-    padding: 4px 0 12px;
-    border-bottom: 1px solid #e5e7eb;
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+
+    padding: 18px;
+    box-sizing: border-box;
+
+    border: 1px solid #d5eaf3;
+    border-radius: 14px;
+
+    background:
+            linear-gradient(
+                    135deg,
+                    #fbfeff 0%,
+                    #eaf8fd 100%
+            );
+
+    box-shadow:
+            0 8px 18px
+            rgba(43, 119, 151, 0.07);
 }
 
+/* 날씨별 배경 빛 */
+.weather-current::before {
+    content: "";
+    position: absolute;
+    top: -62px;
+    right: -48px;
+    z-index: -1;
+
+    width: 180px;
+    height: 180px;
+
+    border-radius: 50%;
+    filter: blur(8px);
+    opacity: 0.72;
+
+    pointer-events: none;
+}
+
+.weather-current::after {
+    display: none;
+}
+
+/* 맑음 */
+.weather-theme-sunny {
+    background:
+            linear-gradient(
+                    135deg,
+                    #fffefd 0%,
+                    #edfaff 100%
+            );
+}
+
+.weather-theme-sunny::before {
+    background:
+            radial-gradient(
+                    circle,
+                    rgba(255, 205, 64, 0.42) 0%,
+                    rgba(255, 226, 131, 0.18) 48%,
+                    rgba(255, 255, 255, 0) 74%
+            );
+}
+
+/* 흐림과 구름 */
+.weather-theme-cloudy {
+    background:
+            linear-gradient(
+                    135deg,
+                    #fcfeff 0%,
+                    #edf5f8 100%
+            );
+}
+
+.weather-theme-cloudy::before {
+    background:
+            radial-gradient(
+                    circle,
+                    rgba(133, 178, 199, 0.34) 0%,
+                    rgba(192, 216, 227, 0.16) 50%,
+                    rgba(255, 255, 255, 0) 74%
+            );
+}
+
+/* 비 */
+.weather-theme-rain {
+    background:
+            linear-gradient(
+                    135deg,
+                    #f9fdff 0%,
+                    #e3f0f6 100%
+            );
+}
+
+.weather-theme-rain::before {
+    background:
+            radial-gradient(
+                    circle,
+                    rgba(72, 145, 181, 0.36) 0%,
+                    rgba(133, 190, 215, 0.18) 50%,
+                    rgba(255, 255, 255, 0) 74%
+            );
+}
+
+/* 눈 */
+.weather-theme-snow {
+    background:
+            linear-gradient(
+                    135deg,
+                    #ffffff 0%,
+                    #eef8fd 100%
+            );
+}
+
+.weather-theme-snow::before {
+    background:
+            radial-gradient(
+                    circle,
+                    rgba(174, 217, 239, 0.40) 0%,
+                    rgba(221, 240, 250, 0.18) 52%,
+                    rgba(255, 255, 255, 0) 75%
+            );
+}
+
+/* 현재 날씨 내부 */
 .weather-main {
+    position: relative;
+    z-index: 1;
+
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 12px;
+
+    min-height: 84px;
+    gap: 16px;
 }
 
+.weather-current-copy {
+    min-width: 0;
+}
+
+/* 지역명과 현재 버튼 */
+.weather-current-heading {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* 지역 */
 .weather-location {
-    font-size: 14px;
-    font-weight: 700;
-    color: #111827;
-}
+    overflow: hidden;
 
-.weather-text {
-    margin-top: 4px;
-    font-size: 13px;
-    color: #6b7280;
-}
-
-/* 날씨 온도 표시 */
-.weather-temp {
-    font-size: 34px;
+    color: #173f52;
+    font-size: 15px;
     font-weight: 800;
-    color: #111827;
+    line-height: 1.35;
+
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* 날씨 상태 */
+.weather-text {
+    margin-top: 6px;
+
+    color: #617b87;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+/* 강수확률 또는 선택 날짜 안내 */
+.weather-rain {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+
+    min-height: 25px;
+    margin-top: 12px;
+    padding: 0 9px;
+
+    border: 1px solid #d6e8f0;
+    border-radius: 999px;
+
+    background:
+            rgba(255, 255, 255, 0.76);
+
+    color: #68818c;
+    font-size: 10px;
+    font-weight: 600;
+}
+
+.weather-rain strong {
+    color: #244a5a;
+    font-size: 11px;
+    font-weight: 800;
+}
+
+/* 현재 아이콘과 온도 */
+.weather-current-side {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    flex: 0 0 auto;
+
+    gap: 10px;
+}
+
+/* 현재 날씨 아이콘 */
+.weather-current-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 52px;
+    height: 52px;
+
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+
     line-height: 1;
 }
 
-.weather-rain {
-    margin-top: 8px;
-    font-size: 12px;
-    color: #6b7280;
+.weather-current-icon .weather-svg {
+    width: 48px;
+    height: 48px;
 }
 
+/* SVG 아이콘 공통 */
+.weather-current-icon svg,
+.weather-icon svg {
+    display: block;
+    width: 100%;
+    height: 100%;
+
+    overflow: visible;
+
+    filter:
+            saturate(1.25)
+            contrast(1.06)
+            drop-shadow(
+                    0 3px 5px
+                    rgba(44, 112, 141, 0.12)
+            );
+}
+
+/* 흐린 날 아이콘을 조금 더 선명하게 */
+.weather-theme-cloudy .weather-current-icon svg,
+.weather-theme-cloudy .weather-icon svg {
+    filter:
+            saturate(1.38)
+            contrast(1.08)
+            drop-shadow(
+                    0 3px 5px
+                    rgba(44, 112, 141, 0.12)
+            );
+}
+
+/* 모든 온도 숫자 공통 */
+.weather-temp,
+.weather-temp.is-forecast,
+.weather-range {
+    font-family: inherit;
+    font-variant-numeric: tabular-nums;
+    font-weight: 800;
+    letter-spacing: -0.45px;
+}
+
+/* 현재 온도 */
+.weather-temp {
+    color: #173f52;
+    font-size: 30px;
+    line-height: 1;
+
+    text-shadow: none;
+}
+
+/* 선택한 날짜 최저·최고 온도 */
+.weather-temp.is-forecast {
+    display: flex;
+    align-items: baseline;
+    gap: 4px;
+
+    font-size: 23px;
+    line-height: 1;
+}
+
+/* 선택한 날짜의 최고·최저 온도 */
+.weather-temp.is-forecast {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    justify-content: center;
+
+    min-width: 64px;
+    gap: 4px;
+
+    color: #173f52;
+    line-height: 1;
+    letter-spacing: -0.5px;
+}
+
+/* 선택 날짜 최고온도 */
+.weather-forecast-high {
+    color: #173f52;
+    font-size: 28px;
+    font-weight: 800;
+}
+
+/* 선택 날짜 최저온도 */
+.weather-forecast-low {
+    color: #6f8792;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: -0.2px;
+    white-space: nowrap;
+}
+
+/* 현재 날씨로 돌아가기 버튼 */
+.weather-current-reset {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    min-height: 20px;
+    padding: 0 7px;
+
+    border: 1px solid #cfe3ec;
+    border-radius: 999px;
+
+    background:
+            rgba(255, 255, 255, 0.74);
+
+    color: #6d8590;
+    font-family: inherit;
+    font-size: 9px;
+    font-weight: 700;
+
+    cursor: pointer;
+
+    transition:
+            border-color 0.18s ease,
+            background-color 0.18s ease,
+            color 0.18s ease;
+}
+
+.weather-current-reset:hover,
+.weather-current-reset.is-active {
+    border-color: #91d4ed;
+    background: #e9f8fe;
+    color: #148db9;
+}
+
+/* 주간 예보 */
 .weather-weekly {
     display: grid;
-    grid-template-columns: repeat(5, 1fr);
-    gap: 6px;
+    grid-template-columns:
+        repeat(5, minmax(0, 1fr));
+
+    gap: 7px;
+
     margin: 12px 0 0;
     padding: 0;
+
     list-style: none;
 }
 
+.weather-day-item {
+    min-width: 0;
+}
+
+/* 클릭 가능한 날짜별 예보 카드 */
 .weather-day {
     display: flex;
     flex-direction: column;
     align-items: center;
+    justify-content: center;
+
+    width: 100%;
+    min-width: 0;
+    min-height: 80px;
+
+    padding: 9px 3px;
+    box-sizing: border-box;
     gap: 4px;
-    padding: 8px 4px;
-    border: 1px solid #e5e7eb;
-    border-radius: 6px;
-    background: #f9fafb;
+
+    border: 1px solid #dfe9ee;
+    border-radius: 10px;
+
+    background: #ffffff;
+
+    color: inherit;
+    font-family: inherit;
+
+    box-shadow: none;
+    cursor: pointer;
+
+    transition:
+            transform 0.18s ease,
+            border-color 0.18s ease,
+            background-color 0.18s ease,
+            box-shadow 0.18s ease;
 }
 
+.weather-day:hover {
+    transform: translateY(-1px);
+
+    border-color: #9fd5e9;
+
+    box-shadow:
+            0 5px 12px
+            rgba(48, 125, 157, 0.08);
+}
+
+/* 선택한 날짜 */
+.weather-day.is-selected {
+    transform: translateY(-1px);
+
+    border-color: #55bce2;
+    background: #eefaff;
+
+    box-shadow: none;
+}
+
+.weather-day:focus-visible {
+    outline: 2px solid #42b6e3;
+    outline-offset: 2px;
+}
+
+/* 요일 */
 .weather-day strong {
-    font-size: 12px;
-    color: #374151;
+    color: #3f5965;
+    font-size: 11px;
+    font-weight: 800;
 }
 
+.weather-day.is-selected strong {
+    color: #0f82ad;
+}
+
+/* 주간 날씨 아이콘 */
 .weather-icon {
-    font-size: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 30px;
+    height: 30px;
+    min-height: 30px;
+
+    font-size: 22px;
     line-height: 1;
 }
 
+.weather-icon .weather-svg {
+    width: 28px;
+    height: 28px;
+}
+
+/* 아래 5일 최저·최고 온도 */
 .weather-range {
+    color: #536f7c;
     font-size: 11px;
-    color: #6b7280;
+    line-height: 1;
+
     white-space: nowrap;
 }

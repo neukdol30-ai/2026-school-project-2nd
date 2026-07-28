@@ -11,7 +11,6 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestClient;
 
-import java.util.IllegalFormatCodePointException;
 import java.util.Map;
 
 /**
@@ -122,7 +121,7 @@ public class KakaoNotifyService {
      * 카카오톡 나에게 보내기 API 호출
      */
     private void sendMemo(String accessToken, ChatRoomDto chatRoom) {
-        String adminRoomUrl = adminRoomBaseUrl + "/" + chatRoom.getRoomNo();
+        String adminRoomUrl = createAdminRoomUrl(chatRoom.getRoomNo());
 
         String messageText = """
                 [SecondPro 상담 알림]
@@ -156,18 +155,20 @@ public class KakaoNotifyService {
         MultiValueMap<String, String> formData = new LinkedMultiValueMap<>();
         formData.add("template_object", templateObject);
 
-        String response = restClient.post()
+        /*
+         * 카카오 응답 본문 전체를 로그로 남기지 않습니다.
+         * 전송 성공 여부는 호출자 sendNewChatRoomAlert()의 완료 로그로 확인합니다.
+         */
+        restClient.post()
                 .uri("https://kapi.kakao.com/v2/api/talk/memo/default/send")
                 .contentType(MediaType.APPLICATION_FORM_URLENCODED)
                 .header("Authorization", "Bearer " + accessToken)
                 .body(formData)
                 .retrieve()
                 .body(String.class);
-
-        log.info("카카오톡 나에게 보내기 응답 = {}", response);
     }
-    //관리자 상담방 상세 주소 생성
 
+    /** 관리자 상담방 상세 주소를 슬래시 중복 없이 생성합니다. */
     private String createAdminRoomUrl(Integer roomNo) {
         if (adminRoomBaseUrl.endsWith("/")) {
             return adminRoomBaseUrl + roomNo;

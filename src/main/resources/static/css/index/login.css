@@ -1,17 +1,19 @@
 /* 상단 우측 로그인 카드 */
 .auth-widget {
     border: 1px solid #e5e7eb;
+    min-height: 0;
 }
 
 /* 비로그인 상태 로그인 카드 */
 .auth-logged-out {
-    display: grid;
-    grid-template-rows: 1fr auto 1fr;
-    align-items: center;
-    min-height: 140px;
-    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+
+    min-height: 0;
+    padding: 22px 18px;
     box-sizing: border-box;
-    row-gap: 10px;
+    gap: 14px;
 }
 
 /* 로그인 안내 문구 */
@@ -19,6 +21,7 @@
     margin: 0;
     color: #6b7280;
     font-size: 12px;
+    line-height: 1.5;
     text-align: center;
 }
 
@@ -40,6 +43,7 @@
 .auth-links {
     display: flex;
     justify-content: center;
+    align-items: center;
     flex-wrap: wrap;
     row-gap: 6px;
 }

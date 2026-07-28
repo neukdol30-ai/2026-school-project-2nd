@@ -53,8 +53,8 @@ public class ChatApiController {
             return List.of();
         }
 
+        // ChatService 내부에서 Oracle과 Redis를 함께 읽음 처리합니다.
         chatService.updateReadYn(roomNo, loginUser.getNo());
-        chatRedisService.updateReadYn(roomNo, loginUser.getNo());
 
         List<ChatMessageDto> messages = new ArrayList<>();
         messages.addAll(chatService.findMessagesByRoomNo(roomNo));

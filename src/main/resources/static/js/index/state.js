@@ -204,9 +204,56 @@ const state = {
 
     stockLoading: false,
     stockError: "",
+    stockUpdatedAt: null,
     stockSlideIndex: 0,
     stockCharts: [],
     stockSwiper: null,
+
+    // 세계시간 위젯에 표시할 도시
+    worldTimeCities: [
+        {
+            city: "서울",
+            country: "대한민국",
+            timeZone: "Asia/Seoul",
+            zoneLabel: "KST",
+            utcOffset: "UTC+9"
+        },
+        {
+            city: "도쿄",
+            country: "일본",
+            timeZone: "Asia/Tokyo",
+            zoneLabel: "JST",
+            utcOffset: "UTC+9"
+        },
+        {
+            city: "싱가포르",
+            country: "싱가포르",
+            timeZone: "Asia/Singapore",
+            zoneLabel: "SGT",
+            utcOffset: "UTC+8"
+        },
+        {
+            city: "로스앤젤레스",
+            country: "미국",
+            timeZone: "America/Los_Angeles",
+            zoneLabel: "PT",
+            utcOffset: "UTC-8"
+        },
+        {
+            city: "뉴욕",
+            country: "미국",
+            timeZone: "America/New_York",
+            zoneLabel: "ET",
+            utcOffset: "UTC-5"
+        },
+        {
+            city: "런던",
+            country: "영국",
+            timeZone: "Europe/London",
+            zoneLabel: "UK",
+            utcOffset: "UTC+0"
+        }
+    ],
 
     // 사진의 위젯 배치 그대로 유지
     widgets: [
@@ -232,7 +279,7 @@ const state = {
             id: 4,
             zone: "main",
             type: "stock",
-            title: "증권",
+            title: "국내 증권",
             visible: true,
             collapsed: false,
             orderNo: 3
@@ -280,7 +327,16 @@ const state = {
             title: "현재시간",
             visible: true,
             collapsed: false,
-            orderNo: 5
+            orderNo: 5,
+        },
+        {
+            id: 10,
+            zone: "side",
+            type: "worldTime",
+            title: "세계시간",
+            visible: true,
+            collapsed: false,
+            orderNo: 3
         }
     ]
 };

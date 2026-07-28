@@ -46,23 +46,56 @@ public class BoardController {
         return "board/list";
     }
 
-    // 게시글 상세
-    @GetMapping("/detail/{no}")
-    public String detail(@PathVariable Long no,
-                         Model model,
-                         HttpSession session) {
 
+    //게시글상세
+    @GetMapping("/detail/{no}")
+    public String detail(
+            @PathVariable Long no,
+            Model model,
+            HttpSession session,
+            RedirectAttributes redirectAttributes
+    ) {
+
+        /*
+         * 게시글을 먼저 조회한다.
+         * 삭제됐거나 존재하지 않는 게시글이면 null이 반환된다.
+         */
+        BoardDto board = boardService.findByNo(no);
+
+        if (board == null) {
+
+            redirectAttributes.addFlashAttribute(
+                    "errorMessage",
+                    "존재하지 않거나 삭제된 게시글입니다."
+            );
+
+            return "redirect:/board/question";
+        }
+
+        /*
+         * 존재하는 게시글일 때만 조회수를 증가시킨다.
+         */
         String viewKey = "viewed_board_" + no;
 
         if (session.getAttribute(viewKey) == null) {
+
             boardService.increaseViewCount(no);
-            session.setAttribute(viewKey, true);
+
+            session.setAttribute(
+                    viewKey,
+                    true
+            );
         }
 
-        model.addAttribute("board", boardService.findByNo(no));
+        model.addAttribute(
+                "board",
+                board
+        );
 
-        model.addAttribute("commentList",
-                boardCommentService.findByBoardNo(no));
+        model.addAttribute(
+                "commentList",
+                boardCommentService.findByBoardNo(no)
+        );
 
         return "board/detail";
     }
@@ -142,8 +175,9 @@ public class BoardController {
          */
         if (loginMember == null) {
 
+            // 비회원 이름 검사
             if (boardDto.getGuestName() == null
-                    || boardDto.getGuestName().trim().isEmpty()) {
+                    || boardDto.getGuestName().isBlank()) {
 
                 bindingResult.rejectValue(
                         "guestName",
@@ -152,13 +186,28 @@ public class BoardController {
                 );
             }
 
-            if (boardDto.getGuestPassword() == null
-                    || boardDto.getGuestPassword().trim().isEmpty()) {
+            String guestPassword =
+                    boardDto.getGuestPassword();
+
+            // 비밀번호 입력 여부 검사
+            if (guestPassword == null
+                    || guestPassword.isBlank()) {
 
                 bindingResult.rejectValue(
                         "guestPassword",
                         "required",
                         "비밀번호를 입력해주세요."
+                );
+            }
+
+            // 비밀번호 길이 검사
+            else if (guestPassword.length() < 4
+                    || guestPassword.length() > 20) {
+
+                bindingResult.rejectValue(
+                        "guestPassword",
+                        "size",
+                        "비밀번호는 4자 이상 20자 이하로 입력해주세요."
                 );
             }
         }
@@ -233,7 +282,17 @@ public class BoardController {
             return "board/write";
         }
 
-        return "redirect:/board/list";
+        /*
+         * 작성한 게시글 종류에 맞는 목록 주소로 이동한다.
+         * 이동한 주소의 Controller 메서드가
+         * 최종적으로 board/list.html을 보여준다.
+         */
+
+        if ("NOTICE".equals(boardDto.getCategory())) {
+            return "redirect:/board/notice";
+        }
+
+        return "redirect:/board/question";
     }
 
     // 공지사항 목록
@@ -257,11 +316,19 @@ public class BoardController {
         );
 
         model.addAttribute("pageTitle", "공지사항");
+        model.addAttribute(
+                "pageDescription",
+                "서비스의 주요 공지사항을 확인할 수 있습니다."
+        );
         model.addAttribute("currentPage", page);
         model.addAttribute("totalPage", totalPage);
 
         // 공지사항 페이지 번호의 이동 주소
         model.addAttribute("pageUrl", "/board/notice");
+
+        // 검색할 게시판 종류
+        model.addAttribute("category", "NOTICE");
+
 
         return "board/list";
     }
@@ -286,9 +353,16 @@ public class BoardController {
         );
 
         model.addAttribute("pageTitle", "문의 게시판");
+        model.addAttribute(
+                "pageDescription",
+                "서비스 이용과 관련된 문의글을 확인할 수 있습니다."
+        );
         model.addAttribute("currentPage", page);
         model.addAttribute("totalPage", totalPage);
         model.addAttribute("pageUrl", "/board/question");
+
+        // 검색할 게시판 종류
+        model.addAttribute("category", "QUESTION");
 
         return "board/list";
     }
@@ -297,18 +371,113 @@ public class BoardController {
 
     // 게시글 검색
     @GetMapping("/search")
-    public String search(@RequestParam String keyword,
-                         Model model) {
+    public String search(
+            @RequestParam String keyword,
+            @RequestParam(required = false) String category,
+            Model model
+    ) {
 
-        model.addAttribute("boardList", boardService.search(keyword));
-        model.addAttribute("pageTitle", "검색 결과");
-        model.addAttribute("keyword", keyword);
+        /*
+         * category가 있으면
+         * 해당 게시판 안에서만 검색한다.
+         *
+         * category가 없으면
+         * 전체 게시글을 검색한다.
+         */
+        if (category != null && !category.isBlank()) {
 
-        // list.html의 페이징 부분에서 필요
-        model.addAttribute("currentPage", 1);
-        model.addAttribute("totalPage", 1);
+            model.addAttribute(
+                    "boardList",
+                    boardService.searchByCategory(
+                            keyword,
+                            category
+                    )
+            );
 
+        } else {
 
+            model.addAttribute(
+                    "boardList",
+                    boardService.search(keyword)
+            );
+        }
+
+        /*
+         * 검색한 게시판에 맞는 제목 설정
+         */
+        if ("NOTICE".equals(category)) {
+
+            model.addAttribute(
+                    "pageTitle",
+                    "공지사항 검색 결과"
+            );
+
+            model.addAttribute(
+                    "pageDescription",
+                    "공지사항에서 검색한 결과입니다."
+            );
+
+            model.addAttribute(
+                    "pageUrl",
+                    "/board/notice"
+            );
+
+        } else if ("QUESTION".equals(category)) {
+
+            model.addAttribute(
+                    "pageTitle",
+                    "문의 게시판 검색 결과"
+            );
+
+            model.addAttribute(
+                    "pageDescription",
+                    "문의 게시판에서 검색한 결과입니다."
+            );
+
+            model.addAttribute(
+                    "pageUrl",
+                    "/board/question"
+            );
+
+        } else {
+
+            model.addAttribute(
+                    "pageTitle",
+                    "전체 검색 결과"
+            );
+
+            model.addAttribute(
+                    "pageUrl",
+                    "/board/list"
+            );
+        }
+
+        /*
+         * 검색어와 카테고리를 다시 화면으로 전달
+         */
+        model.addAttribute(
+                "keyword",
+                keyword
+        );
+
+        model.addAttribute(
+                "category",
+                category
+        );
+
+        /*
+         * 현재 검색 결과는 페이징을 적용하지 않으므로
+         * list.html 오류 방지를 위해 기본값 설정
+         */
+        model.addAttribute(
+                "currentPage",
+                1
+        );
+
+        model.addAttribute(
+                "totalPage",
+                1
+        );
 
         return "board/list";
     }
@@ -318,6 +487,7 @@ public class BoardController {
     @GetMapping("/update/{no}")
     public String update(
             @PathVariable Long no,
+            @RequestParam(required = false) String category,
             Model model,
             @AuthenticationPrincipal CustomUserDetails loginUser
     ) {
@@ -334,6 +504,15 @@ public class BoardController {
                 boardService.findByNo(no);
 
         if (board == null) {
+
+            if ("NOTICE".equals(category)) {
+                return "redirect:/board/notice";
+            }
+
+            if ("QUESTION".equals(category)) {
+                return "redirect:/board/question";
+            }
+
             return "redirect:/board/list";
         }
 
@@ -417,7 +596,7 @@ public class BoardController {
         BoardDto originBoard = boardService.findByNo(no);
 
         if (originBoard == null) {
-            return "redirect:/board/list";
+            return "redirect:/board/question";
         }
 
         // 작성자만 수정 가능
@@ -476,34 +655,74 @@ public class BoardController {
     @PostMapping("/delete/{no}")
     public String delete(
             @PathVariable Long no,
-            @AuthenticationPrincipal CustomUserDetails loginUser
+            @RequestParam(required = false) String category,
+            @AuthenticationPrincipal CustomUserDetails loginUser,
+            RedirectAttributes redirectAttributes
     ) {
 
+        // 1. 로그인 여부 확인
         if (loginUser == null) {
             return "redirect:/member/login";
         }
 
         MemberDto loginMember = loginUser.getMemberDto();
 
+        // 2. 게시글 조회
         BoardDto board = boardService.findByNo(no);
 
+        /*
+         * 3. 이미 삭제된 게시글인 경우
+         *
+         * DB에서는 카테고리를 확인할 수 없으므로
+         * detail.html에서 함께 전송한 category 값을 사용한다.
+         */
         if (board == null) {
-            return "redirect:/board/list";
+
+            redirectAttributes.addFlashAttribute(
+                    "errorMessage",
+                    "이미 삭제되었거나 존재하지 않는 게시글입니다."
+            );
+
+            if ("NOTICE".equals(category)) {
+                return "redirect:/board/notice";
+            }
+
+            return "redirect:/board/question";
         }
 
-        // 비회원 글이거나 작성자가 아니면 삭제 불가
+        // 4. 회원 게시글인지 및 작성자인지 확인
         if (board.getWriterNo() == null
-                || !loginMember.getNo().equals(
-                board.getWriterNo()
-        )) {
+                || !loginMember.getNo().equals(board.getWriterNo())) {
 
             return "redirect:/board/detail/" + no;
         }
 
+        /*
+         * 5. 실제 DB에 있는 카테고리 저장
+         *
+         * 게시글이 존재할 때는 사용자가 전송한 category보다
+         * DB에서 조회한 category를 사용하는 것이 안전하다.
+         */
+        String savedCategory = board.getCategory();
+
+        // 6. 게시글 삭제
         boardService.delete(no);
 
-        return "redirect:/board/list";
+        redirectAttributes.addFlashAttribute(
+                "successMessage",
+                "게시글이 삭제되었습니다."
+        );
+
+        // 7. 원래 게시판으로 이동
+        if ("NOTICE".equals(savedCategory)) {
+            return "redirect:/board/notice";
+        }
+
+        return "redirect:/board/question";
     }
+
+
+
     //
     // 비회원 게시글
     //
@@ -517,7 +736,7 @@ public class BoardController {
         BoardDto boardDto = boardService.findByNo(no);
 
         if (boardDto == null) {
-            return "redirect:/board/list";
+            return "redirect:/board/question";
         }
 
         if (boardDto.getGuestAuthorNo() == null) {
@@ -543,7 +762,7 @@ public class BoardController {
         BoardDto boardDto = boardService.findByNo(no);
 
         if (boardDto == null) {
-            return "redirect:/board/list";
+            return "redirect:/board/question";
         }
 
         if (boardDto.getGuestAuthorNo() == null) {
@@ -611,7 +830,7 @@ public class BoardController {
                 boardService.findByNo(no);
 
         if (boardDto == null) {
-            return "redirect:/board/list";
+            return "redirect:/board/question";
         }
 
         // 회원 게시글은 비회원 수정 기능으로 접근할 수 없음
@@ -671,7 +890,7 @@ public class BoardController {
                 boardService.findByNo(no);
 
         if (originBoard == null) {
-            return "redirect:/board/list";
+            return "redirect:/board/question";
         }
 
         // 비회원 게시글이 아닌 경우
@@ -759,7 +978,7 @@ public class BoardController {
                 boardService.findByNo(no);
 
         if (boardDto == null) {
-            return "redirect:/board/list";
+            return "redirect:/board/question";
         }
 
         // 회원 게시글은 비회원 삭제 기능 사용 불가
@@ -782,14 +1001,25 @@ public class BoardController {
             @PathVariable Long no,
             @RequestParam String guestPassword,
             HttpSession session,
-            Model model
+            Model model,
+            RedirectAttributes redirectAttributes
     ) {
 
         BoardDto boardDto =
                 boardService.findByNo(no);
 
         if (boardDto == null) {
-            return "redirect:/board/list";
+
+            session.removeAttribute(
+                    "guestDeleteVerifiedBoardNo"
+            );
+
+            redirectAttributes.addFlashAttribute(
+                    "errorMessage",
+                    "이미 삭제되었거나 존재하지 않는 게시글입니다."
+            );
+
+            return "redirect:/board/question";
         }
 
         if (boardDto.getGuestAuthorNo() == null) {
@@ -855,7 +1085,7 @@ public class BoardController {
                     "guestDeleteVerifiedBoardNo"
             );
 
-            return "redirect:/board/list";
+            return "redirect:/board/question";
         }
 
         if (boardDto.getGuestAuthorNo() == null) {
@@ -883,8 +1113,32 @@ public class BoardController {
             RedirectAttributes redirectAttributes
     ) {
 
+        /*
+         * 게시글이 이미 삭제됐는지 먼저 확인
+         */
+        BoardDto boardDto = boardService.findByNo(no);
+
+        if (boardDto == null) {
+
+            session.removeAttribute(
+                    "guestDeleteVerifiedBoardNo"
+            );
+
+            redirectAttributes.addFlashAttribute(
+                    "errorMessage",
+                    "이미 삭제되었거나 존재하지 않는 게시글입니다."
+            );
+
+            return "redirect:/board/question";
+        }
+
+        /*
+         * 비밀번호 확인 세션 검사
+         */
         Object verifiedValue =
-                session.getAttribute("guestDeleteVerifiedBoardNo");
+                session.getAttribute(
+                        "guestDeleteVerifiedBoardNo"
+                );
 
         if (!(verifiedValue instanceof Long verifiedBoardNo)
                 || !verifiedBoardNo.equals(no)) {
@@ -892,16 +1146,21 @@ public class BoardController {
             return "redirect:/board/guest/delete/" + no;
         }
 
+        /*
+         * 게시글 삭제
+         */
         boardService.delete(no);
 
-        session.removeAttribute("guestDeleteVerifiedBoardNo");
+        session.removeAttribute(
+                "guestDeleteVerifiedBoardNo"
+        );
 
         redirectAttributes.addFlashAttribute(
                 "successMessage",
                 "게시글이 삭제되었습니다."
         );
 
-        return "redirect:/board/list";
+        return "redirect:/board/question";
     }
 
 }

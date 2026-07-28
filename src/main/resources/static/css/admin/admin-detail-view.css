@@ -49,7 +49,8 @@
     gap: 8px;
 }
 
-.admin-form-grid label > span {
+.admin-form-grid label > span,
+.admin-form-grid .admin-field-label{
     color: #475467;
     font-size: 12px;
     font-weight: 900;
@@ -925,4 +926,27 @@
     #chatRoomView.admin-view.active .compact-chat-input-box button {
         min-width: 72px;
     }
+}
+
+/* =========================
+   관리자 문의 답변 Toast UI
+========================= */
+
+.admin-answer-editor {
+    width: 100%;
+    margin-top: 16px;
+}
+
+.admin-answer-editor .toastui-editor-defaultUI {
+    width: 100%;
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.admin-answer-help {
+    display: block;
+    margin-top: 8px;
+    color: #64748b;
+    font-size: 12px;
+    line-height: 1.5;
 }

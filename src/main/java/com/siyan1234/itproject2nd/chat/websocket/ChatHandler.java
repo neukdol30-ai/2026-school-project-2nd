@@ -33,11 +33,6 @@ import java.time.LocalDateTime;
 @RequiredArgsConstructor
 public class ChatHandler extends TextWebSocketHandler {
 
-    private static final String TYPE_ADMIN_LIST_JOIN = "ADMIN_LIST_JOIN";
-    private static final String TYPE_JOIN = "JOIN";
-    private static final String TYPE_READ = "READ";
-    private static final String TYPE_MESSAGE = "MESSAGE";
-
     private final ChatRedisService chatRedisService;
     private final ChatService chatService;
     private final ChatWebSocketSessionRegistry sessionRegistry;
@@ -63,10 +58,10 @@ public class ChatHandler extends TextWebSocketHandler {
         String type = payloadParser.getType(root);
 
         switch (type) {
-            case TYPE_ADMIN_LIST_JOIN -> handleAdminListJoin(session, loginUser);
-            case TYPE_JOIN -> handleJoin(session, root, loginUser);
-            case TYPE_READ -> handleRead(session, root, loginUser);
-            case TYPE_MESSAGE -> handleMessage(session, root, loginUser);
+            case ChatWebSocketEventType.ADMIN_LIST_JOIN -> handleAdminListJoin(session, loginUser);
+            case ChatWebSocketEventType.JOIN -> handleJoin(session, root, loginUser);
+            case ChatWebSocketEventType.READ -> handleRead(session, root, loginUser);
+            case ChatWebSocketEventType.MESSAGE -> handleMessage(session, root, loginUser);
             default -> log.debug("지원하지 않는 WebSocket 이벤트 type={}", type);
         }
     }
@@ -150,7 +145,11 @@ public class ChatHandler extends TextWebSocketHandler {
         chatRedisService.saveMessage(chatMessageDto);
 
         // 관리자 목록 정렬과 마지막 메시지 표시를 위해 chat_room은 즉시 갱신합니다.
-        chatService.updateLastMessage(roomNo, chatMessageDto.getMessageContent());
+        chatService.updateLastMessage(
+                roomNo,
+                chatMessageDto.getMessageContent(),
+                chatMessageDto.getCreatedDate()
+        );
 
         broadcaster.broadcastMessage(roomNo, chatMessageDto);
         broadcaster.broadcastAdminListRefresh(roomNo);
@@ -164,8 +163,8 @@ public class ChatHandler extends TextWebSocketHandler {
     }
 
     private void updateReadAndBroadcast(Integer roomNo, Integer viewerNo) {
+        // ChatService가 Oracle과 Redis를 같은 상담방 Lock 안에서 함께 읽음 처리합니다.
         chatService.updateReadYn(roomNo, viewerNo);
-        chatRedisService.updateReadYn(roomNo, viewerNo);
         broadcaster.broadcastRead(roomNo, viewerNo);
     }
 

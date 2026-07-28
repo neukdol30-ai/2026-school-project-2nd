@@ -5,6 +5,8 @@
 
 <mapper namespace="com.siyan1234.itproject2nd.admin.dao.AdminVisitDao">
 
+    <!-- 방문자 원문 로그 대신 세션/회원 단위로 요약해 관리자 화면에 노출합니다. -->
+
     <select id="findVisitSummaries" resultType="AdminVisitSummaryDto">
         SELECT *
         FROM (

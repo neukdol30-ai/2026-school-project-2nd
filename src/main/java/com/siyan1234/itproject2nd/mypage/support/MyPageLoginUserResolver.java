@@ -7,6 +7,10 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Component;
 
+/**
+ * Spring Security Principal 형식이 달라도 마이페이지가 동일한 회원 번호를 얻도록 보정합니다.
+ * CustomUserDetails를 우선 사용하고, 필요한 경우 Authentication과 회원 아이디 조회로 보완합니다.
+ */
 @Component
 @RequiredArgsConstructor
 public class MyPageLoginUserResolver {

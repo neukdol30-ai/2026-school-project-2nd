@@ -6,6 +6,7 @@ import lombok.ToString;
 
 import java.time.LocalDateTime;
 
+/** DB 저장, Redis 임시 저장, WebSocket 전송에서 공통으로 사용하는 채팅 메시지 DTO입니다. */
 @Getter
 @Setter
 @ToString

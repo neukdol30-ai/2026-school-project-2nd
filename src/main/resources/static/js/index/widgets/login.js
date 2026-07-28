@@ -29,32 +29,47 @@ function renderAuthWidget() {
     const loginMethodLabel = getAuthLoginMethodLabel();
 
     return `
-        <article class="widget side-widget auth-widget">
-            <div class="widget-header">
-                <div>
-                    <div class="widget-title">🔐 계정</div>
-                    <div class="widget-desc">
-                        아이디를 누르면 마이페이지가 열립니다.
-                    </div>
-                </div>
-            </div>
+    <article class="widget side-widget auth-widget">
+        <div class="auth-content auth-logged-in">
+            <div class="auth-profile-row">
+                <button
+                    type="button"
+                    class="auth-profile-button"
+                    data-mypage-open
+                    title="마이페이지 열기"
+                >
+                    <span class="auth-profile-avatar" aria-hidden="true">
+                        ${escapeHtml(displayName.slice(0, 1))}
+                    </span>
 
-            <div class="auth-content">
-                <button type="button" class="auth-user-button" data-mypage-open title="마이페이지 열기">
-                    ${escapeHtml(displayName)}님
+                    <span class="auth-profile-info">
+                        <strong class="auth-user-name">
+                            ${escapeHtml(displayName)}님
+                        </strong>
+
+                        <span class="auth-role-badge">
+                            ${escapeHtml(loginMethodLabel)}
+                        </span>
+                    </span>
                 </button>
-                <p class="auth-sub-text auth-login-method">
-                    ${escapeHtml(loginMethodLabel)}
-                </p>
 
-                <form class="auth-logout-form" action="/member/logout" method="post">
+                <form
+                    class="auth-logout-form"
+                    action="/member/logout"
+                    method="post"
+                >
                     <button class="auth-logout-button" type="submit">
                         로그아웃
                     </button>
                 </form>
             </div>
-        </article>
-    `;
+
+            <p class="auth-profile-desc">
+                아이디를 누르면 마이페이지가 열립니다.
+            </p>
+        </div>
+    </article>
+`;
 }
 
 function getAuthDisplayName() {

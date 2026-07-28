@@ -1,4 +1,58 @@
-// 메인 화면 최초 생성
+function getWorldTimeWidget() {
+    return state.widgets.find((widget) => {
+        const type = String(widget.type || "")
+            .toLowerCase()
+            .replace(/[\s_-]/g, "");
+
+        const title = String(widget.title || "")
+            .replace(/\s/g, "");
+
+        return type === "worldtime"
+            || title === "세계시간";
+    });
+}
+
+function renderHeaderWorldTimeWidget() {
+    const worldTimeWidget =
+        getWorldTimeWidget();
+
+    if (
+        !worldTimeWidget
+        || !worldTimeWidget.visible
+    ) {
+        return "";
+    }
+
+    return renderWidget(
+        worldTimeWidget,
+        0,
+        1
+    );
+}
+
+function updateHeaderWorldTimeWidget() {
+    const worldTimeSlot =
+        document.querySelector(
+            "[data-world-time-widget]"
+        );
+
+    if (!worldTimeSlot) {
+        return;
+    }
+
+    worldTimeSlot.innerHTML =
+        renderHeaderWorldTimeWidget();
+
+    if (
+        typeof updateWorldTimeWidget
+        === "function"
+    ) {
+        updateWorldTimeWidget();
+    }
+}
+
+// 메인 화면 렌더
+// 최초 화면 전체 생성
 function renderInitialPage() {
     const app = document.querySelector("#app");
 
@@ -19,14 +73,21 @@ function renderInitialPage() {
 
         <div class="container">
             <header class="dashboard-header">
-                <section
-                    class="header-widget-slot"
-                    data-header-widget
-                >
-                    ${renderHeaderWidget()}
-                </section>
+                <div class="header-time-group">
+                    <section
+                        class="header-widget-slot"
+                        data-header-widget
+                    >
+                        ${renderHeaderWidget()}
+                    </section>
 
-                <div class="header-logo-slot"></div>
+                    <section
+                        class="header-world-time-slot"
+                        data-world-time-widget
+                    >
+                        ${renderHeaderWorldTimeWidget()}
+                    </section>
+                </div>
 
                 <div
                     class="header-auth-slot"
@@ -35,18 +96,6 @@ function renderInitialPage() {
                     ${renderAuthWidget()}
                 </div>
             </header>
-
-            <div
-                class="page-actions"
-                data-page-actions
-            >
-                <button
-                    type="button"
-                    data-action="toggle-edit"
-                >
-                    환경설정
-                </button>
-            </div>
 
             <div
                 class="settings-layer ${state.isSettingsOpen ? "is-open" : ""}"
@@ -89,7 +138,15 @@ function renderInitialPage() {
                         class="widget-list"
                         data-widget-list="main"
                     >
-                        ${renderWidgetList(getMainWidgets())}
+                        ${getMainWidgets()
+        .map((widget, index) =>
+            renderWidget(
+                widget,
+                index,
+                getMainWidgets().length
+            )
+        )
+        .join("")}
                     </div>
                 </section>
 
@@ -98,7 +155,15 @@ function renderInitialPage() {
                         class="widget-list"
                         data-widget-list="side"
                     >
-                        ${renderWidgetList(getSideWidgets())}
+                        ${getSideWidgets()
+        .map((widget, index) =>
+            renderWidget(
+                widget,
+                index,
+                getSideWidgets().length
+            )
+        )
+        .join("")}
                     </div>
                 </aside>
             </main>
@@ -113,62 +178,13 @@ function renderInitialPage() {
     animateWidgetChanges(prevPositions);
     initStockSwiper();
 
-    requestAnimationFrame(updateFollowColumn);
+    requestAnimationFrame(
+        updateFollowColumn
+    );
 }
 
-// 위젯 목록 HTML 생성
-function renderWidgetList(widgetList) {
-    return widgetList
-        .map((widget, index) => {
-            return renderWidget(
-                widget,
-                index,
-                widgetList.length
-            );
-        })
-        .join("");
-}
 
-// 환경설정 버튼 갱신
-function updatePageActions() {
-    const pageActions =
-        document.querySelector(
-            "[data-page-actions]"
-        );
-
-    if (!pageActions) {
-        return;
-    }
-
-    if (state.isSettingsOpen) {
-        pageActions.innerHTML = "";
-        return;
-    }
-
-    if (state.isEditMode) {
-        pageActions.innerHTML = `
-            <button
-                type="button"
-                data-action="finish-layout-edit"
-            >
-                배치 완료
-            </button>
-        `;
-
-        return;
-    }
-
-    pageActions.innerHTML = `
-        <button
-            type="button"
-            data-action="toggle-edit"
-        >
-            환경설정
-        </button>
-    `;
-}
-
-// 환경설정 내용 갱신
+// 환경설정 위젯 관리 박스만 갱신
 function updateControlBox() {
     const controlBox =
         document.querySelector(
@@ -184,6 +200,7 @@ function updateControlBox() {
             ? renderControlBox()
             : "";
 }
+
 
 // 환경설정 서랍 갱신
 function updateSettingsDrawer() {
@@ -207,20 +224,6 @@ function updateSettingsDrawer() {
     );
 }
 
-// 로그인 카드 갱신
-function updateAuthWidget() {
-    const authWidget =
-        document.querySelector(
-            "[data-auth-widget]"
-        );
-
-    if (!authWidget) {
-        return;
-    }
-
-    authWidget.innerHTML =
-        renderAuthWidget();
-}
 
 // 현재시간 카드 갱신
 function updateHeaderWidget() {
@@ -251,16 +254,33 @@ function updateHeaderWidget() {
     }
 }
 
-// 필요한 화면 영역만 갱신
+
+// 로그인 카드만 갱신
+function updateAuthWidget() {
+    const authWidget =
+        document.querySelector(
+            "[data-auth-widget]"
+        );
+
+    if (!authWidget) {
+        return;
+    }
+
+    authWidget.innerHTML =
+        renderAuthWidget();
+}
+
+
+// 전체 HTML을 교체하지 않는 대시보드 갱신
 function renderDashboard() {
     const prevPositions =
         captureWidgetPositions();
 
-    updatePageActions();
     updateSettingsDrawer();
     updateControlBox();
     updateAuthWidget();
     updateHeaderWidget();
+    updateHeaderWorldTimeWidget();
     updateGlobalBanner();
 
     syncWidgetList("main");
@@ -275,13 +295,17 @@ function renderDashboard() {
     );
 }
 
-// 공통 화면 갱신
+
+// 이후 화면 변경은 필요한 영역만 갱신
 function render() {
     renderDashboard();
 }
 
-// 구글 캘린더 자동 동기화
+// 메인 화면에서 구글 캘린더 자동 동기화
 async function autoSyncGoogleCalendarFromDashboard() {
+
+    // 비로그인 상태이거나
+    // 구글 캘린더가 연동되지 않은 경우 중단
     if (
         !state.currentUser
         || !state.googleCalendarConnected
@@ -290,28 +314,23 @@ async function autoSyncGoogleCalendarFromDashboard() {
     }
 
     try {
-        const response =
-            await fetch(
-                "/api/calendar/auto-sync",
-                {
-                    method: "POST",
-                    credentials: "same-origin",
-                    cache: "no-store"
-                }
-            );
+        const response = await fetch(
+            "/api/calendar/auto-sync",
+            {
+                method: "POST",
+                credentials: "same-origin",
+                cache: "no-store"
+            }
+        );
 
-        let data = {};
-
-        try {
-            data = await response.json();
-        } catch (error) {
-            data = {};
-        }
+        const data = await response.json();
 
         if (
             !response.ok
             || data.success === false
         ) {
+            // 구글 캘린더 연동이 해제되었거나
+            // 사용할 수 없는 상태
             if (response.status === 403) {
                 state.googleCalendarConnected =
                     false;
@@ -320,21 +339,17 @@ async function autoSyncGoogleCalendarFromDashboard() {
             return false;
         }
 
+        // 동기화 결과로 받은 오늘 일정 저장
         state.todayScheduleItems =
-            Array.isArray(data.eventList)
-                ? data.eventList
-                : [];
+            data.eventList || [];
 
         state.todayScheduleError = "";
 
-        if (
-            typeof refreshScheduleWidget
-            === "function"
-        ) {
-            refreshScheduleWidget();
-        }
+        // 오늘 일정 위젯만 갱신
+        refreshScheduleWidget();
 
         return true;
+
     } catch (error) {
         console.warn(
             "메인 화면 구글 일정 동기화 실패:",
@@ -345,10 +360,12 @@ async function autoSyncGoogleCalendarFromDashboard() {
     }
 }
 
-// 일정 갱신 중복 실행 방지
+
+// 일정 갱신 요청 중복 실행 방지
 let calendarWidgetRefreshRunning = false;
 
-// 오늘 일정과 미니 캘린더 갱신
+
+// 오늘 일정과 미니 캘린더 함께 갱신
 async function refreshCalendarWidgets(
     syncGoogle = true
 ) {
@@ -359,67 +376,43 @@ async function refreshCalendarWidgets(
     calendarWidgetRefreshRunning = true;
 
     try {
-        const googleSynced =
+        // 구글 캘린더 연동 상태이면 먼저 동기화
+        const synced =
             syncGoogle
                 ? await autoSyncGoogleCalendarFromDashboard()
                 : false;
 
-        const refreshJobs = [];
+        await Promise.all([
 
-        if (
-            !googleSynced
-            && typeof fetchTodaySchedule
-            === "function"
-        ) {
-            refreshJobs.push(
-                fetchTodaySchedule(false)
-            );
-        }
+            // 구글 동기화 결과에 오늘 일정이 포함되어 있으면
+            // 오늘 일정 API를 다시 호출하지 않음
+            synced
+                ? Promise.resolve()
+                : fetchTodaySchedule(false),
 
-        if (
-            typeof fetchMiniCalendarMonthData
-            === "function"
-        ) {
-            refreshJobs.push(
-                fetchMiniCalendarMonthData(false)
-            );
-        } else if (
-            typeof fetchMiniCalendarEventDates
-            === "function"
-        ) {
-            refreshJobs.push(
-                fetchMiniCalendarEventDates()
-            );
-        }
+            // 현재 미니 캘린더에 일정 날짜 표시
+            fetchMiniCalendarEventDates()
+        ]);
 
-        await Promise.allSettled(
-            refreshJobs
-        );
-
-        requestAnimationFrame(
-            updateFollowColumn
-        );
     } catch (error) {
         console.warn(
             "캘린더 위젯 갱신 실패:",
             error
         );
+
     } finally {
-        calendarWidgetRefreshRunning =
-            false;
+        calendarWidgetRefreshRunning = false;
     }
 }
 
-// 다른 캘린더 화면의 변경 감지
-let calendarBroadcastChannel = null;
-
+// 캘린더 팝업에서 BroadcastChannel 신호 받기
 if ("BroadcastChannel" in window) {
-    calendarBroadcastChannel =
+    const calendarChannel =
         new BroadcastChannel(
             "calendar-events"
         );
 
-    calendarBroadcastChannel.addEventListener(
+    calendarChannel.addEventListener(
         "message",
         function (event) {
             if (
@@ -429,12 +422,39 @@ if ("BroadcastChannel" in window) {
                 return;
             }
 
+            // 사이트 내부 일정 변경이므로
+            // 구글 동기화 없이 바로 위젯 조회
             refreshCalendarWidgets(false);
         }
     );
 }
 
-// BroadcastChannel 미지원 환경의 변경 감지
+
+// 팝업창에서 postMessage 변경 신호 받기
+window.addEventListener(
+    "message",
+    function (event) {
+
+        // 다른 사이트에서 보낸 메시지는 무시
+        if (
+            event.origin
+            !== window.location.origin
+        ) {
+            return;
+        }
+
+        if (
+            event.data?.type
+            !== "calendar-changed"
+        ) {
+            return;
+        }
+
+        refreshCalendarWidgets(false);
+    }
+);
+
+// BroadcastChannel 미지원 환경의 변경 신호
 window.addEventListener(
     "storage",
     function (event) {
@@ -449,91 +469,46 @@ window.addEventListener(
     }
 );
 
-// 메인 화면으로 돌아왔을 때 일정 갱신
+// 메인 화면으로 돌아왔을 때 갱신
 window.addEventListener(
     "focus",
-    function () {
-        refreshCalendarWidgets(true);
+    async function () {
+        try {
+            // 미니 캘린더 월 정보 먼저 갱신
+            await fetchMiniCalendarMonthData(false);
+
+            // 오늘 일정과 일정 표시 날짜 갱신
+            await refreshCalendarWidgets(true);
+
+        } catch (error) {
+            console.warn(
+                "화면 복귀 후 캘린더 갱신 실패:",
+                error
+            );
+        }
     }
 );
 
-// 최초 화면 생성
+// 최초 한 번만 전체 화면 생성
 renderInitialPage();
 
-if (
-    typeof initializeMyPage
-    === "function"
-) {
-    initializeMyPage();
-}
+// 팀원 담당 위젯 최초 실행
+startCurrentTimeClock();
+startWorldTimeClock();
+fetchSunTime();
+fetchNews();
+fetchStocks();
+fetchWeather();
 
-if (
-    typeof startCurrentTimeClock
-    === "function"
-) {
-    startCurrentTimeClock();
-}
-
-if (
-    typeof fetchSunTime
-    === "function"
-) {
-    fetchSunTime();
-}
-
-if (
-    typeof fetchNews
-    === "function"
-) {
-    fetchNews();
-}
-
-if (
-    typeof fetchStocks
-    === "function"
-) {
-    fetchStocks();
-}
-
-if (
-    typeof fetchWeather
-    === "function"
-) {
-    fetchWeather();
-}
-
-// 일정과 미니 캘린더 최초 조회
-const initialCalendarJobs = [];
-
-if (
-    typeof fetchTodaySchedule
-    === "function"
-) {
-    initialCalendarJobs.push(
-        fetchTodaySchedule(true)
-    );
-}
-
-if (
-    typeof fetchMiniCalendarMonthData
-    === "function"
-) {
-    initialCalendarJobs.push(
-        fetchMiniCalendarMonthData(true)
-    );
-} else if (
-    typeof fetchMiniCalendarEventDates
-    === "function"
-) {
-    initialCalendarJobs.push(
-        fetchMiniCalendarEventDates()
-    );
-}
-
-Promise.allSettled(
-    initialCalendarJobs
-)
+// 오늘 일정과 미니 캘린더 최초 조회
+Promise.all([
+    fetchTodaySchedule(true),
+    fetchMiniCalendarMonthData(true)
+])
     .then(function () {
+
+        // 최초 데이터 출력 후
+        // 구글 캘린더가 연동된 경우 한 번 동기화
         return refreshCalendarWidgets(true);
     })
     .catch(function (error) {
@@ -543,7 +518,8 @@ Promise.allSettled(
         );
     });
 
-// 일정과 미니 캘린더 주기적 갱신
+
+// 5초마다 오늘 일정과 미니 캘린더 갱신
 setInterval(
     function () {
         refreshCalendarWidgets(true);

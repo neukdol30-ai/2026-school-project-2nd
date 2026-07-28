@@ -9,7 +9,7 @@
           content="width=device-width, initial-scale=1.0">
 
     <title>게시글 목록</title>
-    <link rel="stylesheet" href="/css/cookie-consent.css">
+    <link rel="stylesheet" th:href="@{/css/cookie-consent.css}">
 
     <!-- 공통 CSS -->
     <link rel="stylesheet"
@@ -25,6 +25,20 @@
 <main class="board-page">
 
 
+    <!--안내문-->
+    <div th:if="${errorMessage != null}"
+         th:text="${errorMessage}"
+         class="board-alert board-alert-error">
+        존재하지 않거나 삭제된 게시글입니다.
+    </div>
+
+    <div th:if="${successMessage != null}"
+         th:text="${successMessage}"
+         class="board-alert board-alert-success">
+        게시글이 정상적으로 처리되었습니다.
+    </div>
+
+
     <!-- 게시판 상단 제목 영역 -->
 
     <section class="board-header">
@@ -35,62 +49,33 @@
                 게시글 목록
             </h1>
 
-            <p class="board-description">
-                공지사항과 문의 게시판의 글을 확인할 수 있습니다.
+            <p class="board-description"
+               th:text="${pageDescription != null
+                    ? pageDescription
+                    : '게시글을 확인할 수 있습니다.'}">
+                게시글을 확인할 수 있습니다.
             </p>
         </div>
 
-        <!-- 로그인 사용자에게만 글쓰기 버튼 표시 -->
-        <a sec:authorize="isAuthenticated()"
-           th:href="@{/board/write}"
-           class="board-write-button">
-            글쓰기
-        </a>
+
 
     </section>
-
-
-    <!-- 게시판 카테고리 메뉴 -->
-
-    <nav class="board-category-nav">
-
-        <a th:href="@{/board/list}"
-           class="board-category-link"
-           th:classappend="${pageUrl == '/board/list'}
-                ? ' active'
-                : ''">
-            전체
-        </a>
-
-        <a th:href="@{/board/notice}"
-           class="board-category-link"
-           th:classappend="${pageUrl == '/board/notice'}
-                ? ' active'
-                : ''">
-            공지사항
-        </a>
-
-        <a th:href="@{/board/question}"
-           class="board-category-link"
-           th:classappend="${pageUrl == '/board/question'} ? ' active' : ''">
-            문의 게시판
-        </a>
-
-    </nav>
-
-
 
     <!-- 검색 영역 -->
 
 
     <section class="board-toolbar">
 
-        <!-- 검색창과 내 글 아이콘 선택 영역 -->
+        <!-- 검색창 영역 -->
         <div class="board-toolbar-left">
 
             <form th:action="@{/board/search}"
                   method="get"
                   class="board-search-form">
+
+                <input type="hidden"
+                       name="category"
+                       th:value="${category}">
 
                 <input type="text"
                        name="keyword"
@@ -105,39 +90,6 @@
 
             </form>
 
-            <!-- 로그인 사용자에게만 표시 -->
-            <div sec:authorize="isAuthenticated()"
-                 class="my-post-setting">
-
-            <span class="my-post-label">
-                내 글 표시
-            </span>
-
-                <button type="button"
-                        class="my-post-icon-button heart"
-                        data-icon="♥"
-                        data-type="heart"
-                        aria-label="하트로 표시">
-                    ♥
-                </button>
-
-                <button type="button"
-                        class="my-post-icon-button star"
-                        data-icon="★"
-                        data-type="star"
-                        aria-label="별로 표시">
-                    ★
-                </button>
-
-                <button type="button"
-                        class="my-post-icon-button clover"
-                        data-icon="🍀"
-                        data-type="clover"
-                        aria-label="네잎클로버로 표시">
-                    🍀
-                </button>
-
-            </div>
 
         </div>
 
@@ -247,16 +199,6 @@
                         질문 제목
                     </a>
 
-                    <span sec:authorize="isAuthenticated()"
-                          th:if="${#authentication.principal.memberDto.no.equals(board.writerNo)}"
-                          class="my-post-marker"
-                          title="내가 작성한 글">
-
-                        <span class="my-post-marker-icon"></span>
-                        <span class="my-post-marker-text">내 글</span>
-
-                    </span>
-
                 </div>
 
                 <!-- 게시글 보조 정보 -->
@@ -332,83 +274,6 @@
 
 </main>
 
-<script>
-    document.addEventListener("DOMContentLoaded", function () {
-
-        const iconButtons =
-            document.querySelectorAll(".my-post-icon-button");
-
-        const myPostMarkers =
-            document.querySelectorAll(".my-post-marker");
-
-        // 이전에 선택한 아이콘 불러오기
-        const savedIcon =
-            localStorage.getItem("myPostIcon") || "♥";
-
-        const savedType =
-            localStorage.getItem("myPostIconType") || "heart";
-
-        applyMyPostIcon(savedIcon, savedType);
-
-        iconButtons.forEach(function (button) {
-
-            button.addEventListener("click", function () {
-
-                const selectedIcon =
-                    button.dataset.icon;
-
-                const selectedType =
-                    button.dataset.type;
-
-                localStorage.setItem(
-                    "myPostIcon",
-                    selectedIcon
-                );
-
-                localStorage.setItem(
-                    "myPostIconType",
-                    selectedType
-                );
-
-                applyMyPostIcon(
-                    selectedIcon,
-                    selectedType
-                );
-            });
-        });
-
-        function applyMyPostIcon(icon, type) {
-
-            // 내 글 배지의 아이콘 및 색상 변경
-            myPostMarkers.forEach(function (marker) {
-
-                const iconElement =
-                    marker.querySelector(".my-post-marker-icon");
-
-                if (iconElement) {
-                    iconElement.textContent = icon;
-                }
-
-                marker.classList.remove(
-                    "heart",
-                    "star",
-                    "clover"
-                );
-
-                marker.classList.add(type);
-            });
-
-            // 선택된 버튼만 active 처리
-            iconButtons.forEach(function (button) {
-                button.classList.toggle(
-                    "active",
-                    button.dataset.type === type
-                );
-            });
-        }
-    });
-</script>
-
-    <script src="/js/cookie-consent.js"></script>
+<script th:src="@{/js/cookie-consent.js}"></script>
 </body>
 </html>

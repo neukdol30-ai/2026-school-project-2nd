@@ -72,6 +72,10 @@ public class AdminBoardService {
     }
 
 
+    /**
+     * 문의 게시글에 관리자 답변을 등록하고 답변 상태를 ANSWERED로 함께 변경합니다.
+     * 댓글 저장과 상태 변경은 같은 트랜잭션 안에서 처리되어 둘 중 하나만 반영되지 않도록 합니다.
+     */
     @Transactional
     public int createAnswer(Long boardNo, BoardCommentDto commentDto, Integer writerNo) {
         AdminBoardDto board = validateAnswerTarget(boardNo);
@@ -121,6 +125,7 @@ public class AdminBoardService {
 
         int deletedCount = boardCommentService.delete(answerNo);
         if (deletedCount > 0) {
+            // 마지막 답변 삭제 여부에 따라 문의 상태를 WAITING으로 되돌립니다.
             long answerCount = adminBoardDao.countBoardAnswers(boardNo);
             adminBoardDao.updateAnswerStatus(boardNo, answerCount > 0 ? ANSWER_ANSWERED : ANSWER_WAITING);
         }
@@ -135,6 +140,7 @@ public class AdminBoardService {
         return adminBoardDao.deleteBoard(boardNo);
     }
 
+    /** 선택 삭제는 각 항목의 성공/실패를 집계해 관리자 화면에 제외 건수를 함께 표시합니다. */
     @Transactional
     public AdminDeleteResultDto deleteBoards(List<Long> boardNoList) {
         if (boardNoList == null || boardNoList.isEmpty()) {

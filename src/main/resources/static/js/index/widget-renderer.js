@@ -69,6 +69,23 @@ function renderWidgetHeader(
             </div>
 
             <div class="widget-actions">
+                ${widget.type === "stock" && !state.isEditMode ? `
+                <div class="stock-header-tools">
+                    <span class="stock-header-updated">
+                        ${formatStockUpdatedAt(state.stockUpdatedAt)}
+                    </span>
+        
+                    <button
+                        class="stock-refresh-button"
+                        type="button"
+                        data-action="refresh-stocks"
+                        aria-label="증권 정보 새로고침"
+                        title="새로고침"
+                    >
+                        ↻
+                    </button>
+                </div>
+                ` : ""}
                 ${
         state.isEditMode
             ? `
@@ -166,7 +183,15 @@ function renderHeaderWidget() {
         >
             <div class="widget-header">
                 <div>
-                    <div class="widget-title">
+                    <div
+                        class="widget-title"
+                        data-current-time-basis="${
+        typeof getSelectedCurrentTimeCity
+        === "function"
+            ? `${getSelectedCurrentTimeCity()} 기준`
+            : "서울 기준"
+    }"
+                    >
                         ${headerWidget.title}
                     </div>
                 </div>
@@ -220,6 +245,10 @@ function renderWidgetContent(widget) {
 
     if (widget.type === "currentTime") {
         return renderCurrentTimeWidget();
+    }
+
+    if (widget.type === "worldTime") {
+        return renderWorldTimeWidget();
     }
 
     return "";

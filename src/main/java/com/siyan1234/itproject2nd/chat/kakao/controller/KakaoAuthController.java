@@ -1,7 +1,8 @@
 package com.siyan1234.itproject2nd.chat.kakao.controller;
 
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+//개발 완료후 삭제
+//import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.MediaType;
@@ -36,7 +37,8 @@ import java.util.Map;
  * - 이 Controller는 개발/테스트용입니다.
  * - refresh_token 발급 후 application.yml에 저장하면 됩니다.
  */
-@Slf4j
+//개발 완료후 삭제
+//@Slf4j
 @Controller
 @RequiredArgsConstructor
 @RequestMapping("/kakao")
@@ -106,7 +108,12 @@ public class KakaoAuthController {
                 .body(new ParameterizedTypeReference<>() {
                 });
 
-        log.info("카카오 토큰 응답 = {}", response);
+        /*
+         * 이 응답에는 access_token과 refresh_token이 포함될 수 있으므로
+         * 서버 로그에는 전체 응답을 남기지 않습니다.
+         * 이 엔드포인트는 최초 관리자 알림 토큰 발급을 위한 개발용 흐름입니다.
+         */
+        //log.info("카카오 토큰 응답 = {}", response);
 
         return response;
     }
