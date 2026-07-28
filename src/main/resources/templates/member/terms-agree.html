@@ -95,11 +95,11 @@
             </button>
         </form>
 
-        <form th:action="@{/member/logout}"
+        <form th:action="@{/member/terms-agree/cancel}"
               method="post"
               class="logout-form">
 
-            <!-- 소셜 로그인 상태를 종료하는 버튼 -->
+            <!-- 가입 대기 정보(Redis)를 즉시 삭제하고 로그아웃하는 버튼 -->
             <button type="submit"
                     class="logout-button">
                 동의하지 않고 로그아웃

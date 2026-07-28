@@ -123,7 +123,9 @@
 
     <insert id="insertSocialMember" parameterType="MemberDto">
 
-        <!-- 소셜 제공자의 약관 동의와 우리 서비스 약관 동의는 서로 다름. -> 우리 서비스 약관에 실제로 동의하기 전에는 N으로 저장 -->
+        <!-- MemberService.completeSocialSignup()이 약관 동의 버튼 처리 이후에만 이 쿼리를 호출함.
+        이 INSERT가 실행되는 시점은 사용자가 이미 이용약관, 개인정보 두 항목에 모두 동의한 시점
+        'Y', 'Y'로 바로 저장. 동의 전 정보는 DB가 아니라 Redis에만 있기 때문에 임시 저장 필요 없음.-->
         INSERT INTO member (
         member_id,
         password,
@@ -141,8 +143,8 @@
         #{nickname},
         #{email, jdbcType=VARCHAR},
         'USER',
-        'N',
-        'N'
+        'Y',
+        'Y'
         )
         <!-- 이름과 이메일은 소셜 제공 동의 여부에 따라 null일 수 있어 VARCHAR 타입을 명시 -->
     </insert>
