@@ -927,3 +927,26 @@
         min-width: 72px;
     }
 }
+
+/* =========================
+   관리자 문의 답변 Toast UI
+========================= */
+
+.admin-answer-editor {
+    width: 100%;
+    margin-top: 16px;
+}
+
+.admin-answer-editor .toastui-editor-defaultUI {
+    width: 100%;
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.admin-answer-help {
+    display: block;
+    margin-top: 8px;
+    color: #64748b;
+    font-size: 12px;
+    line-height: 1.5;
+}

@@ -55,18 +55,41 @@
             <form th:if="${boardDetail.category == 'QUESTION'}"
                   class="admin-answer-form"
                   method="post"
+                  data-board-form
                   th:action="@{/admin/boards/{no}/answers(no=${boardDetail.no})}">
+
                 <div class="answer-form-head">
+
                     <div>
                         <strong>답변 등록</strong>
-                        <span>관리자 권한으로 문의 답변을 작성합니다.</span>
+
+                        <span>
+                            관리자 권한으로 문의 답변을 작성합니다.
+                        </span>
                     </div>
-                    <button type="submit" class="primary-button">답변 등록</button>
+
+                    <button type="submit"
+                            class="primary-button">
+                        답변 등록
+                    </button>
+
                 </div>
+
+                <!-- Toast UI Editor가 표시되는 영역 -->
+                <div class="admin-answer-editor"
+                     data-board-editor>
+                </div>
+
+                <!-- Toast UI에서 작성한 HTML을 서버로 전송 -->
                 <textarea name="content"
-                          rows="8"
-                          required
-                          placeholder="문의에 대한 답변을 입력해 주세요. HTML 내용을 사용할 수 있습니다."></textarea>
+                          data-board-content
+                          hidden>
+                </textarea>
+
+                <small class="admin-answer-help">
+                    에디터에서 작성한 답변은 HTML 형식으로 저장됩니다.
+                </small>
+
             </form>
 
             <div class="admin-board-comment-list" th:if="${boardCommentList != null and !#lists.isEmpty(boardCommentList)}">
@@ -80,15 +103,47 @@
                         <div class="comment-content" th:utext="${comment.content}">답변 내용</div>
 
                         <div class="answer-action-row" th:if="${boardDetail.category == 'QUESTION'}">
+
                             <details class="answer-edit-box">
-                                <summary>답변 수정</summary>
+
+                                <summary>
+                                    답변 수정
+                                </summary>
+
                                 <form method="post"
-                                      th:action="@{/admin/boards/{boardNo}/answers/{answerNo}/edit(boardNo=${boardDetail.no}, answerNo=${comment.no})}">
-                                    <textarea name="content" rows="7" required th:text="${comment.content}"></textarea>
-                                    <div class="answer-edit-actions">
-                                        <button type="submit" class="primary-button">수정 저장</button>
+                                      class="admin-answer-edit-form"
+                                      data-board-form
+                                      data-editor-placeholder="답변 내용을 수정해주세요."
+                                      data-editor-empty-message="답변 내용을 입력해주세요."
+                                      th:action="@{/admin/boards/{boardNo}/answers/{answerNo}/edit(
+                                        boardNo=${boardDetail.no},
+                                        answerNo=${comment.no}
+                                      )}">
+
+                                    <!-- 답변 수정용 Toast UI Editor -->
+                                    <div class="admin-answer-edit-editor"
+                                         data-board-editor
+                                         data-editor-height="300px">
                                     </div>
+
+                                    <!-- 기존 답변 HTML과 수정된 HTML을 서버로 전송 -->
+                                    <textarea name="content"
+                                              data-board-content
+                                              hidden
+                                              th:text="${comment.content}">
+                                    </textarea>
+
+                                    <div class="answer-edit-actions">
+
+                                        <button type="submit"
+                                                class="primary-button">
+                                            수정 저장
+                                        </button>
+
+                                    </div>
+
                                 </form>
+
                             </details>
 
                             <form method="post"

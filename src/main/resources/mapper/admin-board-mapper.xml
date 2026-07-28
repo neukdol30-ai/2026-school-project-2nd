@@ -13,6 +13,7 @@
                 SELECT
                     b.no,
                     b.writer_no,
+                    b.guest_author_no,
                     b.category,
                     b.answer_status,
                     b.title,
@@ -21,6 +22,7 @@
                     b.modified_date,
                     m.name AS writer_name,
                     m.nickname AS writer_nickname,
+                    g.guest_name AS guest_name,
                     (
                         SELECT COUNT(*)
                         FROM board_comment bc
@@ -29,6 +31,8 @@
                 FROM board b
                 LEFT JOIN member m
                     ON b.writer_no = m.no
+                LEFT JOIN guest_author g
+                    ON b.guest_author_no = g.no
                 WHERE (#{category, jdbcType=VARCHAR} IS NULL OR b.category = #{category, jdbcType=VARCHAR})
                   AND (
                         #{keyword, jdbcType=VARCHAR} IS NULL
@@ -36,6 +40,7 @@
                         OR b.title LIKE '%' || #{keyword, jdbcType=VARCHAR} || '%'
                         OR m.name LIKE '%' || #{keyword, jdbcType=VARCHAR} || '%'
                         OR m.nickname LIKE '%' || #{keyword, jdbcType=VARCHAR} || '%'
+                        OR g.guest_name LIKE '%' || #{keyword, jdbcType=VARCHAR} || '%'
                   )
                 ORDER BY b.no DESC
             ) board_data
@@ -49,6 +54,8 @@
         FROM board b
         LEFT JOIN member m
             ON b.writer_no = m.no
+        LEFT JOIN guest_author g
+            ON b.guest_author_no = g.no
         WHERE (#{category, jdbcType=VARCHAR} IS NULL OR b.category = #{category, jdbcType=VARCHAR})
           AND (
                 #{keyword, jdbcType=VARCHAR} IS NULL
@@ -56,6 +63,7 @@
                 OR b.title LIKE '%' || #{keyword, jdbcType=VARCHAR} || '%'
                 OR m.name LIKE '%' || #{keyword, jdbcType=VARCHAR} || '%'
                 OR m.nickname LIKE '%' || #{keyword, jdbcType=VARCHAR} || '%'
+                OR g.guest_name LIKE '%' || #{keyword, jdbcType=VARCHAR} || '%'
           )
     </select>
 
@@ -63,6 +71,7 @@
         SELECT
             b.no,
             b.writer_no,
+            b.guest_author_no,
             b.category,
             b.answer_status,
             b.title,
@@ -72,6 +81,7 @@
             b.modified_date,
             m.name AS writer_name,
             m.nickname AS writer_nickname,
+            g.guest_name AS guest_name,
             (
                 SELECT COUNT(*)
                 FROM board_comment bc
@@ -80,6 +90,8 @@
         FROM board b
         LEFT JOIN member m
             ON b.writer_no = m.no
+        LEFT JOIN guest_author g
+            ON b.guest_author_no = g.no
         WHERE b.no = #{boardNo}
     </select>
 
