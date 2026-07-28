@@ -12,4 +12,9 @@ public final class SecurityAuthority {
 
     private SecurityAuthority() {
     }
+
+    // 우리 서비스 약관에 아직 동의하지 않은 소셜 가입 대기 권한
+    public static final String PENDING_SOCIAL = "PENDING_SOCIAL";
+
+    public static final String ROLE_PENDING_SOCIAL = "ROLE_PENDING_SOCIAL";
 }
