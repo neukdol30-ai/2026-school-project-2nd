@@ -25,14 +25,30 @@ public interface BoardDao {
             @Param("category") String category
     );
 
-    // 게시글 검색
-    // 제목, 내용, 작성자 닉네임을 기준으로 검색
-    List<BoardDto> search(String keyword);
-
-
-    List<BoardDto> searchByCategory(
+    // 전체 게시글 검색 결과 페이징 조회
+    List<BoardDto> search(
             @Param("keyword") String keyword,
-            @Param("category") String category
+            @Param("startRow") int startRow,
+            @Param("endRow") int endRow
+    );
+
+    // 전체 게시글 검색 결과 개수 조회
+    int countSearch(
+            @Param("keyword") String keyword
+    );
+
+    // 카테고리별 게시글 검색 결과 페이징 조회
+    List<BoardDto> searchByCategory(
+            @Param("category") String category,
+            @Param("keyword") String keyword,
+            @Param("startRow") int startRow,
+            @Param("endRow") int endRow
+    );
+
+    // 카테고리별 게시글 검색 결과 개수 조회
+    int countSearchByCategory(
+            @Param("category") String category,
+            @Param("keyword") String keyword
     );
 
 

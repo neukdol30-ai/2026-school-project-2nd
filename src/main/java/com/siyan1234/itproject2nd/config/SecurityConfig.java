@@ -13,7 +13,7 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.access.intercept.AuthorizationFilter;
 
-
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 
 /**
@@ -48,6 +48,10 @@ public class SecurityConfig {
                         .requestMatchers("/admin/**").hasRole(SecurityAuthority.ADMIN)
                         .requestMatchers("/chat/**").authenticated()
                         .requestMatchers("/ws/**").authenticated()
+                        .requestMatchers(
+                                HttpMethod.GET,
+                                "/uploads/board-images/**"
+                        ).permitAll()
                         .anyRequest().authenticated()
                 )
                 .csrf(csrf -> csrf.disable())
