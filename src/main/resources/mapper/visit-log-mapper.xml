@@ -6,46 +6,55 @@
 
 <mapper namespace="com.siyan1234.itproject2nd.cookie.dao.VisitLogDao">
 
-    <!-- 분석 쿠키 동의 사용자의 방문 기록 저장 -->
-    <insert id="insert"
+    <!--
+        같은 IP의 하루 첫 방문만 저장합니다.
+        애플리케이션의 선조회 후 INSERT를 제거하여 요청 간 경쟁 구간을 줄이고,
+        DB의 uk_visit_log_ip_day 인덱스가 최종 중복 방지를 담당합니다.
+    -->
+    <insert id="insertOncePerDay"
             parameterType="com.siyan1234.itproject2nd.cookie.dto.VisitLogDto">
-        INSERT INTO visit_log (
-            member_no,
-            session_id,
-            request_uri,
-            query_string,
-            request_method,
-            user_agent,
-            ip_address,
-            referer,
-            created_date
+        MERGE INTO visit_log target
+        USING (
+            SELECT
+                #{memberNo, jdbcType=NUMERIC} AS member_no,
+                #{sessionId, jdbcType=VARCHAR} AS session_id,
+                #{requestUri, jdbcType=VARCHAR} AS request_uri,
+                #{queryString, jdbcType=VARCHAR} AS query_string,
+                #{requestMethod, jdbcType=VARCHAR} AS request_method,
+                #{userAgent, jdbcType=VARCHAR} AS user_agent,
+                #{ipAddress, jdbcType=VARCHAR} AS ip_address,
+                #{referer, jdbcType=VARCHAR} AS referer,
+                SYSTIMESTAMP AS created_date
+            FROM dual
+        ) source
+        ON (
+            target.ip_address = source.ip_address
+            AND TRUNC(CAST(target.created_date AS DATE))
+                = TRUNC(CAST(source.created_date AS DATE))
         )
-        VALUES (
-            #{memberNo, jdbcType=NUMERIC},
-            #{sessionId, jdbcType=VARCHAR},
-            #{requestUri, jdbcType=VARCHAR},
-            #{queryString, jdbcType=VARCHAR},
-            #{requestMethod, jdbcType=VARCHAR},
-            #{userAgent, jdbcType=VARCHAR},
-            #{ipAddress, jdbcType=VARCHAR},
-            #{referer, jdbcType=VARCHAR},
-            SYSTIMESTAMP
-        )
+        WHEN NOT MATCHED THEN
+            INSERT (
+                member_no,
+                session_id,
+                request_uri,
+                query_string,
+                request_method,
+                user_agent,
+                ip_address,
+                referer,
+                created_date
+            )
+            VALUES (
+                source.member_no,
+                source.session_id,
+                source.request_uri,
+                source.query_string,
+                source.request_method,
+                source.user_agent,
+                source.ip_address,
+                source.referer,
+                source.created_date
+            )
     </insert>
-
-
-    <!-- 오늘 같은 IP가 이미 방문 기록으로 저장되었는지 확인합니다. -->
-    <select id="countTodayByIp" resultType="int">
-        SELECT COUNT(*)
-        FROM visit_log v
-        WHERE v.ip_address = #{ipAddress, jdbcType=VARCHAR}
-        AND v.created_date &gt;= TRUNC(SYSDATE)
-        AND NOT EXISTS (
-            SELECT 1
-            FROM member m
-            WHERE m.no = v.member_no
-            AND m.role = 'ADMIN'
-        )
-    </select>
 
 </mapper>

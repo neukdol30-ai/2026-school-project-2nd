@@ -21,7 +21,7 @@ public class ChatWebSocketPayloadParser {
 
     public String getType(JsonNode root) {
         if (root == null || !root.has("type")) {
-            return "MESSAGE";
+            return ChatWebSocketEventType.MESSAGE;
         }
 
         return root.get("type").asText();

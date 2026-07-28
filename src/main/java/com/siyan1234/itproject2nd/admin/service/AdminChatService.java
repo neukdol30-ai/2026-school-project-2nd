@@ -142,7 +142,11 @@ public class AdminChatService {
         ChatMessageDto closeMessage = ChatMessageFactory.closeMessage(roomNo, adminNo);
 
         chatRedisService.saveMessage(closeMessage);
-        chatService.updateLastMessage(roomNo, closeMessage.getMessageContent());
+        chatService.updateLastMessage(
+                roomNo,
+                closeMessage.getMessageContent(),
+                closeMessage.getCreatedDate()
+        );
         chatWebSocketBroadcaster.broadcastClose(roomNo, closeMessage);
         chatWebSocketBroadcaster.broadcastAdminListRefresh(roomNo);
         return true;

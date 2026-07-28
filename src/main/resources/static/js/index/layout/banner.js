@@ -33,10 +33,7 @@ function renderGlobalBanner() {
             </a>
 
             <div class="global-right-menu">
-                <a
-                    class="global-calendar-label"
-                    href="/map/kakao"
-                >
+                <a class="global-service-link global-map-link" href="/map/kakao">
                     <span
                         class="global-map-icon"
                         aria-hidden="true"

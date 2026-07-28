@@ -2,6 +2,7 @@
     box-sizing: border-box;
 }
 
+/* 이용약관과 개인정보 페이지의 전체 배경 */
 body {
     margin: 0;
     min-height: 100vh;
@@ -11,12 +12,14 @@ body {
     word-break: keep-all;
 }
 
+/* 약관 문서 전체를 감싸는 영역 */
 .policy-page {
     width: 100%;
     min-height: 100vh;
     padding: 40px 16px;
 }
 
+/* 실제 약관 내용을 담는 흰색 카드 */
 .policy-card {
     width: 100%;
     max-width: 860px;
@@ -28,17 +31,20 @@ body {
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
 }
 
+/* 문서 상단 제목 영역 */
 .policy-header {
     padding-bottom: 24px;
     border-bottom: 1px solid #e5e5e5;
 }
 
+/* 약관 화면의 큰 제목 */
 .policy-header h1 {
     margin: 0;
     font-size: 30px;
     line-height: 1.4;
 }
 
+/* 임시 약관 안내 문구 */
 .temporary-notice {
     margin: 14px 0 0;
     padding: 12px 14px;
@@ -49,16 +55,19 @@ body {
     line-height: 1.6;
 }
 
+/* 각 약관 조항 영역 */
 .policy-section {
     padding: 24px 0;
     border-bottom: 1px solid #eee;
 }
 
+/* 각 조항의 제목 */
 .policy-section h2 {
     margin: 0 0 12px;
     font-size: 19px;
 }
 
+/* 조항의 일반 문단 */
 .policy-section p {
     margin: 8px 0 0;
     color: #444;
@@ -66,11 +75,13 @@ body {
     line-height: 1.8;
 }
 
+/* 조항의 목록 */
 .policy-section ul {
     margin: 12px 0 0;
     padding-left: 22px;
 }
 
+/* 조항 목록의 각 항목 */
 .policy-section li {
     margin-top: 8px;
     color: #444;
@@ -78,11 +89,13 @@ body {
     line-height: 1.7;
 }
 
+/* 문서 하단 버튼 영역 */
 .policy-footer {
     padding-top: 28px;
     text-align: center;
 }
 
+/* 이전 화면으로 돌아가는 버튼 */
 .back-button {
     min-width:160px;
     height: 44px;
@@ -100,16 +113,3 @@ body {
     background-color: #444;
 }
 
-@media (max-width: 640px) {
-    .policy-page {
-        padding: 20px 12px;
-    }
-
-    .policy-card {
-        padding: 24px 18px;
-    }
-
-    .policy-header h1 {
-        font-size: 25px;
-    }
-}
