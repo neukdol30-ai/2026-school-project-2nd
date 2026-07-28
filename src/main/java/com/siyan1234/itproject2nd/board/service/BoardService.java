@@ -22,6 +22,9 @@ public class BoardService {
     // 비회원 문의글 답변 완료 후 보관 기간
     private static final int GUEST_BOARD_RETENTION_DAYS = 30;
 
+    // 게시글 한 페이지 표시 개수
+    private static final int PAGE_SIZE = 10;
+
     // 게시글 목록
     public List<BoardDto> findAll() {
         return boardDao.findAll();
@@ -32,20 +35,116 @@ public class BoardService {
         return boardDao.findByCategory(category);
     }
 
-    // 게시글 검색
-    public List<BoardDto> search(String keyword) {
-        return boardDao.search(keyword);
+    /*
+     * 전체 게시글 검색 결과 페이징 조회
+     */
+    public List<BoardDto> search(
+            String keyword,
+            int page
+    ) {
+        int safePage = Math.max(page, 1);
+
+        int startRow =
+                (safePage - 1) * PAGE_SIZE + 1;
+
+        int endRow =
+                safePage * PAGE_SIZE;
+
+        String cleanKeyword =
+                cleanSearchKeyword(keyword);
+
+        return boardDao.search(
+                cleanKeyword,
+                startRow,
+                endRow
+        );
     }
 
 
+    /*
+     * 전체 게시글 검색 결과 개수
+     */
+    public int countSearch(String keyword) {
+
+        String cleanKeyword =
+                cleanSearchKeyword(keyword);
+
+        return boardDao.countSearch(
+                cleanKeyword
+        );
+    }
+
+
+    /*
+     * 카테고리별 게시글 검색 결과 페이징 조회
+     */
     public List<BoardDto> searchByCategory(
+            String keyword,
+            String category,
+            int page
+    ) {
+        int safePage = Math.max(page, 1);
+
+        int startRow =
+                (safePage - 1) * PAGE_SIZE + 1;
+
+        int endRow =
+                safePage * PAGE_SIZE;
+
+        String cleanKeyword =
+                cleanSearchKeyword(keyword);
+
+        String cleanCategory =
+                category == null
+                        ? ""
+                        : category.trim();
+
+        /*
+         * BoardDao의 매개변수 순서:
+         * category, keyword, startRow, endRow
+         */
+        return boardDao.searchByCategory(
+                cleanCategory,
+                cleanKeyword,
+                startRow,
+                endRow
+        );
+    }
+
+
+    /*
+     * 카테고리별 게시글 검색 결과 개수
+     */
+    public int countSearchByCategory(
             String keyword,
             String category
     ) {
+        String cleanKeyword =
+                cleanSearchKeyword(keyword);
 
-        return boardDao.searchByCategory(
-                keyword,
-                category
+        String cleanCategory =
+                category == null
+                        ? ""
+                        : category.trim();
+
+        return boardDao.countSearchByCategory(
+                cleanCategory,
+                cleanKeyword
+        );
+    }
+
+
+    /*
+     * 게시글 전체 페이지 수 계산
+     */
+    public int calculateTotalPage(int totalCount) {
+
+        if (totalCount <= 0) {
+            return 1;
+        }
+
+        return (int) Math.ceil(
+                (double) totalCount / PAGE_SIZE
         );
     }
 
@@ -58,12 +157,18 @@ public class BoardService {
     // 전체 게시글 페이징 조회
     public List<BoardDto> findPage(int page) {
 
-        int pageSize = 10;
+        int safePage = Math.max(page, 1);
 
-        int startRow = (page - 1) * pageSize + 1;
-        int endRow = page * pageSize;
+        int startRow =
+                (safePage - 1) * PAGE_SIZE + 1;
 
-        return boardDao.findPage(startRow, endRow);
+        int endRow =
+                safePage * PAGE_SIZE;
+
+        return boardDao.findPage(
+                startRow,
+                endRow
+        );
     }
 
     // 전체 게시글 개수
@@ -81,11 +186,13 @@ public class BoardService {
             int page,
             String category
     ) {
+        int safePage = Math.max(page, 1);
 
-        int pageSize = 10;
+        int startRow =
+                (safePage - 1) * PAGE_SIZE + 1;
 
-        int startRow = (page - 1) * pageSize + 1;
-        int endRow = page * pageSize;
+        int endRow =
+                safePage * PAGE_SIZE;
 
         return boardDao.findPageByCategory(
                 startRow,
@@ -284,6 +391,17 @@ public class BoardService {
         return deletedCount;
     }
 
+    /*
+     * 검색어 앞뒤 공백 제거
+     */
+    private String cleanSearchKeyword(String keyword) {
+
+        if (keyword == null) {
+            return "";
+        }
+
+        return keyword.trim();
+    }
 
 
     // 게시글 제목과 본문 검사
