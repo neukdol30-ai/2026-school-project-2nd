@@ -26,6 +26,9 @@ let dashboardLayoutAnimationTimerId = null;
 let dashboardSilentLayoutQueued = false;
 let loadedWidgetOrderMemberId = "";
 
+let dashboardFollowFrameId = null;
+let dashboardFollowScrollBound = false;
+
 function normalizeWidgetType(widget) {
     return String(widget?.type || "")
         .toLowerCase()
@@ -366,6 +369,20 @@ function setDashboardElementWidth(element, span) {
     element.style.width = `${width}px`;
 }
 
+function applyDashboardElementTransform(element) {
+    if (!element) {
+        return;
+    }
+
+    const left = Number(element.dataset.layoutX) || 0;
+    const top = Number(element.dataset.layoutY) || 0;
+    const followOffset =
+        Number(element.dataset.followOffset) || 0;
+
+    element.style.transform =
+        `translate3d(${left}px, ${top + followOffset}px, 0)`;
+}
+
 function positionDashboardElement(
     element,
     column,
@@ -375,9 +392,166 @@ function positionDashboardElement(
     const left = getDashboardColumnX(column);
 
     setDashboardElementWidth(element, span);
-    element.style.transform =
-        `translate3d(${left}px, ${top}px, 0)`;
+
+    element.dataset.layoutX = String(left);
     element.dataset.layoutY = String(top);
+
+    applyDashboardElementTransform(element);
+}
+
+function getDashboardFollowTop() {
+    const rootStyle = getComputedStyle(
+        document.documentElement
+    );
+    const bannerHeight = Number.parseFloat(
+        rootStyle.getPropertyValue(
+            "--global-banner-height"
+        )
+    );
+
+    return (Number.isFinite(bannerHeight)
+        ? bannerHeight
+        : 76) + 20;
+}
+
+function getDashboardSideFollowItems(board) {
+    return [
+        ...board.querySelectorAll(
+            ":scope > [data-layout-item]"
+        )
+    ].filter((item) => {
+        return item.dataset.layoutFloating !== "true"
+            && getDashboardItemSpan(item) === 1
+            && getDashboardItemColumn(item) === 3;
+    });
+}
+
+function clearDashboardFollowOffset(board) {
+    if (!board) {
+        return;
+    }
+
+    board.querySelectorAll(
+        ":scope > [data-layout-item]"
+    ).forEach((item) => {
+        if (
+            Number(item.dataset.followOffset) === 0
+            || !item.dataset.followOffset
+        ) {
+            return;
+        }
+
+        item.dataset.followOffset = "0";
+        applyDashboardElementTransform(item);
+    });
+}
+
+function updateDashboardSideFollow() {
+    dashboardFollowFrameId = null;
+
+    const board = document.querySelector(
+        "[data-dashboard-board]"
+    );
+
+    if (!board) {
+        return;
+    }
+
+    const followItems =
+        getDashboardSideFollowItems(board);
+
+    if (
+        followItems.length === 0
+        || document.body.classList.contains(
+            "is-widget-move-mode"
+        )
+    ) {
+        clearDashboardFollowOffset(board);
+        return;
+    }
+
+    const groupStart = Math.min(
+        ...followItems.map((item) => {
+            return Number(item.dataset.layoutY) || 0;
+        })
+    );
+
+    const groupEnd = Math.max(
+        ...followItems.map((item) => {
+            const top =
+                Number(item.dataset.layoutY) || 0;
+
+            return top + item.offsetHeight;
+        })
+    );
+
+    const boardHeight = board.offsetHeight;
+    const maxOffset = Math.max(
+        boardHeight - groupEnd,
+        0
+    );
+
+    const boardTop =
+        board.getBoundingClientRect().top;
+    const desiredOffset = Math.max(
+        getDashboardFollowTop()
+        - (boardTop + groupStart),
+        0
+    );
+
+    const followOffset = Math.min(
+        desiredOffset,
+        maxOffset
+    );
+
+    followItems.forEach((item) => {
+        item.dataset.followOffset =
+            String(followOffset);
+        applyDashboardElementTransform(item);
+    });
+
+    board.querySelectorAll(
+        ":scope > [data-layout-item]"
+    ).forEach((item) => {
+        if (followItems.includes(item)) {
+            return;
+        }
+
+        if (
+            Number(item.dataset.followOffset) === 0
+            || !item.dataset.followOffset
+        ) {
+            return;
+        }
+
+        item.dataset.followOffset = "0";
+        applyDashboardElementTransform(item);
+    });
+}
+
+function scheduleDashboardSideFollow() {
+    if (dashboardFollowFrameId !== null) {
+        return;
+    }
+
+    dashboardFollowFrameId =
+        requestAnimationFrame(
+            updateDashboardSideFollow
+        );
+}
+
+function bindDashboardSideFollow() {
+    if (dashboardFollowScrollBound) {
+        return;
+    }
+
+    window.addEventListener(
+        "scroll",
+        scheduleDashboardSideFollow,
+        { passive: true }
+    );
+
+    dashboardFollowScrollBound = true;
 }
 
 function layoutDashboardBoard() {
@@ -466,6 +640,7 @@ function layoutDashboardBoard() {
         0
     )}px`;
 
+    scheduleDashboardSideFollow();
 }
 
 function scheduleDashboardLayout(options = {}) {
@@ -573,21 +748,25 @@ function observeDashboardBoardItems(options = {}) {
                 scheduleDashboardLayout({
                     animate: false
                 });
+                scheduleDashboardSideFollow();
             }
         );
         dashboardResizeBound = true;
     }
+
+    bindDashboardSideFollow();
 
     scheduleDashboardLayout({
         animate: animate
     });
 }
 
-// 기존 짧은 컬럼 sticky 대신 새 3칸 배치를 다시 계산한다.
+// 오른쪽 짧은 영역의 배치와 스크롤 위치를 갱신한다.
 function updateFollowColumn() {
     scheduleDashboardLayout({
         animate: false
     });
+    scheduleDashboardSideFollow();
 }
 
 function captureWidgetPositions() {

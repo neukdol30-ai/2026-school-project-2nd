@@ -170,13 +170,6 @@ function renderWidgetHeader(
                     ` : ""}
 
                     ${state.isEditMode ? `
-                        <span
-                            class="widget-move-guide"
-                            title="더블클릭하여 이동"
-                        >
-                            ↕
-                        </span>
-
                         <button
                             class="danger"
                             type="button"
@@ -220,21 +213,27 @@ function renderWidget(
     return `
         <article
             class="widget ${sizeClass} ${
-        layoutItem ? "dashboard-layout-item" : ""
-    } ${
-        groupChild ? "dashboard-group-child" : ""
-    } ${
-        state.isEditMode ? "is-layout-editing" : ""
-    }"
+                layoutItem ? "dashboard-layout-item" : ""
+            } ${
+                groupChild ? "dashboard-group-child" : ""
+            } ${
+                state.isEditMode ? "is-layout-editing" : ""
+            }"
             data-widget-id="${widget.id}"
             ${layoutAttributes}
         >
+            ${layoutItem && state.isEditMode ? `
+                <span class="dashboard-group-move-guide">
+                    더블클릭으로 이동
+                </span>
+            ` : ""}
+
             ${renderWidgetHeader(
-        widget,
-        index,
-        widgetCount,
-        options
-    )}
+                widget,
+                index,
+                widgetCount,
+                options
+            )}
 
             ${widget.collapsed ? "" : `
                 <div

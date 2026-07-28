@@ -239,3 +239,26 @@ html[data-theme="dark"] .widget-content
     border-color: #30414a !important;
     background-color: #1c282f !important;
 }
+
+.widget-actions > button.danger {
+    min-height: 36px;
+    padding: 0 13px;
+    border: 1px solid #ef4444 !important;
+    border-radius: 8px;
+    background: #ef4444 !important;
+    color: #ffffff !important;
+    font-weight: 700;
+}
+
+.widget-actions > button.danger:hover {
+    border-color: #dc2626 !important;
+    background: #dc2626 !important;
+    color: #ffffff !important;
+}
+
+html[data-theme="dark"]
+.widget-actions > button.danger {
+    border-color: #ef4444 !important;
+    background: #ef4444 !important;
+    color: #ffffff !important;
+}

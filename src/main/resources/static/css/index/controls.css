@@ -147,10 +147,62 @@ button.danger {
     color: #ffffff;
 }
 
+/* 설정창의 위젯 관리 카드 */
 .settings-drawer [data-control-box] .control-box {
     margin: 0;
-    padding: 0;
-    border: 0;
+    padding: 18px;
+    border: 1px solid #d7e1e8;
+    border-radius: 14px;
+    background: #f8fafc;
+    box-shadow: none;
+}
+
+.settings-drawer .control-box h2 {
+    margin: 0 0 18px;
+    color: #1f2937;
+    font-size: 20px;
+    font-weight: 800;
+}
+
+/* 위젯 배치 편집 버튼 */
+.settings-layout-button {
+    width: 100%;
+    min-height: 38px;
+    margin: 0 0 16px;
+    border: 1px solid #4f83ed;
+    border-radius: 8px;
+    background: #4f83ed;
+    color: #ffffff;
+    font-weight: 700;
+}
+
+/* 위젯 표시 버튼 */
+.control-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.control-buttons button {
+    padding: 8px 12px;
+    border: 1px solid #cbd8e6;
+    border-radius: 8px;
+    background: #ffffff;
+    color: #64748b;
+    font-weight: 700;
+}
+
+.control-buttons button:hover {
+    border-color: #79a2dd;
+    background: #f1f6fd;
+    color: #315f95;
+}
+
+/* 현재 표시 중인 위젯 */
+.control-buttons button.active {
+    border-color: #78a4df;
+    background: #e8f1fd;
+    color: #315f95;
 }
 
 /* 위젯 관리 아래쪽 화면 설정 */
@@ -449,4 +501,32 @@ html[data-theme="dark"]
     border: 2px solid #111a27;
     border-radius: 999px;
     background: #3a4b61;
+}
+
+/* 다크 모드 위젯 관리 카드 */
+html[data-theme="dark"]
+.settings-drawer [data-control-box] .control-box {
+    border-color: #31434c;
+    background: #17222b;
+}
+
+html[data-theme="dark"]
+.settings-drawer .control-box h2 {
+    color: #edf4f7;
+}
+
+html[data-theme="dark"]
+.control-buttons button {
+    border-color: #47678e;
+    background: #213651;
+    color: #a9c4e5;
+}
+
+html[data-theme="dark"]
+.control-buttons button:hover,
+html[data-theme="dark"]
+.control-buttons button.active {
+    border-color: #6693ce;
+    background: #29466d;
+    color: #c8ddfa;
 }

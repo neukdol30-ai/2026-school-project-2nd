@@ -305,19 +305,23 @@ function updateDashboardEditModeUi() {
             );
         });
 
-    updateDashboardGroupMoveGuide(
-        board.querySelector(
-            ".dashboard-time-item"
-        ),
-        "↔ 더블클릭으로 이동"
-    );
+    board
+        .querySelectorAll(
+            ":scope > [data-layout-item]"
+        )
+        .forEach((item) => {
+            const isScheduleGroup =
+                item.classList.contains(
+                    "schedule-calendar-group"
+                );
 
-    updateDashboardGroupMoveGuide(
-        board.querySelector(
-            ".schedule-calendar-group"
-        ),
-        "↔ 묶음 이동"
-    );
+            updateDashboardGroupMoveGuide(
+                item,
+                isScheduleGroup
+                    ? "더블클릭으로 묶음 이동"
+                    : "더블클릭으로 이동"
+            );
+        });
 
     board
         .querySelectorAll(

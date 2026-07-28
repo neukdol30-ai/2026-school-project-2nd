@@ -1183,13 +1183,7 @@ body.is-widget-move-mode * {
     max-width: none !important;
 }
 
-/* 기존 sticky 컬럼은 자유 배치판에서 해제 */
-.widget-column.is-follow-column > .widget-list {
-    position: static;
-    top: auto;
-}
-
-/* 네이버형 상단 서비스 메뉴 */
+/* 상단 서비스 메뉴 */
 .global-left-menu {
     grid-column: 1;
     justify-self: start;
@@ -1530,5 +1524,15 @@ body.is-widget-move-mode * {
         opacity: 1;
         transform: translateY(0);
     }
+}
+
+/* 단독 위젯의 이동 안내 공간 */
+.dashboard-layout-item.widget.is-layout-editing {
+    padding-top: 48px;
+}
+
+.dashboard-layout-item.widget
+> .dashboard-group-move-guide {
+    top: 10px;
 }
 
