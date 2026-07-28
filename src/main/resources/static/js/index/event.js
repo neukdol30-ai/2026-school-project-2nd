@@ -61,6 +61,16 @@ function bindEvents() {
         handleWidgetMoveKeydown
     );
 
+    document.addEventListener(
+        "click",
+        handleGlobalServiceMenuOutsideClick
+    );
+
+    document.addEventListener(
+        "keydown",
+        handleGlobalServiceMenuKeydown
+    );
+
     syncLayoutEditClass();
     eventsBound = true;
 }
@@ -563,6 +573,148 @@ function handleWorldTimeKeydown(event) {
     worldTimeItem.click();
 }
 
+
+// 상단 서비스 메뉴 열림 상태 변경
+function setGlobalServiceMenuOpen(isOpen) {
+    const menu =
+        document.querySelector(
+            "[data-global-service-menu]"
+        );
+
+    if (!menu) {
+        return;
+    }
+
+    const button =
+        menu.querySelector(
+            '[data-action="toggle-service-menu"]'
+        );
+
+    const panel =
+        menu.querySelector(
+            "[data-global-service-panel]"
+        );
+
+    if (!button || !panel) {
+        return;
+    }
+
+    menu.classList.toggle(
+        "is-open",
+        isOpen
+    );
+
+    button.setAttribute(
+        "aria-expanded",
+        String(isOpen)
+    );
+
+    button.setAttribute(
+        "aria-label",
+        isOpen
+            ? "서비스 메뉴 닫기"
+            : "서비스 메뉴 열기"
+    );
+
+    panel.hidden = !isOpen;
+}
+
+// 상단 서비스 메뉴 열기 또는 닫기
+function toggleGlobalServiceMenu() {
+    const menu =
+        document.querySelector(
+            "[data-global-service-menu]"
+        );
+
+    if (!menu) {
+        return;
+    }
+
+    setGlobalServiceMenuOpen(
+        !menu.classList.contains("is-open")
+    );
+}
+
+// 메뉴 바깥 클릭 시 닫기
+function handleGlobalServiceMenuOutsideClick(event) {
+    const menu =
+        document.querySelector(
+            "[data-global-service-menu]"
+        );
+
+    if (
+        !menu
+        || !menu.classList.contains("is-open")
+    ) {
+        return;
+    }
+
+    const serviceLink =
+        event.target.closest(
+            "[data-service-menu-link]"
+        );
+
+    if (serviceLink) {
+        setGlobalServiceMenuOpen(false);
+        return;
+    }
+
+    if (
+        event.target.closest(
+            "[data-global-service-menu]"
+        )
+    ) {
+        return;
+    }
+
+    setGlobalServiceMenuOpen(false);
+}
+
+// Esc 키로 메뉴 닫기
+function handleGlobalServiceMenuKeydown(event) {
+    if (event.key !== "Escape") {
+        return;
+    }
+
+    const menu =
+        document.querySelector(
+            "[data-global-service-menu]"
+        );
+
+    if (
+        !menu
+        || !menu.classList.contains("is-open")
+    ) {
+        return;
+    }
+
+    event.preventDefault();
+    setGlobalServiceMenuOpen(false);
+}
+
+// 화면 테마 선택 버튼 상태만 갱신
+function updatePortalThemeButtons() {
+    document
+        .querySelectorAll(
+            "[data-theme-option]"
+        )
+        .forEach((button) => {
+            const isSelected =
+                button.dataset.themeOption
+                === state.theme;
+
+            button.classList.toggle(
+                "is-selected",
+                isSelected
+            );
+
+            button.setAttribute(
+                "aria-pressed",
+                String(isSelected)
+            );
+        });
+}
+
 // 버튼 액션 처리
 function handleAction(event) {
     const button =
@@ -582,6 +734,21 @@ function handleAction(event) {
 
     const value =
         button.dataset.value;
+
+    if (action === "toggle-service-menu") {
+        toggleGlobalServiceMenu();
+        return;
+    }
+
+    if (action === "set-theme") {
+        if (typeof setPortalTheme !== "function") {
+            return;
+        }
+
+        setPortalTheme(value);
+        updatePortalThemeButtons();
+        return;
+    }
 
     if (action === "save-memo") {
         if (typeof addMemo === "function") {

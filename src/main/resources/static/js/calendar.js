@@ -393,92 +393,605 @@ function notifyCalendarChanged() {
 }
 
 
-// 화면 테마
+// 공통 배너와 화면 테마
 
-const THEME_STORAGE_KEY = "calendar-theme";
+const PORTAL_THEME_STORAGE_KEY = "portalTheme";
+const LEGACY_CALENDAR_THEME_STORAGE_KEY = "calendar-theme";
+const PORTAL_THEME_VALUES = new Set([
+    "light",
+    "dark"
+]);
 
-function applyTheme(theme) {
+let calendarBannerUser = null;
 
-    const isDark =
-        theme === "dark";
+function normalizePortalTheme(theme) {
 
-    document.documentElement.dataset.theme =
-        isDark ? "dark" : "light";
-
-    const toggle =
-        $("#themeToggle");
-
-    if (toggle) {
-        toggle.setAttribute(
-            "aria-checked",
-            String(isDark)
-        );
-
-        toggle.setAttribute(
-            "aria-label",
-            isDark
-                ? "밝은 화면으로 전환"
-                : "어두운 화면으로 전환"
-        );
-    }
+    return PORTAL_THEME_VALUES.has(theme)
+        ? theme
+        : "light";
 }
 
-function initializeTheme() {
 
-    let savedTheme = "";
+function getStoredPortalTheme() {
 
     try {
-        savedTheme =
+
+        const portalTheme =
             localStorage.getItem(
-                THEME_STORAGE_KEY
-            ) || "";
+                PORTAL_THEME_STORAGE_KEY
+            );
+
+        if (
+            PORTAL_THEME_VALUES.has(
+                portalTheme
+            )
+        ) {
+            return portalTheme;
+        }
+
+
+        const legacyTheme =
+            localStorage.getItem(
+                LEGACY_CALENDAR_THEME_STORAGE_KEY
+            );
+
+        if (
+            PORTAL_THEME_VALUES.has(
+                legacyTheme
+            )
+        ) {
+
+            localStorage.setItem(
+                PORTAL_THEME_STORAGE_KEY,
+                legacyTheme
+            );
+
+            return legacyTheme;
+        }
+
     } catch (error) {
+
         console.warn(
-            "[캘린더 테마 불러오기 실패]",
+            "[공통 테마 불러오기 실패]",
             error
         );
     }
 
-    if (!savedTheme) {
-        savedTheme =
-            window.matchMedia(
-                "(prefers-color-scheme: dark)"
-            ).matches
-                ? "dark"
-                : "light";
-    }
 
-    applyTheme(savedTheme);
+    return "light";
 }
 
-$("#themeToggle")
-    ?.addEventListener(
-        "click",
-        function () {
 
-            const nextTheme =
-                document.documentElement
-                    .dataset.theme === "dark"
-                    ? "light"
-                    : "dark";
+function updatePortalThemeButtons(theme) {
 
-            applyTheme(nextTheme);
+    document
+        .querySelectorAll(
+            "[data-theme-option]"
+        )
+        .forEach(
+            (button) => {
 
-            try {
-                localStorage.setItem(
-                    THEME_STORAGE_KEY,
-                    nextTheme
+                const isSelected =
+                    button.dataset.themeOption
+                    === theme;
+
+                button.classList.toggle(
+                    "is-selected",
+                    isSelected
                 );
-            } catch (error) {
-                console.warn(
-                    "[캘린더 테마 저장 실패]",
-                    error
+
+                button.setAttribute(
+                    "aria-pressed",
+                    String(isSelected)
                 );
             }
-        }
+        );
+}
+
+
+function applyTheme(theme) {
+
+    const nextTheme =
+        normalizePortalTheme(theme);
+
+    document.documentElement.dataset.theme =
+        nextTheme;
+
+    document.documentElement.style.colorScheme =
+        nextTheme;
+
+    updatePortalThemeButtons(
+        nextTheme
+    );
+}
+
+
+function setPortalTheme(theme) {
+
+    const nextTheme =
+        normalizePortalTheme(theme);
+
+    applyTheme(
+        nextTheme
     );
 
+
+    try {
+
+        localStorage.setItem(
+            PORTAL_THEME_STORAGE_KEY,
+            nextTheme
+        );
+
+        /*
+            아직 이전 캘린더 파일을 사용하는 탭도
+            같은 화면 모드를 유지하도록 함께 저장한다.
+        */
+        localStorage.setItem(
+            LEGACY_CALENDAR_THEME_STORAGE_KEY,
+            nextTheme
+        );
+
+    } catch (error) {
+
+        console.warn(
+            "[공통 테마 저장 실패]",
+            error
+        );
+    }
+}
+
+
+function initializeTheme() {
+
+    applyTheme(
+        getStoredPortalTheme()
+    );
+}
+
+
+function setCalendarServiceMenuOpen(isOpen) {
+
+    const menu =
+        document.querySelector(
+            "[data-calendar-service-menu]"
+        );
+
+    if (!menu) {
+        return;
+    }
+
+
+    const button =
+        menu.querySelector(
+            '[data-calendar-action="toggle-service-menu"]'
+        );
+
+    const panel =
+        menu.querySelector(
+            "[data-calendar-service-panel]"
+        );
+
+    if (
+        !button
+        || !panel
+    ) {
+        return;
+    }
+
+
+    menu.classList.toggle(
+        "is-open",
+        isOpen
+    );
+
+    button.setAttribute(
+        "aria-expanded",
+        String(isOpen)
+    );
+
+    button.setAttribute(
+        "aria-label",
+        isOpen
+            ? "서비스 메뉴 닫기"
+            : "서비스 메뉴 열기"
+    );
+
+    panel.hidden =
+        !isOpen;
+}
+
+
+function setCalendarSettingsOpen(isOpen) {
+
+    const layer =
+        document.querySelector(
+            "[data-calendar-settings-layer]"
+        );
+
+    if (!layer) {
+        return;
+    }
+
+
+    layer.classList.toggle(
+        "is-open",
+        isOpen
+    );
+
+    layer.setAttribute(
+        "aria-hidden",
+        String(!isOpen)
+    );
+
+    document.body.classList.toggle(
+        "calendar-settings-open",
+        isOpen
+    );
+
+    if (isOpen) {
+
+        setCalendarServiceMenuOpen(
+            false
+        );
+    }
+}
+
+
+function getCalendarBannerDisplayName(user) {
+
+    if (!user) {
+        return "회원";
+    }
+
+    return String(
+        user.displayName
+        || user.nickname
+        || user.name
+        || user.memberId
+        || user.username
+        || "회원"
+    ).trim();
+}
+
+
+function renderCalendarBannerUser() {
+
+    const userMenu =
+        document.querySelector(
+            "[data-calendar-user-menu]"
+        );
+
+    const serviceUserArea =
+        document.querySelector(
+            "[data-calendar-service-user]"
+        );
+
+    if (
+        !userMenu
+        || !serviceUserArea
+    ) {
+        return;
+    }
+
+
+    if (!calendarBannerUser) {
+
+        userMenu.innerHTML = `
+            <a href="/member/login">
+                로그인
+            </a>
+        `;
+
+        serviceUserArea.innerHTML = `
+            <a
+                class="global-service-login-link"
+                href="/member/login"
+            >
+                <strong>로그인하세요</strong>
+                <span aria-hidden="true">›</span>
+            </a>
+
+            <p class="global-service-login-desc">
+                로그인하고 여러 서비스를 편리하게 이용하세요.
+            </p>
+        `;
+
+        return;
+    }
+
+
+    const displayName =
+        getCalendarBannerDisplayName(
+            calendarBannerUser
+        );
+
+    const avatarText =
+        displayName.charAt(0)
+        || "회";
+
+
+    userMenu.innerHTML = `
+        <button
+            type="button"
+            data-mypage-open
+        >
+            마이페이지
+        </button>
+    `;
+
+
+    serviceUserArea.innerHTML = `
+        <div class="global-service-profile">
+
+            <button
+                class="global-service-profile-button"
+                type="button"
+                data-mypage-open
+            >
+                <span
+                    class="global-service-avatar"
+                    aria-hidden="true"
+                >
+                    ${escapeHtml(avatarText)}
+                </span>
+
+                <span class="global-service-profile-text">
+                    <strong>
+                        ${escapeHtml(displayName)}님
+                    </strong>
+                    <span>마이페이지로 이동</span>
+                </span>
+
+                <span
+                    class="global-service-profile-arrow"
+                    aria-hidden="true"
+                >
+                    ›
+                </span>
+            </button>
+
+            <form
+                class="global-service-logout-form"
+                action="/member/logout"
+                method="post"
+            >
+                <button
+                    class="global-service-logout-button"
+                    type="submit"
+                >
+                    로그아웃
+                </button>
+            </form>
+
+        </div>
+    `;
+}
+
+
+async function loadCalendarBannerUser() {
+
+    try {
+
+        const response =
+            await fetch(
+                "/mypage/me",
+                {
+                    credentials:
+                        "same-origin",
+
+                    cache:
+                        "no-store",
+
+                    headers: {
+                        "Accept":
+                            "application/json",
+
+                        "X-Requested-With":
+                            "XMLHttpRequest"
+                    }
+                }
+            );
+
+
+        if (!response.ok) {
+
+            calendarBannerUser =
+                null;
+
+            renderCalendarBannerUser();
+
+            return;
+        }
+
+
+        const data =
+            await response.json();
+
+
+        calendarBannerUser =
+            data?.loggedIn
+            && data?.profile
+                ? data.profile
+                : null;
+
+
+        renderCalendarBannerUser();
+
+    } catch (error) {
+
+        calendarBannerUser =
+            null;
+
+        renderCalendarBannerUser();
+
+        console.warn(
+            "[캘린더 배너 로그인 상태 조회 실패]",
+            error
+        );
+    }
+}
+
+
+function handleCalendarGlobalClick(event) {
+
+    const actionButton =
+        event.target.closest(
+            "[data-calendar-action]"
+        );
+
+
+    if (actionButton) {
+
+        const action =
+            actionButton.dataset.calendarAction;
+
+
+        if (
+            action
+            === "toggle-service-menu"
+        ) {
+
+            const menu =
+                actionButton.closest(
+                    "[data-calendar-service-menu]"
+                );
+
+            setCalendarServiceMenuOpen(
+                !menu?.classList.contains(
+                    "is-open"
+                )
+            );
+
+            return;
+        }
+
+
+        if (
+            action
+            === "open-settings"
+        ) {
+
+            setCalendarSettingsOpen(
+                true
+            );
+
+            return;
+        }
+
+
+        if (
+            action
+            === "close-settings"
+        ) {
+
+            setCalendarSettingsOpen(
+                false
+            );
+
+            return;
+        }
+
+
+        if (
+            action
+            === "set-theme"
+        ) {
+
+            setPortalTheme(
+                actionButton.dataset.value
+            );
+
+            return;
+        }
+    }
+
+
+    if (
+        event.target.closest(
+            "[data-calendar-service-link]"
+        )
+    ) {
+
+        setCalendarServiceMenuOpen(
+            false
+        );
+
+        return;
+    }
+
+
+    const menu =
+        document.querySelector(
+            "[data-calendar-service-menu]"
+        );
+
+
+    if (
+        menu?.classList.contains(
+            "is-open"
+        )
+        && !event.target.closest(
+            "[data-calendar-service-menu]"
+        )
+    ) {
+
+        setCalendarServiceMenuOpen(
+            false
+        );
+    }
+}
+
+
+function handleCalendarGlobalKeydown(event) {
+
+    if (event.key !== "Escape") {
+        return;
+    }
+
+    setCalendarServiceMenuOpen(
+        false
+    );
+
+    setCalendarSettingsOpen(
+        false
+    );
+}
+
+
+document.addEventListener(
+    "click",
+    handleCalendarGlobalClick
+);
+
+
+document.addEventListener(
+    "keydown",
+    handleCalendarGlobalKeydown
+);
+
+
+window.addEventListener(
+    "storage",
+    function (event) {
+
+        if (
+            event.key
+            !== PORTAL_THEME_STORAGE_KEY
+        ) {
+            return;
+        }
+
+        applyTheme(
+            event.newValue
+        );
+    }
+);
+
+
 initializeTheme();
+renderCalendarBannerUser();
+loadCalendarBannerUser();
 
 
 // 월간 달력

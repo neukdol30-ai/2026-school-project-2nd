@@ -29,6 +29,85 @@ function renderControlBox() {
         .join("")}
             </div>
         </section>
+
+        <section class="theme-setting-box">
+            <h2>화면 설정</h2>
+            <p class="theme-setting-label">화면 스타일</p>
+
+            <div
+                class="theme-option-list"
+                role="group"
+                aria-label="화면 스타일 선택"
+            >
+                <button
+                    class="theme-option-button ${
+        state.theme === "light"
+            ? "is-selected"
+            : ""
+    }"
+                    type="button"
+                    data-action="set-theme"
+                    data-value="light"
+                    data-theme-option="light"
+                    aria-pressed="${String(
+        state.theme === "light"
+    )}"
+                >
+                    <span
+                        class="theme-option-icon"
+                        aria-hidden="true"
+                    >
+                        ☀
+                    </span>
+
+                    <span class="theme-option-text">
+                        <strong>라이트 모드</strong>
+                        <span>밝은 화면</span>
+                    </span>
+
+                    <span
+                        class="theme-option-check"
+                        aria-hidden="true"
+                    >
+                        ✓
+                    </span>
+                </button>
+
+                <button
+                    class="theme-option-button ${
+        state.theme === "dark"
+            ? "is-selected"
+            : ""
+    }"
+                    type="button"
+                    data-action="set-theme"
+                    data-value="dark"
+                    data-theme-option="dark"
+                    aria-pressed="${String(
+        state.theme === "dark"
+    )}"
+                >
+                    <span
+                        class="theme-option-icon"
+                        aria-hidden="true"
+                    >
+                        ☾
+                    </span>
+
+                    <span class="theme-option-text">
+                        <strong>다크 모드</strong>
+                        <span>어두운 화면</span>
+                    </span>
+
+                    <span
+                        class="theme-option-check"
+                        aria-hidden="true"
+                    >
+                        ✓
+                    </span>
+                </button>
+            </div>
+        </section>
     `;
 }
 

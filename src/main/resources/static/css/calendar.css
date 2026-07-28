@@ -1395,3 +1395,1013 @@ html[data-theme="dark"] .google-calendar-btn:disabled {
         font-size: 30px;
     }
 }
+
+/* 공통 배너와 환경설정 */
+
+:root {
+    --calendar-banner-height: 76px;
+    --calendar-banner-width: 1400px;
+}
+
+body.calendar-settings-open {
+    overflow: hidden;
+}
+
+.calendar-global-banner {
+    position: sticky;
+    top: 0;
+    z-index: 300;
+
+    width: 100%;
+    height: var(--calendar-banner-height);
+
+    border-bottom: 2px solid #91dcf7;
+    background: #f7fcff;
+    box-shadow: 0 3px 12px rgba(31, 114, 148, 0.08);
+}
+
+.calendar-global-banner-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    width: min(
+            var(--calendar-banner-width),
+            calc(100% - 48px)
+    );
+    height: 100%;
+    margin: 0 auto;
+}
+
+.calendar-global-left,
+.calendar-global-right {
+    display: flex;
+    align-items: center;
+    height: 100%;
+}
+
+.calendar-global-left {
+    position: relative;
+    min-width: 0;
+    gap: 12px;
+}
+
+.calendar-global-right {
+    flex: 0 0 auto;
+    gap: 18px;
+}
+
+.global-service-menu {
+    position: relative;
+    display: flex;
+    align-items: center;
+    height: 100%;
+}
+
+.global-service-menu-button {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+
+    width: 46px;
+    height: 46px;
+    padding: 0;
+    gap: 6px;
+
+    border: 1px solid transparent;
+    border-radius: 50%;
+    background: #edf2f4;
+
+    cursor: pointer;
+    transition:
+            background 0.18s ease,
+            border-color 0.18s ease,
+            transform 0.18s ease;
+}
+
+.global-service-menu-button span {
+    display: block;
+    width: 22px;
+    height: 2px;
+    border-radius: 999px;
+    background: #41545d;
+}
+
+.global-service-menu-button:hover,
+.global-service-menu.is-open
+.global-service-menu-button {
+    border-color: #d3e1e7;
+    background: #e4ecef;
+}
+
+.global-service-menu-button:hover {
+    transform: translateY(-1px);
+}
+
+.global-service-menu-button:focus-visible,
+.global-home-link:focus-visible {
+    outline: 2px solid #1aa8df;
+    outline-offset: 3px;
+}
+
+.global-home-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    height: 100%;
+    padding: 0 8px;
+
+    color: inherit;
+    text-decoration: none;
+}
+
+.global-logo-text {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    min-width: 44px;
+    height: 46px;
+    padding: 0 7px 2px 4px;
+
+    color: #0b5278;
+    font-family:
+            "Pretendard",
+            "Noto Sans KR",
+            "Apple SD Gothic Neo",
+            sans-serif;
+    font-size: 30px;
+    font-weight: 900;
+    line-height: 1;
+    letter-spacing: -4px;
+
+    transition:
+            color 0.2s ease,
+            transform 0.2s ease;
+}
+
+.global-logo-text::before {
+    content: "";
+    position: absolute;
+    top: 5px;
+    bottom: 4px;
+    left: -3px;
+
+    width: 20px;
+
+    border-top: 4px solid #30b6ea;
+    border-bottom: 4px solid #30b6ea;
+    border-left: 4px solid #30b6ea;
+    border-radius: 10px 0 0 10px;
+    opacity: 0.9;
+}
+
+.global-logo-text::after {
+    content: "";
+    position: absolute;
+    top: 3px;
+    right: -3px;
+
+    width: 8px;
+    height: 8px;
+
+    border-radius: 3px;
+    background: #27afe5;
+    box-shadow: 0 0 0 3px rgba(39, 175, 229, 0.12);
+}
+
+.global-logo-letter {
+    position: relative;
+    z-index: 1;
+    transform: translateX(3px);
+}
+
+.global-home-link:hover
+.global-logo-text {
+    color: #087fac;
+    transform: translateY(-1px);
+}
+
+.calendar-banner-divider {
+    width: 1px;
+    height: 24px;
+    margin: 0 4px;
+    background: rgba(36, 77, 96, 0.24);
+}
+
+.calendar-page-heading {
+    display: flex;
+    align-items: baseline;
+    min-width: 0;
+    gap: 10px;
+}
+
+.calendar-page-heading strong {
+    color: #173f52;
+    font-size: 20px;
+    font-weight: 900;
+    white-space: nowrap;
+}
+
+.calendar-page-heading span {
+    overflow: hidden;
+    color: #70858f;
+    font-size: 12px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.global-user-menu,
+.global-settings-menu {
+    display: flex;
+    align-items: center;
+}
+
+.global-user-menu a,
+.global-user-menu button,
+.global-settings-menu button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    min-height: 36px;
+    padding: 0 3px;
+
+    border: 0;
+    border-radius: 6px;
+    background: transparent;
+
+    color: #244d60;
+    font-family: inherit;
+    font-size: 15px;
+    font-weight: 700;
+    line-height: 1;
+    text-decoration: none;
+    white-space: nowrap;
+}
+
+.global-user-menu button,
+.global-settings-menu button {
+    cursor: pointer;
+}
+
+.global-user-menu a:hover,
+.global-user-menu button:hover,
+.global-settings-menu button:hover {
+    color: #087fac;
+}
+
+.global-menu-divider {
+    display: block;
+    flex: 0 0 1px;
+
+    width: 1px;
+    height: 18px;
+
+    background: rgba(36, 77, 96, 0.34);
+}
+
+.global-settings-menu button {
+    gap: 7px;
+}
+
+.global-settings-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+}
+
+.global-service-panel {
+    position: absolute;
+    top: calc(100% - 4px);
+    left: -8px;
+    z-index: 380;
+
+    width: 380px;
+
+    border: 1px solid #dce5e9;
+    border-radius: 0 14px 14px 14px;
+    background: #ffffff;
+    box-shadow: 0 16px 42px rgba(24, 67, 86, 0.18);
+
+    color: #1e3946;
+}
+
+.global-service-panel::before {
+    content: "";
+    position: absolute;
+    top: -11px;
+    left: 21px;
+
+    width: 20px;
+    height: 20px;
+
+    border-top: 1px solid #dce5e9;
+    border-left: 1px solid #dce5e9;
+    background: #ffffff;
+    transform: rotate(45deg);
+}
+
+.global-service-panel > * {
+    position: relative;
+    z-index: 1;
+}
+
+.global-service-panel-user {
+    min-height: 104px;
+    padding: 22px 24px 20px;
+}
+
+.global-service-login-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+
+    color: #111f26;
+    font-size: 21px;
+    text-decoration: none;
+}
+
+.global-service-login-link strong {
+    font-weight: 900;
+}
+
+.global-service-login-link span {
+    color: #82939b;
+    font-size: 28px;
+    line-height: 1;
+}
+
+.global-service-login-link:hover {
+    color: #087fac;
+}
+
+.global-service-login-desc {
+    margin: 10px 0 0;
+    color: #748891;
+    font-size: 12px;
+    line-height: 1.5;
+}
+
+.global-service-profile {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    gap: 12px;
+}
+
+.global-service-profile-button {
+    display: flex;
+    align-items: center;
+    flex: 1;
+    min-width: 0;
+    padding: 0;
+
+    border: 0;
+    background: transparent;
+
+    font-family: inherit;
+    text-align: left;
+    cursor: pointer;
+}
+
+.global-service-avatar {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 46px;
+
+    width: 46px;
+    height: 46px;
+
+    border-radius: 50%;
+    background: #e8f7fd;
+
+    color: #1597c7;
+    font-size: 18px;
+    font-weight: 900;
+}
+
+.global-service-profile-text {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    margin-left: 12px;
+    gap: 4px;
+}
+
+.global-service-profile-text strong {
+    overflow: hidden;
+    color: #173847;
+    font-size: 16px;
+    font-weight: 900;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.global-service-profile-text span {
+    color: #7b8d95;
+    font-size: 11px;
+}
+
+.global-service-profile-arrow {
+    margin-left: auto;
+    color: #8b9aa1;
+    font-size: 25px;
+    line-height: 1;
+}
+
+.global-service-logout-form {
+    flex: 0 0 auto;
+    margin: 0;
+}
+
+.global-service-logout-button {
+    min-height: 34px;
+    padding: 0 11px;
+
+    border: 1px solid #d8e2e7;
+    border-radius: 7px;
+    background: #ffffff;
+
+    color: #687d87;
+    font-family: inherit;
+    font-size: 11px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.global-service-logout-button:hover {
+    border-color: #bcd6e1;
+    color: #087fac;
+}
+
+.global-service-panel-divider {
+    height: 1px;
+    background: #e8edef;
+}
+
+.global-service-shortcut-area {
+    padding: 20px 24px 24px;
+}
+
+.global-service-shortcut-area h2 {
+    margin: 0 0 17px;
+    color: #162d38;
+    font-size: 17px;
+    font-weight: 900;
+}
+
+.global-service-shortcuts {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+}
+
+.global-service-shortcut {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+
+    min-height: 104px;
+    padding: 14px 10px;
+
+    border: 1px solid #e1e8eb;
+    border-radius: 12px;
+    background: #f8fbfc;
+
+    color: #294956;
+    font-size: 13px;
+    font-weight: 800;
+    text-decoration: none;
+
+    transition:
+            background 0.18s ease,
+            border-color 0.18s ease,
+            transform 0.18s ease,
+            box-shadow 0.18s ease;
+}
+
+.global-service-shortcut:hover,
+.global-service-shortcut.is-current {
+    border-color: #a9d9eb;
+    background: #eefaff;
+}
+
+.global-service-shortcut:hover {
+    box-shadow: 0 8px 18px rgba(42, 117, 148, 0.09);
+    transform: translateY(-2px);
+}
+
+.global-service-shortcut-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 46px;
+    height: 46px;
+    margin-bottom: 9px;
+
+    border-radius: 14px;
+    background: #ffffff;
+    box-shadow: 0 3px 10px rgba(42, 117, 148, 0.08);
+
+    font-size: 24px;
+}
+
+.global-service-menu.is-open
+.global-service-panel {
+    animation: calendarServicePanelOpen 0.16s ease-out;
+}
+
+@keyframes calendarServicePanelOpen {
+    from {
+        opacity: 0;
+        transform: translateY(-6px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* 환경설정 서랍 */
+
+.calendar-settings-layer {
+    position: fixed;
+    inset: 0;
+    z-index: 500;
+
+    visibility: hidden;
+    pointer-events: none;
+
+    transition:
+            visibility 0s linear 0.32s;
+}
+
+.calendar-settings-layer.is-open {
+    visibility: visible;
+    pointer-events: auto;
+    transition-delay: 0s;
+}
+
+.calendar-settings-backdrop {
+    position: absolute;
+    inset: 0;
+
+    width: 100%;
+    height: 100%;
+    padding: 0;
+
+    border: 0;
+    border-radius: 0;
+    background: rgba(17, 24, 39, 0);
+
+    transition:
+            background-color 0.32s ease;
+}
+
+.calendar-settings-layer.is-open
+.calendar-settings-backdrop {
+    background: rgba(17, 24, 39, 0.28);
+}
+
+.calendar-settings-drawer {
+    position: absolute;
+    top: 0;
+    right: 0;
+
+    width: min(
+            380px,
+            calc(100vw - 32px)
+    );
+    height: 100%;
+    overflow-y: auto;
+
+    background: #ffffff;
+    box-shadow: -12px 0 30px rgba(17, 24, 39, 0.16);
+
+    transform: translateX(100%);
+    transition:
+            transform 0.32s ease;
+}
+
+.calendar-settings-layer.is-open
+.calendar-settings-drawer {
+    transform: translateX(0);
+}
+
+.calendar-settings-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    padding: 20px;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.calendar-settings-header h2 {
+    margin: 0;
+    font-size: 18px;
+}
+
+.calendar-settings-close {
+    width: 32px;
+    height: 32px;
+    padding: 0;
+
+    border: 0;
+    border-radius: 6px;
+    background: transparent;
+
+    color: #374151;
+    font-size: 24px;
+    line-height: 1;
+    cursor: pointer;
+}
+
+.calendar-settings-content {
+    padding: 20px;
+}
+
+.theme-setting-box {
+    margin: 0;
+    padding: 0;
+    border: 0;
+}
+
+.theme-setting-box h2 {
+    margin: 0;
+    color: #1f2937;
+    font-size: 17px;
+}
+
+.theme-setting-label {
+    margin: 14px 0 10px;
+    color: #6b7280;
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.theme-option-list {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+}
+
+.theme-option-button {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: center;
+
+    min-height: 108px;
+    padding: 15px 14px;
+
+    border: 1px solid #dfe6ea;
+    border-radius: 12px;
+    background: #f8fafb;
+
+    color: #334155;
+    font-family: inherit;
+    text-align: left;
+    cursor: pointer;
+
+    transition:
+            border-color 0.18s ease,
+            background-color 0.18s ease,
+            box-shadow 0.18s ease,
+            transform 0.18s ease;
+}
+
+.theme-option-button:hover {
+    border-color: #9ed7eb;
+    background: #f0faff;
+    transform: translateY(-1px);
+}
+
+.theme-option-button.is-selected {
+    border-color: #1aa8df;
+    background: #eaf8fe;
+    box-shadow: 0 0 0 2px rgba(26, 168, 223, 0.12);
+}
+
+.theme-option-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 34px;
+    height: 34px;
+    margin-bottom: 10px;
+
+    border-radius: 10px;
+    background: #ffffff;
+    box-shadow: 0 3px 9px rgba(15, 23, 42, 0.08);
+
+    font-size: 18px;
+}
+
+.theme-option-text {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+.theme-option-text strong {
+    font-size: 13px;
+    font-weight: 800;
+}
+
+.theme-option-text span {
+    color: #7b8794;
+    font-size: 11px;
+}
+
+.theme-option-check {
+    position: absolute;
+    top: 11px;
+    right: 11px;
+
+    display: none;
+    align-items: center;
+    justify-content: center;
+
+    width: 20px;
+    height: 20px;
+
+    border-radius: 50%;
+    background: #1aa8df;
+
+    color: #ffffff;
+    font-size: 12px;
+    font-weight: 900;
+}
+
+.theme-option-button.is-selected
+.theme-option-check {
+    display: inline-flex;
+}
+
+/* 다크 모드 */
+
+html[data-theme="dark"]
+.calendar-global-banner {
+    border-bottom-color: #303030;
+    background: #101010;
+    box-shadow: none;
+}
+
+html[data-theme="dark"]
+.global-service-menu-button {
+    border-color: #303030;
+    background: #1d1d1d;
+}
+
+html[data-theme="dark"]
+.global-service-menu-button span {
+    background: #d4d4d4;
+}
+
+html[data-theme="dark"]
+.global-logo-text {
+    color: #8cd9f5;
+}
+
+html[data-theme="dark"]
+.calendar-banner-divider,
+html[data-theme="dark"]
+.global-menu-divider {
+    background: #3c3c3c;
+}
+
+html[data-theme="dark"]
+.calendar-page-heading strong,
+html[data-theme="dark"]
+.global-user-menu a,
+html[data-theme="dark"]
+.global-user-menu button,
+html[data-theme="dark"]
+.global-settings-menu button {
+    color: #eeeeee;
+}
+
+html[data-theme="dark"]
+.calendar-page-heading span {
+    color: #9a9a9a;
+}
+
+html[data-theme="dark"]
+.global-service-panel {
+    border-color: #373737;
+    background: #1a1a1a;
+    color: #eeeeee;
+    box-shadow: 0 18px 46px rgba(0, 0, 0, 0.46);
+}
+
+html[data-theme="dark"]
+.global-service-panel::before {
+    border-top-color: #373737;
+    border-left-color: #373737;
+    background: #1a1a1a;
+}
+
+html[data-theme="dark"]
+.global-service-panel-divider {
+    background: #333333;
+}
+
+html[data-theme="dark"]
+.global-service-login-link,
+html[data-theme="dark"]
+.global-service-profile-text strong,
+html[data-theme="dark"]
+.global-service-shortcut-area h2 {
+    color: #f2f2f2;
+}
+
+html[data-theme="dark"]
+.global-service-login-desc,
+html[data-theme="dark"]
+.global-service-profile-text span,
+html[data-theme="dark"]
+.global-service-profile-arrow {
+    color: #9a9a9a;
+}
+
+html[data-theme="dark"]
+.global-service-avatar,
+html[data-theme="dark"]
+.global-service-shortcut-icon {
+    background: #292929;
+    color: #8fd0ef;
+    box-shadow: none;
+}
+
+html[data-theme="dark"]
+.global-service-logout-button {
+    border-color: #3d3d3d;
+    background: #252525;
+    color: #d0d0d0;
+}
+
+html[data-theme="dark"]
+.global-service-shortcut {
+    border-color: #363636;
+    background: #242424;
+    color: #e7e7e7;
+}
+
+html[data-theme="dark"]
+.global-service-shortcut:hover,
+html[data-theme="dark"]
+.global-service-shortcut.is-current {
+    border-color: #5d8398;
+    background: #273640;
+}
+
+html[data-theme="dark"]
+.calendar-settings-layer.is-open
+.calendar-settings-backdrop {
+    background: rgba(0, 0, 0, 0.58);
+}
+
+html[data-theme="dark"]
+.calendar-settings-drawer {
+    background: #111a27;
+    color: #edf3fa;
+    box-shadow: -16px 0 38px rgba(0, 0, 0, 0.46);
+}
+
+html[data-theme="dark"]
+.calendar-settings-header {
+    border-bottom-color: #29374a;
+    background: #0f1621;
+}
+
+html[data-theme="dark"]
+.calendar-settings-header h2,
+html[data-theme="dark"]
+.theme-setting-box h2 {
+    color: #f2f6fb;
+}
+
+html[data-theme="dark"]
+.calendar-settings-close {
+    color: #9ba8b9;
+}
+
+html[data-theme="dark"]
+.calendar-settings-close:hover {
+    background: #1c2838;
+    color: #eef4fb;
+}
+
+html[data-theme="dark"]
+.theme-setting-label {
+    color: #9ba8b9;
+}
+
+html[data-theme="dark"]
+.theme-option-button {
+    border-color: #304057;
+    background: #182333;
+    color: #edf3fa;
+}
+
+html[data-theme="dark"]
+.theme-option-button:hover {
+    border-color: #587ba9;
+    background: #1e2c40;
+}
+
+html[data-theme="dark"]
+.theme-option-button.is-selected {
+    border-color: #76a8ff;
+    background: #233b5d;
+    box-shadow:
+            inset 0 0 0 1px rgba(118, 168, 255, 0.42),
+            0 8px 18px rgba(0, 0, 0, 0.14);
+}
+
+html[data-theme="dark"]
+.theme-option-icon {
+    background: #172231;
+    color: #9bc0ff;
+    box-shadow: none;
+}
+
+html[data-theme="dark"]
+.theme-option-text span {
+    color: #9ba8b9;
+}
+
+html[data-theme="dark"]
+.theme-option-check {
+    background: #4d83ed;
+}
+
+/* 새 배너 높이에 맞춰 본문과 사이드바 조정 */
+
+.calendar-layout {
+    min-height:
+            calc(
+                    100vh
+                    - var(--calendar-banner-height)
+            );
+}
+
+.calendar-sidebar {
+    top: var(--calendar-banner-height);
+    height:
+            calc(
+                    100vh
+                    - var(--calendar-banner-height)
+            );
+}
+
+@media (max-width: 960px) {
+
+    .calendar-global-banner-inner {
+        width: calc(100% - 24px);
+    }
+
+    .calendar-page-heading span {
+        display: none;
+    }
+
+    .calendar-global-right {
+        gap: 10px;
+    }
+
+    .calendar-global-right
+    .global-menu-divider {
+        display: none;
+    }
+}
+
+@media (max-width: 680px) {
+
+    .calendar-page-heading {
+        display: none;
+    }
+
+    .calendar-banner-divider {
+        display: none;
+    }
+
+    .global-service-panel {
+        left: -4px;
+        width: min(
+                380px,
+                calc(100vw - 24px)
+        );
+    }
+}

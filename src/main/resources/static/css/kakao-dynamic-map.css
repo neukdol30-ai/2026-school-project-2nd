@@ -49,8 +49,8 @@ body {
     min-height: 100vh;
     overflow-y: auto;
     background:
-        radial-gradient(circle at top left, rgba(186, 230, 253, 0.56), transparent 34%),
-        var(--map-bg);
+            radial-gradient(circle at top left, rgba(186, 230, 253, 0.56), transparent 34%),
+            var(--map-bg);
     color: var(--map-text);
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 }
@@ -1153,7 +1153,7 @@ select:disabled {
     padding: 18px;
     border-bottom: 1px solid var(--map-border);
     background:
-        linear-gradient(145deg, rgba(255, 255, 255, 0.98), rgba(234, 246, 255, 0.96));
+            linear-gradient(145deg, rgba(255, 255, 255, 0.98), rgba(234, 246, 255, 0.96));
 }
 
 .map-search-dock-head {
@@ -1866,4 +1866,1101 @@ select:disabled {
         padding-left: 4px;
     }
 }
+/* 지도 공통 배너와 환경설정 */
+:root {
+    --map-global-banner-height: 76px;
+    --map-global-banner-width: 1400px;
+}
 
+body.map-settings-open {
+    overflow: hidden;
+}
+
+.map-service-page .map-global-banner-area {
+    position: sticky;
+    top: 0;
+    z-index: 400;
+    width: 100%;
+    height: var(--map-global-banner-height);
+    min-height: var(--map-global-banner-height);
+    border-bottom: 2px solid #91dcf7;
+    background: #f7fcff;
+    box-shadow: 0 3px 12px rgba(31, 114, 148, 0.08);
+}
+
+.map-service-page .map-global-banner-area [data-global-banner] {
+    width: min(var(--map-global-banner-width), calc(100% - 48px));
+    height: 100%;
+    margin: 0 auto;
+}
+
+.map-service-page .map-global-banner {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto !important;
+    align-items: center;
+    width: 100%;
+    height: 100%;
+    min-height: 0;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    box-shadow: none;
+}
+
+.map-service-page .global-left-menu,
+.map-service-page .global-right-menu {
+    display: flex;
+    align-items: center;
+    height: 100%;
+}
+
+.map-service-page .global-left-menu {
+    position: relative;
+    grid-column: 1;
+    justify-self: start;
+    min-width: 0;
+    margin: 0;
+    gap: 12px;
+}
+
+.map-service-page .global-right-menu {
+    grid-column: 2;
+    justify-self: end;
+    flex: 0 0 auto;
+    margin: 0;
+    gap: 18px;
+}
+
+.map-service-page .global-service-menu {
+    position: relative;
+    display: flex;
+    align-items: center;
+    height: 100%;
+}
+
+.map-service-page .global-service-menu-button {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 46px;
+    height: 46px;
+    padding: 0;
+    gap: 6px;
+    border: 1px solid transparent;
+    border-radius: 50%;
+    background: #edf2f4;
+    cursor: pointer;
+    transition:
+            background-color 0.18s ease,
+            border-color 0.18s ease,
+            transform 0.18s ease;
+}
+
+.map-service-page .global-service-menu-button span {
+    display: block;
+    width: 22px;
+    height: 2px;
+    border-radius: 999px;
+    background: #41545d;
+}
+
+.map-service-page .global-service-menu-button:hover,
+.map-service-page .global-service-menu.is-open .global-service-menu-button {
+    border-color: #d3e1e7;
+    background: #e4ecef;
+}
+
+.map-service-page .global-service-menu-button:hover {
+    transform: translateY(-1px);
+}
+
+.map-service-page .global-service-menu-button:focus-visible,
+.map-service-page .global-home-link:focus-visible {
+    outline: 2px solid #1aa8df;
+    outline-offset: 3px;
+}
+
+.map-service-page .global-home-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    grid-column: auto;
+    justify-self: auto;
+    height: 100%;
+    margin: 0;
+    padding: 0 8px;
+    color: inherit;
+    text-decoration: none;
+}
+
+.map-service-page .global-logo-text {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 44px;
+    height: 46px;
+    padding: 0 7px 2px 4px;
+    color: #0b5278;
+    font-family:
+            "Pretendard",
+            "Noto Sans KR",
+            "Apple SD Gothic Neo",
+            sans-serif;
+    font-size: 30px;
+    font-weight: 900;
+    line-height: 1;
+    letter-spacing: -4px;
+    transition:
+            color 0.2s ease,
+            transform 0.2s ease;
+}
+
+.map-service-page .global-logo-text::before {
+    content: "";
+    position: absolute;
+    top: 5px;
+    bottom: 4px;
+    left: -3px;
+    width: 20px;
+    border-top: 4px solid #30b6ea;
+    border-bottom: 4px solid #30b6ea;
+    border-left: 4px solid #30b6ea;
+    border-radius: 10px 0 0 10px;
+    opacity: 0.9;
+}
+
+.map-service-page .global-logo-text::after {
+    content: "";
+    position: absolute;
+    top: 3px;
+    right: -3px;
+    width: 8px;
+    height: 8px;
+    border-radius: 3px;
+    background: #27afe5;
+    box-shadow: 0 0 0 3px rgba(39, 175, 229, 0.12);
+}
+
+.map-service-page .global-logo-letter {
+    position: relative;
+    z-index: 1;
+    transform: translateX(3px);
+}
+
+.map-service-page .global-home-link:hover .global-logo-text {
+    color: #087fac;
+    transform: translateY(-1px);
+}
+
+.map-banner-divider {
+    flex: 0 0 1px;
+    width: 1px;
+    height: 24px;
+    margin: 0 4px;
+    background: rgba(36, 77, 96, 0.24);
+}
+
+.map-page-heading {
+    display: flex;
+    align-items: baseline;
+    min-width: 0;
+    gap: 10px;
+}
+
+.map-page-heading strong {
+    color: #173f52;
+    font-size: 20px;
+    font-weight: 900;
+    white-space: nowrap;
+}
+
+.map-page-heading span {
+    overflow: hidden;
+    color: #70858f;
+    font-size: 12px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.map-service-page .global-user-menu,
+.map-service-page .global-settings-menu {
+    display: flex;
+    align-items: center;
+}
+
+.map-service-page .global-user-menu a,
+.map-service-page .global-user-menu button,
+.map-service-page .global-settings-menu button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 36px;
+    padding: 0 3px;
+    border: 0;
+    border-radius: 6px;
+    background: transparent;
+    color: #244d60;
+    font-family: inherit;
+    font-size: 15px;
+    font-weight: 700;
+    line-height: 1;
+    text-decoration: none;
+    white-space: nowrap;
+}
+
+.map-service-page .global-user-menu button,
+.map-service-page .global-settings-menu button {
+    cursor: pointer;
+}
+
+.map-service-page .global-user-menu a:hover,
+.map-service-page .global-user-menu button:hover,
+.map-service-page .global-settings-menu button:hover {
+    color: #087fac;
+}
+
+.map-service-page .global-menu-divider {
+    display: block;
+    flex: 0 0 1px;
+    width: 1px;
+    height: 18px;
+    background: rgba(36, 77, 96, 0.34);
+}
+
+.map-service-page .global-settings-menu button {
+    gap: 7px;
+}
+
+.map-service-page .global-settings-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+}
+
+.map-service-page .global-user-loading {
+    display: inline-flex;
+    align-items: center;
+    min-height: 36px;
+    color: #70858f;
+    font-size: 13px;
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+/* 햄버거 메뉴 */
+.map-service-page .global-service-panel {
+    position: absolute;
+    top: calc(100% - 4px);
+    left: -8px;
+    z-index: 480;
+    width: 380px;
+    border: 1px solid #dce5e9;
+    border-radius: 0 14px 14px 14px;
+    background: #ffffff;
+    box-shadow: 0 16px 42px rgba(24, 67, 86, 0.18);
+    color: #1e3946;
+}
+
+.map-service-page .global-service-panel::before {
+    content: "";
+    position: absolute;
+    top: -11px;
+    left: 21px;
+    width: 20px;
+    height: 20px;
+    border-top: 1px solid #dce5e9;
+    border-left: 1px solid #dce5e9;
+    background: #ffffff;
+    transform: rotate(45deg);
+}
+
+.map-service-page .global-service-panel > * {
+    position: relative;
+    z-index: 1;
+}
+
+.map-service-page .global-service-panel-user {
+    min-height: 104px;
+    padding: 22px 24px 20px;
+}
+
+.map-service-page .global-service-login-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    color: #111f26;
+    font-size: 21px;
+    text-decoration: none;
+}
+
+.map-service-page .global-service-login-link strong {
+    font-weight: 900;
+}
+
+.map-service-page .global-service-login-link span {
+    color: #82939b;
+    font-size: 28px;
+    line-height: 1;
+}
+
+.map-service-page .global-service-login-link:hover {
+    color: #087fac;
+}
+
+.map-service-page .global-service-login-desc {
+    margin: 10px 0 0;
+    color: #748891;
+    font-size: 12px;
+    line-height: 1.5;
+}
+
+.map-service-page .global-service-profile {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    gap: 12px;
+}
+
+.map-service-page .global-service-profile-button {
+    display: flex;
+    align-items: center;
+    flex: 1;
+    min-width: 0;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    font-family: inherit;
+    text-align: left;
+    cursor: pointer;
+}
+
+.map-service-page .global-service-avatar {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 46px;
+    width: 46px;
+    height: 46px;
+    border-radius: 50%;
+    background: #e8f7fd;
+    color: #1597c7;
+    font-size: 18px;
+    font-weight: 900;
+}
+
+.map-service-page .global-service-profile-text {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    margin-left: 12px;
+    gap: 4px;
+}
+
+.map-service-page .global-service-profile-text strong {
+    overflow: hidden;
+    color: #173847;
+    font-size: 16px;
+    font-weight: 900;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.map-service-page .global-service-profile-text span {
+    color: #7b8d95;
+    font-size: 11px;
+}
+
+.map-service-page .global-service-profile-arrow {
+    margin-left: auto;
+    color: #8b9aa1;
+    font-size: 25px;
+    line-height: 1;
+}
+
+.map-service-page .global-service-logout-form {
+    flex: 0 0 auto;
+    margin: 0;
+}
+
+.map-service-page .global-service-logout-button {
+    min-height: 34px;
+    padding: 0 11px;
+    border: 1px solid #d8e2e7;
+    border-radius: 7px;
+    background: #ffffff;
+    color: #687d87;
+    font-family: inherit;
+    font-size: 11px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.map-service-page .global-service-logout-button:hover {
+    border-color: #bcd6e1;
+    color: #087fac;
+}
+
+.map-service-page .global-service-panel-divider {
+    height: 1px;
+    background: #e8edef;
+}
+
+.map-service-page .global-service-shortcut-area {
+    padding: 20px 24px 24px;
+}
+
+.map-service-page .global-service-shortcut-area h2 {
+    margin: 0 0 17px;
+    color: #162d38;
+    font-size: 17px;
+    font-weight: 900;
+}
+
+.map-service-page .global-service-shortcuts {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+}
+
+.map-service-page .global-service-shortcut {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 104px;
+    padding: 14px 10px;
+    border: 1px solid #e1e8eb;
+    border-radius: 12px;
+    background: #f8fbfc;
+    color: #294956;
+    font-size: 13px;
+    font-weight: 800;
+    text-decoration: none;
+    transition:
+            background-color 0.18s ease,
+            border-color 0.18s ease,
+            transform 0.18s ease,
+            box-shadow 0.18s ease;
+}
+
+.map-service-page .global-service-shortcut:hover,
+.map-service-page .global-service-shortcut.is-current {
+    border-color: #a9d9eb;
+    background: #eefaff;
+}
+
+.map-service-page .global-service-shortcut:hover {
+    box-shadow: 0 8px 18px rgba(42, 117, 148, 0.09);
+    transform: translateY(-2px);
+}
+
+.map-service-page .global-service-shortcut-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 46px;
+    height: 46px;
+    margin-bottom: 9px;
+    border-radius: 14px;
+    background: #ffffff;
+    box-shadow: 0 3px 10px rgba(42, 117, 148, 0.08);
+    font-size: 24px;
+}
+
+.map-service-page .global-service-menu.is-open .global-service-panel {
+    animation: mapServicePanelOpen 0.16s ease-out;
+}
+
+@keyframes mapServicePanelOpen {
+    from {
+        opacity: 0;
+        transform: translateY(-6px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* 환경설정 서랍 */
+.map-settings-layer {
+    position: fixed;
+    inset: 0;
+    z-index: 600;
+    visibility: hidden;
+    pointer-events: none;
+    transition: visibility 0s linear 0.32s;
+}
+
+.map-settings-layer.is-open {
+    visibility: visible;
+    pointer-events: auto;
+    transition-delay: 0s;
+}
+
+.map-settings-backdrop {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    background: rgba(17, 24, 39, 0);
+    transition: background-color 0.32s ease;
+}
+
+.map-settings-layer.is-open .map-settings-backdrop {
+    background: rgba(17, 24, 39, 0.28);
+}
+
+.map-settings-drawer {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: min(380px, calc(100vw - 32px));
+    height: 100%;
+    overflow-y: auto;
+    background: #ffffff;
+    box-shadow: -12px 0 30px rgba(17, 24, 39, 0.16);
+    transform: translateX(100%);
+    transition: transform 0.32s ease;
+}
+
+.map-settings-layer.is-open .map-settings-drawer {
+    transform: translateX(0);
+}
+
+.map-settings-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.map-settings-header h2 {
+    margin: 0;
+    font-size: 18px;
+}
+
+.map-settings-close {
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    border: 0;
+    border-radius: 6px;
+    background: transparent;
+    color: #374151;
+    font-size: 24px;
+    line-height: 1;
+    cursor: pointer;
+}
+
+.map-settings-content {
+    padding: 20px;
+}
+
+.map-theme-setting-box h2 {
+    margin: 0;
+    color: #1f2937;
+    font-size: 17px;
+}
+
+.map-theme-setting-label {
+    margin: 14px 0 10px;
+    color: #6b7280;
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.map-theme-option-list {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+}
+
+.map-theme-option-button {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: center;
+    min-height: 108px;
+    padding: 15px 14px;
+    border: 1px solid #dfe6ea;
+    border-radius: 12px;
+    background: #f8fafb;
+    color: #334155;
+    font-family: inherit;
+    text-align: left;
+    cursor: pointer;
+    transition:
+            border-color 0.18s ease,
+            background-color 0.18s ease,
+            box-shadow 0.18s ease,
+            transform 0.18s ease;
+}
+
+.map-theme-option-button:hover {
+    border-color: #9ed7eb;
+    background: #f0faff;
+    transform: translateY(-1px);
+}
+
+.map-theme-option-button.is-selected {
+    border-color: #1aa8df;
+    background: #eaf8fe;
+    box-shadow: 0 0 0 2px rgba(26, 168, 223, 0.12);
+}
+
+.map-theme-option-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 34px;
+    margin-bottom: 10px;
+    border-radius: 10px;
+    background: #ffffff;
+    box-shadow: 0 3px 9px rgba(15, 23, 42, 0.08);
+    font-size: 18px;
+}
+
+.map-theme-option-text {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+.map-theme-option-text strong {
+    font-size: 13px;
+    font-weight: 800;
+}
+
+.map-theme-option-text span {
+    color: #7b8794;
+    font-size: 11px;
+}
+
+.map-theme-option-check {
+    position: absolute;
+    top: 11px;
+    right: 11px;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: #1aa8df;
+    color: #ffffff;
+    font-size: 12px;
+    font-weight: 900;
+}
+
+.map-theme-option-button.is-selected .map-theme-option-check {
+    display: inline-flex;
+}
+
+/* 지도 다크 모드 */
+html[data-theme="dark"] {
+    color-scheme: dark;
+    --map-bg: #121212;
+    --map-surface: #1d1d1d;
+    --map-surface-soft: #242424;
+    --map-surface-blue: #26343c;
+    --map-surface-blue-strong: #2a3c46;
+    --map-primary: #54bde8;
+    --map-primary-dark: #8fd0ef;
+    --map-primary-deep: #277ba5;
+    --map-accent: #63c9ef;
+    --map-accent-soft: #283b45;
+    --map-text: #f1f1f1;
+    --map-muted: #aaaaaa;
+    --map-border: #383838;
+    --map-border-strong: #4a4a4a;
+    --map-shadow: 0 16px 38px rgba(0, 0, 0, 0.32);
+}
+
+html[data-theme="dark"] body.map-service-page {
+    background:
+            radial-gradient(circle at top left, rgba(68, 144, 177, 0.12), transparent 34%),
+            var(--map-bg);
+    color: var(--map-text);
+}
+
+html[data-theme="dark"] .map-service-page .map-global-banner-area {
+    border-bottom-color: #303030;
+    background: #101010;
+    box-shadow: none;
+}
+
+html[data-theme="dark"] .map-service-page .global-service-menu-button {
+    border-color: #303030;
+    background: #1d1d1d;
+}
+
+html[data-theme="dark"] .map-service-page .global-service-menu-button span {
+    background: #d4d4d4;
+}
+
+html[data-theme="dark"] .map-service-page .global-logo-text {
+    color: #8cd9f5;
+}
+
+html[data-theme="dark"] .map-banner-divider,
+html[data-theme="dark"] .map-service-page .global-menu-divider {
+    background: #3c3c3c;
+}
+
+html[data-theme="dark"] .map-page-heading strong,
+html[data-theme="dark"] .map-service-page .global-user-menu a,
+html[data-theme="dark"] .map-service-page .global-user-menu button,
+html[data-theme="dark"] .map-service-page .global-settings-menu button {
+    color: #eeeeee;
+}
+
+html[data-theme="dark"] .map-page-heading span,
+html[data-theme="dark"] .map-service-page .global-user-loading {
+    color: #9a9a9a;
+}
+
+html[data-theme="dark"] .map-service-page .global-service-panel {
+    border-color: #373737;
+    background: #1a1a1a;
+    color: #eeeeee;
+    box-shadow: 0 18px 46px rgba(0, 0, 0, 0.46);
+}
+
+html[data-theme="dark"] .map-service-page .global-service-panel::before {
+    border-top-color: #373737;
+    border-left-color: #373737;
+    background: #1a1a1a;
+}
+
+html[data-theme="dark"] .map-service-page .global-service-panel-divider {
+    background: #333333;
+}
+
+html[data-theme="dark"] .map-service-page .global-service-login-link,
+html[data-theme="dark"] .map-service-page .global-service-profile-text strong,
+html[data-theme="dark"] .map-service-page .global-service-shortcut-area h2 {
+    color: #f2f2f2;
+}
+
+html[data-theme="dark"] .map-service-page .global-service-login-desc,
+html[data-theme="dark"] .map-service-page .global-service-profile-text span,
+html[data-theme="dark"] .map-service-page .global-service-profile-arrow {
+    color: #9a9a9a;
+}
+
+html[data-theme="dark"] .map-service-page .global-service-avatar,
+html[data-theme="dark"] .map-service-page .global-service-shortcut-icon {
+    background: #292929;
+    color: #8fd0ef;
+    box-shadow: none;
+}
+
+html[data-theme="dark"] .map-service-page .global-service-logout-button {
+    border-color: #3d3d3d;
+    background: #252525;
+    color: #d0d0d0;
+}
+
+html[data-theme="dark"] .map-service-page .global-service-shortcut {
+    border-color: #363636;
+    background: #242424;
+    color: #e7e7e7;
+}
+
+html[data-theme="dark"] .map-service-page .global-service-shortcut:hover,
+html[data-theme="dark"] .map-service-page .global-service-shortcut.is-current {
+    border-color: #5d8398;
+    background: #273640;
+}
+
+html[data-theme="dark"] .map-settings-layer.is-open .map-settings-backdrop {
+    background: rgba(0, 0, 0, 0.58);
+}
+
+html[data-theme="dark"] .map-settings-drawer {
+    background: #111a27;
+    color: #edf3fa;
+    box-shadow: -16px 0 38px rgba(0, 0, 0, 0.46);
+}
+
+html[data-theme="dark"] .map-settings-header {
+    border-bottom-color: #29374a;
+    background: #0f1621;
+}
+
+html[data-theme="dark"] .map-settings-header h2,
+html[data-theme="dark"] .map-theme-setting-box h2 {
+    color: #f2f6fb;
+}
+
+html[data-theme="dark"] .map-settings-close {
+    color: #9ba8b9;
+}
+
+html[data-theme="dark"] .map-settings-close:hover {
+    background: #1c2838;
+    color: #eef4fb;
+}
+
+html[data-theme="dark"] .map-theme-setting-label {
+    color: #9ba8b9;
+}
+
+html[data-theme="dark"] .map-theme-option-button {
+    border-color: #304057;
+    background: #182333;
+    color: #edf3fa;
+}
+
+html[data-theme="dark"] .map-theme-option-button:hover {
+    border-color: #587ba9;
+    background: #1e2c40;
+}
+
+html[data-theme="dark"] .map-theme-option-button.is-selected {
+    border-color: #76a8ff;
+    background: #233b5d;
+    box-shadow:
+            inset 0 0 0 1px rgba(118, 168, 255, 0.42),
+            0 8px 18px rgba(0, 0, 0, 0.14);
+}
+
+html[data-theme="dark"] .map-theme-option-icon {
+    background: #172231;
+    color: #9bc0ff;
+    box-shadow: none;
+}
+
+html[data-theme="dark"] .map-theme-option-text span {
+    color: #9ba8b9;
+}
+
+html[data-theme="dark"] .map-theme-option-check {
+    background: #4d83ed;
+}
+
+/* 지도 화면의 카드와 폼 */
+html[data-theme="dark"] .map-side-panel,
+html[data-theme="dark"] .map-canvas-panel,
+html[data-theme="dark"] .map-search-dock,
+html[data-theme="dark"] .map-panel-section,
+html[data-theme="dark"] .map-toolbar,
+html[data-theme="dark"] .search-result-card,
+html[data-theme="dark"] .favorite-card,
+html[data-theme="dark"] .route-point-box,
+html[data-theme="dark"] .route-candidate-card,
+html[data-theme="dark"] .empty-state,
+html[data-theme="dark"] .nearby-category-button {
+    border-color: var(--map-border);
+    background: var(--map-surface);
+    color: var(--map-text);
+}
+
+html[data-theme="dark"] .favorite-section {
+    background: var(--map-surface-soft);
+}
+
+html[data-theme="dark"] :is(
+    .search-input-wrap input,
+    .search-option-row select,
+    .route-form input,
+    .route-form select,
+    .option-toggle
+) {
+    border-color: var(--map-border);
+    background: #242424;
+    color: var(--map-text);
+}
+
+html[data-theme="dark"] :is(
+    .search-input-wrap input,
+    .route-form input
+)::placeholder {
+    color: #858585;
+}
+
+html[data-theme="dark"] :is(
+    .map-toolbar h2,
+    .section-title-row h2,
+    .map-search-dock h2,
+    .selected-title-row strong,
+    .result-content strong,
+    .favorite-card-content strong,
+    .route-point-box strong,
+    .route-result strong,
+    .route-candidate-content strong,
+    .route-step-content strong,
+    .empty-state strong
+) {
+    color: var(--map-text);
+}
+
+html[data-theme="dark"] :is(
+    .map-toolbar-guide,
+    .selected-title-row span:not(.result-rank),
+    .result-content span,
+    .result-content small,
+    .favorite-card-content span,
+    .favorite-card-content small,
+    .route-candidate-content small,
+    .route-step-content small,
+    .empty-state,
+    .empty-state p
+) {
+    color: var(--map-muted);
+}
+
+html[data-theme="dark"] .map-side-tab {
+    color: #bcbcbc;
+}
+
+html[data-theme="dark"] .map-side-tab:hover,
+html[data-theme="dark"] .map-side-tab.active {
+    color: #8fd0ef;
+}
+
+html[data-theme="dark"] .map-side-workspace,
+html[data-theme="dark"] .map-tab-panel,
+html[data-theme="dark"] .route-result,
+html[data-theme="dark"] .nearby-refresh-row {
+    background: transparent;
+    color: var(--map-muted);
+}
+
+html[data-theme="dark"] .location-status,
+html[data-theme="dark"] .result-count,
+html[data-theme="dark"] .selected-meta-row span,
+html[data-theme="dark"] .result-mode-badge,
+html[data-theme="dark"] .route-selected-guide {
+    border-color: var(--map-border);
+    background: var(--map-accent-soft);
+    color: #a7ddf3;
+}
+
+html[data-theme="dark"] .search-result-card.active,
+html[data-theme="dark"] .route-candidate-card.active,
+html[data-theme="dark"] .route-point-box.selected {
+    border-color: var(--map-primary);
+    background: #24343d;
+}
+
+html[data-theme="dark"] .map-toolbar-actions button {
+    border-color: var(--map-border);
+    background: #242424;
+    color: #a7ddf3;
+}
+
+html[data-theme="dark"] .global-footer {
+    border-top-color: #303030;
+    background: #111111;
+    color: #aaaaaa;
+}
+
+html[data-theme="dark"] :is(
+    .footer-notice,
+    .footer-links,
+    .footer-company
+) {
+    border-color: #303030;
+    color: #aaaaaa;
+}
+
+html[data-theme="dark"] .global-footer a {
+    color: #d0d0d0;
+}
+
+@media (max-width: 920px) {
+    .map-service-page .map-global-banner-area [data-global-banner] {
+        width: calc(100% - 24px);
+    }
+
+    .map-page-heading span {
+        display: none;
+    }
+
+    .map-service-page .global-right-menu {
+        gap: 10px;
+    }
+
+    .map-service-page .global-right-menu .global-menu-divider {
+        display: none;
+    }
+}
+
+@media (max-width: 640px) {
+    .map-page-heading {
+        display: none;
+    }
+
+    .map-service-page .global-service-panel {
+        left: -4px;
+        width: min(360px, calc(100vw - 24px));
+    }
+
+    .map-service-page .global-user-menu a,
+    .map-service-page .global-user-menu button,
+    .map-service-page .global-settings-menu button {
+        font-size: 12px;
+    }
+
+    .map-service-page .global-settings-menu button span:last-child {
+        display: none;
+    }
+}
+
+/* 다크 모드에서 지도 밝기만 낮춤 */
+html[data-theme="dark"] #kakaoDynamicMap > div:first-child {
+    filter:
+            brightness(0.78)
+            saturate(0.85)
+            contrast(1.06);
+}
+
+/* 다크 모드 왼쪽 기능 탭 */
+html[data-theme="dark"] .map-side-tabs {
+    border-bottom-color: #343434;
+    background: #1b1b1b;
+}
+
+html[data-theme="dark"] .map-side-tab {
+    background: #1b1b1b;
+    color: #a9a9a9;
+}
+
+html[data-theme="dark"] .map-side-tab:hover {
+    background: #242424;
+    color: #8fd0ef;
+}
+
+html[data-theme="dark"] .map-side-tab.active {
+    background: #20282d;
+    color: #8fd0ef;
+}
+
+html[data-theme="dark"] .map-side-tab-icon {
+    border-color: #3b3b3b;
+    background: #282828;
+    color: #8fd0ef;
+    box-shadow: none;
+}
+
+html[data-theme="dark"] .map-side-tab.active .map-side-tab-icon {
+    border-color: #55849a;
+    background: #294653;
+    color: #ffffff;
+}
+
+html[data-theme="dark"] .map-side-tab-badge {
+    border-color: #1b1b1b;
+}

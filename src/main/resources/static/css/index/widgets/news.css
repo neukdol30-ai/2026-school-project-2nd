@@ -103,3 +103,38 @@
     line-height: 1.2;
     vertical-align: 1px;
 }
+
+/* 뉴스 다크 모드 */
+html[data-theme="dark"] .news-compact-link,
+html[data-theme="dark"] .news-compact-text {
+    color: #f3f3f3;
+}
+
+html[data-theme="dark"] .news-compact-title {
+    color: #f3f3f3;
+    font-weight: 600;
+    opacity: 1;
+}
+
+html[data-theme="dark"] .news-compact-meta {
+    color: #a3a3a3;
+    opacity: 1;
+}
+
+html[data-theme="dark"] .news-compact-link:hover .news-compact-title {
+    color: #8fd0ef;
+    text-decoration: underline;
+}
+
+html[data-theme="dark"] .news-compact-thumbnail {
+    background: #2b2b2b;
+}
+
+html[data-theme="dark"] .news-compact-thumbnail.placeholder {
+    background: #303030;
+    color: #a8a8a8;
+}
+
+html[data-theme="dark"] .news-result-area > .widget-desc {
+    color: #a8a8a8;
+}

@@ -1188,3 +1188,347 @@ body.is-widget-move-mode * {
     position: static;
     top: auto;
 }
+
+/* 네이버형 상단 서비스 메뉴 */
+.global-left-menu {
+    grid-column: 1;
+    justify-self: start;
+
+    position: relative;
+    display: flex;
+    align-items: center;
+
+    height: 100%;
+    margin-left: 24px;
+    gap: 12px;
+}
+
+/* 기존 홈 로고는 기능과 디자인을 유지하고 메뉴 버튼 옆으로 이동 */
+.global-left-menu .global-home-link {
+    grid-column: auto;
+    justify-self: auto;
+
+    height: 100%;
+    margin-left: 0;
+    padding: 0 8px;
+}
+
+/* 지도는 말풍선 메뉴 안에도 유지하므로 배너 오른쪽 중복 표시만 숨김 */
+.global-right-menu > .global-map-link,
+.global-right-menu > .global-map-link + .global-menu-divider {
+    display: none;
+}
+
+.global-service-menu {
+    position: relative;
+    display: flex;
+    align-items: center;
+    height: 100%;
+}
+
+/* 햄버거 버튼 */
+.global-service-menu-button {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+
+    width: 46px;
+    height: 46px;
+    padding: 0;
+    gap: 6px;
+
+    border: 1px solid transparent;
+    border-radius: 50%;
+    background: #edf2f4;
+
+    cursor: pointer;
+    transition:
+            background 0.18s ease,
+            border-color 0.18s ease,
+            transform 0.18s ease;
+}
+
+.global-service-menu-button span {
+    display: block;
+    width: 22px;
+    height: 2px;
+    border-radius: 999px;
+    background: #41545d;
+    transition:
+            transform 0.18s ease,
+            opacity 0.18s ease;
+}
+
+.global-service-menu-button:hover {
+    border-color: #d3e1e7;
+    background: #e4ecef;
+    transform: translateY(-1px);
+}
+
+.global-service-menu-button:focus-visible {
+    outline: 2px solid #1aa8df;
+    outline-offset: 3px;
+}
+
+.global-service-menu.is-open
+.global-service-menu-button {
+    border-color: #c9dde6;
+    background: #e5eef2;
+}
+
+/* 서비스 말풍선 패널 */
+.global-service-panel {
+    position: absolute;
+    top: calc(100% - 4px);
+    left: -8px;
+    z-index: 320;
+
+    width: 380px;
+    box-sizing: border-box;
+
+    border: 1px solid #dce5e9;
+    border-radius: 0 14px 14px 14px;
+    background: #ffffff;
+    box-shadow: 0 16px 42px rgba(24, 67, 86, 0.18);
+
+    color: #1e3946;
+}
+
+/* 햄버거 쪽을 가리키는 말풍선 꼬리 */
+.global-service-panel::before {
+    content: "";
+    position: absolute;
+    top: -11px;
+    left: 21px;
+
+    width: 20px;
+    height: 20px;
+
+    border-top: 1px solid #dce5e9;
+    border-left: 1px solid #dce5e9;
+    background: #ffffff;
+    transform: rotate(45deg);
+}
+
+.global-service-panel > * {
+    position: relative;
+    z-index: 1;
+}
+
+.global-service-panel-user {
+    min-height: 104px;
+    padding: 22px 24px 20px;
+    box-sizing: border-box;
+}
+
+/* 비로그인 안내 */
+.global-service-login-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+
+    color: #111f26;
+    font-size: 21px;
+    text-decoration: none;
+}
+
+.global-service-login-link strong {
+    font-weight: 900;
+}
+
+.global-service-login-link span {
+    color: #82939b;
+    font-size: 28px;
+    font-weight: 300;
+    line-height: 1;
+}
+
+.global-service-login-link:hover {
+    color: #087fac;
+}
+
+.global-service-login-desc {
+    margin: 10px 0 0;
+    color: #748891;
+    font-size: 12px;
+    line-height: 1.5;
+}
+
+/* 로그인 사용자 정보 */
+.global-service-profile {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    gap: 12px;
+}
+
+.global-service-profile-button {
+    display: flex;
+    align-items: center;
+    flex: 1;
+    min-width: 0;
+    padding: 0;
+
+    border: 0;
+    background: transparent;
+    font-family: inherit;
+    text-align: left;
+    cursor: pointer;
+}
+
+.global-service-avatar {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 46px;
+
+    width: 46px;
+    height: 46px;
+    border-radius: 50%;
+    background: #e8f7fd;
+
+    color: #1597c7;
+    font-size: 18px;
+    font-weight: 900;
+}
+
+.global-service-profile-text {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    margin-left: 12px;
+    gap: 4px;
+}
+
+.global-service-profile-text strong {
+    overflow: hidden;
+    color: #173847;
+    font-size: 16px;
+    font-weight: 900;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.global-service-profile-text span {
+    color: #7b8d95;
+    font-size: 11px;
+}
+
+.global-service-profile-arrow {
+    margin-left: auto;
+    color: #8b9aa1;
+    font-size: 25px;
+    line-height: 1;
+}
+
+.global-service-logout-button {
+    flex: 0 0 auto;
+    min-height: 34px;
+    padding: 0 11px;
+
+    border: 1px solid #d8e2e7;
+    border-radius: 7px;
+    background: #ffffff;
+
+    color: #687d87;
+    font-family: inherit;
+    font-size: 11px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.global-service-logout-button:hover {
+    border-color: #bcd6e1;
+    color: #087fac;
+}
+
+.global-service-panel-divider {
+    height: 1px;
+    background: #e8edef;
+}
+
+/* 바로가기 영역 */
+.global-service-shortcut-area {
+    padding: 20px 24px 24px;
+}
+
+.global-service-shortcut-area h2 {
+    margin: 0 0 17px;
+    color: #162d38;
+    font-size: 17px;
+    font-weight: 900;
+}
+
+.global-service-shortcuts {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+}
+
+.global-service-shortcut {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+
+    min-height: 104px;
+    padding: 14px 10px;
+    box-sizing: border-box;
+
+    border: 1px solid #e1e8eb;
+    border-radius: 12px;
+    background: #f8fbfc;
+
+    color: #294956;
+    font-size: 13px;
+    font-weight: 800;
+    text-decoration: none;
+
+    transition:
+            background 0.18s ease,
+            border-color 0.18s ease,
+            transform 0.18s ease,
+            box-shadow 0.18s ease;
+}
+
+.global-service-shortcut:hover {
+    border-color: #a9d9eb;
+    background: #eefaff;
+    box-shadow: 0 8px 18px rgba(42, 117, 148, 0.09);
+    transform: translateY(-2px);
+}
+
+.global-service-shortcut-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 46px;
+    height: 46px;
+    margin-bottom: 9px;
+
+    border-radius: 14px;
+    background: #ffffff;
+    box-shadow: 0 3px 10px rgba(42, 117, 148, 0.08);
+
+    font-size: 24px;
+}
+
+.global-service-menu.is-open
+.global-service-panel {
+    animation: globalServicePanelOpen 0.16s ease-out;
+}
+
+@keyframes globalServicePanelOpen {
+    from {
+        opacity: 0;
+        transform: translateY(-6px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+

@@ -152,3 +152,301 @@ button.danger {
     padding: 0;
     border: 0;
 }
+
+/* 위젯 관리 아래쪽 화면 설정 */
+.theme-setting-box {
+    margin-top: 24px;
+    padding-top: 24px;
+    border-top: 1px solid #e5e7eb;
+}
+
+.theme-setting-box h2 {
+    margin: 0;
+    color: #1f2937;
+    font-size: 17px;
+}
+
+.theme-setting-label {
+    margin: 14px 0 10px;
+    color: #6b7280;
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.theme-option-list {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+}
+
+.theme-option-button {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: center;
+
+    min-height: 108px;
+    padding: 15px 14px;
+
+    border: 1px solid #dfe6ea;
+    border-radius: 12px;
+    background: #f8fafb;
+
+    color: #334155;
+    font-family: inherit;
+    text-align: left;
+
+    transition:
+            border-color 0.18s ease,
+            background-color 0.18s ease,
+            box-shadow 0.18s ease,
+            transform 0.18s ease;
+}
+
+.theme-option-button:hover {
+    border-color: #9ed7eb;
+    background: #f0faff;
+    transform: translateY(-1px);
+}
+
+.theme-option-button.is-selected {
+    border-color: #1aa8df;
+    background: #eaf8fe;
+    box-shadow: 0 0 0 2px rgba(26, 168, 223, 0.12);
+}
+
+.theme-option-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 34px;
+    height: 34px;
+    margin-bottom: 10px;
+
+    border-radius: 10px;
+    background: #ffffff;
+    box-shadow: 0 3px 9px rgba(15, 23, 42, 0.08);
+
+    font-size: 18px;
+}
+
+.theme-option-text {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+.theme-option-text strong {
+    font-size: 13px;
+    font-weight: 800;
+}
+
+.theme-option-text span {
+    color: #7b8794;
+    font-size: 11px;
+}
+
+.theme-option-check {
+    position: absolute;
+    top: 11px;
+    right: 11px;
+
+    display: none;
+    align-items: center;
+    justify-content: center;
+
+    width: 20px;
+    height: 20px;
+
+    border-radius: 50%;
+    background: #1aa8df;
+
+    color: #ffffff;
+    font-size: 12px;
+    font-weight: 900;
+}
+
+.theme-option-button.is-selected
+.theme-option-check {
+    display: inline-flex;
+}
+
+/* 캘린더 다크 화면과 맞춘 환경설정 */
+html[data-theme="dark"]
+.settings-layer.is-open
+.settings-backdrop {
+    background: rgba(3, 8, 15, 0.52);
+}
+
+html[data-theme="dark"]
+.settings-drawer {
+    background: #111a27;
+    color: #edf3fa;
+    box-shadow: -16px 0 38px rgba(0, 0, 0, 0.46);
+}
+
+html[data-theme="dark"]
+.settings-drawer-header {
+    background: #0f1621;
+    border-bottom-color: #29374a;
+}
+
+html[data-theme="dark"]
+.settings-drawer-header h2 {
+    color: #f2f6fb;
+}
+
+html[data-theme="dark"]
+.settings-close-button {
+    background: transparent;
+    color: #9ba8b9;
+}
+
+html[data-theme="dark"]
+.settings-close-button:hover {
+    background: #1c2838;
+    color: #eef4fb;
+}
+
+/* 흰색으로 남던 위젯 관리 영역 */
+html[data-theme="dark"]
+.settings-drawer .control-box {
+    background: #141c28;
+    border-color: #2c3b50;
+    color: #edf3fa;
+    box-shadow: none;
+}
+
+html[data-theme="dark"]
+.settings-drawer [data-control-box] .control-box {
+    padding: 18px;
+    border: 1px solid #2c3b50;
+    border-radius: 12px;
+}
+
+html[data-theme="dark"]
+.control-box h2,
+html[data-theme="dark"]
+.theme-setting-box h2 {
+    color: #f2f6fb;
+}
+
+/* 위젯 배치 편집 */
+html[data-theme="dark"]
+.settings-layout-button {
+    border: 1px solid #4d83ed;
+    background: #4d83ed;
+    color: #ffffff;
+    box-shadow: 0 8px 18px rgba(77, 131, 237, 0.18);
+}
+
+html[data-theme="dark"]
+.settings-layout-button:hover {
+    border-color: #76a8ff;
+    background: #5b8ff1;
+}
+
+/* 위젯 표시 버튼 */
+html[data-theme="dark"]
+.control-buttons button {
+    border: 1px solid #324258;
+    background: #172231;
+    color: #a8b4c4;
+}
+
+html[data-theme="dark"]
+.control-buttons button:hover {
+    border-color: #587aa8;
+    background: #1d2a3c;
+    color: #dbe4ef;
+}
+
+html[data-theme="dark"]
+.control-buttons button.active {
+    border-color: #587ba9;
+    background: #263f63;
+    color: #9bc0ff;
+}
+
+/* 화면 설정 구분 */
+html[data-theme="dark"]
+.theme-setting-box {
+    border-top-color: #29384c;
+}
+
+html[data-theme="dark"]
+.theme-setting-label {
+    color: #9ba8b9;
+}
+
+/* 라이트·다크 선택 카드 */
+html[data-theme="dark"]
+.theme-option-button {
+    border-color: #304057;
+    background: #182333;
+    color: #edf3fa;
+    box-shadow: none;
+}
+
+html[data-theme="dark"]
+.theme-option-button:hover {
+    border-color: #587ba9;
+    background: #1e2c40;
+}
+
+html[data-theme="dark"]
+.theme-option-button.is-selected {
+    border-color: #76a8ff;
+    background: #233b5d;
+    box-shadow:
+            inset 0 0 0 1px rgba(118, 168, 255, 0.42),
+            0 8px 18px rgba(0, 0, 0, 0.14);
+}
+
+html[data-theme="dark"]
+.theme-option-icon {
+    background: #172231;
+    color: #9bc0ff;
+    box-shadow: none;
+}
+
+html[data-theme="dark"]
+.theme-option-text strong {
+    color: #f2f6fb;
+}
+
+html[data-theme="dark"]
+.theme-option-text span {
+    color: #9ba8b9;
+}
+
+html[data-theme="dark"]
+.theme-option-check {
+    background: #4d83ed;
+    color: #ffffff;
+}
+
+/* 설정 서랍 스크롤바 */
+html[data-theme="dark"]
+.settings-drawer {
+    scrollbar-color: #3a4b61 #111a27;
+}
+
+html[data-theme="dark"]
+.settings-drawer::-webkit-scrollbar {
+    width: 10px;
+}
+
+html[data-theme="dark"]
+.settings-drawer::-webkit-scrollbar-track {
+    background: #111a27;
+}
+
+html[data-theme="dark"]
+.settings-drawer::-webkit-scrollbar-thumb {
+    border: 2px solid #111a27;
+    border-radius: 999px;
+    background: #3a4b61;
+}
