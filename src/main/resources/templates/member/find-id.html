@@ -2,10 +2,30 @@
 <html lang="ko" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
+    <script>
+        (function () {
+            try {
+                const storedTheme =
+                    localStorage.getItem("portalTheme")
+                    || localStorage.getItem("calendar-theme");
+
+                const theme =
+                    storedTheme === "dark"
+                        ? "dark"
+                        : "light";
+
+                document.documentElement.dataset.theme = theme;
+                document.documentElement.style.colorScheme = theme;
+            } catch (error) {
+                document.documentElement.dataset.theme = "light";
+            }
+        })();
+    </script>
     <title>아이디 찾기</title>
     <link rel="stylesheet" th:href="@{/css/find-account.css}">
+    <link rel="stylesheet" href="/css/theme.css?v=20260729-12">
 </head>
-<body>
+<body class="auth-page auth-find-page">
 <div class="page-wrap">
     <div class="find-box">
         <h1 class="page-title">아이디 찾기</h1>
@@ -40,6 +60,7 @@
     </div>
 </div>
 
+<script src="/js/theme.js?v=20260729-3"></script>
 <script th:src="@{/js/find-id.js}"></script>
 </body>
 </html>
