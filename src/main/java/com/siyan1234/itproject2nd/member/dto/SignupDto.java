@@ -31,10 +31,12 @@ public class SignupDto { // 회원가입 화면 값
 
     @NotBlank(message = "이름을 입력하세요.")
     @Size(min = 2, max = 20, message = "이름은 2자 이상 20자 이하로 입력하세요.")
+    @Pattern(regexp = "^[가-힣a-zA-Z]+$", message = "이름은 한글 또는 영문만 입력 가능합니다.")
     private String name;
 
     @NotBlank(message = "닉네임을 입력하세요")
     @Size(min = 2, max = 10, message = "닉네임은 2자 이상 10자 이하로 입력하세요.")
+    @Pattern(regexp = "^[가-힣a-zA-Z0-9]+$", message = "닉네임은 완성된 한글, 영문, 숫자만 입력 가능합니다.")
     private String nickname;
 
     @NotBlank(message = "이메일을 입력하세요.")
