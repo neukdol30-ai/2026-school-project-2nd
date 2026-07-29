@@ -42,6 +42,4 @@ public final class AdminPagingHelper {
 
         return value.trim();
     }
-
-    asdffasdf
 }
