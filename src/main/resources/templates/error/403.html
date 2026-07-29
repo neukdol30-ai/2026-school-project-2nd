@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{error/fragments/error-layout :: layout(
+          '403',
+          'ACCESS DENIED',
+          '접근 권한이 없습니다',
+          '현재 계정으로는 요청한 페이지나 기능을 이용할 수 없습니다.',
+          '로그인 계정과 접근 권한을 확인해 주세요.',
+          'client',
+          false
+      )}">
+</html>

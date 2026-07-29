@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{error/fragments/error-layout :: layout(
+          '400',
+          'BAD REQUEST',
+          '요청 내용을 확인해 주세요',
+          '전송 형식이 올바르지 않거나 필요한 정보가 누락되었습니다.',
+          '입력한 내용을 확인한 뒤 다시 요청해 주세요.',
+          'client',
+          false
+      )}">
+</html>

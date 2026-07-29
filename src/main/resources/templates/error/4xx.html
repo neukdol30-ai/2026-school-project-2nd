@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{error/fragments/error-layout :: layout(
+          ${status != null ? status : 400},
+          'REQUEST ERROR',
+          '요청을 처리할 수 없습니다',
+          '요청 주소나 전송된 정보를 확인하는 과정에서 문제가 발생했습니다.',
+          '이전 페이지로 돌아가 내용을 확인한 뒤 다시 이용해 주세요.',
+          'client',
+          false
+      )}">
+</html>

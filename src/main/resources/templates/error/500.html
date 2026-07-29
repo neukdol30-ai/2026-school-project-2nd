@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{error/fragments/error-layout :: layout(
+          '500',
+          'INTERNAL SERVER ERROR',
+          '서비스 처리 중 문제가 발생했습니다',
+          '요청을 처리하는 과정에서 일시적인 오류가 발생했습니다.',
+          '잠시 후 다시 시도해 주세요. 문제가 계속되면 고객센터로 문의해 주세요.',
+          'server',
+          true
+      )}">
+</html>
