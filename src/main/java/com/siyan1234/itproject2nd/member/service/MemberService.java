@@ -32,6 +32,9 @@ public class MemberService {
     // Redis에 저장해 둔 소셜 가입 대기정보를 읽는 Service
     private final PendingSocialSignupService pendingSocialSignupService;
 
+    // 이메일 인증번호 발송, 확인 담당 (신규 추가)
+    private final MailService mailService;
+
     private static final String PASSWORD_PATTERN = PasswordPolicy.PASSWORD_REGEX;
 
     //  회원가입 검증 오류 확인
@@ -57,6 +60,14 @@ public class MemberService {
         }
 
         if (signupDto.getEmail() != null && !signupDto.getEmail().isBlank()) {
+
+            // 순서 중요 : 인증 여부를 중복 여부보다 먼저 확인한다.
+            // 반대로 하면, 이메일을 소유하지 않은 사람도 "이미 사용 중"이라는 응답을 폼 제출만으로 얻어낼 수 있음
+            if (!mailService.isVerified(signupDto.getEmail(), MailService.MailPurpose.SIGNUP)) {
+                bindingResult.rejectValue("email", "emailNotVerified", "이메일 인증을 완료해주세요.");
+                return true;
+            }
+
             if (memberDao.findByEmail(signupDto.getEmail()) != null) {
                 bindingResult.rejectValue("email", "duplicateEmail", "이미 사용 중인 이메일입니다.");
                 return true;
@@ -106,6 +117,9 @@ public class MemberService {
         signupDto.setPassword(encodedPassword); // DTO의 password 값을 암호화된 비밀번호로 교체
 
         memberDao.signup(signupDto); // 암호화된 비밀번호가 들어 있는 DTO를 DB에 INSERT
+
+        // 가입 완료됐으니 인증 완료 상태 정리(비밀번호 재설정 완료 시 처리와 동일한 이유)
+        mailService.clearVerified(signupDto.getEmail(), MailService.MailPurpose.SIGNUP);
     }
 
     public List<MemberDto> findAllMembers() {

@@ -36,6 +36,7 @@ public final class SecurityPaths {
             "/index.html",
             "/member/login", // 일반 사용자 로그인 화면
             "/member/signup", // 회원가입 화면
+            "/member/signup/**", // 회원가입 이메일 인증번호 발송, 확인 주소 접근 허용
             MEMBER_TERMS, // 로그인 전에도 이용약관 전문을 확인할 수 있도록 허용
             MEMBER_PRIVACY, // 로그인 전에도 개인정보 전문을 확인할 수 있도록 허용
             "/member/exists", // 아이디 중복 확인

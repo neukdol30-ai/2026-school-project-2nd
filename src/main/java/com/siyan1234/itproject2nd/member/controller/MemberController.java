@@ -87,6 +87,39 @@ public class MemberController {
         return "redirect:/member/login?signup=success"; // 가입 성공 후 로그인 화면으로 이동
     }
 
+    // POST /member/signup/send-code : 회원가입 이메일 인증번호 발송
+    @PostMapping("/signup/send-code")
+    @ResponseBody
+    public String sendSignupAuthCode(@RequestParam("email") String email) {
+
+        try {
+            mailService.sendAuthCode(email, MailService.MailPurpose.SIGNUP);
+        } catch (MailService.MailCooldownException e) {
+            return e.getMessage();
+        } catch (RuntimeException e) {
+            log.error("회원가입 인증번호 발송 실패 email={}", email, e);
+            return "메일 발송에 실패했습니다. 잠시 후 다시 시도해 주세요.";
+        }
+
+        return "인증번호를 발송했습니다.";
+    }
+
+    // POST /member/signup/signup/verify-code : 회원가입 이메일 인증번호 확인
+    @PostMapping("/signup/verify-code")
+    @ResponseBody
+    public boolean verifySignupAuthCode(@RequestParam("email") String email,
+                                        @RequestParam("code") String code) {
+        return mailService.verifyAuthCode(email, MailService.MailPurpose.SIGNUP, code);
+    }
+
+    // GET /member/signup/email-verified : 새로고침 시 "이 이메일 이미 인증됐나?"를 서버에 재확인
+    // 브라우저 저장소(sessionStorage)만이 아닌 Redis의 실제 인증 기록을 다시 조회
+    @GetMapping("/signup/email-verified")
+    @ResponseBody
+    public boolean checkSignupEmailVerified(@RequestParam("email") String email) {
+        return mailService.isVerified(email, MailService.MailPurpose.SIGNUP);
+    }
+
     @GetMapping("/login")
     public String loginForm(
             @AuthenticationPrincipal CustomUserDetails loginUser,
