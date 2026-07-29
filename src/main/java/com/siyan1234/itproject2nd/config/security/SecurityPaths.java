@@ -76,6 +76,7 @@ public final class SecurityPaths {
             "/js/**",
             "/images/**",
             "/favicon.ico",
+            "/api/**",
             "/ws/**",
             "/error"
     };
@@ -98,7 +99,20 @@ public final class SecurityPaths {
     public static boolean isVisitLogTarget(HttpServletRequest request) {
         String uri = normalizeUri(request);
 
-        if (uri == null) {
+        if (uri == null || !"GET".equalsIgnoreCase(request.getMethod())) {
+            return false;
+        }
+
+        /*
+         * 브라우저 화면 이동(document/iframe)만 방문으로 기록합니다.
+         * fetch/XHR 요청까지 기록하면 최근 경로가 /api/...로 덮어써질 수 있습니다.
+         * Sec-Fetch-Dest가 없는 클라이언트는 URI 규칙으로 한 번 더 판정합니다.
+         */
+        String fetchDestination = request.getHeader("Sec-Fetch-Dest");
+        if (fetchDestination != null
+                && !fetchDestination.isBlank()
+                && !"document".equalsIgnoreCase(fetchDestination)
+                && !"iframe".equalsIgnoreCase(fetchDestination)) {
             return false;
         }
 
@@ -106,6 +120,7 @@ public final class SecurityPaths {
                 && !uri.startsWith("/js/")
                 && !uri.startsWith("/images/")
                 && !uri.startsWith("/favicon")
+                && !uri.startsWith("/api/")
                 && !uri.startsWith("/ws/")
                 && !uri.startsWith("/error");
     }

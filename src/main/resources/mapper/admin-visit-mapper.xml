@@ -5,8 +5,7 @@
 
 <mapper namespace="com.siyan1234.itproject2nd.admin.dao.AdminVisitDao">
 
-    <!-- 방문자 원문 로그 대신 세션/회원 단위로 요약해 관리자 화면에 노출합니다. -->
-
+    <!-- 원본 로그 보관기간 안의 회원/IP별 방문 현황을 요약합니다. -->
     <select id="findVisitSummaries" resultType="AdminVisitSummaryDto">
         SELECT *
         FROM (
@@ -20,10 +19,17 @@
                     m.role,
                     v.ip_address,
                     COUNT(*) AS visit_count,
+                    SUM(NVL(v.daily_request_count, 1)) AS request_count,
                     MIN(v.created_date) AS first_visit_date,
-                    MAX(v.created_date) AS last_visit_date,
-                    MAX(v.request_uri) KEEP (DENSE_RANK LAST ORDER BY v.created_date) AS last_request_uri,
-                    MAX(v.user_agent) KEEP (DENSE_RANK LAST ORDER BY v.created_date) AS last_user_agent
+                    MAX(NVL(v.last_visit_date, v.created_date)) AS last_visit_date,
+                    MAX(v.request_uri) KEEP (
+                        DENSE_RANK LAST
+                        ORDER BY NVL(v.last_visit_date, v.created_date), v.no
+                    ) AS last_request_uri,
+                    MAX(v.user_agent) KEEP (
+                        DENSE_RANK LAST
+                        ORDER BY NVL(v.last_visit_date, v.created_date), v.no
+                    ) AS last_user_agent
                 FROM visit_log v
                 LEFT JOIN member m
                     ON v.member_no = m.no
@@ -48,7 +54,7 @@
                     m.nickname,
                     m.role,
                     v.ip_address
-                ORDER BY MAX(v.created_date) DESC
+                ORDER BY MAX(NVL(v.last_visit_date, v.created_date)) DESC
             ) visit_data
             WHERE ROWNUM &lt;= #{offset} + #{size}
         )
@@ -80,6 +86,54 @@
             )
             GROUP BY v.member_no, v.ip_address
         )
+    </select>
+
+    <!--
+        완료된 날짜는 visit_daily_stat에서, 오늘은 visit_log에서 조회해 합칩니다.
+        따라서 원본 로그가 보관기간 후 삭제돼도 장기 방문 합계는 유지됩니다.
+    -->
+    <select id="findVisitOverview" resultType="AdminVisitOverviewDto">
+        WITH today_data AS (
+            SELECT
+                COUNT(*) AS visitor_count,
+                NVL(SUM(NVL(v.daily_request_count, 1)), 0) AS request_count,
+                NVL(SUM(CASE WHEN v.member_no IS NOT NULL THEN 1 ELSE 0 END), 0) AS member_count,
+                NVL(SUM(CASE WHEN v.member_no IS NULL THEN 1 ELSE 0 END), 0) AS guest_count
+            FROM visit_log v
+            WHERE v.created_date &gt;= TRUNC(SYSDATE)
+            AND NOT EXISTS (
+                SELECT 1
+                FROM member admin_member
+                WHERE admin_member.no = v.member_no
+                AND admin_member.role = 'ADMIN'
+            )
+        ),
+        history_data AS (
+            SELECT
+                NVL(SUM(unique_visitor_count), 0) AS visitor_count,
+                NVL(SUM(request_count), 0) AS request_count,
+                NVL(SUM(member_visitor_count), 0) AS member_count,
+                NVL(SUM(guest_visitor_count), 0) AS guest_count,
+                MIN(stat_date) AS first_stat_date,
+                MAX(stat_date) AS last_stat_date
+            FROM visit_daily_stat
+        )
+        SELECT
+            today_data.visitor_count AS today_visitor_count,
+            history_data.visitor_count + today_data.visitor_count AS total_daily_visitor_count,
+            history_data.request_count + today_data.request_count AS total_request_count,
+            history_data.member_count + today_data.member_count AS member_visitor_count,
+            history_data.guest_count + today_data.guest_count AS guest_visitor_count,
+            NVL(
+                history_data.first_stat_date,
+                CASE WHEN today_data.visitor_count &gt; 0 THEN TRUNC(SYSDATE) END
+            ) AS first_stat_date,
+            CASE
+                WHEN today_data.visitor_count &gt; 0 THEN TRUNC(SYSDATE)
+                ELSE history_data.last_stat_date
+            END AS last_stat_date
+        FROM today_data
+        CROSS JOIN history_data
     </select>
 
 </mapper>

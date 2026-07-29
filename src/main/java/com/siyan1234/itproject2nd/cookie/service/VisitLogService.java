@@ -28,12 +28,12 @@ public class VisitLogService {
         }
 
         try {
-            visitLogDao.insertOncePerDay(visitLogDto);
+            visitLogDao.upsertDailyVisit(visitLogDto);
         } catch (DuplicateKeyException e) {
             // 동시에 들어온 첫 요청끼리 경쟁해도 UNIQUE 인덱스가 하루 한 건만 보장합니다.
-            log.debug("같은 IP의 오늘 방문 기록이 이미 저장되어 있습니다. ip={}", visitLogDto.getIpAddress());
+            log.debug("같은 IP의 오늘 방문 기록이 동시에 처리되었습니다. ip={}", visitLogDto.getIpAddress());
         } catch (Exception e) {
-            log.warn("방문 기록 저장 실패. visit_log 테이블과 V008 마이그레이션 적용 여부를 확인하세요.", e);
+            log.warn("방문 기록 저장 실패. visit_log 테이블과 V009·V010 마이그레이션 적용 여부를 확인하세요.", e);
         }
     }
 }

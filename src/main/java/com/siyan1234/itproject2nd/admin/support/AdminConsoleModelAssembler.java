@@ -3,6 +3,7 @@ package com.siyan1234.itproject2nd.admin.support;
 import com.siyan1234.itproject2nd.admin.dto.AdminBoardDto;
 import com.siyan1234.itproject2nd.admin.dto.AdminConsoleQuery;
 import com.siyan1234.itproject2nd.admin.dto.AdminDashboardDto;
+import com.siyan1234.itproject2nd.admin.dto.AdminVisitOverviewDto;
 import com.siyan1234.itproject2nd.admin.dto.AdminVisitSummaryDto;
 import com.siyan1234.itproject2nd.admin.dto.RecentChatRoomDto;
 import com.siyan1234.itproject2nd.admin.service.AdminBoardService;
@@ -89,6 +90,7 @@ public class AdminConsoleModelAssembler {
         }
 
         List<AdminVisitSummaryDto> adminVisitSummaryList = List.of();
+        AdminVisitOverviewDto adminVisitOverview = null;
         long visitTotalCount = 0L;
         if (activeView == AdminView.VISITS) {
             adminVisitSummaryList = adminVisitService.findVisitSummaries(
@@ -97,6 +99,7 @@ public class AdminConsoleModelAssembler {
                     query.getVisitSize()
             );
             visitTotalCount = adminVisitService.countVisitSummaries(query.getVisitKeyword());
+            adminVisitOverview = adminVisitService.getVisitOverview();
         }
 
         MemberDto editMember = resolveEditMember(activeView, query.getEditMemberNo());
@@ -111,7 +114,7 @@ public class AdminConsoleModelAssembler {
         addMemberAttributes(model, query, adminMemberList, memberTotalCount, editMember);
         addChatAttributes(model, query, adminChatRoomList, chatTotalCount, activeChatRoom);
         addBoardAttributes(model, query, adminBoardList, boardTotalCount, activeBoard, boardForm, activeBoardCommentList);
-        addVisitAttributes(model, query, adminVisitSummaryList, visitTotalCount);
+        addVisitAttributes(model, query, adminVisitSummaryList, visitTotalCount, adminVisitOverview);
     }
 
     private void addCommonAttributes(
@@ -187,7 +190,8 @@ public class AdminConsoleModelAssembler {
             Model model,
             AdminConsoleQuery query,
             List<AdminVisitSummaryDto> visitList,
-            long totalCount
+            long totalCount,
+            AdminVisitOverviewDto visitOverview
     ) {
         model.addAttribute("adminVisitSummaryList", visitList);
         model.addAttribute("visitKeyword", query.getVisitKeyword());
@@ -195,6 +199,7 @@ public class AdminConsoleModelAssembler {
         model.addAttribute("visitSize", query.getVisitSize());
         model.addAttribute("visitTotalCount", totalCount);
         model.addAttribute("visitTotalPages", AdminPagingHelper.calculateTotalPages(totalCount, query.getVisitSize()));
+        model.addAttribute("visitOverview", visitOverview);
     }
 
     private MemberDto resolveEditMember(AdminView activeView, Integer editMemberNo) {
