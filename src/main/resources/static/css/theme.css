@@ -1448,3 +1448,204 @@ html[data-theme="dark"] .stock-refresh-button {
 html[data-theme="dark"] .stock-refresh-button:hover {
     color: #f0f0f0;
 }
+
+/* 로그인·회원가입·계정 찾기 화면 */
+
+html[data-theme="dark"] body.auth-page {
+    background: #202020;
+    color: #f2f2f2;
+}
+
+html[data-theme="dark"] body.auth-page .page-wrap {
+    background: #202020;
+    color: #f2f2f2;
+}
+
+html[data-theme="dark"] body.auth-page :is(
+    .login-box,
+    .signup-box,
+    .find-box
+) {
+    border-color: #3a3a3a;
+    background: #1e1e1e;
+    color: #f2f2f2;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.22);
+}
+
+html[data-theme="dark"] body.auth-page :is(
+    .page-title,
+    .form-label,
+    .check-label
+) {
+    color: #f2f2f2;
+}
+
+html[data-theme="dark"] body.auth-page :is(
+    .page-desc,
+    .social-divider,
+    .rule-item,
+    .check-hint
+) {
+    color: #a1a1a1;
+}
+
+html[data-theme="dark"] body.auth-page :is(
+    .form-input,
+    .form-select
+) {
+    border-color: #454545;
+    background: #2b2b2b;
+    color: #f2f2f2;
+    caret-color: #54bde8;
+}
+
+html[data-theme="dark"] body.auth-page :is(
+    .form-input,
+    .form-select
+):focus {
+    border-color: #54bde8;
+    box-shadow: 0 0 0 2px rgba(84, 189, 232, 0.16);
+}
+
+html[data-theme="dark"] body.auth-page :is(
+    .form-input,
+    .form-select
+)::placeholder {
+    color: #929292;
+    opacity: 1;
+}
+
+html[data-theme="dark"] body.auth-page .form-input[readonly] {
+    border-color: #3d3d3d;
+    background: #252525;
+    color: #aaaaaa;
+}
+
+html[data-theme="dark"] body.auth-page :is(
+    .submit-button,
+    .side-button
+) {
+    border: 1px solid #54bde8;
+    background: #54bde8;
+    color: #07151c;
+}
+
+html[data-theme="dark"] body.auth-page :is(
+    .submit-button,
+    .side-button
+):hover {
+    border-color: #6fc9ed;
+    background: #6fc9ed;
+    color: #07151c;
+}
+
+html[data-theme="dark"] body.auth-page :is(
+    .submit-button,
+    .side-button
+):disabled {
+    border-color: #4a4a4a;
+    background: #4a4a4a;
+    color: #a8a8a8;
+}
+
+html[data-theme="dark"] body.auth-page .postcode-btn {
+    border-color: #4a4a4a;
+    background: #2b2b2b;
+    color: #eeeeee;
+}
+
+html[data-theme="dark"] body.auth-page .postcode-btn:hover {
+    border-color: #54bde8;
+    background: #333333;
+    color: #ffffff;
+}
+
+html[data-theme="dark"] body.auth-page :is(
+    .bottom-link a,
+    .policy-link,
+    .change-email-link
+) {
+    color: #d6d6d6;
+}
+
+html[data-theme="dark"] body.auth-page :is(
+    .bottom-link a,
+    .policy-link,
+    .change-email-link
+):hover {
+    color: #ffffff;
+}
+
+html[data-theme="dark"] body.auth-page .social-divider::before,
+html[data-theme="dark"] body.auth-page .social-divider::after {
+    background: #3a3a3a;
+}
+
+html[data-theme="dark"] body.auth-page .eye-btn {
+    color: #a1a1a1;
+}
+
+html[data-theme="dark"] body.auth-page .eye-btn:hover {
+    color: #ffffff;
+}
+
+html[data-theme="dark"] body.auth-page .required,
+html[data-theme="dark"] body.auth-page :is(
+    .error-message,
+    .check-fail
+) {
+    color: #ff8f8f;
+}
+
+html[data-theme="dark"] body.auth-page :is(
+    .check-ok,
+    .rule-item.rule-ok
+) {
+    color: #77d597;
+}
+
+html[data-theme="dark"] body.auth-page .message-success {
+    border-color: #356a47;
+    background: #1d3425;
+    color: #a9e5bb;
+}
+
+html[data-theme="dark"] body.auth-page :is(
+    .message-error,
+    .error-summary
+) {
+    border-color: #714040;
+    background: #382222;
+    color: #ffb1b1;
+}
+
+html[data-theme="dark"] body.auth-page .message-info {
+    border-color: #405d7d;
+    background: #202e3e;
+    color: #b9d4f3;
+}
+
+html[data-theme="dark"] body.auth-page .result-box {
+    border-color: #414141;
+    background: #252525;
+}
+
+html[data-theme="dark"] body.auth-page .result-label {
+    color: #a1a1a1;
+}
+
+html[data-theme="dark"] body.auth-page .result-id {
+    color: #f2f2f2;
+}
+
+html[data-theme="dark"] body.auth-page .check-input {
+    accent-color: #54bde8;
+}
+
+html[data-theme="dark"] body.auth-page .social-button-link {
+    border-radius: 6px;
+}
+
+html[data-theme="dark"] body.auth-page .social-button-img {
+    border-radius: 6px;
+}
