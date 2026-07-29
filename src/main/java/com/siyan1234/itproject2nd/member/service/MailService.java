@@ -41,7 +41,8 @@ public class MailService {
     // enum : 이 목적으로만 쓰이는 정해진 값들 묶음. -> 아이디 찾기 + 비밀번호 찾기. 두 가지 목적만 존재하도록 제한.(두 기능의 인증번호가 Redis 키 레벨에서 안 섞이게)
     public enum MailPurpose {
         FIND_ID("findId"), // 아이디 찾기용 Redis 키 이름표
-        RESET_PW("resetPw"); // 비밀번호 찾기(재설정)용
+        RESET_PW("resetPw"), // 비밀번호 찾기(재설정)용
+        SIGNUP("signup"); // 회원가입 이메일 인증용 (신규 추가)
 
         private final String keyName; // Redis 키 문자열 조립에 쓰이는 값
 

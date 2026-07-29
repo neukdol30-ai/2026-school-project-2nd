@@ -159,7 +159,14 @@ const nicknameInput = document.getElementById('nickname');
 const nicknameCheck = document.getElementById('nicknameCheck');
 
 nicknameInput.addEventListener('input', function () {
-    setMsg(nicknameCheck, '', null); // 값을 고치면 이전 결과 메시지 제거
+    const v = nicknameInput.value.trim();
+    if (v.length === 0) {
+        setMsg(nicknameCheck, '', null);
+    } else if (!/^[가-힣a-zA-Z0-9]+$/.test(v)) { // 완성 안 된 자음, 모음(ㅁㄴㅇ 등) 차단
+        setMsg(nicknameCheck, '완성된 한글, 영문, 숫자만 입력 가능합니다.', 'fail');
+    } else {
+        setMsg(nicknameCheck, '', null); // 형식은 통과, 중복 여부는 blur 시 확인
+    }
 });
 
 nicknameInput.addEventListener('blur', function () {
@@ -169,8 +176,14 @@ nicknameInput.addEventListener('blur', function () {
         setMsg(nicknameCheck, '', null);
         return;
     }
+
     if (value.length < 2 || value.length > 10) { // 길이 조건 미달이면 서버에 물어보지 않음
         setMsg(nicknameCheck, '닉네임은 2~10자로 입력하세요.', 'fail');
+        return;
+    }
+
+    if (!/^[가-힣a-zA-Z0-9]+$/.test(value)) { // 형식 틀리면 서버에 물어보지 않음
+        setMsg(nicknameCheck, '완성된 한글, 영문, 숫자만 입력 가능합니다.', 'fail');
         return;
     }
 
@@ -203,6 +216,8 @@ nameInput.addEventListener('input', function () {
         setMsg(nameHint, '', null); // 비었으면 메시지 없음
     } else if (v.length < 2 || v.length > 20) {
         setMsg(nameHint, '이름은 2~20자로 입력하세요.', 'fail');
+    } else if (!/^[가-힣a-zA-Z]+$/.test(v)) { // 숫자, 특수문자 차단 (서버 SignupDto @Pattern과 동일 기준)
+        setMsg(nameHint, '이름은 한글 또는 영문만 입력 가능합니다.', 'fail');
     } else {
         setMsg(nameHint, '사용 가능합니다.', 'ok');
     }
@@ -236,6 +251,219 @@ emailInput.addEventListener('input', function () {
 });
 
 //
+// 6-B) 이메일 인증(6자리 코드) - find-id.js와 동일한 패턴
+//
+const sendCodeBtn = document.getElementById('sendCodeBtn'); // 인증번호 발송 버튼
+const emailCodeGroup = document.getElementById('emailCodeGroup'); // 인증번호 입력 영역 전체(처음엔 숨김)
+const emailCodeInput = document.getElementById('emailCode'); // 인증번호 입력칸
+const verifyCodeBtn = document.getElementById('verifyCodeBtn'); // 인증 확인 버튼
+const verifyCodeMsg = document.getElementById('verifyCodeMsg'); // 인증 결과 메시지 자리
+const changeEmailLink = document.getElementById('changeEmailLink'); // "다시 입력하기" 링크
+
+const EMAIL_COOLDOWN_SECONDS = 60; // 서버 MailService.COOLDOWN_TTL(60초)과 반드시 같은 값이어야 함
+let emailCooldownIntervalId = null;
+
+const EMAIL_PENDING_KEY = 'signupEmailPending'; // find-id.js(findIdPending)와 다른 이름 -> 같은 브라우저 저장공간을 페이지별로 구분
+
+// 인증번호 발송 버튼을 seconds초 동안 잠그고, 남은 초를 버튼 글자에 표시
+function startEmailCooldown(seconds) {
+    let remaining = seconds;
+    sendCodeBtn.disabled = true;
+    sendCodeBtn.textContent = '재전송 (' + remaining + '초)';
+
+    emailCooldownIntervalId = setInterval(function () {
+        remaining -= 1;
+        if (remaining <= 0) {
+            stopEmailCooldown();
+            return;
+        }
+        sendCodeBtn.textContent = '재전송 (' + remaining + '초)';
+    }, 1000);
+}
+
+// 진행 중인 카운트다운을 멈추고 버튼을 원래대로 되돌림
+function stopEmailCooldown() {
+    if (emailCooldownIntervalId !== null) {
+        clearInterval(emailCooldownIntervalId);
+        emailCooldownIntervalId = null;
+    }
+    sendCodeBtn.disabled = false;
+    sendCodeBtn.textContent = '인증번호 재전송';
+}
+
+// 이메일 + 쿨타임 종료 시각(ms)을 저장 (새로고침해도 카운트다운이 이어지게)
+function saveEmailPendingState(email, seconds) {
+    const state = {
+        email: email,
+        expiresAt: Date.now() + seconds * 1000
+    };
+    sessionStorage.setItem(EMAIL_PENDING_KEY, JSON.stringify(state));
+}
+
+function clearEmailPendingState() {
+    sessionStorage.removeItem(EMAIL_PENDING_KEY);
+}
+
+// 페이지가 열릴 때(새로고침 포함) 한 번 실행
+// 서버(Redis)에 "이 이메일이 진짜 인증됐는지" 재확인
+function restoreEmailPendingState() {
+    const raw = sessionStorage.getItem(EMAIL_PENDING_KEY);
+    if (!raw) return;
+
+    const state = JSON.parse(raw);
+
+    fetch('/member/signup/email-verified?email=' + encodeURIComponent(state.email))
+        .then(res => res.json())
+        .then(verified => {
+            emailInput.value = state.email;
+            emailInput.readOnly = true;
+            changeEmailLink.style.display = 'inline';
+            emailCodeGroup.style.display = 'block';
+
+            if (verified) {
+                // 서버가 "인증 완료"라고 확인해줌 -> 다시 코드 입력 요구하지 않고 완료 상태로 복원
+                emailCodeInput.readOnly = true;
+                setMsg(verifyCodeMsg, '이메일 인증이 완료되었습니다.', 'ok');
+                stopEmailCooldown();
+            } else {
+                // 아직 인증 전 -> 기존처럼 남은 쿨타임만 복원
+                const remainingMs = state.expiresAt - Date.now();
+
+                if (remainingMs <= 0) {
+                    clearEmailPendingState(); // 쿨타임도 끝났고 인증도 안 됐으면 처음 상태로
+                    emailInput.readOnly = false;
+                    emailCodeGroup.style.display = 'none';
+                    changeEmailLink.style.display = 'none';
+                    return;
+                }
+
+                startEmailCooldown(Math.ceil(remainingMs / 1000));
+            }
+        })
+        .catch(err => {
+            console.error('이메일 인증 상태 확인 실패', err);
+            // 서버 응답 실패 시에는 최소한 잠금 상태만이라도 유지(빈 이메일 칸으로 보이는 것보다 나음)
+            emailInput.value = state.email;
+            emailInput.readOnly = true;
+        });
+}
+
+// 인증번호 발송 버튼 (POST /member/signup/send-code)
+sendCodeBtn.addEventListener('click', function () {
+    const email = emailInput.value.trim();
+
+    if (!emailPattern.test(email)) {
+        setMsg(emailHint, 'example@domain.com 형식으로 입력하세요.', 'fail');
+        return;
+    }
+
+    sendCodeBtn.disabled = true; // 응답 오기 전까지 연타 방지
+    setMsg(emailHint, '발송 중입니다...', 'hint');
+
+    fetch('/member/signup/send-code', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+        body: new URLSearchParams({email: email})
+    })
+        .then(res => res.text())
+        .then(message => {
+            if (message === '인증번호를 발송했습니다.') {
+                setMsg(emailHint, message + ' (3분 이내에 입력해 주세요)', 'ok');
+                emailCodeGroup.style.display = 'block';
+                emailCodeInput.focus();
+
+                emailInput.readOnly = true; // Redis 인증키가 이메일 기준이라, 발송 후 바뀌면 인증이 무조건 실패함
+                changeEmailLink.style.display = 'inline';
+
+                startEmailCooldown(EMAIL_COOLDOWN_SECONDS);
+                saveEmailPendingState(email, EMAIL_COOLDOWN_SECONDS);
+            } else {
+                const cooldownMatch = message.match(/^(\d+)초 후 다시 시도해 주세요\.$/);
+
+                if (cooldownMatch) {
+                    setMsg(emailHint, '잠시 후 다시 시도해 주세요.', 'hint');
+                    startEmailCooldown(Number(cooldownMatch[1]));
+
+                    emailInput.readOnly = true;
+                    changeEmailLink.style.display = 'inline';
+
+                    saveEmailPendingState(email, Number(cooldownMatch[1]));
+                } else {
+                    // 메일 발송 자체 실패(SMTP 문제 등) - 서버 문구 그대로 빨간색으로
+                    setMsg(emailHint, message, 'fail');
+                    sendCodeBtn.disabled = false;
+                }
+            }
+        })
+        .catch(err => {
+            sendCodeBtn.disabled = false;
+            console.error('회원가입 인증번호 발송 요청 실패', err);
+            setMsg(emailHint, '요청에 실패했습니다. 잠시 후 다시 시도하세요.', 'fail');
+        });
+});
+
+// 인증 확인 버튼 (POST /member/signup/verify-code)
+verifyCodeBtn.addEventListener('click', function () {
+    const email = emailInput.value.trim();
+    const code = emailCodeInput.value.trim();
+
+    if (code.length !== 6) {
+        setMsg(verifyCodeMsg, '6자리 숫자를 입력하세요.', 'fail');
+        return;
+    }
+
+    verifyCodeBtn.disabled = true;
+    setMsg(verifyCodeMsg, '확인 중입니다...', 'hint');
+
+    fetch('/member/signup/verify-code', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+        body: new URLSearchParams({email: email, code: code})
+    })
+        .then(res => res.json())
+        .then(verified => {
+            verifyCodeBtn.disabled = false;
+
+            if (verified) {
+                setMsg(verifyCodeMsg, '이메일 인증이 완료되었습니다.', 'ok');
+                emailCodeInput.readOnly = true; // 인증 성공 직후 인증번호 칸도 잠금
+                stopEmailCooldown();
+            } else {
+                setMsg(verifyCodeMsg, '인증번호가 올바르지 않거나 만료되었습니다.', 'fail');
+            }
+        })
+        .catch(err => {
+            verifyCodeBtn.disabled = false;
+            console.error('회원가입 인증번호 확인 요청 실패', err);
+            setMsg(verifyCodeMsg, '요청에 실패했습니다. 잠시 후 다시 시도하세요.', 'fail');
+        });
+});
+
+// "이메일을 잘못 입력했나요? 다시 입력하기" 링크 클릭 시 동작
+changeEmailLink.addEventListener('click', function (e) {
+    e.preventDefault();
+
+    emailInput.readOnly = false;
+
+    emailCodeGroup.style.display = 'none';
+    emailCodeInput.value = '';
+    emailCodeInput.readOnly = false;
+
+    setMsg(emailHint, '', null);
+    setMsg(verifyCodeMsg, '', null);
+
+    stopEmailCooldown();
+    clearEmailPendingState();
+
+    changeEmailLink.style.display = 'none';
+
+    emailInput.focus();
+});
+
+// 페이지가 열릴 때(새로고침 포함) 복원 시도
+restoreEmailPendingState();
+
+//
 // 7) 전화번호 : 자동 하이픈 + 형식 안내
 //
 const phoneInput = document.getElementById('phone');
@@ -265,11 +493,35 @@ phoneInput.addEventListener('input', function () {
 
     if (digits.length === 0) {
         setMsg(phoneHint, '', null);
+    } else if (digits.length >= 3 && !digits.startsWith('010')) { // 010 아니면 즉시 안내 (서버 @Pattern과 기준 통일)
+        setMsg(phoneHint, '010으로 시작하는 번호만 입력 가능합니다.', 'fail');
     } else if (digits.length === 11) {
         setMsg(phoneHint, '올바른 형식입니다.', 'ok');
     } else {
-        setMsg(phoneHint, '010-0000-0000 형식으로 입력하세요.', 'fail');
+        // 아직 입력 중일 수 있으니 여기서는 오류로 단정하지 않음 (blur에서 최종 확정)
+        setMsg(phoneHint, '', null);
     }
+});
+
+phoneInput.addEventListener('blur', function () {
+    const digits = phoneInput.value.replace(/[^0-9]/g, '');
+
+    if (digits.length === 0) {
+        setMsg(phoneHint, '', null); // 선택 항목이라 안 써도 오류 아님
+        return;
+    }
+
+    if (digits.length >= 3 && !digits.startsWith('010')) {
+        setMsg(phoneHint, '010으로 시작하는 번호만 입력 가능합니다.', 'fail');
+        return;
+    }
+
+    if (digits.length !== 11) { // 다 채우지 않고 다른 칸으로 넘어간 경우
+        setMsg(phoneHint, '010-0000-0000 형식으로 입력하세요.', 'fail');
+        return;
+    }
+
+    setMsg(phoneHint, '올바른 형식입니다.', 'ok');
 });
 
 //
@@ -330,7 +582,7 @@ birthDateInput.addEventListener('input', function () {
     // 7 : 여기까지 통과했으면 달력에 실제로 있는 날짜 확정. 이제 미래 날짜 / 만 14세 검증.
     const selected = new Date(year, month - 1, day); // JS Date의 month는 0~11이라 -1 보정
     const today = new Date();
-    today.setHours(0,0,0,0);
+    today.setHours(0, 0, 0, 0);
 
     if (selected > today) { // 미래 날짜 차단
         setMsg(birthDateHint, '생년월일은 오늘 이전 날짜여야 합니다.', 'fail');
@@ -347,7 +599,7 @@ birthDateInput.addEventListener('input', function () {
     }
 
     const fourteenYearsAgo = new Date(today);
-    fourteenYearsAgo.setFullYear(today.getFullYear() -14);
+    fourteenYearsAgo.setFullYear(today.getFullYear() - 14);
 
     if (selected > fourteenYearsAgo) { // 만 14세 미만 차단
         setMsg(birthDateHint, '만 14세 미만은 가입할 수 없습니다.', 'fail');

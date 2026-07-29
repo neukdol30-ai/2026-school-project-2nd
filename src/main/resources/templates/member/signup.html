@@ -94,14 +94,28 @@
                 <span id="nicknameCheck" class="check-msg"></span> <!-- 닉네임 중복 체크 결과 메시지 자리(JS가 채움) -->
             </div>
 
-            <!-- 필수 6 : 이메일 -->
-            <div class="form-group">
+            <!-- 필수 6 : 이메일 (신규 추가) -->
+            <div>
                 <label class="form-label" for="email">이메일 <span class="required">*</span></label>
-                <!-- type="email" : @ 포함 형식인지 브라우저가 기본 검사 -->
-                <input id="email" type="email" th:field="*{email}" class="form-input" required
-                       placeholder="example@domain.com">
+                <!-- postcode-wrap : 원래 우편번호 검색용 클래스 -> "입력칸+버튼 가로배치" 필요해서 그대로 재사용 -->
+                <div class="postcode-wrap">
+                    <input id="email" type="email" th:field="*{email}" class="form-input" required
+                           placeholder="example@domain.com">
+                    <button type="button" id="sendCodeBtn" class="postcode-btn">인증번호 발송</button>
+                </div>
                 <p class="error-message" th:errors="*{email}"></p>
-                <span id="emailHint" class="check-msg"></span> <!-- 이메일 형식 실시간 안내 자리 -->
+                <span id="emailHint" class="check-msg"></span> <!-- 이메일 형식 실시간 안내 + 발송 결과 메시지 겸용 -->
+                <a href="#" id="changeEmailLink" class="change-email-link" style="display: none;">이메일을 잘못 입력했나요? 다시 입력하기</a>
+            </div>
+
+            <!-- 이메일 인증번호 (처음엔 숨김 / 발송 성공 시 JS가 보이게 함) 신규 추가 -->
+            <div class="form-group" id="emailCodeGroup" style="display: none;">
+                <label class="form-label" for="emailCode">이메일 인증 번호 <span class="required">*</span></label>
+                <div class="postcode-wrap">
+                    <input id="emailCode" type="text" class="form-input" placeholder="6자리 숫자" maxlength="6">
+                    <button type="button" id="verifyCodeBtn" class="postcode-btn">인증 확인</button>
+                </div>
+                <span id="verifyCodeMsg" class="check-msg"></span>
             </div>
 
             <!-- 선택 항목들 -->

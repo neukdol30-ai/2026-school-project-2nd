@@ -288,3 +288,17 @@ body { /* body 태그 */
 .policy-link:hover {
     color: #666;
 }
+
+/* "이메일을 잘못 입력했나요? 다시 입력하기" 보조 링크 (find-account.css의 .change-email-link와 동일하게 맞춤) */
+.change-email-link {
+    display: inline-block;
+    margin-top: 6px;
+    font-size: 13px;
+    color: #666;
+    text-decoration: underline;
+    cursor: pointer;
+}
+
+.change-email-link:hover {
+    color: #222;
+}
