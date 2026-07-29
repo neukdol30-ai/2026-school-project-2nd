@@ -104,7 +104,7 @@ public class CalendarService {
     }
 
 
-// 월별 일정 날짜 조회
+    // 월별 일정 날짜 조회
 // 역할: 현재 보고 있는 달에서 일정이 있는 날짜 목록 반환
     public List<String> findEventDatesByMonth(
             int memberNo,
