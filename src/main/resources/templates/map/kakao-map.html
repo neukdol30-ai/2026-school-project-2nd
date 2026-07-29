@@ -4,28 +4,18 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>지도</title>
-    <script>
-        (() => {
-            try {
-                const savedTheme = localStorage.getItem("portalTheme");
-                document.documentElement.dataset.theme =
-                    savedTheme === "dark" ? "dark" : "light";
-            } catch (error) {
-                document.documentElement.dataset.theme = "light";
-            }
-        })();
-    </script>
     <link rel="stylesheet" th:href="@{/css/index/layout/banner.css}">
     <link rel="stylesheet" th:href="@{/css/index/layout/footer.css}">
     <link rel="stylesheet" th:href="@{/css/index/layout.css}">
-    <link rel="stylesheet" th:href="@{/css/kakao-dynamic-map.css?v=20260728-2}">
+    <link rel="stylesheet" th:href="@{/css/kakao-dynamic-map.css}">
     <link rel="stylesheet" th:href="@{/css/mypage-modal.css}">
 </head>
 <body class="map-service-page">
-<!-- 메인·캘린더와 통일한 전역 배너 -->
-<div class="global-banner-area map-global-banner-area">
+<!-- 캘린더 화면과 같은 구조의 지도 상단 배너 -->
+<header class="map-global-banner-area">
     <div data-global-banner>
-        <nav class="global-banner map-global-banner" aria-label="전역 메뉴">
+        <nav class="map-global-banner"
+             aria-label="전역 메뉴">
 
             <div class="global-left-menu">
 
@@ -96,21 +86,13 @@
                 </div>
 
                 <a class="global-home-link"
-                   href="/"
+                   href="/index.html"
                    aria-label="메인페이지로 이동">
                     <span class="global-logo-text"
                           aria-hidden="true">
                         <span class="global-logo-letter">더</span>
                     </span>
                 </a>
-
-                <span class="map-banner-divider"
-                      aria-hidden="true"></span>
-
-                <div class="map-page-heading">
-                    <strong>지도</strong>
-                </div>
-
             </div>
 
             <div class="global-right-menu">
@@ -118,7 +100,9 @@
                 <div class="global-user-menu"
                      data-map-global-user-menu
                      aria-live="polite">
-                    <span class="global-user-loading">계정 확인 중</span>
+                    <span class="global-user-loading">
+                        계정 확인 중
+                    </span>
                 </div>
 
                 <span class="global-menu-divider"
@@ -139,7 +123,7 @@
 
         </nav>
     </div>
-</div>
+</header>
 
 <!-- 공통 화면 설정 -->
 <div class="map-settings-layer"
@@ -609,7 +593,7 @@
     };
 </script>
 <script defer src="https://t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
-<script defer th:src="@{/js/kakao-map-layout.js?v=20260728-2}"></script>
+<script defer th:src="@{/js/kakao-map-layout.js?v=20260729-5}"></script>
 <script defer th:src="@{/js/common/address-search.js}"></script>
 
 <!-- 마이페이지 모듈 -->

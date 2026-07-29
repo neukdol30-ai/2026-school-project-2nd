@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{error/fragments/error-layout :: layout(
+          '405',
+          'METHOD NOT ALLOWED',
+          '지원하지 않는 요청 방식입니다',
+          '현재 주소에서는 해당 요청 방식을 사용할 수 없습니다.',
+          '이전 페이지로 돌아가 정상적인 메뉴를 통해 다시 이용해 주세요.',
+          'client',
+          false
+      )}">
+</html>

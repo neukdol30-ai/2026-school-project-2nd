@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org"
+      th:fragment="layout(statusCode, label, title, description, helpText, variant, retryable)">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex, nofollow">
+
+    <title th:text="|${statusCode} · ${title}|">오류 안내</title>
+
+    <link rel="stylesheet"
+          href="/css/error/error-page.css"
+          th:href="@{/css/error/error-page.css}">
+</head>
+<body class="error-page"
+      th:class="|error-page error-page--${variant}|">
+<a class="skip-link" href="#error-content">본문 바로가기</a>
+
+<header class="error-header">
+    <div class="error-header__inner">
+        <a class="error-brand"
+           href="/"
+           th:href="@{/}"
+           aria-label="IT Project 2nd 홈으로 이동">
+            <span class="error-brand__mark" aria-hidden="true">
+                <span class="error-brand__letter">더</span>
+            </span>
+        </a>
+
+        <a class="error-header__support"
+           href="/board/write"
+           th:href="@{/board/write}">
+            고객센터
+        </a>
+    </div>
+</header>
+
+<main id="error-content" class="error-main">
+    <section class="error-card" aria-labelledby="error-title">
+        <div class="error-visual" aria-hidden="true">
+            <div class="error-visual__glow"></div>
+
+            <div class="error-visual__window">
+                <div class="error-visual__window-bar">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
+
+                <div class="error-visual__widget error-visual__widget--large">
+                    <span class="error-visual__line error-visual__line--wide"></span>
+                    <span class="error-visual__line"></span>
+                    <span class="error-visual__line error-visual__line--short"></span>
+                </div>
+
+                <div class="error-visual__widget error-visual__widget--small">
+                    <span class="error-visual__pulse"></span>
+                    <span class="error-visual__line error-visual__line--tiny"></span>
+                </div>
+
+                <div class="error-visual__symbol">!</div>
+            </div>
+
+            <span class="error-visual__orbit error-visual__orbit--one"></span>
+            <span class="error-visual__orbit error-visual__orbit--two"></span>
+        </div>
+
+        <div class="error-copy">
+            <p class="error-label">
+                <span class="error-label__dot" aria-hidden="true"></span>
+                <span th:text="${label}">SERVICE ERROR</span>
+            </p>
+
+            <p class="error-code" th:text="${statusCode}">404</p>
+
+            <h1 id="error-title" th:text="${title}">
+                페이지를 찾을 수 없습니다
+            </h1>
+
+            <p class="error-description" th:text="${description}">
+                요청하신 페이지를 불러오지 못했습니다.
+            </p>
+
+            <p class="error-help" th:text="${helpText}">
+                잠시 후 다시 시도하거나 홈으로 이동해 주세요.
+            </p>
+
+            <div class="error-actions">
+                <a class="error-button error-button--primary"
+                   href="/"
+                   th:href="@{/}">
+                    홈으로 이동
+                </a>
+
+                <button class="error-button error-button--secondary"
+                        type="button"
+                        data-error-back
+                        data-home-url="/"
+                        th:attr="data-home-url=@{/}">
+                    이전 페이지
+                </button>
+
+                <button class="error-button error-button--secondary"
+                        type="button"
+                        data-error-reload
+                        th:if="${retryable}">
+                    다시 시도
+                </button>
+            </div>
+
+            <div class="error-request"
+                 th:if="${path != null and !#strings.isEmpty(path)}">
+                <span>요청 주소</span>
+                <code th:text="${path}">/requested/path</code>
+            </div>
+        </div>
+    </section>
+
+    <nav class="error-shortcuts" aria-label="주요 서비스 바로가기">
+        <a href="/map/kakao" th:href="@{/map/kakao}">
+            <span aria-hidden="true">📍</span>
+            <span>
+                <strong>지도</strong>
+                <small>장소 검색과 길찾기</small>
+            </span>
+        </a>
+
+        <a href="/board/notice" th:href="@{/board/notice}">
+            <span aria-hidden="true">📢</span>
+            <span>
+                <strong>공지사항</strong>
+                <small>서비스 안내 확인</small>
+            </span>
+        </a>
+
+        <a href="/board/write" th:href="@{/board/write}">
+            <span aria-hidden="true">💬</span>
+            <span>
+                <strong>고객센터</strong>
+                <small>문의 내용 남기기</small>
+            </span>
+        </a>
+    </nav>
+</main>
+
+<footer class="error-footer">
+    <p>2026 IT Project 2nd</p>
+    <p>이 사이트는 학습 및 포트폴리오 목적으로 제작되었습니다.</p>
+    <p>Copyright © 2026 IT Project 2nd. All rights reserved.</p>
+</footer>
+
+<script src="/js/error/error-page.js"
+        th:src="@{/js/error/error-page.js}"
+        defer></script>
+</body>
+</html>

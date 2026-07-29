@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{error/fragments/error-layout :: layout(
+          ${status != null ? status : 500},
+          'SERVICE ERROR',
+          '서비스 연결이 원활하지 않습니다',
+          '서버에서 요청을 처리하는 과정에 문제가 발생했습니다.',
+          '잠시 후 다시 시도해 주세요. 문제가 계속되면 고객센터로 문의해 주세요.',
+          'server',
+          true
+      )}">
+</html>

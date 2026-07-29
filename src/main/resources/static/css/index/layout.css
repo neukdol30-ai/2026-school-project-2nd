@@ -1209,12 +1209,6 @@ body.is-widget-move-mode * {
     padding: 0 8px;
 }
 
-/* 지도는 말풍선 메뉴 안에도 유지하므로 배너 오른쪽 중복 표시만 숨김 */
-.global-right-menu > .global-map-link,
-.global-right-menu > .global-map-link + .global-menu-divider {
-    display: none;
-}
-
 .global-service-menu {
     position: relative;
     display: flex;
@@ -1546,4 +1540,33 @@ html[data-theme="dark"]
 .widget-move-placeholder {
     border-color: rgba(111, 201, 240, 0.46);
     background: rgba(111, 201, 240, 0.06);
+}
+
+/* 지도 서비스 링크 */
+.global-service-link {
+    display: inline-flex;
+    align-items: center;
+    min-height: 36px;
+    padding: 0 3px;
+    border-radius: 6px;
+    color: #5f7d8b;
+    font-size: 13px;
+    font-weight: 700;
+    line-height: 1;
+    text-decoration: none;
+    white-space: nowrap;
+}
+
+.global-service-link:hover,
+.global-service-link:focus-visible {
+    color: #087fac;
+}
+
+html[data-theme="dark"] .global-service-link {
+    color: #d0d0d0;
+}
+
+html[data-theme="dark"] .global-service-link:hover,
+html[data-theme="dark"] .global-service-link:focus-visible {
+    color: #8fd0ef;
 }

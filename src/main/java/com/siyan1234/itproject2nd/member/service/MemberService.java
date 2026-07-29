@@ -2,23 +2,35 @@ package com.siyan1234.itproject2nd.member.service;
 
 import com.siyan1234.itproject2nd.config.security.PasswordPolicy;
 import com.siyan1234.itproject2nd.member.dao.MemberDao;
+import com.siyan1234.itproject2nd.member.dao.SocialAccountDao;
 import com.siyan1234.itproject2nd.member.dto.MemberDto;
+import com.siyan1234.itproject2nd.member.dto.PendingSocialSignupDto;
 import com.siyan1234.itproject2nd.member.dto.SignupDto;
+import com.siyan1234.itproject2nd.member.dto.SocialAccountDto;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.BindingResult;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor // final 필드 생성자 주입 방식으로 자동 처리.
+@Slf4j
 public class MemberService {
 
     private final MemberDao memberDao; // DB 작업 담당 DAO
 
     private final PasswordEncoder passwordEncoder; // BCrypt 암호화 담당
+
+    private final SocialAccountDao socialAccountDao;
+
+    // Redis에 저장해 둔 소셜 가입 대기정보를 읽는 Service
+    private final PendingSocialSignupService pendingSocialSignupService;
 
     private static final String PASSWORD_PATTERN = PasswordPolicy.PASSWORD_REGEX;
 
@@ -52,7 +64,7 @@ public class MemberService {
         }
 
         // 생년월일 검증(값 자체는 사용자가 만들었지만, 그 값이 유효한지 판단하는 건 이 코드)
-        if (signupDto.getBirthDate()!=null) {
+        if (signupDto.getBirthDate() != null) {
             LocalDate today = LocalDate.now();
 
             if (signupDto.getBirthDate().isAfter(today)) { // (1) 미래 날짜 차단
@@ -201,4 +213,182 @@ public class MemberService {
         // DAO가 돌려준 수정 행 수가 1 이상이면 실제 DB 수정에 성공한 것
         return memberDao.updateAgreement(no) > 0;
     }
+
+    @Transactional
+    public MemberDto completeSocialSignup(String pendingToken) {
+        // 1단계 : 열쇠 자체가 없는 경우 차단
+        if (pendingToken == null || pendingToken.isBlank()) {
+            log.info("소셜 가입 확정 실패 : pendingToken이 없습니다.");
+            return null;
+        }
+
+        // 2단계 : Redis에서 대기정보 꺼내기
+        // find()는 Redis에 값이 있으면 DTO를, 없으면 null을 돌려줌
+        PendingSocialSignupDto pending = pendingSocialSignupService.find(pendingToken);
+
+        if (pending == null) {
+            log.info("소셜 가입 확정 실패 : 대기정보가 없습니다(10분 만료 추정).");
+            return null;
+        }
+
+        String provider = pending.getProvider();
+        String providerId = pending.getProviderId();
+
+        // 3단계 : 필수값 방어
+        if (provider == null || provider.isBlank()
+                || providerId == null || providerId.isBlank()) {
+            log.error("소셜 가입 확정 실패 : provider 또는 providerId가 비어 있습니다.");
+            return null;
+        }
+
+        // 4단계 : 이미 가입된 계정인지 확인 (중복 제출 방어)
+        // 사용자가 동의 버튼 두 번 누르거나 새로고침으로 재전송할 때를 대비
+        SocialAccountDto existing =
+                socialAccountDao.findByProviderAndProviderId(provider, providerId);
+
+        if (existing != null) {
+            log.info("이미 가입 완료된 소셜 계정입니다. provider={}", provider);
+
+            return memberDao.findByNo(existing.getMemberNo());
+        }
+
+        // 5단계 : 로그인 아이디 만들기
+        String memberId = provider + "_" + providerId;
+
+        // 방어 검사 : social_account에 없는데 member_id는 이미 존재한다면 데이터가 어긋난 상태
+        if (memberDao.findByMemberId(memberId) != null) {
+            log.error("소셜 가입 확정 실패 : member_id가 이미 존재합니다. memberId={}", memberId);
+            return null;
+        }
+
+        // 6단계 : 저장할 회원 정보 조립
+        // Redis에서 꺼낸 값으로 새 객체를 만듦. 로그인 정보(CustomUserDetails) 안의 MemberDto 재사용 X.
+        MemberDto memberDto = new MemberDto();
+
+        memberDto.setMemberId(memberId); // 5단계에서 만든 로그인 아이디
+
+        memberDto.setPassword(passwordEncoder.encode(UUID.randomUUID().toString()));
+
+        memberDto.setName(cutText(pending.getName(), 50));
+
+        memberDto.setNickname(resolveNickname(pending.getNickname(), provider));
+
+        memberDto.setEmail(resolveEmail(pending.getEmail()));
+
+        // 7단계 : member 테이블에 INSERT
+        int insertedMemberCount = memberDao.insertSocialMember(memberDto);
+
+        if (insertedMemberCount != 1) {
+            log.error("소셜 회원 INSERT 실패 memberId={}", memberId);
+            return null;
+        }
+
+        // 8단계 : 방금 저장된 회원번호(no) 회수
+        MemberDto savedMember = memberDao.findByMemberId(memberId);
+
+        if (savedMember == null || savedMember.getNo() == null) {
+            log.error("소셜 회원 저장 후 재조회 실패 memberId={}", memberId);
+            // RuntimeException을 던져야 @Transactional이 앞의 INSERT를 롤백한다.
+            throw new IllegalStateException("소셜 회원 저장 후 회원번호를 찾지 못했습니다.");
+        }
+
+        // 9단계 : social_account 테이블에 연동 정보 INSERT
+
+        // SocialAccountDto는 @Builder가 있어 빌더 방식으로 조립
+        SocialAccountDto socialAccountDto = SocialAccountDto.builder()
+                .memberNo(savedMember.getNo())
+                .provider(provider)
+                .providerId(providerId)
+                .build();
+
+        int insertedSocialCount = socialAccountDao.insertSocialAccount(socialAccountDto);
+
+        if (insertedSocialCount != 1) {
+            log.error("social_account INSERT 실패 memberNo={}", savedMember.getNo());
+            // 여기서 예외를 던지면 7단계의 member INSERT까지 함께 취소된다.
+            throw new IllegalStateException("소셜 연동 정보 저장에 실패했습니다.");
+        }
+
+        log.info("소셜 회원가입 확정 완료 provider={}, memberNo={}", provider, savedMember.getNo());
+
+        // Redis 임시정보 삭제는 여기서 하지 않음.
+        return savedMember; // 회원번호까지 채워진 정식 회원 정보를 Controller에 돌려줌
+    }
+
+    // 소셜에서 받은 닉네임을 member.nickname 컬럼에 넣어도 안전한 값으로 바꿈
+    private String resolveNickname(String socialNickname, String provider) {
+
+        // (가) NULL, 공백 방어
+        String base = socialNickname;
+
+        if (base == null || base.isBlank()) {
+            base = "kakao".equals(provider) ? "카카오사용자" : "네이버사용자";
+        }
+
+        base = base.trim();
+
+        // (나) 길이 방어
+
+        // 컬럼은 50글자까지 / 뒤에 "_숫자"를 붙일 자리를 남겨 40글자로 자름
+        base = cutText(base, 40);
+
+        // (다) 중복 방어
+
+        String candidate = base; // 원본 그대로
+        int suffix = 1; // 겹칠 때 뒤에 붙일 번호
+
+        // 닉네임을 쓰는 회원이 이미 있다
+        while (memberDao.findByNickname(candidate) != null) {
+
+            candidate = base + "_" + suffix;
+            suffix++;
+
+            if (suffix > 100) {
+                candidate = base + "_" + System.currentTimeMillis();
+                break;
+            }
+        }
+
+        return candidate; // 저장해도 안전한 닉네임
+    }
+
+    // 소셜은 이메일을 member.email 컬럼에 넣어도 안전한 값으로 바꿈
+
+    private String resolveEmail(String socialEmail) {
+
+        if (socialEmail == null || socialEmail.isBlank()) {
+            return null;
+        }
+
+        String email = cutText(socialEmail.trim(), 100);
+
+        // 대기 10분 사이에 다른 사람이 같은 이메일로 일반 가입했을 수도 있음. 다시 확인
+        if (memberDao.findByEmail(email) != null) {
+            log.warn("소셜 이메일이 이미 사용 중이라 이메일 없이 가입합니다.");
+            return null; // 이메일만 비우고 가입은 정상 진행 (UNIQUE 위반 회피)
+        }
+
+        return email;
+    }
+
+    // 문자열을 지정한 글자 수까지만 남기고 잘라냄
+    private String cutText(String text, int maxLength) {
+
+        if (text == null) {
+            return null;
+        }
+
+        if (text.length() <= maxLength) {
+            return text;
+        }
+
+        String cut = text.substring(0, maxLength);
+
+        if (!cut.isEmpty() && Character.isHighSurrogate(cut.charAt(cut.length() -1))) {
+            cut = cut.substring(0, cut.length() -1);
+        }
+
+        return cut;
+    }
+
 }

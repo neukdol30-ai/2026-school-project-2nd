@@ -178,20 +178,7 @@ function renderGlobalBanner() {
             </div>
 
             <div class="global-right-menu">
-                <a class="global-service-link global-map-link" href="/map/kakao">
-                    <span
-                        class="global-map-icon"
-                        aria-hidden="true"
-                    >
-                        📍
-                    </span>
-                    <span>지도</span>
-                </a>
-
-                <span
-                    class="global-menu-divider"
-                    aria-hidden="true"
-                ></span>
+                
 
                 <div class="global-user-menu">
                     <button

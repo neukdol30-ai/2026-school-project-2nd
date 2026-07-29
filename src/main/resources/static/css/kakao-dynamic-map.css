@@ -2229,3 +2229,14 @@ html[data-theme="dark"] .map-side-tab.active .map-side-tab-icon {
 html[data-theme="dark"] .map-side-tab-badge {
     border-color: #1b1b1b;
 }
+
+/* 햄버거 메뉴에 지도가 있으므로 오른쪽 중복 링크 숨김 */
+.map-service-page
+.global-right-menu
+> .global-map-link,
+.map-service-page
+.global-right-menu
+> .global-map-link
++ .global-menu-divider {
+    display: none;
+}
