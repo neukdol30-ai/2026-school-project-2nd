@@ -18,6 +18,7 @@ public class SignupDto { // 회원가입 화면 값
     // @NotBlank : 빈 값이면 오류 / @Size : 글자 수 4~20자만 허용 (화면 minlength,maxlength와 같은 값으로 맞춤)
     @NotBlank(message = "아이디를 입력하세요.")
     @Size(min = 4, max = 20, message = "아이디는 4자 이상 20자 이하로 입력하세요.")
+    @Pattern(regexp = "^[a-zA-Z][a-zA-Z0-9]*$", message = "아이디는 영문으로 시작하는 영문+숫자만 입력 가능합니다.")
     private String memberId;
 
     // @Pattern : 정규식과 일치하면 통과. 대문자·소문자·숫자 각 1개 이상 + 8~20자
