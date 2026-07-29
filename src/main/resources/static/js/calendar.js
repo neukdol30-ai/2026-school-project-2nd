@@ -35,6 +35,11 @@ const eventDateSet = new Set(
 );
 
 
+// 날짜별 첫 일정 제목과 전체 개수
+const eventPreviewMap =
+    new Map();
+
+
 // 공휴일 날짜와 이름
 const holidayMap = new Map(
     [...document.querySelectorAll(
@@ -393,92 +398,658 @@ function notifyCalendarChanged() {
 }
 
 
-// 화면 테마
+// 공통 배너와 화면 테마
 
-const THEME_STORAGE_KEY = "calendar-theme";
+const PORTAL_THEME_STORAGE_KEY = "portalTheme";
+const LEGACY_CALENDAR_THEME_STORAGE_KEY = "calendar-theme";
+const PORTAL_THEME_VALUES = new Set([
+    "light",
+    "dark"
+]);
 
-function applyTheme(theme) {
+let calendarBannerUser = null;
 
-    const isDark =
-        theme === "dark";
+function normalizePortalTheme(theme) {
 
-    document.documentElement.dataset.theme =
-        isDark ? "dark" : "light";
-
-    const toggle =
-        $("#themeToggle");
-
-    if (toggle) {
-        toggle.setAttribute(
-            "aria-checked",
-            String(isDark)
-        );
-
-        toggle.setAttribute(
-            "aria-label",
-            isDark
-                ? "밝은 화면으로 전환"
-                : "어두운 화면으로 전환"
-        );
-    }
+    return PORTAL_THEME_VALUES.has(theme)
+        ? theme
+        : "light";
 }
 
-function initializeTheme() {
 
-    let savedTheme = "";
+function getStoredPortalTheme() {
 
     try {
-        savedTheme =
+
+        const portalTheme =
             localStorage.getItem(
-                THEME_STORAGE_KEY
-            ) || "";
+                PORTAL_THEME_STORAGE_KEY
+            );
+
+        if (
+            PORTAL_THEME_VALUES.has(
+                portalTheme
+            )
+        ) {
+            return portalTheme;
+        }
+
+
+        const legacyTheme =
+            localStorage.getItem(
+                LEGACY_CALENDAR_THEME_STORAGE_KEY
+            );
+
+        if (
+            PORTAL_THEME_VALUES.has(
+                legacyTheme
+            )
+        ) {
+
+            localStorage.setItem(
+                PORTAL_THEME_STORAGE_KEY,
+                legacyTheme
+            );
+
+            return legacyTheme;
+        }
+
     } catch (error) {
+
         console.warn(
-            "[캘린더 테마 불러오기 실패]",
+            "[공통 테마 불러오기 실패]",
             error
         );
     }
 
-    if (!savedTheme) {
-        savedTheme =
-            window.matchMedia(
-                "(prefers-color-scheme: dark)"
-            ).matches
-                ? "dark"
-                : "light";
-    }
 
-    applyTheme(savedTheme);
+    return "light";
 }
 
-$("#themeToggle")
-    ?.addEventListener(
-        "click",
-        function () {
 
-            const nextTheme =
-                document.documentElement
-                    .dataset.theme === "dark"
-                    ? "light"
-                    : "dark";
+function updatePortalThemeButtons(theme) {
 
-            applyTheme(nextTheme);
+    document
+        .querySelectorAll(
+            "[data-theme-option]"
+        )
+        .forEach(
+            (button) => {
 
-            try {
-                localStorage.setItem(
-                    THEME_STORAGE_KEY,
-                    nextTheme
+                const isSelected =
+                    button.dataset.themeOption
+                    === theme;
+
+                button.classList.toggle(
+                    "is-selected",
+                    isSelected
                 );
-            } catch (error) {
-                console.warn(
-                    "[캘린더 테마 저장 실패]",
-                    error
+
+                button.setAttribute(
+                    "aria-pressed",
+                    String(isSelected)
                 );
             }
-        }
+        );
+}
+
+
+function applyTheme(theme) {
+
+    const nextTheme =
+        normalizePortalTheme(theme);
+
+    document.documentElement.dataset.theme =
+        nextTheme;
+
+    document.documentElement.style.colorScheme =
+        nextTheme;
+
+    updatePortalThemeButtons(
+        nextTheme
+    );
+}
+
+
+function setPortalTheme(theme) {
+
+    const nextTheme =
+        normalizePortalTheme(theme);
+
+    applyTheme(
+        nextTheme
     );
 
+
+    try {
+
+        localStorage.setItem(
+            PORTAL_THEME_STORAGE_KEY,
+            nextTheme
+        );
+
+        /*
+            아직 이전 캘린더 파일을 사용하는 탭도
+            같은 화면 모드를 유지하도록 함께 저장한다.
+        */
+        localStorage.setItem(
+            LEGACY_CALENDAR_THEME_STORAGE_KEY,
+            nextTheme
+        );
+
+    } catch (error) {
+
+        console.warn(
+            "[공통 테마 저장 실패]",
+            error
+        );
+    }
+}
+
+
+function initializeTheme() {
+
+    applyTheme(
+        getStoredPortalTheme()
+    );
+}
+
+
+function setCalendarServiceMenuOpen(isOpen) {
+
+    const menu =
+        document.querySelector(
+            "[data-calendar-service-menu]"
+        );
+
+    if (!menu) {
+        return;
+    }
+
+
+    const button =
+        menu.querySelector(
+            '[data-calendar-action="toggle-service-menu"]'
+        );
+
+    const panel =
+        menu.querySelector(
+            "[data-calendar-service-panel]"
+        );
+
+    if (
+        !button
+        || !panel
+    ) {
+        return;
+    }
+
+
+    menu.classList.toggle(
+        "is-open",
+        isOpen
+    );
+
+    button.setAttribute(
+        "aria-expanded",
+        String(isOpen)
+    );
+
+    button.setAttribute(
+        "aria-label",
+        isOpen
+            ? "서비스 메뉴 닫기"
+            : "서비스 메뉴 열기"
+    );
+
+    panel.hidden =
+        !isOpen;
+}
+
+
+function setCalendarSettingsOpen(isOpen) {
+
+    const layer =
+        document.querySelector(
+            "[data-calendar-settings-layer]"
+        );
+
+    if (!layer) {
+        return;
+    }
+
+
+    layer.classList.toggle(
+        "is-open",
+        isOpen
+    );
+
+    layer.setAttribute(
+        "aria-hidden",
+        String(!isOpen)
+    );
+
+    document.body.classList.toggle(
+        "calendar-settings-open",
+        isOpen
+    );
+
+    if (isOpen) {
+
+        setCalendarServiceMenuOpen(
+            false
+        );
+    }
+}
+
+
+function getCalendarBannerDisplayName(user) {
+
+    if (!user) {
+        return "회원";
+    }
+
+    return String(
+        user.displayName
+        || user.nickname
+        || user.name
+        || user.memberId
+        || user.username
+        || "회원"
+    ).trim();
+}
+
+
+function renderCalendarBannerUser() {
+
+    const userMenu =
+        document.querySelector(
+            "[data-calendar-user-menu]"
+        );
+
+    const serviceUserArea =
+        document.querySelector(
+            "[data-calendar-service-user]"
+        );
+
+    if (
+        !userMenu
+        || !serviceUserArea
+    ) {
+        return;
+    }
+
+
+    if (!calendarBannerUser) {
+
+        userMenu.innerHTML = `
+            <a href="/member/login">
+                로그인
+            </a>
+        `;
+
+        serviceUserArea.innerHTML = `
+            <a
+                class="global-service-login-link"
+                href="/member/login"
+            >
+                <strong>로그인하세요</strong>
+                <span aria-hidden="true">›</span>
+            </a>
+
+            <p class="global-service-login-desc">
+                로그인하고 여러 서비스를 편리하게 이용하세요.
+            </p>
+        `;
+
+        return;
+    }
+
+
+    const displayName =
+        getCalendarBannerDisplayName(
+            calendarBannerUser
+        );
+
+    const avatarText =
+        displayName.charAt(0)
+        || "회";
+
+
+    userMenu.innerHTML = `
+        <button
+            type="button"
+            data-mypage-open
+        >
+            마이페이지
+        </button>
+    `;
+
+
+    serviceUserArea.innerHTML = `
+        <div class="global-service-profile">
+
+            <button
+                class="global-service-profile-button"
+                type="button"
+                data-mypage-open
+            >
+                <span
+                    class="global-service-avatar"
+                    aria-hidden="true"
+                >
+                    ${escapeHtml(avatarText)}
+                </span>
+
+                <span class="global-service-profile-text">
+                    <strong>
+                        ${escapeHtml(displayName)}님
+                    </strong>
+                    <span>마이페이지로 이동</span>
+                </span>
+
+                <span
+                    class="global-service-profile-arrow"
+                    aria-hidden="true"
+                >
+                    ›
+                </span>
+            </button>
+
+            <form
+                class="global-service-logout-form"
+                action="/member/logout"
+                method="post"
+            >
+                <button
+                    class="global-service-logout-button"
+                    type="submit"
+                >
+                    로그아웃
+                </button>
+            </form>
+
+        </div>
+    `;
+}
+
+
+function syncCalendarMyPageUser() {
+
+    if (
+        typeof state
+        === "undefined"
+        || !state
+    ) {
+        return;
+    }
+
+    state.currentUser =
+        calendarBannerUser;
+
+
+    /*
+        공통 모달 초기화 함수가 공개되어 있으면
+        캘린더 로그인 정보가 준비된 뒤 한 번 더 확인한다.
+    */
+    if (
+        calendarBannerUser
+        && typeof window.initializeMyPage
+        === "function"
+    ) {
+        Promise
+            .resolve(
+                window.initializeMyPage()
+            )
+            .catch(
+                (error) => {
+                    console.warn(
+                        "[캘린더 마이페이지 초기화 실패]",
+                        error
+                    );
+                }
+            );
+    }
+}
+
+
+async function loadCalendarBannerUser() {
+
+    try {
+
+        const response =
+            await fetch(
+                "/mypage/me",
+                {
+                    credentials:
+                        "same-origin",
+
+                    cache:
+                        "no-store",
+
+                    headers: {
+                        "Accept":
+                            "application/json",
+
+                        "X-Requested-With":
+                            "XMLHttpRequest"
+                    }
+                }
+            );
+
+
+        if (!response.ok) {
+
+            calendarBannerUser =
+                null;
+
+            syncCalendarMyPageUser();
+            renderCalendarBannerUser();
+
+            return;
+        }
+
+
+        const data =
+            await response.json();
+
+
+        calendarBannerUser =
+            data?.loggedIn
+            && data?.profile
+                ? data.profile
+                : null;
+
+
+        syncCalendarMyPageUser();
+        renderCalendarBannerUser();
+
+    } catch (error) {
+
+        calendarBannerUser =
+            null;
+
+        syncCalendarMyPageUser();
+        renderCalendarBannerUser();
+
+        console.warn(
+            "[캘린더 배너 로그인 상태 조회 실패]",
+            error
+        );
+    }
+}
+
+
+function handleCalendarGlobalClick(event) {
+
+    if (
+        event.target.closest(
+            "[data-mypage-open]"
+        )
+    ) {
+        setCalendarServiceMenuOpen(
+            false
+        );
+    }
+
+
+    const actionButton =
+        event.target.closest(
+            "[data-calendar-action]"
+        );
+
+
+    if (actionButton) {
+
+        const action =
+            actionButton.dataset.calendarAction;
+
+
+        if (
+            action
+            === "toggle-service-menu"
+        ) {
+
+            const menu =
+                actionButton.closest(
+                    "[data-calendar-service-menu]"
+                );
+
+            setCalendarServiceMenuOpen(
+                !menu?.classList.contains(
+                    "is-open"
+                )
+            );
+
+            return;
+        }
+
+
+        if (
+            action
+            === "open-settings"
+        ) {
+
+            setCalendarSettingsOpen(
+                true
+            );
+
+            return;
+        }
+
+
+        if (
+            action
+            === "close-settings"
+        ) {
+
+            setCalendarSettingsOpen(
+                false
+            );
+
+            return;
+        }
+
+
+        if (
+            action
+            === "set-theme"
+        ) {
+
+            setPortalTheme(
+                actionButton.dataset.value
+            );
+
+            return;
+        }
+    }
+
+
+    if (
+        event.target.closest(
+            "[data-calendar-service-link]"
+        )
+    ) {
+
+        setCalendarServiceMenuOpen(
+            false
+        );
+
+        return;
+    }
+
+
+    const menu =
+        document.querySelector(
+            "[data-calendar-service-menu]"
+        );
+
+
+    if (
+        menu?.classList.contains(
+            "is-open"
+        )
+        && !event.target.closest(
+            "[data-calendar-service-menu]"
+        )
+    ) {
+
+        setCalendarServiceMenuOpen(
+            false
+        );
+    }
+}
+
+
+function handleCalendarGlobalKeydown(event) {
+
+    if (event.key !== "Escape") {
+        return;
+    }
+
+    setCalendarServiceMenuOpen(
+        false
+    );
+
+    setCalendarSettingsOpen(
+        false
+    );
+}
+
+
+document.addEventListener(
+    "click",
+    handleCalendarGlobalClick
+);
+
+
+document.addEventListener(
+    "keydown",
+    handleCalendarGlobalKeydown
+);
+
+
+window.addEventListener(
+    "storage",
+    function (event) {
+
+        if (
+            event.key
+            !== PORTAL_THEME_STORAGE_KEY
+        ) {
+            return;
+        }
+
+        applyTheme(
+            event.newValue
+        );
+    }
+);
+
+
 initializeTheme();
+renderCalendarBannerUser();
+loadCalendarBannerUser();
 
 
 // 월간 달력
@@ -679,7 +1250,16 @@ function createDayButton(
     }
 
 
-    // 날짜 숫자
+    // 날짜 숫자와 첫 일정 제목을 같은 줄에 표시
+    const topRow =
+        document.createElement(
+            "span"
+        );
+
+    topRow.className =
+        "calendar-day-top-row";
+
+
     const dayNumber =
         document.createElement(
             "span"
@@ -691,8 +1271,46 @@ function createDayButton(
     dayNumber.textContent =
         date.getDate();
 
-    button.appendChild(
+    topRow.appendChild(
         dayNumber
+    );
+
+
+    const eventPreview =
+        eventPreviewMap.get(
+            dateText
+        );
+
+    if (
+        eventPreview
+        && eventPreview.title
+    ) {
+
+        const previewElement =
+            document.createElement(
+                "span"
+            );
+
+        previewElement.className =
+            "calendar-event-preview";
+
+        previewElement.textContent =
+            eventPreview.count > 1
+                ? `${eventPreview.title} +${eventPreview.count - 1}`
+                : eventPreview.title;
+
+        previewElement.title =
+            eventPreview.count > 1
+                ? `${eventPreview.title} 외 ${eventPreview.count - 1}개`
+                : eventPreview.title;
+
+        topRow.appendChild(
+            previewElement
+        );
+    }
+
+    button.appendChild(
+        topRow
     );
 
 
@@ -1167,7 +1785,6 @@ function renderSidebarUpcoming(eventList) {
 
     const upcomingList =
         [...(eventList || [])]
-            .sort(compareAgendaEvents)
             .slice(0, 5);
 
     element.sidebarUpcomingCount.textContent =
@@ -1185,7 +1802,7 @@ function renderSidebarUpcoming(eventList) {
     }
 
     element.sidebarUpcomingMessage.textContent =
-        "오늘 이후 가까운 일정 5개입니다.";
+        "최근 추가한 예정 일정 5개입니다.";
 
     element.sidebarUpcomingList.innerHTML =
         upcomingList
@@ -1462,6 +2079,7 @@ async function loadMonthEventDates() {
         );
 
     eventDateSet.clear();
+    eventPreviewMap.clear();
     holidayMap.clear();
 
     (data.calendarList || [])
@@ -1479,6 +2097,25 @@ async function loadMonthEventDates() {
 
                     eventDateSet.add(
                         dateText
+                    );
+
+                    eventPreviewMap.set(
+                        dateText,
+                        {
+                            title:
+                                String(
+                                    dayItem.eventTitle
+                                    || "제목 없음"
+                                ).trim(),
+
+                            count:
+                                Math.max(
+                                    Number(
+                                        dayItem.eventCount
+                                    ) || 1,
+                                    1
+                                )
+                        }
                     );
                 }
 
@@ -1600,6 +2237,483 @@ function setTimePickerValue(
             }
         );
 }
+
+
+
+// 시간 선택 목록 생성
+function createTimePickerOptions(picker) {
+
+    const optionList =
+        picker?.querySelector(
+            ".time-option-list"
+        );
+
+    if (!optionList) {
+        return;
+    }
+
+
+    // 다시 초기화돼도 같은 버튼을 중복 생성하지 않는다.
+    if (
+        optionList.querySelector(
+            ".time-option"
+        )
+    ) {
+        return;
+    }
+
+
+    const fragment =
+        document.createDocumentFragment();
+
+
+    for (
+        let totalMinute = 0;
+        totalMinute < 24 * 60;
+        totalMinute += 30
+    ) {
+
+        const hour =
+            Math.floor(
+                totalMinute / 60
+            );
+
+        const minute =
+            totalMinute % 60;
+
+        const value =
+            `${pad(hour)}:${pad(minute)}`;
+
+
+        const optionButton =
+            document.createElement(
+                "button"
+            );
+
+        optionButton.type =
+            "button";
+
+        optionButton.className =
+            "time-option";
+
+        optionButton.dataset.value =
+            value;
+
+        optionButton.textContent =
+            formatTimeText(
+                value
+            );
+
+
+        fragment.appendChild(
+            optionButton
+        );
+    }
+
+
+    optionList.appendChild(
+        fragment
+    );
+}
+
+
+// 시간 선택기를 닫는다.
+function closeTimePicker(picker) {
+
+    if (!picker) {
+        return;
+    }
+
+
+    const button =
+        picker.querySelector(
+            ".time-picker-button"
+        );
+
+    const panel =
+        picker.querySelector(
+            ".time-picker-panel"
+        );
+
+
+    if (panel) {
+        panel.hidden = true;
+    }
+
+
+    button?.setAttribute(
+        "aria-expanded",
+        "false"
+    );
+}
+
+
+// 지정한 선택기를 제외하고 모두 닫는다.
+function closeAllTimePickers(
+    exceptPicker = null
+) {
+
+    document
+        .querySelectorAll(
+            "[data-time-picker]"
+        )
+        .forEach(
+            (picker) => {
+
+                if (
+                    picker
+                    === exceptPicker
+                ) {
+                    return;
+                }
+
+                closeTimePicker(
+                    picker
+                );
+            }
+        );
+}
+
+
+// 직접 입력한 시간을 HH:mm 형식으로 정리한다.
+function normalizeDirectTime(value) {
+
+    const match =
+        String(value || "")
+            .trim()
+            .match(
+                /^(\d{1,2}):(\d{2})$/
+            );
+
+    if (!match) {
+        return "";
+    }
+
+
+    const hour =
+        Number(match[1]);
+
+    const minute =
+        Number(match[2]);
+
+
+    if (
+        hour < 0
+        || hour > 23
+        || minute < 0
+        || minute > 59
+    ) {
+        return "";
+    }
+
+
+    return `${pad(hour)}:${pad(minute)}`;
+}
+
+
+// 시간 선택기 하나를 초기화한다.
+function initializeTimePicker(picker) {
+
+    if (
+        !picker
+        || picker.dataset.timePickerInitialized
+        === "true"
+    ) {
+        return;
+    }
+
+
+    const hiddenInput =
+        picker.querySelector(
+            "#eventStartTime, "
+            + "#eventEndTime, "
+            + "input[type=\"hidden\"]"
+        );
+
+    const openButton =
+        picker.querySelector(
+            ".time-picker-button"
+        );
+
+    const panel =
+        picker.querySelector(
+            ".time-picker-panel"
+        );
+
+    const optionList =
+        picker.querySelector(
+            ".time-option-list"
+        );
+
+    const directInput =
+        picker.querySelector(
+            ".time-direct-input"
+        );
+
+    const directApplyButton =
+        picker.querySelector(
+            ".time-direct-apply"
+        );
+
+    const clearButton =
+        picker.querySelector(
+            ".time-clear-button"
+        );
+
+
+    if (
+        !hiddenInput
+        || !openButton
+        || !panel
+        || !optionList
+    ) {
+        console.warn(
+            "[시간 선택기 초기화 실패]",
+            picker
+        );
+
+        return;
+    }
+
+
+    picker.dataset.timePickerInitialized =
+        "true";
+
+
+    createTimePickerOptions(
+        picker
+    );
+
+
+    openButton.addEventListener(
+        "click",
+        function (event) {
+
+            event.preventDefault();
+            event.stopPropagation();
+
+
+            // 화면 생성 시 누락됐어도 클릭할 때 다시 확인한다.
+            createTimePickerOptions(
+                picker
+            );
+
+
+            const willOpen =
+                panel.hidden;
+
+
+            closeAllTimePickers(
+                picker
+            );
+
+
+            panel.hidden =
+                !willOpen;
+
+
+            openButton.setAttribute(
+                "aria-expanded",
+                String(willOpen)
+            );
+
+
+            if (!willOpen) {
+                return;
+            }
+
+
+            requestAnimationFrame(
+                function () {
+
+                    const selectedOption =
+                        optionList.querySelector(
+                            ".time-option.is-selected"
+                        );
+
+
+                    selectedOption
+                        ?.scrollIntoView({
+                            block: "nearest"
+                        });
+                }
+            );
+        }
+    );
+
+
+    optionList.addEventListener(
+        "click",
+        function (event) {
+
+            const optionButton =
+                event.target.closest(
+                    ".time-option"
+                );
+
+
+            if (!optionButton) {
+                return;
+            }
+
+
+            const value =
+                optionButton.dataset.value
+                || "";
+
+
+            setTimePickerValue(
+                hiddenInput,
+                value
+            );
+
+
+            closeTimePicker(
+                picker
+            );
+        }
+    );
+
+
+    function applyDirectTime() {
+
+        const normalizedValue =
+            normalizeDirectTime(
+                directInput?.value
+            );
+
+
+        if (!normalizedValue) {
+
+            showMessage(
+                "시간을 HH:mm 형식으로 입력해주세요.",
+                true
+            );
+
+            directInput?.focus();
+
+            return;
+        }
+
+
+        setTimePickerValue(
+            hiddenInput,
+            normalizedValue
+        );
+
+
+        closeTimePicker(
+            picker
+        );
+
+        showMessage("");
+    }
+
+
+    directApplyButton
+        ?.addEventListener(
+            "click",
+            function (event) {
+
+                event.preventDefault();
+
+                applyDirectTime();
+            }
+        );
+
+
+    directInput
+        ?.addEventListener(
+            "keydown",
+            function (event) {
+
+                if (
+                    event.key
+                    !== "Enter"
+                ) {
+                    return;
+                }
+
+
+                event.preventDefault();
+
+                applyDirectTime();
+            }
+        );
+
+
+    clearButton
+        ?.addEventListener(
+            "click",
+            function (event) {
+
+                event.preventDefault();
+
+
+                setTimePickerValue(
+                    hiddenInput,
+                    ""
+                );
+
+
+                closeTimePicker(
+                    picker
+                );
+
+                showMessage("");
+            }
+        );
+}
+
+
+// 시작 시간과 종료 시간 선택기를 모두 연결한다.
+function initializeCalendarTimePickers() {
+
+    document
+        .querySelectorAll(
+            "[data-time-picker]"
+        )
+        .forEach(
+            initializeTimePicker
+        );
+}
+
+
+// 선택기 밖을 누르면 목록을 닫는다.
+document.addEventListener(
+    "click",
+    function (event) {
+
+        if (
+            event.target.closest(
+                "[data-time-picker]"
+            )
+        ) {
+            return;
+        }
+
+
+        closeAllTimePickers();
+    }
+);
+
+
+// Esc 키로 시간 목록을 닫는다.
+document.addEventListener(
+    "keydown",
+    function (event) {
+
+        if (
+            event.key
+            !== "Escape"
+        ) {
+            return;
+        }
+
+
+        closeAllTimePickers();
+    }
+);
 
 
 // 폼을 일정 추가 상태로 초기화
@@ -1931,6 +3045,8 @@ element.writeForm
                     false
                 );
 
+                await loadMonthEventDates();
+
                 await loadSidebarUpcoming(
                     false
                 );
@@ -2033,6 +3149,8 @@ document.addEventListener(
                 selectedDateText,
                 eventList.length > 0
             );
+
+            await loadMonthEventDates();
 
             await loadSidebarUpcoming(
                 false
@@ -2142,7 +3260,18 @@ async function autoSyncGoogleCalendar() {
 
 // 최초 실행
 
+initializeCalendarTimePickers();
 renderCalendar();
+
+loadMonthEventDates()
+    .catch(
+        (error) => {
+            console.warn(
+                "[월간 일정 제목 초기 조회 실패]",
+                error
+            );
+        }
+    );
 
 if (element.detailPanel) {
     element.detailPanel.hidden = true;

@@ -171,3 +171,98 @@
 .mini-calendar-day.today .mini-calendar-event-dot {
     background: #ffffff;
 }
+
+/* 미니 캘린더 다크 모드 */
+
+html[data-theme="dark"] .mini-calendar-title {
+    color: #f3f4f6;
+}
+
+html[data-theme="dark"] .mini-calendar-month-button {
+    border: 1px solid #39434a;
+    background: #20272c;
+    color: #dbe7ec;
+}
+
+html[data-theme="dark"] .mini-calendar-month-button:hover {
+    border-color: #52778a;
+    background: #29343a;
+    color: #ffffff;
+}
+
+html[data-theme="dark"] .mini-calendar-message {
+    color: #9caab2;
+}
+
+html[data-theme="dark"] .mini-calendar-message.error {
+    color: #f28b82;
+}
+
+html[data-theme="dark"] .mini-calendar-week-name {
+    color: #aeb8be;
+}
+
+html[data-theme="dark"] .mini-calendar-week-name.sunday {
+    color: #ff7b72;
+}
+
+html[data-theme="dark"] .mini-calendar-week-name.saturday {
+    color: #78a9ff;
+}
+
+html[data-theme="dark"] .mini-calendar-day {
+    border-color: #30383d;
+    background: #1d2327;
+    color: #e8edf0;
+}
+
+html[data-theme="dark"] .mini-calendar-day:hover {
+    border-color: #4d7184;
+    background: #253139;
+}
+
+html[data-theme="dark"] .mini-calendar-day.other-month {
+    border-color: #282e32;
+    background: #181d20;
+    color: #707b82;
+    opacity: 0.62;
+}
+
+html[data-theme="dark"]
+.mini-calendar-day.sunday:not(.today)
+.mini-calendar-day-number,
+html[data-theme="dark"]
+.mini-calendar-day.holiday:not(.today)
+.mini-calendar-day-number {
+    color: #ff7b72;
+}
+
+html[data-theme="dark"]
+.mini-calendar-day.saturday:not(.today):not(.holiday)
+.mini-calendar-day-number {
+    color: #78a9ff;
+}
+
+html[data-theme="dark"] .mini-calendar-day.today {
+    border-color: #6ea8ff;
+    background: #245ea8;
+    color: #ffffff;
+    box-shadow: 0 0 0 1px rgba(110, 168, 255, 0.24);
+}
+
+html[data-theme="dark"]
+.mini-calendar-day.today
+.mini-calendar-day-number {
+    color: #ffffff;
+}
+
+html[data-theme="dark"] .mini-calendar-event-dot {
+    background: #78a9ff;
+}
+
+html[data-theme="dark"]
+.mini-calendar-day.today
+.mini-calendar-event-dot {
+    background: #ffffff;
+}
+

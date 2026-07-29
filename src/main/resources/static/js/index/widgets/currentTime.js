@@ -39,7 +39,8 @@ function isValidCurrentTimeZone(timeZone) {
 function updateCurrentTimeBasisBadge() {
     const title =
         document.querySelector(
-            "[data-header-widget] .widget-title"
+            "[data-time-current-slot] .widget-title, "
+            + "[data-header-widget] .widget-title"
         );
 
     if (!title) {
