@@ -400,161 +400,7 @@ function notifyCalendarChanged() {
 
 // 공통 배너와 화면 테마
 
-const PORTAL_THEME_STORAGE_KEY = "portalTheme";
-const LEGACY_CALENDAR_THEME_STORAGE_KEY = "calendar-theme";
-const PORTAL_THEME_VALUES = new Set([
-    "light",
-    "dark"
-]);
-
 let calendarBannerUser = null;
-
-function normalizePortalTheme(theme) {
-
-    return PORTAL_THEME_VALUES.has(theme)
-        ? theme
-        : "light";
-}
-
-
-function getStoredPortalTheme() {
-
-    try {
-
-        const portalTheme =
-            localStorage.getItem(
-                PORTAL_THEME_STORAGE_KEY
-            );
-
-        if (
-            PORTAL_THEME_VALUES.has(
-                portalTheme
-            )
-        ) {
-            return portalTheme;
-        }
-
-
-        const legacyTheme =
-            localStorage.getItem(
-                LEGACY_CALENDAR_THEME_STORAGE_KEY
-            );
-
-        if (
-            PORTAL_THEME_VALUES.has(
-                legacyTheme
-            )
-        ) {
-
-            localStorage.setItem(
-                PORTAL_THEME_STORAGE_KEY,
-                legacyTheme
-            );
-
-            return legacyTheme;
-        }
-
-    } catch (error) {
-
-        console.warn(
-            "[공통 테마 불러오기 실패]",
-            error
-        );
-    }
-
-
-    return "light";
-}
-
-
-function updatePortalThemeButtons(theme) {
-
-    document
-        .querySelectorAll(
-            "[data-theme-option]"
-        )
-        .forEach(
-            (button) => {
-
-                const isSelected =
-                    button.dataset.themeOption
-                    === theme;
-
-                button.classList.toggle(
-                    "is-selected",
-                    isSelected
-                );
-
-                button.setAttribute(
-                    "aria-pressed",
-                    String(isSelected)
-                );
-            }
-        );
-}
-
-
-function applyTheme(theme) {
-
-    const nextTheme =
-        normalizePortalTheme(theme);
-
-    document.documentElement.dataset.theme =
-        nextTheme;
-
-    document.documentElement.style.colorScheme =
-        nextTheme;
-
-    updatePortalThemeButtons(
-        nextTheme
-    );
-}
-
-
-function setPortalTheme(theme) {
-
-    const nextTheme =
-        normalizePortalTheme(theme);
-
-    applyTheme(
-        nextTheme
-    );
-
-
-    try {
-
-        localStorage.setItem(
-            PORTAL_THEME_STORAGE_KEY,
-            nextTheme
-        );
-
-        /*
-            아직 이전 캘린더 파일을 사용하는 탭도
-            같은 화면 모드를 유지하도록 함께 저장한다.
-        */
-        localStorage.setItem(
-            LEGACY_CALENDAR_THEME_STORAGE_KEY,
-            nextTheme
-        );
-
-    } catch (error) {
-
-        console.warn(
-            "[공통 테마 저장 실패]",
-            error
-        );
-    }
-}
-
-
-function initializeTheme() {
-
-    applyTheme(
-        getStoredPortalTheme()
-    );
-}
-
-
 function setCalendarServiceMenuOpen(isOpen) {
 
     const menu =
@@ -949,19 +795,6 @@ function handleCalendarGlobalClick(event) {
 
             return;
         }
-
-
-        if (
-            action
-            === "set-theme"
-        ) {
-
-            setPortalTheme(
-                actionButton.dataset.value
-            );
-
-            return;
-        }
     }
 
 
@@ -1029,25 +862,6 @@ document.addEventListener(
 );
 
 
-window.addEventListener(
-    "storage",
-    function (event) {
-
-        if (
-            event.key
-            !== PORTAL_THEME_STORAGE_KEY
-        ) {
-            return;
-        }
-
-        applyTheme(
-            event.newValue
-        );
-    }
-);
-
-
-initializeTheme();
 renderCalendarBannerUser();
 loadCalendarBannerUser();
 
@@ -2239,7 +2053,6 @@ function setTimePickerValue(
 }
 
 
-
 // 시간 선택 목록 생성
 function createTimePickerOptions(picker) {
 
@@ -2885,7 +2698,6 @@ element.toggleWriteButton
         }
     );
 
-
 // 취소 버튼
 element.cancelWriteButton
     ?.addEventListener(
@@ -2947,7 +2759,6 @@ document.addEventListener(
         );
     }
 );
-
 
 // 일정 추가 또는 수정 저장
 element.writeForm
@@ -3257,9 +3068,7 @@ async function autoSyncGoogleCalendar() {
     }
 }
 
-
 // 최초 실행
-
 initializeCalendarTimePickers();
 renderCalendar();
 

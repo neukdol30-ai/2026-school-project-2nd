@@ -28,217 +28,26 @@ h1 {
     margin-bottom: 24px;
 }
 
-/* 공통 라이트, 다크 화면 기반 */
+
 html {
     color-scheme: light;
 }
 
-html[data-theme="dark"] {
-    color-scheme: dark;
-    background: #0b1115;
-}
-
-html[data-theme="dark"] body {
-    background: linear-gradient(
-            to bottom,
-            #13232b 0%,
-            #0e171c 44%,
-            #0a1014 100%
-    );
-    color: #dfe9ed;
-}
-
-html[data-theme="dark"] .description {
-    color: #9db0ba;
-}
 
 /* 메인 공통 카드 */
-html[data-theme="dark"] .widget,
-html[data-theme="dark"] .header-time-group,
-html[data-theme="dark"] .header-auth-slot .auth-widget {
-    border-color: #2c3b43 !important;
-    background: #172127 !important;
-    color: #dfe9ed;
-    box-shadow: 0 10px 26px rgba(0, 0, 0, 0.2) !important;
-}
 
-html[data-theme="dark"] .widget-header,
-html[data-theme="dark"] .header-time-group .widget-header {
-    border-bottom-color: #2b3a42 !important;
-}
-
-html[data-theme="dark"] .widget-title,
-html[data-theme="dark"] .column-title,
-html[data-theme="dark"] .auth-user-name,
-html[data-theme="dark"] .header-time-group .current-time-clock,
-html[data-theme="dark"] .header-time-group .world-time-clock,
-html[data-theme="dark"] .header-time-group .world-time-place strong,
-html[data-theme="dark"] .header-time-group .sun-time-item strong {
-    color: #edf4f7 !important;
-}
-
-html[data-theme="dark"] .widget-desc,
-html[data-theme="dark"] .auth-message,
-html[data-theme="dark"] .auth-profile-desc,
-html[data-theme="dark"] .header-time-group .world-time-place span,
-html[data-theme="dark"] .header-time-group .world-time-zone {
-    color: #9db0ba !important;
-}
-
-html[data-theme="dark"] .header-time-group .current-time-date,
-html[data-theme="dark"] .header-time-group .sun-time-item,
-html[data-theme="dark"] .header-time-group .world-time-item,
-html[data-theme="dark"] .header-time-group .world-time-item:first-child {
-    border-color: #30414a !important;
-    background: #1c282f !important;
-    color: #c8d6dc !important;
-}
-
-html[data-theme="dark"] .header-time-group .world-time-item.is-selected {
-    border-color: #3fb7e2 !important;
-    background: #183442 !important;
-}
-
-html[data-theme="dark"] .header-world-time-slot::before,
-html[data-theme="dark"] .schedule-calendar-group:not(.is-single-group)
-> [data-widget-id="7"]::before {
-    background: #30414a !important;
-}
 
 /* 입력 요소 */
-html[data-theme="dark"] .widget input,
-html[data-theme="dark"] .widget textarea,
-html[data-theme="dark"] .widget select {
-    border-color: #34464f !important;
-    background: #10181d !important;
-    color: #e7eff3 !important;
-}
 
-html[data-theme="dark"] .widget input::placeholder,
-html[data-theme="dark"] .widget textarea::placeholder {
-    color: #748892 !important;
-}
 
 /* 로그인 카드 */
-html[data-theme="dark"] .header-auth-slot .auth-role-badge {
-    background: #22323a;
-    color: #b1c2ca;
-}
 
-html[data-theme="dark"] .header-auth-slot .auth-profile-avatar {
-    background: #183746;
-    color: #5bc5ee;
-}
-
-html[data-theme="dark"] .header-auth-slot .auth-logout-button {
-    border-color: #35464e;
-    background: #1b272d;
-    color: #cbd8de;
-}
-
-html[data-theme="dark"] .header-auth-slot .auth-profile-desc {
-    border-top-color: #2e3d45;
-}
-
-html[data-theme="dark"] .header-auth-slot .auth-links a {
-    color: #9db0ba;
-}
-
-html[data-theme="dark"] .header-auth-slot .auth-links a + a::before {
-    background: #364750;
-}
 
 /* 상단 배너와 서비스 메뉴 */
-html[data-theme="dark"] .global-banner-area {
-    border-bottom-color: #2a708a !important;
-    background: #111b21 !important;
-    box-shadow: 0 3px 14px rgba(0, 0, 0, 0.28) !important;
-}
 
-html[data-theme="dark"] .global-logo-text {
-    color: #8cd9f5;
-}
-
-html[data-theme="dark"] .global-service-menu-button {
-    border-color: #2c3d46;
-    background: #1d2a31;
-}
-
-html[data-theme="dark"] .global-service-menu-button span {
-    background: #d3e0e6;
-}
-
-html[data-theme="dark"] .global-service-panel {
-    border-color: #33454e;
-    background: #172127;
-    color: #e2ebef;
-    box-shadow: 0 18px 46px rgba(0, 0, 0, 0.4);
-}
-
-html[data-theme="dark"] .global-service-panel::before {
-    border-top-color: #33454e;
-    border-left-color: #33454e;
-    background: #172127;
-}
-
-html[data-theme="dark"] .global-service-panel-divider {
-    background: #2f3f47;
-}
-
-html[data-theme="dark"] .global-service-login-link,
-html[data-theme="dark"] .global-service-profile-text strong,
-html[data-theme="dark"] .global-service-shortcut-area h2 {
-    color: #eef5f8;
-}
-
-html[data-theme="dark"] .global-service-login-desc,
-html[data-theme="dark"] .global-service-profile-text span {
-    color: #9db0ba;
-}
-
-html[data-theme="dark"] .global-service-shortcut {
-    border-color: #30414a;
-    background: #1c282f;
-    color: #dce7eb;
-}
-
-html[data-theme="dark"] .global-service-shortcut:hover {
-    border-color: #397c96;
-    background: #21333c;
-}
-
-html[data-theme="dark"] .global-service-shortcut-icon {
-    background: #26353d;
-    box-shadow: none;
-}
-
-html[data-theme="dark"] .global-service-logout-button {
-    border-color: #35464e;
-    background: #1b272d;
-    color: #cbd8de;
-}
-
-html[data-theme="dark"] .global-user-menu button,
-html[data-theme="dark"] .global-settings-menu button {
-    color: #cfe0e7;
-}
-
-html[data-theme="dark"] .global-menu-divider {
-    background: rgba(205, 223, 231, 0.3);
-}
 
 /* 위젯 안쪽의 일반 카드형 요소 보정 */
-html[data-theme="dark"] .widget-content
-[class$="-card"],
-html[data-theme="dark"] .widget-content
-[class$="-item"],
-html[data-theme="dark"] .widget-content
-[class$="-panel"],
-html[data-theme="dark"] .widget-content
-[class$="-box"] {
-    border-color: #30414a !important;
-    background-color: #1c282f !important;
-}
+
 
 .widget-actions > button.danger {
     min-height: 36px;
@@ -253,12 +62,5 @@ html[data-theme="dark"] .widget-content
 .widget-actions > button.danger:hover {
     border-color: #dc2626 !important;
     background: #dc2626 !important;
-    color: #ffffff !important;
-}
-
-html[data-theme="dark"]
-.widget-actions > button.danger {
-    border-color: #ef4444 !important;
-    background: #ef4444 !important;
     color: #ffffff !important;
 }

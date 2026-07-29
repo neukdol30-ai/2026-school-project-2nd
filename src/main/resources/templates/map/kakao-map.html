@@ -9,6 +9,7 @@
     <link rel="stylesheet" th:href="@{/css/index/layout.css}">
     <link rel="stylesheet" th:href="@{/css/kakao-dynamic-map.css}">
     <link rel="stylesheet" th:href="@{/css/mypage-modal.css}">
+    <link rel="stylesheet" th:href="@{/css/theme.css?v=20260729-2}">
 </head>
 <body class="map-service-page">
 <!-- 캘린더 화면과 같은 구조의 지도 상단 배너 -->
@@ -593,6 +594,7 @@
     };
 </script>
 <script defer src="https://t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
+<script defer th:src="@{/js/theme.js?v=20260729-2}"></script>
 <script defer th:src="@{/js/kakao-map-layout.js?v=20260729-5}"></script>
 <script defer th:src="@{/js/common/address-search.js}"></script>
 

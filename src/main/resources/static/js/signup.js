@@ -125,7 +125,14 @@ const memberIdCheck = document.getElementById('memberIdCheck'); // 결과 메시
 
 // input : 값을 고치는 즉시 이전 결과 메시지를 지움.(이게 없으면 "사용 가능합니다" 초록 메시지가 남은 채로 아이디만 바뀌는 착시 생김)
 memberIdInput.addEventListener('input', function () {
-    setMsg(memberIdCheck, '', null);
+    const v = memberIdInput.value.trim();
+    if (v.length === 0) {
+        setMsg(memberIdCheck, '', null);
+    } else if (!/^[a-zA-Z][a-zA-Z0-9]*$/.test(v)) { // 한글·특수문자·숫자로 시작 차단
+        setMsg(memberIdCheck, '아이디는 영문으로 시작하는 영문+숫자만 입력 가능합니다.', 'fail');
+    } else {
+        setMsg(memberIdCheck, '', null);
+    }
 });
 
 // blur : 입력칸에서 포커스가 "빠져나가는 순간"(다른 칸으로 넘어갈 때) 실행
@@ -133,6 +140,11 @@ memberIdInput.addEventListener('blur', function () {
     const value = memberIdInput.value.trim(); // 앞, 뒤 공백 제거한 입력값
     if (value.length < 4) { // 4자 미만이면 서버에 묻지 않음
         setMsg(memberIdCheck, value.length === 0 ? '' : '아이디는 4~20자로 입력하세요.', 'fail');
+        return;
+    }
+
+    if (!/^[a-zA-Z][a-zA-Z0-9]*$/.test(value)) { // 형식 틀리면 서버에 물어보지 않음
+        setMsg(memberIdCheck, '아이디는 영문으로 시작하는 영문+숫자만 입력 가능합니다.', 'fail');
         return;
     }
 
