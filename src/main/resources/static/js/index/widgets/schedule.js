@@ -108,7 +108,8 @@ function getScheduleDateTimeText(schedule) {
     return dateText;
 }
 
-// 오늘 이후 일정을 가까운 순서로 최대 4개 반환
+// 서버가 최근 등록·수정 순으로 반환한 오늘 이후 일정 최대 3개를 사용한다.
+// 새로 추가한 일정이 항상 위에 보이도록 여기서 날짜·시간순으로 재정렬하지 않는다.
 function getUpcomingScheduleItems() {
 
     const today =
@@ -146,65 +147,6 @@ function getUpcomingScheduleItems() {
                 return (
                     dateText
                     && dateText >= todayText
-                );
-            }
-        )
-        .sort(
-            (first, second) => {
-
-                const firstDate =
-                    first.eventDate
-                    || String(
-                        first.startDatetime
-                        || ""
-                    ).substring(0, 10);
-
-                const secondDate =
-                    second.eventDate
-                    || String(
-                        second.startDatetime
-                        || ""
-                    ).substring(0, 10);
-
-
-                const firstTime =
-                    first.allDayYn === "Y"
-                        ? "00:00"
-                        : extractScheduleTime(
-                        first.startDatetime
-                    ) || "00:00";
-
-                const secondTime =
-                    second.allDayYn === "Y"
-                        ? "00:00"
-                        : extractScheduleTime(
-                        second.startDatetime
-                    ) || "00:00";
-
-
-                const firstValue =
-                    firstDate
-                    + " "
-                    + firstTime;
-
-                const secondValue =
-                    secondDate
-                    + " "
-                    + secondTime;
-
-
-                if (firstValue < secondValue) {
-                    return -1;
-                }
-
-                if (firstValue > secondValue) {
-                    return 1;
-                }
-
-
-                return (
-                    Number(second.no || 0)
-                    - Number(first.no || 0)
                 );
             }
         )

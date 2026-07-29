@@ -12,6 +12,29 @@
             <a th:href="@{/admin(view='dashboard')}" class="small-link">대시보드</a>
         </div>
 
+        <section class="metric-grid visit-metric-grid" th:if="${visitOverview != null}">
+            <article class="metric-card">
+                <span>오늘 방문자</span>
+                <strong th:text="${visitOverview.todayVisitorCount != null ? visitOverview.todayVisitorCount : 0}">0</strong>
+                <small>같은 IP는 하루 1명으로 집계</small>
+            </article>
+            <article class="metric-card">
+                <span>누적 방문일 합계</span>
+                <strong th:text="${visitOverview.totalDailyVisitorCount != null ? visitOverview.totalDailyVisitorCount : 0}">0</strong>
+                <small>날짜별 고유 방문자 수 누적</small>
+            </article>
+            <article class="metric-card">
+                <span>누적 요청 수</span>
+                <strong th:text="${visitOverview.totalRequestCount != null ? visitOverview.totalRequestCount : 0}">0</strong>
+                <small>분석 대상 페이지 요청 합계</small>
+            </article>
+            <article class="metric-card">
+                <span>원본 로그 보관</span>
+                <strong class="green" th:text="${visitOverview.retentionDays != null ? visitOverview.retentionDays : 30}">30</strong>
+                <small>일 후 IP·User-Agent 자동 삭제</small>
+            </article>
+        </section>
+
         <form class="admin-filter-form" th:action="@{/admin}" method="get">
             <input type="hidden" name="view" value="visits">
             <input type="text" name="visitKeyword" th:value="${visitKeyword}" placeholder="아이디, 이름, 닉네임, 회원번호, IP 검색">
@@ -22,7 +45,7 @@
         <div class="table-toolbar">
             <div>
                 <strong th:text="'사용자/IP 기준 ' + ${visitTotalCount} + '건'">사용자/IP 기준 0건</strong>
-                <span>같은 IP는 하루 1회 저장 기준</span>
+                <span>원본 상세는 보관기간만 유지하고, 일별 합계는 장기 보관합니다.</span>
             </div>
         </div>
 
@@ -34,8 +57,9 @@
                     <th>사용자</th>
                     <th>이름/닉네임</th>
                     <th>IP</th>
-                    <th>방문 수</th>
-                    <th>첫 방문</th>
+                    <th>방문일</th>
+                    <th>요청 수</th>
+                    <th>보관기간 내 첫 방문</th>
                     <th>최근 방문</th>
                     <th>최근 경로</th>
                 </tr>
@@ -50,12 +74,13 @@
                     <td th:text="${visit.displayName}">닉네임</td>
                     <td th:text="${visit.ipAddress != null ? visit.ipAddress : '-'}">127.0.0.1</td>
                     <td th:text="${visit.visitCount}">1</td>
+                    <td th:text="${visit.requestCount != null ? visit.requestCount : visit.visitCount}">1</td>
                     <td th:text="${visit.firstVisitDate != null ? #temporals.format(visit.firstVisitDate, 'yyyy-MM-dd HH:mm') : '-'}">-</td>
                     <td th:text="${visit.lastVisitDate != null ? #temporals.format(visit.lastVisitDate, 'yyyy-MM-dd HH:mm') : '-'}">-</td>
                     <td class="ellipsis" th:text="${visit.lastRequestUri != null ? visit.lastRequestUri : '-'}">/</td>
                 </tr>
                 <tr th:if="${adminVisitSummaryList == null or #lists.isEmpty(adminVisitSummaryList)}">
-                    <td colspan="8" class="empty-cell">조회된 방문 기록이 없습니다.</td>
+                    <td colspan="9" class="empty-cell">조회된 방문 기록이 없습니다.</td>
                 </tr>
                 </tbody>
             </table>

@@ -13,10 +13,8 @@ import java.time.LocalTime;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
@@ -25,10 +23,7 @@ public class CalendarService {
     private final CalendarDao calendarDao;
     private final GoogleCalendarService googleCalendarService;
 
-
-    // =========================
     // 월간 달력 생성
-    // =========================
     public List<CalendarDayDto> makeMonthCalendar(
             LocalDate selectedDate
     ) {
@@ -85,10 +80,7 @@ public class CalendarService {
         return calendarList;
     }
 
-
-    // =========================
     // 선택 날짜 일정 조회
-    // =========================
     public List<CalendarEventDto> findByDate(
             int memberNo,
             String date
@@ -100,14 +92,8 @@ public class CalendarService {
         );
     }
 
-
-
-
-
-    // =========================
     // 예정 일정 조회
     // 메인 화면 일정 위젯에서 사용
-    // =========================
     public List<CalendarEventDto> findTodayEvents(
             int memberNo
     ) {
@@ -117,10 +103,9 @@ public class CalendarService {
         );
     }
 
-    // =========================
+
 // 월별 일정 날짜 조회
 // 역할: 현재 보고 있는 달에서 일정이 있는 날짜 목록 반환
-// =========================
     public List<String> findEventDatesByMonth(
             int memberNo,
             int year,
@@ -146,11 +131,8 @@ public class CalendarService {
         );
     }
 
-
-    // =========================
     // 일정 등록
     // 사이트 DB와 구글 캘린더에 함께 등록
-    // =========================
     @Transactional
     public int insert(
             CalendarEventDto calendarEventDto
@@ -303,10 +285,8 @@ public class CalendarService {
         );
     }
 
-    // =========================
     // 일정 수정
     // 구글 캘린더와 사이트 DB를 함께 수정
-    // =========================
     @Transactional
     public int update(
             CalendarEventDto calendarEventDto
@@ -577,10 +557,8 @@ public class CalendarService {
         return result;
     }
 
-    // =========================
     // 일정 삭제
     // 구글 캘린더와 사이트 DB에서 삭제
-    // =========================
     @Transactional
     public int delete(
             int no,
@@ -666,9 +644,7 @@ public class CalendarService {
     }
 
 
-    // =========================
-    // 월간 달력 + 일정 점 + 공휴일
-    // =========================
+    // 월간 달력에 일정 제목과 공휴일 정보를 함께 넣는다.
     public List<CalendarDayDto> makeMonthCalendarWithEvents(
             LocalDate selectedDate,
             int memberNo,
@@ -680,10 +656,9 @@ public class CalendarService {
                         selectedDate
                 );
 
-        Set<String> eventDateSet =
-                new HashSet<>();
+        Map<String, List<CalendarEventDto>> eventMap =
+                new HashMap<>();
 
-        // 구글 연결 회원만 개인 일정 날짜 조회
         if (googleConnected) {
 
             LocalDate monthStartDate =
@@ -692,17 +667,32 @@ public class CalendarService {
             LocalDate monthEndDate =
                     monthStartDate.plusMonths(1);
 
-            List<String> eventDateList =
-                    calendarDao.findEventDatesByMonth(
+            List<CalendarEventDto> monthEventList =
+                    calendarDao.findMonthEvents(
                             memberNo,
                             monthStartDate.toString(),
                             monthEndDate.toString()
                     );
 
-            if (eventDateList != null) {
-                eventDateSet.addAll(
-                        eventDateList
-                );
+            if (monthEventList != null) {
+
+                for (CalendarEventDto eventItem
+                        : monthEventList) {
+
+                    if (eventItem == null
+                            || eventItem.getEventDate() == null
+                            || eventItem.getEventDate().isBlank()) {
+
+                        continue;
+                    }
+
+                    eventMap
+                            .computeIfAbsent(
+                                    eventItem.getEventDate(),
+                                    key -> new ArrayList<>()
+                            )
+                            .add(eventItem);
+                }
             }
         }
 
@@ -716,7 +706,6 @@ public class CalendarService {
                         .get(calendarList.size() - 1)
                         .getDate();
 
-        // 대한민국 공휴일 조회
         List<CalendarEventDto> holidayList =
                 googleCalendarService
                         .getKoreaHolidayEvents(
@@ -746,7 +735,6 @@ public class CalendarService {
                 continue;
             }
 
-            // 같은 날짜의 공휴일 이름 연결
             holidayMap.merge(
                     holidayDate,
                     holidayName,
@@ -763,11 +751,40 @@ public class CalendarService {
             String dateText =
                     day.getDate().toString();
 
+            List<CalendarEventDto> dayEventList =
+                    eventMap.getOrDefault(
+                            dateText,
+                            List.of()
+                    );
+
             day.setHasEvent(
-                    eventDateSet.contains(
-                            dateText
-                    )
+                    !dayEventList.isEmpty()
             );
+
+            day.setEventCount(
+                    dayEventList.size()
+            );
+
+            if (dayEventList.isEmpty()) {
+
+                day.setEventTitle(
+                        null
+                );
+
+            } else {
+
+                String eventTitle =
+                        dayEventList
+                                .get(0)
+                                .getTitle();
+
+                day.setEventTitle(
+                        eventTitle == null
+                                || eventTitle.isBlank()
+                                ? "제목 없음"
+                                : eventTitle.trim()
+                );
+            }
 
             String holidayName =
                     holidayMap.get(
@@ -787,10 +804,7 @@ public class CalendarService {
         return calendarList;
     }
 
-
-    // =========================
     // 공휴일 이름 정리
-    // =========================
     private String normalizeHolidayName(
             String holidayName
     ) {
