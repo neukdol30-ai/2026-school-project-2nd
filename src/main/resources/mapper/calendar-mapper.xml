@@ -248,6 +248,68 @@
 
 
 
+    <!-- 월간 달력에 표시할 일정 제목 조회 -->
+    <select id="findMonthEvents"
+            resultMap="CalendarEventResultMap">
+
+        SELECT
+        NO,
+        MEMBER_NO,
+        TITLE,
+        CONTENT,
+        LOCATION,
+
+        TO_CHAR(
+        START_DATETIME,
+        'YYYY-MM-DD'
+        ) AS EVENT_DATE,
+
+        TO_CHAR(
+        START_DATETIME,
+        'YYYY-MM-DD HH24:MI'
+        ) AS START_DATETIME,
+
+        TO_CHAR(
+        END_DATETIME,
+        'YYYY-MM-DD HH24:MI'
+        ) AS END_DATETIME,
+
+        ALL_DAY_YN,
+        SOURCE_TYPE,
+        GOOGLE_EVENT_ID,
+        GOOGLE_CALENDAR_ID,
+
+        TO_CHAR(
+        GOOGLE_UPDATED_DATETIME,
+        'YYYY-MM-DD HH24:MI'
+        ) AS GOOGLE_UPDATED_DATETIME,
+
+        IS_DELETED
+
+        FROM CALENDAR_EVENT
+
+        WHERE MEMBER_NO = #{memberNo}
+        AND IS_DELETED = 'N'
+
+        AND START_DATETIME &gt;=
+        TO_TIMESTAMP(
+        #{startDate} || ' 00:00:00',
+        'YYYY-MM-DD HH24:MI:SS'
+        )
+
+        AND START_DATETIME &lt;
+        TO_TIMESTAMP(
+        #{endDate} || ' 00:00:00',
+        'YYYY-MM-DD HH24:MI:SS'
+        )
+
+        ORDER BY
+        START_DATETIME ASC,
+        NO ASC
+
+    </select>
+
+
     <!-- 사이트 일정 등록 -->
     <insert id="insert"
             parameterType="com.siyan1234.itproject2nd.calendar.dto.CalendarEventDto">

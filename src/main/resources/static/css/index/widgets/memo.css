@@ -1,4 +1,5 @@
 /* 메모 작성 영역 */
+
 .memo-write-box {
     width: 100%;
 }
@@ -8,12 +9,15 @@
     width: 100%;
     min-height: 94px;
     padding: 12px 13px;
+
     border: 1px solid #dfe5ea;
     border-radius: 10px;
-    background: #fff;
-    color: #222;
+    background: #ffffff;
+
+    color: #222222;
     font: inherit;
     line-height: 1.5;
+
     resize: vertical;
 }
 
@@ -28,6 +32,7 @@
     align-items: center;
     justify-content: space-between;
     gap: 10px;
+
     margin-top: 8px;
 }
 
@@ -38,48 +43,76 @@
 
 .memo-save-button {
     min-width: 58px;
+    min-height: 34px;
     padding: 7px 12px;
+
     border: 0;
     border-radius: 8px;
     background: #e8f3f8;
+
     color: #315f75;
-    cursor: pointer;
+    font: inherit;
     font-weight: 700;
+
+    cursor: pointer;
 }
 
 .memo-save-button:hover {
     background: #dceef6;
 }
 
+
 /* 저장된 메모 목록 */
+
 .memo-list {
     display: grid;
     gap: 9px;
+
     max-height: 270px;
     margin-top: 14px;
+    padding-right: 5px;
+
+    overflow-x: hidden;
     overflow-y: auto;
+
+    scrollbar-gutter: stable;
 }
 
 .memo-empty {
     margin: 0;
     padding: 14px 4px;
+
     color: #8b969e;
     font-size: 13px;
     text-align: center;
 }
 
 .memo-item {
-    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+
+    min-width: 0;
+    padding: 13px 14px 11px;
+
     border: 1px solid #e7ecef;
     border-radius: 10px;
     background: #f8fafb;
 }
 
 .memo-item-content {
-    margin: 0 0 10px;
+    display: block;
+    width: 100%;
+    min-width: 0;
+    margin: 0;
+
     color: #2e373d;
+    font-size: 14px;
     line-height: 1.55;
+    text-align: left;
+
     white-space: pre-wrap;
+    overflow-wrap: anywhere;
     word-break: break-word;
 }
 
@@ -88,6 +121,9 @@
     align-items: center;
     justify-content: space-between;
     gap: 10px;
+
+    width: 100%;
+    margin-top: 13px;
 }
 
 .memo-created-at {
@@ -96,15 +132,254 @@
 }
 
 .memo-delete-button {
+    flex: 0 0 auto;
     padding: 4px 8px;
+
     border: 0;
     border-radius: 6px;
     background: #e9edef;
+
     color: #5e6870;
-    cursor: pointer;
+    font: inherit;
     font-size: 12px;
+
+    cursor: pointer;
 }
 
 .memo-delete-button:hover {
     background: #dfe5e8;
+}
+
+
+/* 메모 목록 스크롤바 */
+
+.memo-list::-webkit-scrollbar {
+    width: 8px;
+}
+
+.memo-list::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.memo-list::-webkit-scrollbar-thumb {
+    border: 2px solid transparent;
+    border-radius: 999px;
+    background: #c3ccd2;
+    background-clip: padding-box;
+}
+
+.memo-list::-webkit-scrollbar-thumb:hover {
+    background: #aeb9c0;
+    background-clip: padding-box;
+}
+
+
+/* 메모 위젯 다크 모드 */
+
+html[data-theme="dark"]
+body
+[data-widget-id="8"]
+.memo-write-box {
+    border-color: #353535 !important;
+    background: transparent !important;
+}
+
+html[data-theme="dark"]
+body
+[data-widget-id="8"]
+.memo-input,
+html[data-theme="dark"]
+body
+[data-widget-id="8"]
+textarea.memo-input {
+    border-color: #3c3c3c !important;
+    background: #151515 !important;
+
+    color: #f2f2f2 !important;
+    caret-color: #7ec9ee;
+}
+
+html[data-theme="dark"]
+body
+[data-widget-id="8"]
+.memo-input::placeholder,
+html[data-theme="dark"]
+body
+[data-widget-id="8"]
+textarea.memo-input::placeholder {
+    color: #7e878d !important;
+    opacity: 1;
+}
+
+html[data-theme="dark"]
+body
+[data-widget-id="8"]
+.memo-input:focus {
+    border-color: #5b8faf !important;
+    box-shadow: 0 0 0 2px rgba(91, 143, 175, 0.18) !important;
+}
+
+html[data-theme="dark"]
+body
+[data-widget-id="8"]
+.memo-count {
+    color: #929a9f !important;
+}
+
+html[data-theme="dark"]
+body
+[data-widget-id="8"]
+.memo-save-button {
+    border: 1px solid #4f83ed !important;
+    background: #4f83ed !important;
+    color: #ffffff !important;
+}
+
+html[data-theme="dark"]
+body
+[data-widget-id="8"]
+.memo-save-button:hover {
+    border-color: #6694f0 !important;
+    background: #5c8bef !important;
+}
+
+html[data-theme="dark"]
+body
+[data-widget-id="8"]
+.memo-list {
+    max-height: 270px;
+    padding-right: 6px;
+
+    overflow-x: hidden;
+    overflow-y: auto;
+
+    scrollbar-color: #4a4a4a transparent;
+}
+
+html[data-theme="dark"]
+body
+[data-widget-id="8"]
+.memo-item {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+
+    min-width: 0 !important;
+    min-height: 0 !important;
+    padding: 13px 14px 11px !important;
+
+    border-color: #383838 !important;
+    background: #232323 !important;
+
+    color: #eeeeee !important;
+    box-shadow: none !important;
+}
+
+html[data-theme="dark"]
+body
+[data-widget-id="8"]
+.memo-item:hover {
+    border-color: #4a4a4a !important;
+    background: #282828 !important;
+}
+
+html[data-theme="dark"]
+body
+[data-widget-id="8"]
+.memo-item-content,
+html[data-theme="dark"]
+body
+[data-widget-id="8"]
+.memo-text {
+    display: block !important;
+    align-self: stretch !important;
+
+    width: 100% !important;
+    min-width: 0 !important;
+    margin: 0 !important;
+
+    color: #eeeeee !important;
+    font-size: 14px !important;
+    line-height: 1.6 !important;
+    text-align: left !important;
+
+    white-space: pre-wrap !important;
+    overflow-wrap: anywhere !important;
+    word-break: break-word !important;
+}
+
+html[data-theme="dark"]
+body
+[data-widget-id="8"]
+.memo-item-bottom {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+
+    width: 100% !important;
+    margin-top: 13px !important;
+}
+
+html[data-theme="dark"]
+body
+[data-widget-id="8"]
+.memo-created-at,
+html[data-theme="dark"]
+body
+[data-widget-id="8"]
+.memo-empty {
+    color: #929292 !important;
+}
+
+html[data-theme="dark"]
+body
+[data-widget-id="8"]
+.memo-delete-button {
+    border: 1px solid #5a3d43 !important;
+    background: #332427 !important;
+
+    color: #f39898 !important;
+}
+
+html[data-theme="dark"]
+body
+[data-widget-id="8"]
+.memo-delete-button:hover {
+    border-color: #765057 !important;
+    background: #422d31 !important;
+
+    color: #ffaaaa !important;
+}
+
+html[data-theme="dark"]
+body
+[data-widget-id="8"]
+.memo-list::-webkit-scrollbar {
+    width: 8px;
+}
+
+html[data-theme="dark"]
+body
+[data-widget-id="8"]
+.memo-list::-webkit-scrollbar-track {
+    background: transparent !important;
+}
+
+html[data-theme="dark"]
+body
+[data-widget-id="8"]
+.memo-list::-webkit-scrollbar-thumb {
+    border: 2px solid transparent !important;
+    border-radius: 999px;
+
+    background: #4a4a4a !important;
+    background-clip: padding-box !important;
+}
+
+html[data-theme="dark"]
+body
+[data-widget-id="8"]
+.memo-list::-webkit-scrollbar-thumb:hover {
+    background: #5b5b5b !important;
+    background-clip: padding-box !important;
 }

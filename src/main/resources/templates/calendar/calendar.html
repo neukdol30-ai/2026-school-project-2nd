@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <title>캘린더</title>
 
-    <link rel="stylesheet" href="/css/calendar.css?v=20260728-1">
+    <link rel="stylesheet" href="/css/calendar.css?v=20260729-3">
     <link rel="stylesheet" href="/css/mypage-modal.css">
 </head>
 <body>
@@ -270,16 +270,6 @@
 
                     <span>
                         일반 일정
-                    </span>
-
-                </div>
-
-                <div class="calendar-check-item">
-
-                    <span class="calendar-color-dot local"></span>
-
-                    <span>
-                        출처는 일정 아래에 표시
                     </span>
 
                 </div>
@@ -736,9 +726,41 @@
 
 </div>
 <script src="/js/common/address-search.js"></script>
-<script src="/js/mypage-modal.js"></script>
-<script src="/js/calendar.js?v=20260728-1"></script>
-<script src="/js/calendar-time-picker.js?v=20260728-1"></script>
+
+<script>
+    window.calendarPageState =
+        window.calendarPageState
+        || {
+            currentUser: null,
+            myPage: null
+        };
+
+    var state =
+        window.calendarPageState;
+
+    function renderAuthWidget() {
+        return "";
+    }
+
+    function updateAuthWidget() {
+        if (
+            typeof loadCalendarBannerUser
+            === "function"
+        ) {
+            loadCalendarBannerUser();
+        }
+    }
+</script>
+
+<!-- 마이페이지 하위 모듈: mypage-modal.js보다 먼저 로드 -->
+<script src="/js/mypage/mypage-config.js?v=20260729-1"></script>
+<script src="/js/mypage/mypage-utils.js?v=20260729-1"></script>
+<script src="/js/mypage/mypage-api.js?v=20260729-1"></script>
+<script src="/js/mypage/mypage-validation.js?v=20260729-1"></script>
+<script src="/js/mypage/mypage-renderer.js?v=20260729-1"></script>
+
+<script src="/js/mypage-modal.js?v=20260729-5"></script>
+<script src="/js/calendar.js?v=20260729-9"></script>
 
 </body>
 </html>

@@ -108,25 +108,27 @@ function renderMemoList() {
     }
 
     return memoList.map((memo) => {
+        const memoText =
+            escapeMemoHtml(
+                memo.text
+                ?? memo.content
+                ?? ""
+            );
+
+        const createdAt =
+            formatMemoDateTime(
+                memo.createdAt
+            );
+
         return `
             <article
                 class="memo-item"
                 data-memo-id="${memo.id}"
             >
-                <p class="memo-item-content">
-                    ${escapeMemoHtml(
-            memo.text
-            ?? memo.content
-            ?? ""
-        )}
-                </p>
+                <p class="memo-item-content">${memoText}</p>
 
                 <div class="memo-item-bottom">
-                    <span class="memo-created-at">
-                        ${formatMemoDateTime(
-            memo.createdAt
-        )}
-                    </span>
+                    <span class="memo-created-at">${createdAt}</span>
 
                     <button
                         type="button"
@@ -214,7 +216,8 @@ function refreshMemoWidget() {
         return;
     }
 
-    memoContent.innerHTML = renderMemo();
+    memoContent.innerHTML =
+        renderMemo();
 
     if (
         typeof scheduleDashboardLayout
@@ -245,12 +248,14 @@ function addMemo() {
         return;
     }
 
-    const memoList = getMemoList();
+    const memoList =
+        getMemoList();
 
     memoList.unshift({
         id: Date.now(),
         text: memoText,
-        createdAt: new Date().toISOString()
+        createdAt:
+            new Date().toISOString()
     });
 
     if (!saveMemoList(memoList)) {
@@ -268,17 +273,20 @@ function deleteMemo(memoId) {
     }
 
     const deleteConfirmed =
-        confirm("이 메모를 삭제하시겠습니까?");
+        confirm(
+            "이 메모를 삭제하시겠습니까?"
+        );
 
     if (!deleteConfirmed) {
         return;
     }
 
-    const memoList = getMemoList()
-        .filter((memo) => {
-            return String(memo.id)
-                !== String(memoId);
-        });
+    const memoList =
+        getMemoList()
+            .filter((memo) => {
+                return String(memo.id)
+                    !== String(memoId);
+            });
 
     if (!saveMemoList(memoList)) {
         return;

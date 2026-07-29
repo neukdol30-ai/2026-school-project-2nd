@@ -35,6 +35,11 @@ const eventDateSet = new Set(
 );
 
 
+// 날짜별 첫 일정 제목과 전체 개수
+const eventPreviewMap =
+    new Map();
+
+
 // 공휴일 날짜와 이름
 const holidayMap = new Map(
     [...document.querySelectorAll(
@@ -769,6 +774,45 @@ function renderCalendarBannerUser() {
 }
 
 
+function syncCalendarMyPageUser() {
+
+    if (
+        typeof state
+        === "undefined"
+        || !state
+    ) {
+        return;
+    }
+
+    state.currentUser =
+        calendarBannerUser;
+
+
+    /*
+        공통 모달 초기화 함수가 공개되어 있으면
+        캘린더 로그인 정보가 준비된 뒤 한 번 더 확인한다.
+    */
+    if (
+        calendarBannerUser
+        && typeof window.initializeMyPage
+        === "function"
+    ) {
+        Promise
+            .resolve(
+                window.initializeMyPage()
+            )
+            .catch(
+                (error) => {
+                    console.warn(
+                        "[캘린더 마이페이지 초기화 실패]",
+                        error
+                    );
+                }
+            );
+    }
+}
+
+
 async function loadCalendarBannerUser() {
 
     try {
@@ -799,6 +843,7 @@ async function loadCalendarBannerUser() {
             calendarBannerUser =
                 null;
 
+            syncCalendarMyPageUser();
             renderCalendarBannerUser();
 
             return;
@@ -816,6 +861,7 @@ async function loadCalendarBannerUser() {
                 : null;
 
 
+        syncCalendarMyPageUser();
         renderCalendarBannerUser();
 
     } catch (error) {
@@ -823,6 +869,7 @@ async function loadCalendarBannerUser() {
         calendarBannerUser =
             null;
 
+        syncCalendarMyPageUser();
         renderCalendarBannerUser();
 
         console.warn(
@@ -834,6 +881,17 @@ async function loadCalendarBannerUser() {
 
 
 function handleCalendarGlobalClick(event) {
+
+    if (
+        event.target.closest(
+            "[data-mypage-open]"
+        )
+    ) {
+        setCalendarServiceMenuOpen(
+            false
+        );
+    }
+
 
     const actionButton =
         event.target.closest(
@@ -1192,7 +1250,16 @@ function createDayButton(
     }
 
 
-    // 날짜 숫자
+    // 날짜 숫자와 첫 일정 제목을 같은 줄에 표시
+    const topRow =
+        document.createElement(
+            "span"
+        );
+
+    topRow.className =
+        "calendar-day-top-row";
+
+
     const dayNumber =
         document.createElement(
             "span"
@@ -1204,8 +1271,46 @@ function createDayButton(
     dayNumber.textContent =
         date.getDate();
 
-    button.appendChild(
+    topRow.appendChild(
         dayNumber
+    );
+
+
+    const eventPreview =
+        eventPreviewMap.get(
+            dateText
+        );
+
+    if (
+        eventPreview
+        && eventPreview.title
+    ) {
+
+        const previewElement =
+            document.createElement(
+                "span"
+            );
+
+        previewElement.className =
+            "calendar-event-preview";
+
+        previewElement.textContent =
+            eventPreview.count > 1
+                ? `${eventPreview.title} +${eventPreview.count - 1}`
+                : eventPreview.title;
+
+        previewElement.title =
+            eventPreview.count > 1
+                ? `${eventPreview.title} 외 ${eventPreview.count - 1}개`
+                : eventPreview.title;
+
+        topRow.appendChild(
+            previewElement
+        );
+    }
+
+    button.appendChild(
+        topRow
     );
 
 
@@ -1974,6 +2079,7 @@ async function loadMonthEventDates() {
         );
 
     eventDateSet.clear();
+    eventPreviewMap.clear();
     holidayMap.clear();
 
     (data.calendarList || [])
@@ -1991,6 +2097,25 @@ async function loadMonthEventDates() {
 
                     eventDateSet.add(
                         dateText
+                    );
+
+                    eventPreviewMap.set(
+                        dateText,
+                        {
+                            title:
+                                String(
+                                    dayItem.eventTitle
+                                    || "제목 없음"
+                                ).trim(),
+
+                            count:
+                                Math.max(
+                                    Number(
+                                        dayItem.eventCount
+                                    ) || 1,
+                                    1
+                                )
+                        }
                     );
                 }
 
@@ -2920,6 +3045,8 @@ element.writeForm
                     false
                 );
 
+                await loadMonthEventDates();
+
                 await loadSidebarUpcoming(
                     false
                 );
@@ -3022,6 +3149,8 @@ document.addEventListener(
                 selectedDateText,
                 eventList.length > 0
             );
+
+            await loadMonthEventDates();
 
             await loadSidebarUpcoming(
                 false
@@ -3133,6 +3262,16 @@ async function autoSyncGoogleCalendar() {
 
 initializeCalendarTimePickers();
 renderCalendar();
+
+loadMonthEventDates()
+    .catch(
+        (error) => {
+            console.warn(
+                "[월간 일정 제목 초기 조회 실패]",
+                error
+            );
+        }
+    );
 
 if (element.detailPanel) {
     element.detailPanel.hidden = true;
