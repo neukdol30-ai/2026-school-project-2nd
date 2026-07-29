@@ -248,3 +248,118 @@
 .stock-swiper .swiper-wrapper {
     transition-timing-function: linear;
 }
+
+/* 증권 위젯 다크 모드 */
+html[data-theme="dark"] .stock-dashboard {
+    color: #f2f2f2;
+}
+
+html[data-theme="dark"] .stock-focus-slide {
+    background: #242424;
+    color: #f2f2f2;
+}
+
+html[data-theme="dark"] .stock-focus-name {
+    color: #f4f4f4;
+}
+
+html[data-theme="dark"] .stock-focus-symbol {
+    color: #a0a0a0;
+}
+
+html[data-theme="dark"] .stock-focus-price {
+    color: #f4f4f4;
+}
+
+html[data-theme="dark"] .stock-focus-price span {
+    color: #b0b0b0;
+}
+
+html[data-theme="dark"] .stock-chart-wrap {
+    background: #242424;
+}
+
+html[data-theme="dark"] .stock-chart-wrap canvas {
+    background: transparent;
+}
+
+html[data-theme="dark"] .stock-chart-period {
+    color: #a0a0a0;
+}
+
+html[data-theme="dark"] .stock-up {
+    color: #ff5c66;
+}
+
+html[data-theme="dark"] .stock-down {
+    color: #5aa2ff;
+}
+
+html[data-theme="dark"] .stock-flat {
+    color: #b8b8b8;
+}
+
+html[data-theme="dark"] .stock-quote-panel {
+    border-left-color: #3a3a3a;
+}
+
+html[data-theme="dark"] .stock-quote-item {
+    border-bottom-color: #393939;
+    background: #252525;
+    color: #e8e8e8;
+}
+
+html[data-theme="dark"] .stock-quote-item:hover {
+    background: #2d2d2d;
+}
+
+html[data-theme="dark"] .stock-quote-name {
+    color: #dddddd;
+}
+
+html[data-theme="dark"] .stock-quote-values span {
+    opacity: 1;
+}
+
+html[data-theme="dark"] .stock-quote-values strong {
+    color: #c4c4c4;
+    font-weight: 600;
+    opacity: 1;
+}
+
+html[data-theme="dark"] .stock-quote-item.active {
+    background: #2a3e52;
+    box-shadow: inset 3px 0 0 #62b8e6;
+}
+
+html[data-theme="dark"] .stock-quote-item.active .stock-quote-name {
+    color: #ffffff;
+}
+
+html[data-theme="dark"] .stock-quote-item.active .stock-quote-values strong {
+    color: #e0e8ef;
+}
+
+html[data-theme="dark"] .stock-nav-button {
+    border-color: #4a4a4a;
+    background: rgba(38, 38, 38, 0.96);
+    color: #eeeeee;
+}
+
+html[data-theme="dark"] .stock-nav-button:hover {
+    border-color: #626262;
+    background: #303030;
+}
+
+html[data-theme="dark"] .stock-header-updated {
+    color: #a0a0a0;
+}
+
+html[data-theme="dark"] .stock-refresh-button {
+    color: #aaaaaa;
+}
+
+html[data-theme="dark"] .stock-refresh-button:hover {
+    color: #f0f0f0;
+}
+

@@ -6,7 +6,6 @@
 @import url("./index/controls.css");
 @import url("./index/login.css");
 
-
 /* 위젯별 스타일 */
 @import url("./index/widgets/news.css");
 @import url("./index/widgets/issue.css");
@@ -15,10 +14,1167 @@
 @import url("./index/widgets/weather.css");
 @import url("./index/widgets/calculator.css");
 @import url("./index/widgets/calendar.css");
-@import url("./index/widgets/memo.css");
 @import url("./index/widgets/curent-time.css");
 @import url("./index/widgets/widget-base.css");
 @import url("./index/widgets/world-time.css");
 
 /* 반응형 스타일 */
 @import url("./index/responsive.css");
+
+/* 메인 다크 모드 색상 기준 */
+html[data-theme="dark"] {
+    color-scheme: dark;
+
+    --portal-dark-bg: #111111;
+    --portal-dark-bg-soft: #151515;
+    --portal-dark-card: #1d1d1d;
+    --portal-dark-card-soft: #242424;
+    --portal-dark-card-hover: #2a2a2a;
+    --portal-dark-line: #303030;
+    --portal-dark-line-strong: #424242;
+    --portal-dark-text: #f3f3f3;
+    --portal-dark-text-soft: #d2d2d2;
+    --portal-dark-muted: #9a9a9a;
+    --portal-dark-point: #6da6ff;
+    --portal-dark-point-bg: #243957;
+    --portal-dark-danger: #ff8f8f;
+}
+
+/* 페이지 전체 */
+html[data-theme="dark"] body {
+    background:
+            linear-gradient(
+                    to bottom,
+                    #111111 0%,
+                    #151515 50%,
+                    #111111 100%
+            );
+    color: var(--portal-dark-text);
+}
+
+html[data-theme="dark"] .container {
+    color: var(--portal-dark-text);
+}
+
+/* 상단 배너 */
+html[data-theme="dark"] .global-banner-area {
+    background: #101010;
+    border-bottom-color: #2c2c2c;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+}
+
+html[data-theme="dark"] .global-banner,
+html[data-theme="dark"] .global-banner-area [data-global-banner] {
+    background: transparent;
+}
+
+html[data-theme="dark"] .global-service-menu-button {
+    border-color: #303030;
+    background: #1b1b1b;
+}
+
+html[data-theme="dark"] .global-service-menu-button span {
+    background: #b5b5b5;
+}
+
+html[data-theme="dark"] .global-service-menu-button:hover,
+html[data-theme="dark"] .global-service-menu.is-open .global-service-menu-button {
+    border-color: #4a4a4a;
+    background: #282828;
+}
+
+html[data-theme="dark"] .global-logo-text {
+    color: #7fc8ef;
+}
+
+html[data-theme="dark"] .global-logo-text::before {
+    border-color: #34afe5;
+}
+
+html[data-theme="dark"] .global-logo-text::after {
+    background: #46bde8;
+    box-shadow: 0 0 0 3px rgba(83, 193, 243, 0.14);
+}
+
+html[data-theme="dark"] .global-user-menu button,
+html[data-theme="dark"] .global-user-menu a,
+html[data-theme="dark"] .global-settings-menu button,
+html[data-theme="dark"] .global-service-link {
+    color: #c7c7c7;
+}
+
+html[data-theme="dark"] .global-user-menu button:hover,
+html[data-theme="dark"] .global-user-menu a:hover,
+html[data-theme="dark"] .global-settings-menu button:hover,
+html[data-theme="dark"] .global-service-link:hover {
+    background: #252525;
+    color: #8cc9ef;
+}
+
+html[data-theme="dark"] .global-menu-divider {
+    background: #3a3a3a;
+}
+
+/* 햄버거 말풍선 */
+html[data-theme="dark"] .global-service-panel {
+    border-color: #3a3a3a;
+    background: #191919;
+    color: var(--portal-dark-text);
+    box-shadow: 0 20px 48px rgba(0, 0, 0, 0.48);
+}
+
+html[data-theme="dark"] .global-service-panel::before {
+    border-color: #3a3a3a;
+    background: #191919;
+}
+
+html[data-theme="dark"] .global-service-panel-divider {
+    background: #303030;
+}
+
+html[data-theme="dark"] .global-service-login-link,
+html[data-theme="dark"] .global-service-profile-text strong,
+html[data-theme="dark"] .global-service-shortcut-area h2 {
+    color: var(--portal-dark-text);
+}
+
+html[data-theme="dark"] .global-service-login-desc,
+html[data-theme="dark"] .global-service-profile-text span,
+html[data-theme="dark"] .global-service-profile-arrow {
+    color: var(--portal-dark-muted);
+}
+
+html[data-theme="dark"] .global-service-avatar,
+html[data-theme="dark"] .global-service-shortcut-icon {
+    background: #262626;
+    color: #8cc9ef;
+    box-shadow: none;
+}
+
+html[data-theme="dark"] .global-service-logout-button {
+    border-color: #424242;
+    background: #242424;
+    color: #c7c7c7;
+}
+
+html[data-theme="dark"] .global-service-shortcut {
+    border-color: #383838;
+    background: #242424;
+    color: #d9e2ec;
+}
+
+html[data-theme="dark"] .global-service-shortcut:hover {
+    border-color: #5a5a5a;
+    background: #2d2d2d;
+}
+
+/* 모든 위젯 카드 */
+html[data-theme="dark"] .widget,
+html[data-theme="dark"] .header-time-group,
+html[data-theme="dark"] .schedule-calendar-group {
+    border-color: var(--portal-dark-line) !important;
+    background: var(--portal-dark-card) !important;
+    color: var(--portal-dark-text);
+    box-shadow: 0 10px 28px rgba(0, 0, 0, 0.22) !important;
+}
+
+html[data-theme="dark"] .widget-header,
+html[data-theme="dark"] .header-time-group .widget-header {
+    border-bottom-color: var(--portal-dark-line) !important;
+}
+
+html[data-theme="dark"] .widget-title,
+html[data-theme="dark"] .column-title {
+    color: var(--portal-dark-text) !important;
+}
+
+html[data-theme="dark"] .widget-desc,
+html[data-theme="dark"] .description {
+    color: var(--portal-dark-muted) !important;
+}
+
+html[data-theme="dark"] .widget-content {
+    color: var(--portal-dark-text-soft);
+}
+
+html[data-theme="dark"] .header-world-time-slot::before,
+html[data-theme="dark"] .schedule-calendar-group:not(.is-single-group) > [data-widget-id="7"]::before,
+html[data-theme="dark"] .widget-list[data-widget-list="main"] > [data-widget-id="7"]::before {
+    background: var(--portal-dark-line) !important;
+}
+
+/* 현재시간 */
+html[data-theme="dark"] .header-widget-slot .widget-title::after,
+html[data-theme="dark"] .header-world-time-slot .widget-title::after,
+html[data-theme="dark"] .current-time-date {
+    background: #292929;
+    color: #9dc9ef;
+}
+
+html[data-theme="dark"] .current-time-clock,
+html[data-theme="dark"] .world-time-clock {
+    color: var(--portal-dark-text) !important;
+    text-shadow: none;
+}
+
+html[data-theme="dark"] .sun-time-item {
+    border-color: #373737;
+    background: #242424;
+    color: var(--portal-dark-muted);
+}
+
+html[data-theme="dark"] .sun-time-item strong {
+    color: #e9eff6;
+}
+
+/* 세계시간 */
+html[data-theme="dark"] .world-time-item {
+    border-color: #383838 !important;
+    background: #242424 !important;
+    color: var(--portal-dark-text-soft);
+}
+
+html[data-theme="dark"] .world-time-item:hover {
+    border-color: #565656 !important;
+    background: #2b2b2b !important;
+    box-shadow: 0 8px 18px rgba(0, 0, 0, 0.18);
+}
+
+html[data-theme="dark"] .world-time-item.is-selected {
+    border-color: var(--portal-dark-point) !important;
+    background: var(--portal-dark-point-bg) !important;
+    box-shadow: inset 0 0 0 1px rgba(118, 168, 255, 0.28);
+}
+
+html[data-theme="dark"] .world-time-place strong {
+    color: #edf3fa !important;
+}
+
+html[data-theme="dark"] .world-time-place span,
+html[data-theme="dark"] .world-time-zone {
+    color: #969696 !important;
+}
+
+/* 로그인 카드 */
+html[data-theme="dark"] .auth-widget {
+    border-color: var(--portal-dark-line) !important;
+    background: var(--portal-dark-card) !important;
+}
+
+html[data-theme="dark"] .auth-message,
+html[data-theme="dark"] .auth-profile-desc,
+html[data-theme="dark"] .auth-links a {
+    color: var(--portal-dark-muted) !important;
+}
+
+html[data-theme="dark"] .auth-links a + a::before,
+html[data-theme="dark"] .auth-links a + a {
+    border-color: #35465a !important;
+}
+
+html[data-theme="dark"] .auth-login-button {
+    background: #178bb7 !important;
+    color: #ffffff !important;
+}
+
+html[data-theme="dark"] .auth-login-button:hover {
+    background: #2098c4 !important;
+}
+
+html[data-theme="dark"] .auth-profile-avatar {
+    background: #27333a !important;
+    color: #8cc9ef !important;
+}
+
+html[data-theme="dark"] .auth-user-name {
+    color: var(--portal-dark-text) !important;
+}
+
+html[data-theme="dark"] .auth-role-badge {
+    background: #1d2a39 !important;
+    color: #a8a8a8 !important;
+}
+
+html[data-theme="dark"] .auth-logout-button,
+html[data-theme="dark"] .auth-profile-button {
+    color: #d1d1d1 !important;
+}
+
+html[data-theme="dark"] .auth-logout-button {
+    border-color: #424242 !important;
+    background: #242424 !important;
+}
+
+html[data-theme="dark"] .auth-profile-desc {
+    border-top-color: #303030 !important;
+}
+
+/* 뉴스 */
+html[data-theme="dark"] .news-list {
+    color: var(--portal-dark-text-soft);
+}
+
+html[data-theme="dark"] .news-item {
+    border-color: #303030 !important;
+    background: #111a25 !important;
+}
+
+html[data-theme="dark"] .news-item:hover {
+    border-color: #4a4a4a !important;
+    background: #272727 !important;
+}
+
+html[data-theme="dark"] .news-title,
+html[data-theme="dark"] .news-item a {
+    color: #eeeeee !important;
+}
+
+html[data-theme="dark"] .news-title:hover,
+html[data-theme="dark"] .news-item a:hover {
+    color: #8cc9ef !important;
+}
+
+html[data-theme="dark"] .news-summary,
+html[data-theme="dark"] .news-meta {
+    color: #969696 !important;
+}
+
+html[data-theme="dark"] [data-widget-id="1"] button:not(.danger) {
+    border-color: #3a3a3a;
+    background: #1a2635;
+    color: #aebdcb;
+}
+
+html[data-theme="dark"] [data-widget-id="1"] button:hover,
+html[data-theme="dark"] [data-widget-id="1"] button.active,
+html[data-theme="dark"] [data-widget-id="1"] button.is-active {
+    border-color: #4d6f91;
+    background: #263c52;
+    color: #9cc9ef;
+}
+
+/* 예정 일정 */
+html[data-theme="dark"] .schedule-list li {
+    border-color: #393939 !important;
+    background: #242424 !important;
+    color: #dddddd !important;
+}
+
+html[data-theme="dark"] .schedule-list li:hover {
+    border-color: #555555 !important;
+    background: #2a2a2a !important;
+}
+
+html[data-theme="dark"] .schedule-list strong {
+    color: #9dc9ef !important;
+}
+
+html[data-theme="dark"] .schedule-list span {
+    color: #dddddd !important;
+}
+
+/* 날씨 */
+html[data-theme="dark"] .weather-current,
+html[data-theme="dark"] .weather-theme-sunny,
+html[data-theme="dark"] .weather-theme-cloudy,
+html[data-theme="dark"] .weather-theme-rain,
+html[data-theme="dark"] .weather-theme-snow {
+    border-color: #3b3b3b !important;
+    background:
+            linear-gradient(
+                    145deg,
+                    rgba(31, 45, 62, 0.98),
+                    rgba(23, 34, 49, 0.98)
+            ) !important;
+    box-shadow:
+            inset 0 1px 0 rgba(255, 255, 255, 0.035),
+            0 10px 22px rgba(0, 0, 0, 0.18) !important;
+}
+
+html[data-theme="dark"] .weather-current::before,
+html[data-theme="dark"] .weather-current::after {
+    opacity: 0.2 !important;
+}
+
+html[data-theme="dark"] .weather-location,
+html[data-theme="dark"] .weather-temp,
+html[data-theme="dark"] .weather-rain strong {
+    color: #eef3f8 !important;
+    text-shadow: none !important;
+}
+
+html[data-theme="dark"] .weather-text,
+html[data-theme="dark"] .weather-rain,
+html[data-theme="dark"] .weather-range {
+    color: #a0afbd !important;
+}
+
+html[data-theme="dark"] .weather-rain,
+html[data-theme="dark"] .weather-current-icon,
+html[data-theme="dark"] .weather-current-reset {
+    border-color: #3a4e67 !important;
+    background: rgba(17, 27, 39, 0.74) !important;
+}
+
+html[data-theme="dark"] .weather-current-reset:hover,
+html[data-theme="dark"] .weather-current-reset.is-active {
+    border-color: #638dbd !important;
+    background: #223a58 !important;
+    color: #a9ceff !important;
+}
+
+html[data-theme="dark"] .weather-day {
+    border-color: #304158 !important;
+    background: #242424 !important;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03) !important;
+}
+
+html[data-theme="dark"] .weather-day:hover {
+    border-color: #54779f !important;
+    background: #2a2a2a !important;
+}
+
+html[data-theme="dark"] .weather-day.is-selected {
+    border-color: #6da6ff !important;
+    background: #243957 !important;
+    box-shadow: inset 0 0 0 1px rgba(118, 168, 255, 0.24) !important;
+}
+
+html[data-theme="dark"] .weather-day strong {
+    color: #cad5df !important;
+}
+
+html[data-theme="dark"] .weather-day.is-selected strong {
+    color: #a9ceff !important;
+}
+
+/* 계산기 */
+html[data-theme="dark"] .calculator-display,
+html[data-theme="dark"] [data-widget-id="6"] input {
+    border-color: #3b3b3b !important;
+    background: #0f1722 !important;
+    color: #f3f7fb !important;
+    box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.22) !important;
+}
+
+html[data-theme="dark"] .calculator-buttons button,
+html[data-theme="dark"] [data-widget-id="6"] button {
+    border: 1px solid #3a3a3a !important;
+    background: #1a2635 !important;
+    color: #dddddd !important;
+    box-shadow: none !important;
+}
+
+html[data-theme="dark"] .calculator-buttons button:hover,
+html[data-theme="dark"] [data-widget-id="6"] button:hover {
+    border-color: #5779a1 !important;
+    background: #223247 !important;
+}
+
+html[data-theme="dark"] [data-widget-id="6"] [data-action="clear-calc"] {
+    border-color: #6b4650 !important;
+    background: #3a242c !important;
+    color: #ff9b9b !important;
+}
+
+html[data-theme="dark"] [data-widget-id="6"] [data-action="calculate"] {
+    border-color: #4d83ed !important;
+    background: #4d83ed !important;
+    color: #ffffff !important;
+}
+
+html[data-theme="dark"] [data-widget-id="6"] [data-value="+"],
+html[data-theme="dark"] [data-widget-id="6"] [data-value="-"],
+html[data-theme="dark"] [data-widget-id="6"] [data-value="*"],
+html[data-theme="dark"] [data-widget-id="6"] [data-value="/"],
+html[data-theme="dark"] [data-widget-id="6"] [data-action="percent-calc"],
+html[data-theme="dark"] [data-widget-id="6"] [data-action="backspace-calc"] {
+    border-color: #385875 !important;
+    background: #20384d !important;
+    color: #91d0f1 !important;
+}
+
+/* 미니 캘린더 */
+html[data-theme="dark"] [data-widget-id="7"] button {
+    color: #dfe7ef;
+}
+
+html[data-theme="dark"] [data-widget-id="7"] button:hover {
+    background: #1c2a3b;
+}
+
+html[data-theme="dark"] .mini-calendar,
+html[data-theme="dark"] .mini-calendar-grid,
+html[data-theme="dark"] .calendar-grid {
+    color: #dddddd;
+}
+
+html[data-theme="dark"] .mini-calendar-day,
+html[data-theme="dark"] .calendar-day {
+    border-color: #373737 !important;
+    background: #151f2c !important;
+    color: #dddddd !important;
+}
+
+html[data-theme="dark"] .mini-calendar-day:hover,
+html[data-theme="dark"] .calendar-day:hover {
+    border-color: #4f7299 !important;
+    background: #2a2a2a !important;
+}
+
+html[data-theme="dark"] .mini-calendar-day.is-today,
+html[data-theme="dark"] .calendar-day.is-today,
+html[data-theme="dark"] .mini-calendar-day.today,
+html[data-theme="dark"] .calendar-day.today {
+    border-color: #6da6ff !important;
+    background: #243957 !important;
+    color: #ffffff !important;
+}
+
+html[data-theme="dark"] .mini-calendar-day.is-other-month,
+html[data-theme="dark"] .calendar-day.is-other-month,
+html[data-theme="dark"] .other-month {
+    color: #5f6c7b !important;
+}
+
+/* 메모 */
+html[data-theme="dark"] .memo-write-box,
+html[data-theme="dark"] .memo-item {
+    border-color: #304158 !important;
+    background: #242424 !important;
+}
+
+html[data-theme="dark"] .memo-input,
+html[data-theme="dark"] [data-widget-id="8"] textarea {
+    border-color: #424242 !important;
+    background: #0f1722 !important;
+    color: #edf3fa !important;
+}
+
+html[data-theme="dark"] .memo-input::placeholder,
+html[data-theme="dark"] [data-widget-id="8"] textarea::placeholder {
+    color: #69798a !important;
+}
+
+html[data-theme="dark"] .memo-count,
+html[data-theme="dark"] .memo-created-at,
+html[data-theme="dark"] .memo-empty {
+    color: #969696 !important;
+}
+
+html[data-theme="dark"] .memo-item-content,
+html[data-theme="dark"] .memo-text {
+    color: #dfe7ef !important;
+}
+
+html[data-theme="dark"] .memo-save-button {
+    border-color: #4d83ed !important;
+    background: #4d83ed !important;
+    color: #ffffff !important;
+}
+
+html[data-theme="dark"] .memo-delete-button {
+    border-color: #68434d !important;
+    background: #36232b !important;
+    color: #ff9292 !important;
+}
+
+/* 증권 */
+html[data-theme="dark"] [data-widget-id="4"] [class*="stock-"] {
+    border-color: #2f4055;
+}
+
+html[data-theme="dark"] [data-widget-id="4"] .stock-header-updated,
+html[data-theme="dark"] [data-widget-id="4"] .stock-meta,
+html[data-theme="dark"] [data-widget-id="4"] .stock-symbol {
+    color: #8494a5 !important;
+}
+
+html[data-theme="dark"] [data-widget-id="4"] .stock-name,
+html[data-theme="dark"] [data-widget-id="4"] .stock-price {
+    color: #edf3fa !important;
+}
+
+html[data-theme="dark"] [data-widget-id="4"] .stock-card,
+html[data-theme="dark"] [data-widget-id="4"] .stock-item,
+html[data-theme="dark"] [data-widget-id="4"] .stock-slide,
+html[data-theme="dark"] [data-widget-id="4"] .stock-quote {
+    border-color: #304158 !important;
+    background: #242424 !important;
+}
+
+html[data-theme="dark"] [data-widget-id="4"] button {
+    border-color: #424242;
+    background: #1a2635;
+    color: #b9c7d4;
+}
+
+html[data-theme="dark"] [data-widget-id="4"] button:hover,
+html[data-theme="dark"] [data-widget-id="4"] button.active,
+html[data-theme="dark"] [data-widget-id="4"] button.is-active {
+    border-color: #5c83af;
+    background: #243957;
+    color: #a9ceff;
+}
+
+html[data-theme="dark"] .stock-refresh-button {
+    border-color: #424242 !important;
+    background: #1a2635 !important;
+    color: #a9b8c7 !important;
+}
+
+/* 공통 입력 요소 */
+html[data-theme="dark"] .widget input,
+html[data-theme="dark"] .widget textarea,
+html[data-theme="dark"] .widget select {
+    color-scheme: dark;
+}
+
+html[data-theme="dark"] .widget input:focus,
+html[data-theme="dark"] .widget textarea:focus,
+html[data-theme="dark"] .widget select:focus {
+    outline: 2px solid rgba(118, 168, 255, 0.5);
+    outline-offset: 1px;
+}
+
+/* 배치 편집 안내 */
+html[data-theme="dark"] .dashboard-group-move-guide,
+html[data-theme="dark"] .widget-move-guide {
+    border-color: #4c739b;
+    background: rgba(20, 31, 44, 0.96);
+    color: #9dc9ef;
+}
+
+html[data-theme="dark"] .widget-move-placeholder {
+    border-color: #6da6ff;
+    background:
+            repeating-linear-gradient(
+                    -45deg,
+                    rgba(118, 168, 255, 0.1),
+                    rgba(118, 168, 255, 0.1) 10px,
+                    rgba(14, 22, 32, 0.82) 10px,
+                    rgba(14, 22, 32, 0.82) 20px
+            );
+}
+
+/* 스크롤바 */
+html[data-theme="dark"] {
+    scrollbar-color: #3a4b61 #111111;
+}
+
+html[data-theme="dark"] ::-webkit-scrollbar {
+    width: 11px;
+    height: 11px;
+}
+
+html[data-theme="dark"] ::-webkit-scrollbar-track {
+    background: #111111;
+}
+
+html[data-theme="dark"] ::-webkit-scrollbar-thumb {
+    border: 2px solid #111111;
+    border-radius: 999px;
+    background: #3a4b61;
+}
+
+/* 네이버형 중성 다크 마무리 보정 */
+html[data-theme="dark"] .widget,
+html[data-theme="dark"] .auth-widget,
+html[data-theme="dark"] .header-time-group,
+html[data-theme="dark"] .schedule-calendar-group {
+    background: #1d1d1d !important;
+    border-color: #303030 !important;
+    box-shadow: none !important;
+}
+
+html[data-theme="dark"] .widget:hover {
+    border-color: #3d3d3d !important;
+}
+
+html[data-theme="dark"] .widget-header,
+html[data-theme="dark"] .header-time-group .widget-header {
+    border-bottom-color: #303030 !important;
+}
+
+html[data-theme="dark"] .widget-title,
+html[data-theme="dark"] .auth-user-name,
+html[data-theme="dark"] .weather-location,
+html[data-theme="dark"] .stock-name,
+html[data-theme="dark"] .stock-price {
+    color: #f2f2f2 !important;
+}
+
+html[data-theme="dark"] .widget-desc,
+html[data-theme="dark"] .auth-message,
+html[data-theme="dark"] .auth-profile-desc,
+html[data-theme="dark"] .news-summary,
+html[data-theme="dark"] .news-meta,
+html[data-theme="dark"] .weather-text,
+html[data-theme="dark"] .weather-range,
+html[data-theme="dark"] .memo-count,
+html[data-theme="dark"] .memo-created-at,
+html[data-theme="dark"] .stock-meta,
+html[data-theme="dark"] .stock-symbol {
+    color: #9a9a9a !important;
+}
+
+/* 내부 박스는 카드보다 한 단계 밝게 */
+html[data-theme="dark"] .world-time-item,
+html[data-theme="dark"] .sun-time-item,
+html[data-theme="dark"] .news-item,
+html[data-theme="dark"] .schedule-list li,
+html[data-theme="dark"] .weather-day,
+html[data-theme="dark"] .memo-write-box,
+html[data-theme="dark"] .memo-item,
+html[data-theme="dark"] [data-widget-id="4"] .stock-card,
+html[data-theme="dark"] [data-widget-id="4"] .stock-item,
+html[data-theme="dark"] [data-widget-id="4"] .stock-slide,
+html[data-theme="dark"] [data-widget-id="4"] .stock-quote {
+    background: #242424 !important;
+    border-color: #363636 !important;
+}
+
+html[data-theme="dark"] .world-time-item:hover,
+html[data-theme="dark"] .news-item:hover,
+html[data-theme="dark"] .schedule-list li:hover,
+html[data-theme="dark"] .weather-day:hover {
+    background: #2b2b2b !important;
+    border-color: #4a4a4a !important;
+}
+
+/* 계산기 버튼을 회색 덩어리가 아닌 다크 키패드로 통일 */
+html[data-theme="dark"] .calculator-buttons button,
+html[data-theme="dark"] [data-widget-id="6"] button {
+    background: #2a2a2a !important;
+    border-color: #393939 !important;
+    color: #ededed !important;
+}
+
+html[data-theme="dark"] .calculator-buttons button:hover,
+html[data-theme="dark"] [data-widget-id="6"] button:hover {
+    background: #343434 !important;
+    border-color: #505050 !important;
+}
+
+html[data-theme="dark"] [data-widget-id="6"] [data-value="+"],
+html[data-theme="dark"] [data-widget-id="6"] [data-value="-"],
+html[data-theme="dark"] [data-widget-id="6"] [data-value="*"],
+html[data-theme="dark"] [data-widget-id="6"] [data-value="/"],
+html[data-theme="dark"] [data-widget-id="6"] [data-action="percent-calc"],
+html[data-theme="dark"] [data-widget-id="6"] [data-action="backspace-calc"] {
+    background: #26343b !important;
+    border-color: #36515f !important;
+    color: #8dd0ef !important;
+}
+
+html[data-theme="dark"] [data-widget-id="6"] [data-action="calculate"] {
+    background: #168eb9 !important;
+    border-color: #168eb9 !important;
+}
+
+html[data-theme="dark"] [data-widget-id="6"] [data-action="clear-calc"] {
+    background: #352628 !important;
+    border-color: #584044 !important;
+    color: #ff9d9d !important;
+}
+
+/* 입력창 */
+html[data-theme="dark"] .calculator-display,
+html[data-theme="dark"] [data-widget-id="6"] input,
+html[data-theme="dark"] .memo-input,
+html[data-theme="dark"] [data-widget-id="8"] textarea {
+    background: #151515 !important;
+    border-color: #3a3a3a !important;
+    color: #f4f4f4 !important;
+}
+
+/* 선택 포인트만 사이트 하늘색 유지 */
+html[data-theme="dark"] .world-time-item.is-selected,
+html[data-theme="dark"] .weather-day.is-selected,
+html[data-theme="dark"] .mini-calendar-day.is-today,
+html[data-theme="dark"] .calendar-day.is-today,
+html[data-theme="dark"] .mini-calendar-day.today,
+html[data-theme="dark"] .calendar-day.today {
+    background: #25394d !important;
+    border-color: #6eb7df !important;
+    color: #ffffff !important;
+}
+
+/* 뉴스·위젯 선택 버튼 */
+html[data-theme="dark"] [data-widget-id="1"] button:not(.danger),
+html[data-theme="dark"] [data-widget-id="4"] button {
+    background: #292929 !important;
+    border-color: #3a3a3a !important;
+    color: #bdbdbd !important;
+}
+
+html[data-theme="dark"] [data-widget-id="1"] button.active,
+html[data-theme="dark"] [data-widget-id="1"] button.is-active,
+html[data-theme="dark"] [data-widget-id="4"] button.active,
+html[data-theme="dark"] [data-widget-id="4"] button.is-active {
+    background: #25394d !important;
+    border-color: #5e91b1 !important;
+    color: #9ed5f1 !important;
+}
+
+/* 상단 배너도 네이버처럼 거의 검정 */
+html[data-theme="dark"] .global-banner-area {
+    background: #101010 !important;
+    border-bottom-color: #303030 !important;
+    box-shadow: none !important;
+}
+
+html[data-theme="dark"] .global-service-menu-button {
+    background: #1d1d1d !important;
+    border-color: #303030 !important;
+}
+
+html[data-theme="dark"] .global-service-panel {
+    background: #1a1a1a !important;
+    border-color: #373737 !important;
+}
+
+html[data-theme="dark"] .global-service-panel::before {
+    background: #1a1a1a !important;
+    border-color: #373737 !important;
+}
+
+/* 스크롤바 */
+html[data-theme="dark"] {
+    scrollbar-color: #454545 #111111;
+}
+
+html[data-theme="dark"] ::-webkit-scrollbar-track {
+    background: #111111;
+}
+
+html[data-theme="dark"] ::-webkit-scrollbar-thumb {
+    border-color: #111111;
+    background: #454545;
+}
+
+/* 증권과 뉴스 다크 색상 최종 보정 */
+
+/* 증권: 흰색으로 남던 활성 슬라이드와 차트 영역 */
+html[data-theme="dark"]
+[data-widget-id="4"] .stock-film-card,
+html[data-theme="dark"]
+[data-widget-id="4"] .stock-film-card.swiper-slide-active,
+html[data-theme="dark"]
+[data-widget-id="4"] .stock-chart-wrap,
+html[data-theme="dark"]
+[data-widget-id="4"] .stock-chart,
+html[data-theme="dark"]
+[data-widget-id="4"] .stock-swiper,
+html[data-theme="dark"]
+[data-widget-id="4"] .stock-film-track {
+    background: #242424 !important;
+    border-color: #383838 !important;
+    color: #f2f2f2 !important;
+}
+
+html[data-theme="dark"]
+[data-widget-id="4"] .stock-film-card {
+    opacity: 0.72;
+}
+
+html[data-theme="dark"]
+[data-widget-id="4"] .stock-film-card.swiper-slide-active {
+    background: #262626 !important;
+    opacity: 1;
+}
+
+html[data-theme="dark"]
+[data-widget-id="4"] .stock-card-top,
+html[data-theme="dark"]
+[data-widget-id="4"] .stock-card-top strong,
+html[data-theme="dark"]
+[data-widget-id="4"] .stock-name,
+html[data-theme="dark"]
+[data-widget-id="4"] .stock-mini-price,
+html[data-theme="dark"]
+[data-widget-id="4"] .stock-price {
+    color: #f3f3f3 !important;
+}
+
+html[data-theme="dark"]
+[data-widget-id="4"] .stock-card-top span,
+html[data-theme="dark"]
+[data-widget-id="4"] .stock-symbol,
+html[data-theme="dark"]
+[data-widget-id="4"] .stock-meta {
+    color: #9c9c9c !important;
+}
+
+html[data-theme="dark"]
+[data-widget-id="4"] .stock-chart-wrap canvas {
+    background: transparent !important;
+}
+
+html[data-theme="dark"]
+[data-widget-id="4"] .stock-nav-button {
+    border-color: #444444 !important;
+    background: rgba(36, 36, 36, 0.96) !important;
+    color: #eeeeee !important;
+}
+
+html[data-theme="dark"]
+[data-widget-id="4"] .stock-nav-button:hover {
+    border-color: #5b5b5b !important;
+    background: #303030 !important;
+}
+
+/* 증권 오른쪽 종목 목록 */
+html[data-theme="dark"]
+[data-widget-id="4"] .stock-quote-list,
+html[data-theme="dark"]
+[data-widget-id="4"] .stock-list,
+html[data-theme="dark"]
+[data-widget-id="4"] .stock-table,
+html[data-theme="dark"]
+[data-widget-id="4"] .stock-quote-panel {
+    background: #222222 !important;
+    border-color: #383838 !important;
+}
+
+html[data-theme="dark"]
+[data-widget-id="4"] .stock-quote-list *,
+html[data-theme="dark"]
+[data-widget-id="4"] .stock-list *,
+html[data-theme="dark"]
+[data-widget-id="4"] .stock-table *,
+html[data-theme="dark"]
+[data-widget-id="4"] .stock-quote-panel * {
+    opacity: 1;
+}
+
+html[data-theme="dark"]
+[data-widget-id="4"] .stock-quote-name,
+html[data-theme="dark"]
+[data-widget-id="4"] .stock-list-name,
+html[data-theme="dark"]
+[data-widget-id="4"] .stock-table-name {
+    color: #d8d8d8 !important;
+}
+
+html[data-theme="dark"]
+[data-widget-id="4"] .stock-quote-price,
+html[data-theme="dark"]
+[data-widget-id="4"] .stock-list-price,
+html[data-theme="dark"]
+[data-widget-id="4"] .stock-table-price {
+    color: #a8a8a8 !important;
+}
+
+/* 뉴스: 청록빛 제거하고 중성 회색 카드로 통일 */
+html[data-theme="dark"]
+[data-widget-id="1"] .news-list {
+    color: #e8e8e8 !important;
+}
+
+html[data-theme="dark"]
+[data-widget-id="1"] .news-item {
+    background: #242424 !important;
+    border: 1px solid #353535 !important;
+    color: #e8e8e8 !important;
+}
+
+html[data-theme="dark"]
+[data-widget-id="1"] .news-item:hover {
+    background: #2b2b2b !important;
+    border-color: #494949 !important;
+}
+
+html[data-theme="dark"]
+[data-widget-id="1"] .news-item,
+html[data-theme="dark"]
+[data-widget-id="1"] .news-item * {
+    opacity: 1 !important;
+    filter: none !important;
+}
+
+html[data-theme="dark"]
+[data-widget-id="1"] .news-title,
+html[data-theme="dark"]
+[data-widget-id="1"] .news-item a {
+    color: #f2f2f2 !important;
+    text-shadow: none !important;
+}
+
+html[data-theme="dark"]
+[data-widget-id="1"] .news-title:hover,
+html[data-theme="dark"]
+[data-widget-id="1"] .news-item a:hover {
+    color: #8fd0ef !important;
+}
+
+html[data-theme="dark"]
+[data-widget-id="1"] .news-summary {
+    color: #b8b8b8 !important;
+}
+
+html[data-theme="dark"]
+[data-widget-id="1"] .news-meta,
+html[data-theme="dark"]
+[data-widget-id="1"] .news-source,
+html[data-theme="dark"]
+[data-widget-id="1"] .news-date {
+    color: #929292 !important;
+}
+
+html[data-theme="dark"]
+[data-widget-id="1"] .news-image-empty,
+html[data-theme="dark"]
+[data-widget-id="1"] .news-placeholder,
+html[data-theme="dark"]
+[data-widget-id="1"] .no-image {
+    background: #303030 !important;
+    color: #9a9a9a !important;
+}
+
+/* 푸터 다크 모드 최종 보정 */
+html[data-theme="dark"] [data-global-footer] {
+    background: #151515;
+    color: #d0d0d0;
+}
+
+html[data-theme="dark"] .global-footer {
+    background: #151515 !important;
+    border-top: 1px solid #303030 !important;
+    color: #d0d0d0 !important;
+}
+
+html[data-theme="dark"] .global-footer-inner {
+    background: transparent !important;
+    color: #d0d0d0 !important;
+}
+
+html[data-theme="dark"] .footer-notice {
+    border-bottom-color: #303030 !important;
+}
+
+html[data-theme="dark"] .footer-links {
+    border-bottom-color: #303030 !important;
+}
+
+html[data-theme="dark"] .footer-notice strong,
+html[data-theme="dark"] .footer-company p:first-child {
+    color: #ededed !important;
+}
+
+html[data-theme="dark"] .footer-notice a,
+html[data-theme="dark"] .footer-links a {
+    color: #b8b8b8 !important;
+}
+
+html[data-theme="dark"] .footer-links a strong {
+    color: #dddddd !important;
+}
+
+html[data-theme="dark"] .footer-notice a:hover,
+html[data-theme="dark"] .footer-links a:hover {
+    color: #8fd0ef !important;
+}
+
+html[data-theme="dark"] .footer-company {
+    color: #8f8f8f !important;
+}
+
+html[data-theme="dark"] .footer-company p {
+    color: #8f8f8f !important;
+}
+
+html[data-theme="dark"] .footer-company p + p {
+    margin-top: 5px;
+}
+
+/* 뉴스 글자와 날씨 숫자 최종 보정 */
+
+/* 뉴스 제목과 설명을 다크 배경에서 선명하게 */
+html[data-theme="dark"]
+[data-widget-id="1"] .news-title {
+    color: #f3f3f3 !important;
+    font-weight: 700;
+    opacity: 1 !important;
+}
+
+html[data-theme="dark"]
+[data-widget-id="1"] .news-title:visited {
+    color: #d8d8d8 !important;
+}
+
+html[data-theme="dark"]
+[data-widget-id="1"] .news-title:hover {
+    color: #8fd0ef !important;
+}
+
+html[data-theme="dark"]
+[data-widget-id="1"] .news-summary {
+    color: #b9b9b9 !important;
+    opacity: 1 !important;
+}
+
+html[data-theme="dark"]
+[data-widget-id="1"] .news-meta {
+    color: #969696 !important;
+    opacity: 1 !important;
+}
+
+/* 뉴스 카드 안의 링크 색상 강제 보정 */
+html[data-theme="dark"]
+[data-widget-id="1"] .news-item a {
+    color: #f3f3f3 !important;
+    opacity: 1 !important;
+}
+
+html[data-theme="dark"]
+[data-widget-id="1"] .news-item a:hover {
+    color: #8fd0ef !important;
+}
+
+/* 현재 날씨 큰 온도 */
+html[data-theme="dark"]
+[data-widget-id="5"] .weather-temp {
+    color: #f4f7fb !important;
+    text-shadow: none !important;
+    opacity: 1 !important;
+}
+
+html[data-theme="dark"]
+[data-widget-id="5"] .weather-forecast-high {
+    color: #f4f7fb !important;
+}
+
+html[data-theme="dark"]
+[data-widget-id="5"] .weather-forecast-low {
+    color: #a9b3bc !important;
+}
+
+/* 주간 예보 최저·최고 숫자 */
+html[data-theme="dark"]
+[data-widget-id="5"] .weather-min-temp,
+html[data-theme="dark"]
+[data-widget-id="5"] .weather-max-temp,
+html[data-theme="dark"]
+[data-widget-id="5"] .weather-range {
+    color: #d8dde2 !important;
+    opacity: 1 !important;
+}
+
+html[data-theme="dark"]
+[data-widget-id="5"] .weather-range-divider {
+    color: #7f8991 !important;
+}
+
+/* 날씨 위치와 설명도 숫자와 균형 맞춤 */
+html[data-theme="dark"]
+[data-widget-id="5"] .weather-location {
+    color: #f1f3f5 !important;
+}
+
+html[data-theme="dark"]
+[data-widget-id="5"] .weather-text,
+html[data-theme="dark"]
+[data-widget-id="5"] .weather-rain {
+    color: #aeb7bf !important;
+}

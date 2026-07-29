@@ -11,29 +11,203 @@
     <link rel="stylesheet" th:href="@{/css/mypage-modal.css}">
 </head>
 <body class="map-service-page">
-<!-- 메인 화면과 동일한 전역 배너: 지도 화면에서는 지도 링크 대신 메인페이지 링크를 노출합니다. -->
-<div class="global-banner-area">
+<!-- 캘린더 화면과 같은 구조의 지도 상단 배너 -->
+<header class="map-global-banner-area">
     <div data-global-banner>
-        <nav class="global-banner" aria-label="전역 메뉴">
-            <a class="global-home-link" href="/index.html" aria-label="메인페이지로 이동">
-                <span class="global-logo-text" aria-hidden="true">
-                    <span class="global-logo-letter">더</span>
-                </span>
-            </a>
+        <nav class="map-global-banner"
+             aria-label="전역 메뉴">
+
+            <div class="global-left-menu">
+
+                <div class="global-service-menu"
+                     data-map-service-menu>
+
+                    <button type="button"
+                            class="global-service-menu-button"
+                            data-map-page-action="toggle-service-menu"
+                            aria-label="서비스 메뉴 열기"
+                            aria-expanded="false"
+                            aria-controls="mapGlobalServicePanel">
+                        <span aria-hidden="true"></span>
+                        <span aria-hidden="true"></span>
+                        <span aria-hidden="true"></span>
+                    </button>
+
+                    <section id="mapGlobalServicePanel"
+                             class="global-service-panel"
+                             data-map-service-panel
+                             aria-label="서비스 바로가기"
+                             hidden>
+
+                        <div class="global-service-panel-user"
+                             data-map-service-user>
+                            <a class="global-service-login-link"
+                               href="/member/login">
+                                <strong>로그인하세요</strong>
+                                <span aria-hidden="true">›</span>
+                            </a>
+
+                            <p class="global-service-login-desc">
+                                로그인하고 여러 서비스를 편리하게 이용하세요.
+                            </p>
+                        </div>
+
+                        <div class="global-service-panel-divider"></div>
+
+                        <div class="global-service-shortcut-area">
+                            <h2>바로가기</h2>
+
+                            <div class="global-service-shortcuts">
+                                <a class="global-service-shortcut"
+                                   href="/calendar"
+                                   data-map-service-link>
+                                    <span class="global-service-shortcut-icon"
+                                          aria-hidden="true">
+                                        📅
+                                    </span>
+                                    <span>캘린더</span>
+                                </a>
+
+                                <a class="global-service-shortcut is-current"
+                                   href="/map/kakao"
+                                   aria-current="page"
+                                   data-map-service-link>
+                                    <span class="global-service-shortcut-icon"
+                                          aria-hidden="true">
+                                        📍
+                                    </span>
+                                    <span>지도</span>
+                                </a>
+                            </div>
+                        </div>
+
+                    </section>
+
+                </div>
+
+                <a class="global-home-link"
+                   href="/index.html"
+                   aria-label="메인페이지로 이동">
+                    <span class="global-logo-text"
+                          aria-hidden="true">
+                        <span class="global-logo-letter">더</span>
+                    </span>
+                </a>
+            </div>
 
             <div class="global-right-menu">
-                <a class="global-service-link global-main-link" href="/index.html">
-                    메인페이지
-                </a>
-                <a class="global-service-link global-calendar-link" href="/calendar">
-                    캘린더
-                </a>
-                <div class="global-user-menu" data-map-global-user-menu aria-live="polite">
-                    <span class="global-user-loading">계정 확인 중</span>
+
+                <div class="global-user-menu"
+                     data-map-global-user-menu
+                     aria-live="polite">
+                    <span class="global-user-loading">
+                        계정 확인 중
+                    </span>
                 </div>
+
+                <span class="global-menu-divider"
+                      aria-hidden="true"></span>
+
+                <div class="global-settings-menu">
+                    <button type="button"
+                            data-map-page-action="open-settings">
+                        <span class="global-settings-icon"
+                              aria-hidden="true">
+                            ⚙
+                        </span>
+                        <span>환경설정</span>
+                    </button>
+                </div>
+
             </div>
+
         </nav>
     </div>
+</header>
+
+<!-- 공통 화면 설정 -->
+<div class="map-settings-layer"
+     data-map-settings-layer
+     aria-hidden="true">
+
+    <button class="map-settings-backdrop"
+            type="button"
+            data-map-page-action="close-settings"
+            aria-label="환경설정 닫기">
+    </button>
+
+    <aside class="map-settings-drawer"
+           aria-label="환경설정">
+
+        <div class="map-settings-header">
+            <h2>환경설정</h2>
+
+            <button class="map-settings-close"
+                    type="button"
+                    data-map-page-action="close-settings"
+                    aria-label="환경설정 닫기">
+                ×
+            </button>
+        </div>
+
+        <div class="map-settings-content">
+            <section class="map-theme-setting-box">
+                <h2>화면 설정</h2>
+                <p class="map-theme-setting-label">화면 스타일</p>
+
+                <div class="map-theme-option-list"
+                     role="group"
+                     aria-label="화면 스타일 선택">
+
+                    <button class="map-theme-option-button"
+                            type="button"
+                            data-map-page-action="set-theme"
+                            data-map-theme-option="light"
+                            data-value="light"
+                            aria-pressed="false">
+                        <span class="map-theme-option-icon"
+                              aria-hidden="true">
+                            ☀
+                        </span>
+
+                        <span class="map-theme-option-text">
+                            <strong>라이트 모드</strong>
+                            <span>밝은 화면</span>
+                        </span>
+
+                        <span class="map-theme-option-check"
+                              aria-hidden="true">
+                            ✓
+                        </span>
+                    </button>
+
+                    <button class="map-theme-option-button"
+                            type="button"
+                            data-map-page-action="set-theme"
+                            data-map-theme-option="dark"
+                            data-value="dark"
+                            aria-pressed="false">
+                        <span class="map-theme-option-icon"
+                              aria-hidden="true">
+                            ☾
+                        </span>
+
+                        <span class="map-theme-option-text">
+                            <strong>다크 모드</strong>
+                            <span>어두운 화면</span>
+                        </span>
+
+                        <span class="map-theme-option-check"
+                              aria-hidden="true">
+                            ✓
+                        </span>
+                    </button>
+
+                </div>
+            </section>
+        </div>
+
+    </aside>
 </div>
 
 <div class="map-page-shell">
@@ -375,7 +549,7 @@
             <div class="map-toolbar">
                 <div>
                     <span class="section-kicker">LIVE MAP</span>
-                    <h2>지도</h2>
+                    <h2>동적 지도</h2>
                     <p class="map-toolbar-guide">검색 결과, 주변 시설과 선택 장소가 지도에 표시됩니다.</p>
                 </div>
                 <div class="map-toolbar-actions">
@@ -419,7 +593,7 @@
     };
 </script>
 <script defer src="https://t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
-<script defer th:src="@{/js/kakao-map-layout.js}"></script>
+<script defer th:src="@{/js/kakao-map-layout.js?v=20260729-5}"></script>
 <script defer th:src="@{/js/common/address-search.js}"></script>
 
 <!-- 마이페이지 모듈 -->

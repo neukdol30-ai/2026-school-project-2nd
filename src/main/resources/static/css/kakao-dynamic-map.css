@@ -49,8 +49,8 @@ body {
     min-height: 100vh;
     overflow-y: auto;
     background:
-        radial-gradient(circle at top left, rgba(186, 230, 253, 0.56), transparent 34%),
-        var(--map-bg);
+            radial-gradient(circle at top left, rgba(186, 230, 253, 0.56), transparent 34%),
+            var(--map-bg);
     color: var(--map-text);
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 }
@@ -1153,7 +1153,7 @@ select:disabled {
     padding: 18px;
     border-bottom: 1px solid var(--map-border);
     background:
-        linear-gradient(145deg, rgba(255, 255, 255, 0.98), rgba(234, 246, 255, 0.96));
+            linear-gradient(145deg, rgba(255, 255, 255, 0.98), rgba(234, 246, 255, 0.96));
 }
 
 .map-search-dock-head {
@@ -1756,114 +1756,487 @@ select:disabled {
     overflow-x: hidden;
 }
 
-.map-service-page .global-banner-area,
+/* 지도 페이지 푸터 연결 */
 .map-service-page .global-footer {
     min-width: 0;
+    margin-top: 34px;
 }
 
-.map-service-page .global-banner-area [data-global-banner],
 .map-service-page .global-footer-inner {
     width: min(var(--dashboard-width), calc(100% - 32px));
     min-width: 0;
 }
 
-.map-service-page .global-banner {
-    grid-template-columns: minmax(0, 1fr) auto !important;
-}
-
-.map-service-page .global-home-link {
-    grid-column: 1;
-}
-
-.map-service-page .global-right-menu {
-    grid-column: 2;
-}
-
-.map-service-page .global-main-link {
-    color: var(--map-primary-deep);
-    font-weight: 900;
-}
-
-.map-service-page .global-calendar-link {
-    color: #5f7d8b;
-}
-
-.map-service-page .global-user-menu form {
-    display: inline-flex;
-    margin: 0;
-}
-
-.map-service-page .global-user-loading {
-    display: inline-flex;
-    align-items: center;
-    min-height: 36px;
-    color: #70858f;
-    font-size: 13px;
-    font-weight: 700;
-    white-space: nowrap;
-}
-
-.map-service-page .global-footer {
-    margin-top: 34px;
-}
-
 @media (max-width: 920px) {
-    .map-service-page .global-banner-area {
-        height: auto;
-        min-height: var(--global-banner-height);
-    }
-
-    .map-service-page .global-banner-area [data-global-banner],
     .map-service-page .global-footer-inner {
         width: min(calc(100% - 24px), var(--dashboard-width));
-    }
-
-    .map-service-page .global-banner {
-        grid-template-columns: auto minmax(0, 1fr) !important;
-        min-height: var(--global-banner-height);
-    }
-
-    .map-service-page .global-home-link {
-        margin-left: 0;
-    }
-
-    .map-service-page .global-right-menu {
-        justify-self: end;
-        flex-wrap: wrap;
-        justify-content: flex-end;
-        gap: 10px;
-        height: auto;
-        margin-right: 0;
-        padding: 9px 0;
-    }
-
-    .map-service-page .global-user-menu {
-        gap: 9px;
     }
 }
 
 @media (max-width: 640px) {
-    .map-service-page .global-logo-text {
-        min-width: 38px;
-        height: 42px;
-        font-size: 26px;
-    }
-
-    .map-service-page .global-right-menu,
-    .map-service-page .global-user-menu {
-        gap: 7px;
-    }
-
-    .map-service-page .global-service-link,
-    .map-service-page .global-user-menu a,
-    .map-service-page .global-user-menu button {
-        min-height: 32px;
-        font-size: 12px;
-    }
-
     .map-service-page .global-footer-inner {
         padding-right: 4px;
         padding-left: 4px;
     }
 }
+body.map-settings-open {
+    overflow: hidden;
+}
+/* 환경설정 서랍 */
+.map-settings-layer {
+    position: fixed;
+    inset: 0;
+    z-index: 600;
+    visibility: hidden;
+    pointer-events: none;
+    transition: visibility 0s linear 0.32s;
+}
 
+.map-settings-layer.is-open {
+    visibility: visible;
+    pointer-events: auto;
+    transition-delay: 0s;
+}
+
+.map-settings-backdrop {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    background: rgba(17, 24, 39, 0);
+    transition: background-color 0.32s ease;
+}
+
+.map-settings-layer.is-open .map-settings-backdrop {
+    background: rgba(17, 24, 39, 0.28);
+}
+
+.map-settings-drawer {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: min(380px, calc(100vw - 32px));
+    height: 100%;
+    overflow-y: auto;
+    background: #ffffff;
+    box-shadow: -12px 0 30px rgba(17, 24, 39, 0.16);
+    transform: translateX(100%);
+    transition: transform 0.32s ease;
+}
+
+.map-settings-layer.is-open .map-settings-drawer {
+    transform: translateX(0);
+}
+
+.map-settings-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.map-settings-header h2 {
+    margin: 0;
+    font-size: 18px;
+}
+
+.map-settings-close {
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    border: 0;
+    border-radius: 6px;
+    background: transparent;
+    color: #374151;
+    font-size: 24px;
+    line-height: 1;
+    cursor: pointer;
+}
+
+.map-settings-content {
+    padding: 20px;
+}
+
+.map-theme-setting-box h2 {
+    margin: 0;
+    color: #1f2937;
+    font-size: 17px;
+}
+
+.map-theme-setting-label {
+    margin: 14px 0 10px;
+    color: #6b7280;
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.map-theme-option-list {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+}
+
+.map-theme-option-button {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: center;
+    min-height: 108px;
+    padding: 15px 14px;
+    border: 1px solid #dfe6ea;
+    border-radius: 12px;
+    background: #f8fafb;
+    color: #334155;
+    font-family: inherit;
+    text-align: left;
+    cursor: pointer;
+    transition:
+            border-color 0.18s ease,
+            background-color 0.18s ease,
+            box-shadow 0.18s ease,
+            transform 0.18s ease;
+}
+
+.map-theme-option-button:hover {
+    border-color: #9ed7eb;
+    background: #f0faff;
+    transform: translateY(-1px);
+}
+
+.map-theme-option-button.is-selected {
+    border-color: #1aa8df;
+    background: #eaf8fe;
+    box-shadow: 0 0 0 2px rgba(26, 168, 223, 0.12);
+}
+
+.map-theme-option-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 34px;
+    margin-bottom: 10px;
+    border-radius: 10px;
+    background: #ffffff;
+    box-shadow: 0 3px 9px rgba(15, 23, 42, 0.08);
+    font-size: 18px;
+}
+
+.map-theme-option-text {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+.map-theme-option-text strong {
+    font-size: 13px;
+    font-weight: 800;
+}
+
+.map-theme-option-text span {
+    color: #7b8794;
+    font-size: 11px;
+}
+
+.map-theme-option-check {
+    position: absolute;
+    top: 11px;
+    right: 11px;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: #1aa8df;
+    color: #ffffff;
+    font-size: 12px;
+    font-weight: 900;
+}
+
+.map-theme-option-button.is-selected .map-theme-option-check {
+    display: inline-flex;
+}
+
+/* 지도 다크 모드 */
+html[data-theme="dark"] {
+    color-scheme: dark;
+    --map-bg: #121212;
+    --map-surface: #1d1d1d;
+    --map-surface-soft: #242424;
+    --map-surface-blue: #26343c;
+    --map-surface-blue-strong: #2a3c46;
+    --map-primary: #54bde8;
+    --map-primary-dark: #8fd0ef;
+    --map-primary-deep: #277ba5;
+    --map-accent: #63c9ef;
+    --map-accent-soft: #283b45;
+    --map-text: #f1f1f1;
+    --map-muted: #aaaaaa;
+    --map-border: #383838;
+    --map-border-strong: #4a4a4a;
+    --map-shadow: 0 16px 38px rgba(0, 0, 0, 0.32);
+}
+
+html[data-theme="dark"] body.map-service-page {
+    background:
+            radial-gradient(circle at top left, rgba(68, 144, 177, 0.12), transparent 34%),
+            var(--map-bg);
+    color: var(--map-text);
+}
+html[data-theme="dark"] .map-settings-layer.is-open .map-settings-backdrop {
+    background: rgba(0, 0, 0, 0.58);
+}
+
+html[data-theme="dark"] .map-settings-drawer {
+    background: #111a27;
+    color: #edf3fa;
+    box-shadow: -16px 0 38px rgba(0, 0, 0, 0.46);
+}
+
+html[data-theme="dark"] .map-settings-header {
+    border-bottom-color: #29374a;
+    background: #0f1621;
+}
+
+html[data-theme="dark"] .map-settings-header h2,
+html[data-theme="dark"] .map-theme-setting-box h2 {
+    color: #f2f6fb;
+}
+
+html[data-theme="dark"] .map-settings-close {
+    color: #9ba8b9;
+}
+
+html[data-theme="dark"] .map-settings-close:hover {
+    background: #1c2838;
+    color: #eef4fb;
+}
+
+html[data-theme="dark"] .map-theme-setting-label {
+    color: #9ba8b9;
+}
+
+html[data-theme="dark"] .map-theme-option-button {
+    border-color: #304057;
+    background: #182333;
+    color: #edf3fa;
+}
+
+html[data-theme="dark"] .map-theme-option-button:hover {
+    border-color: #587ba9;
+    background: #1e2c40;
+}
+
+html[data-theme="dark"] .map-theme-option-button.is-selected {
+    border-color: #76a8ff;
+    background: #233b5d;
+    box-shadow:
+            inset 0 0 0 1px rgba(118, 168, 255, 0.42),
+            0 8px 18px rgba(0, 0, 0, 0.14);
+}
+
+html[data-theme="dark"] .map-theme-option-icon {
+    background: #172231;
+    color: #9bc0ff;
+    box-shadow: none;
+}
+
+html[data-theme="dark"] .map-theme-option-text span {
+    color: #9ba8b9;
+}
+
+html[data-theme="dark"] .map-theme-option-check {
+    background: #4d83ed;
+}
+
+/* 지도 화면의 카드와 폼 */
+html[data-theme="dark"] .map-side-panel,
+html[data-theme="dark"] .map-canvas-panel,
+html[data-theme="dark"] .map-search-dock,
+html[data-theme="dark"] .map-panel-section,
+html[data-theme="dark"] .map-toolbar,
+html[data-theme="dark"] .search-result-card,
+html[data-theme="dark"] .favorite-card,
+html[data-theme="dark"] .route-point-box,
+html[data-theme="dark"] .route-candidate-card,
+html[data-theme="dark"] .empty-state,
+html[data-theme="dark"] .nearby-category-button {
+    border-color: var(--map-border);
+    background: var(--map-surface);
+    color: var(--map-text);
+}
+
+html[data-theme="dark"] .favorite-section {
+    background: var(--map-surface-soft);
+}
+
+html[data-theme="dark"] :is(
+    .search-input-wrap input,
+    .search-option-row select,
+    .route-form input,
+    .route-form select,
+    .option-toggle
+) {
+    border-color: var(--map-border);
+    background: #242424;
+    color: var(--map-text);
+}
+
+html[data-theme="dark"] :is(
+    .search-input-wrap input,
+    .route-form input
+)::placeholder {
+    color: #858585;
+}
+
+html[data-theme="dark"] :is(
+    .map-toolbar h2,
+    .section-title-row h2,
+    .map-search-dock h2,
+    .selected-title-row strong,
+    .result-content strong,
+    .favorite-card-content strong,
+    .route-point-box strong,
+    .route-result strong,
+    .route-candidate-content strong,
+    .route-step-content strong,
+    .empty-state strong
+) {
+    color: var(--map-text);
+}
+
+html[data-theme="dark"] :is(
+    .map-toolbar-guide,
+    .selected-title-row span:not(.result-rank),
+    .result-content span,
+    .result-content small,
+    .favorite-card-content span,
+    .favorite-card-content small,
+    .route-candidate-content small,
+    .route-step-content small,
+    .empty-state,
+    .empty-state p
+) {
+    color: var(--map-muted);
+}
+
+html[data-theme="dark"] .map-side-tab {
+    color: #bcbcbc;
+}
+
+html[data-theme="dark"] .map-side-tab:hover,
+html[data-theme="dark"] .map-side-tab.active {
+    color: #8fd0ef;
+}
+
+html[data-theme="dark"] .map-side-workspace,
+html[data-theme="dark"] .map-tab-panel,
+html[data-theme="dark"] .route-result,
+html[data-theme="dark"] .nearby-refresh-row {
+    background: transparent;
+    color: var(--map-muted);
+}
+
+html[data-theme="dark"] .location-status,
+html[data-theme="dark"] .result-count,
+html[data-theme="dark"] .selected-meta-row span,
+html[data-theme="dark"] .result-mode-badge,
+html[data-theme="dark"] .route-selected-guide {
+    border-color: var(--map-border);
+    background: var(--map-accent-soft);
+    color: #a7ddf3;
+}
+
+html[data-theme="dark"] .search-result-card.active,
+html[data-theme="dark"] .route-candidate-card.active,
+html[data-theme="dark"] .route-point-box.selected {
+    border-color: var(--map-primary);
+    background: #24343d;
+}
+
+html[data-theme="dark"] .map-toolbar-actions button {
+    border-color: var(--map-border);
+    background: #242424;
+    color: #a7ddf3;
+}
+
+html[data-theme="dark"] .global-footer {
+    border-top-color: #303030;
+    background: #111111;
+    color: #aaaaaa;
+}
+
+html[data-theme="dark"] :is(
+    .footer-notice,
+    .footer-links,
+    .footer-company
+) {
+    border-color: #303030;
+    color: #aaaaaa;
+}
+
+html[data-theme="dark"] .global-footer a {
+    color: #d0d0d0;
+}
+/* 다크 모드에서 지도 밝기만 낮춤 */
+html[data-theme="dark"] #kakaoDynamicMap > div:first-child {
+    filter:
+            brightness(0.78)
+            saturate(0.85)
+            contrast(1.06);
+}
+
+/* 다크 모드 왼쪽 기능 탭 */
+html[data-theme="dark"] .map-side-tabs {
+    border-bottom-color: #343434;
+    background: #1b1b1b;
+}
+
+html[data-theme="dark"] .map-side-tab {
+    background: #1b1b1b;
+    color: #a9a9a9;
+}
+
+html[data-theme="dark"] .map-side-tab:hover {
+    background: #242424;
+    color: #8fd0ef;
+}
+
+html[data-theme="dark"] .map-side-tab.active {
+    background: #20282d;
+    color: #8fd0ef;
+}
+
+html[data-theme="dark"] .map-side-tab-icon {
+    border-color: #3b3b3b;
+    background: #282828;
+    color: #8fd0ef;
+    box-shadow: none;
+}
+
+html[data-theme="dark"] .map-side-tab.active .map-side-tab-icon {
+    border-color: #55849a;
+    background: #294653;
+    color: #ffffff;
+}
+
+html[data-theme="dark"] .map-side-tab-badge {
+    border-color: #1b1b1b;
+}
+
+/* 햄버거 메뉴에 지도가 있으므로 오른쪽 중복 링크 숨김 */
+.map-service-page
+.global-right-menu
+> .global-map-link,
+.map-service-page
+.global-right-menu
+> .global-map-link
++ .global-menu-divider {
+    display: none;
+}

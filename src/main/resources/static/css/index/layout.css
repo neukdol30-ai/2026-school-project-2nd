@@ -925,6 +925,623 @@
 .header-widget-slot .widget-title::after {
     content: attr(data-current-time-basis);
 }
+/* 3칸 자유 배치판 */
+:root {
+    --dashboard-board-width: 1390px;
+    --dashboard-column-width: 450px;
+    --dashboard-column-gap: 20px;
+    --dashboard-row-gap: 20px;
+}
+
+.container {
+    min-width: var(--dashboard-width);
+}
+
+.dashboard-board {
+    position: relative;
+    width: var(--dashboard-board-width);
+    min-width: var(--dashboard-board-width);
+    min-height: var(--header-card-height);
+    margin: 0 auto;
+}
+
+.dashboard-board > [data-layout-item],
+.dashboard-board > [data-layout-fixed] {
+    position: absolute;
+    top: 0;
+    left: 0;
+    box-sizing: border-box;
+    will-change: transform;
+}
+
+.dashboard-board > [data-layout-item] {
+    transition:
+            box-shadow 0.2s ease,
+            opacity 0.2s ease;
+}
+
+/* 실제 배치 이동이 필요할 때만 한 번 부드럽게 이동 */
+.dashboard-board.is-layout-animating
+> [data-layout-item] {
+    transition:
+            transform 0.25s ease,
+            box-shadow 0.2s ease,
+            opacity 0.2s ease;
+}
+
+.dashboard-board > [data-layout-item][data-layout-span="1"] {
+    width: var(--dashboard-column-width);
+}
+
+.dashboard-board > [data-layout-item][data-layout-span="2"] {
+    width: calc(
+            var(--dashboard-column-width) * 2
+            + var(--dashboard-column-gap)
+    );
+}
+
+.dashboard-auth-item {
+    width: var(--dashboard-column-width);
+    min-height: var(--auth-card-height);
+}
+
+.dashboard-auth-item > * {
+    width: 100% !important;
+    max-width: none !important;
+    min-width: 0 !important;
+    height: var(--auth-card-height) !important;
+    min-height: var(--auth-card-height) !important;
+    margin: 0 !important;
+}
+
+.dashboard-layout-item.widget {
+    margin: 0;
+}
+
+/* 현재시간과 세계시간은 원래 크기와 가로 구성을 유지 */
+.dashboard-time-item {
+    width: calc(
+            var(--dashboard-column-width) * 2
+            + var(--dashboard-column-gap)
+    );
+}
+
+.header-time-group.is-single-time {
+    grid-template-columns: 1fr;
+}
+
+.header-time-group.is-single-time
+.header-world-time-slot::before {
+    display: none;
+}
+
+/* 일정과 달력도 하나의 2칸 묶음으로 이동 */
+.schedule-calendar-group {
+    position: relative;
+    display: grid;
+    grid-template-columns:
+        minmax(0, 2.25fr)
+        minmax(250px, 0.95fr);
+    gap: 0;
+    width: calc(
+            var(--dashboard-column-width) * 2
+            + var(--dashboard-column-gap)
+    );
+    align-items: stretch;
+    background: transparent;
+}
+
+.schedule-calendar-group.is-single-group {
+    grid-template-columns: 1fr;
+}
+
+.schedule-calendar-group > .widget {
+    width: 100% !important;
+    min-width: 0;
+    margin: 0 !important;
+}
+
+.schedule-calendar-group
+> [data-widget-id="3"] {
+    position: relative;
+    min-height: 310px;
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+    border-right: 0;
+}
+
+.schedule-calendar-group
+> [data-widget-id="7"] {
+    position: relative;
+    min-height: 310px;
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+}
+
+.schedule-calendar-group:not(.is-single-group)
+> [data-widget-id="7"]::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 1;
+    width: 1px;
+    background: #e5e7eb;
+}
+
+.schedule-calendar-group.is-single-group > .widget {
+    border-radius: 14px;
+    border-right: 1px solid #e5e7eb;
+}
+
+.schedule-calendar-group
+> [data-widget-id="3"]
+.widget-content {
+    min-height: 220px;
+}
+
+.schedule-calendar-group
+> [data-widget-id="7"]
+.widget-content {
+    min-width: 0;
+}
+
+/* 기존 2열 전용 배치는 새 배치판에서는 사용하지 않음 */
+.dashboard-header,
+.dashboard-layout,
+.widget-column,
+.widget-list[data-widget-list="main"],
+.widget-list[data-widget-list="side"] {
+    position: static;
+}
+
+/* 배치 편집 표시 */
+.is-layout-edit-mode
+.dashboard-board > [data-layout-item] {
+    cursor: grab;
+
+    /* 위젯 실제 크기에 맞는 얇은 실선 */
+    outline: 1px solid rgba(52, 154, 195, 0.34);
+    outline-offset: 0;
+
+    transition:
+            outline-color 0.18s ease,
+            box-shadow 0.18s ease,
+            opacity 0.18s ease;
+}
+
+.is-layout-edit-mode
+.dashboard-board > [data-layout-item]:hover {
+    outline-color: rgba(41, 170, 221, 0.78);
+    box-shadow:
+            0 8px 20px rgba(25, 121, 158, 0.10);
+}
+
+.dashboard-group-move-guide {
+    position: absolute;
+    top: 8px;
+    left: 50%;
+    z-index: 20;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 26px;
+    padding: 0 10px;
+    border: 1px solid rgba(20, 142, 186, 0.26);
+    border-radius: 999px;
+    background: rgba(247, 252, 255, 0.94);
+    color: #197da1;
+    font-size: 11px;
+    font-weight: 800;
+    pointer-events: none;
+    transform: translateX(-50%);
+}
+
+.widget-move-guide {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.widget-move-placeholder {
+    min-height: 90px;
+    border: 1px solid rgba(40, 174, 221, 0.58);
+    border-radius: 14px;
+    background: rgba(40, 174, 221, 0.05);
+    box-sizing: border-box;
+    pointer-events: none;
+}
+
+.dashboard-board > [data-layout-floating="true"] {
+    opacity: 0.97;
+    outline: 2px solid rgba(27, 168, 217, 0.88);
+    outline-offset: 0;
+    box-shadow:
+            0 18px 40px rgba(15, 89, 119, 0.22);
+    cursor: grabbing;
+}
+
+body.is-widget-move-mode,
+body.is-widget-move-mode * {
+    cursor: grabbing !important;
+    user-select: none !important;
+}
+
+/* 1칸 위젯은 옮겨도 기존 사이드 크기를 유지 */
+.dashboard-board
+> .dashboard-layout-item.side-widget {
+    width: var(--dashboard-column-width) !important;
+    max-width: var(--dashboard-column-width) !important;
+}
+
+/* 2칸 위젯은 오른쪽으로 옮겨도 원본 920px 크기를 유지 */
+.dashboard-board
+> .dashboard-layout-item.main-widget {
+    width: calc(
+            var(--dashboard-column-width) * 2
+            + var(--dashboard-column-gap)
+    ) !important;
+    max-width: none !important;
+}
+
+/* 상단 서비스 메뉴 */
+.global-left-menu {
+    grid-column: 1;
+    justify-self: start;
+
+    position: relative;
+    display: flex;
+    align-items: center;
+
+    height: 100%;
+    margin-left: 24px;
+    gap: 12px;
+}
+
+/* 기존 홈 로고는 기능과 디자인을 유지하고 메뉴 버튼 옆으로 이동 */
+.global-left-menu .global-home-link {
+    grid-column: auto;
+    justify-self: auto;
+
+    height: 100%;
+    margin-left: 0;
+    padding: 0 8px;
+}
+
+.global-service-menu {
+    position: relative;
+    display: flex;
+    align-items: center;
+    height: 100%;
+}
+
+/* 햄버거 버튼 */
+.global-service-menu-button {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+
+    width: 46px;
+    height: 46px;
+    padding: 0;
+    gap: 6px;
+
+    border: 1px solid transparent;
+    border-radius: 50%;
+    background: #edf2f4;
+
+    cursor: pointer;
+    transition:
+            background 0.18s ease,
+            border-color 0.18s ease,
+            transform 0.18s ease;
+}
+
+.global-service-menu-button span {
+    display: block;
+    width: 22px;
+    height: 2px;
+    border-radius: 999px;
+    background: #41545d;
+    transition:
+            transform 0.18s ease,
+            opacity 0.18s ease;
+}
+
+.global-service-menu-button:hover {
+    border-color: #d3e1e7;
+    background: #e4ecef;
+    transform: translateY(-1px);
+}
+
+.global-service-menu-button:focus-visible {
+    outline: 2px solid #1aa8df;
+    outline-offset: 3px;
+}
+
+.global-service-menu.is-open
+.global-service-menu-button {
+    border-color: #c9dde6;
+    background: #e5eef2;
+}
+
+/* 서비스 말풍선 패널 */
+.global-service-panel {
+    position: absolute;
+    top: calc(100% - 4px);
+    left: -8px;
+    z-index: 320;
+
+    width: 380px;
+    box-sizing: border-box;
+
+    border: 1px solid #dce5e9;
+    border-radius: 0 14px 14px 14px;
+    background: #ffffff;
+    box-shadow: 0 16px 42px rgba(24, 67, 86, 0.18);
+
+    color: #1e3946;
+}
+
+/* 햄버거 쪽을 가리키는 말풍선 꼬리 */
+.global-service-panel::before {
+    content: "";
+    position: absolute;
+    top: -11px;
+    left: 21px;
+
+    width: 20px;
+    height: 20px;
+
+    border-top: 1px solid #dce5e9;
+    border-left: 1px solid #dce5e9;
+    background: #ffffff;
+    transform: rotate(45deg);
+}
+
+.global-service-panel > * {
+    position: relative;
+    z-index: 1;
+}
+
+.global-service-panel-user {
+    min-height: 104px;
+    padding: 22px 24px 20px;
+    box-sizing: border-box;
+}
+
+/* 비로그인 안내 */
+.global-service-login-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+
+    color: #111f26;
+    font-size: 21px;
+    text-decoration: none;
+}
+
+.global-service-login-link strong {
+    font-weight: 900;
+}
+
+.global-service-login-link span {
+    color: #82939b;
+    font-size: 28px;
+    font-weight: 300;
+    line-height: 1;
+}
+
+.global-service-login-link:hover {
+    color: #087fac;
+}
+
+.global-service-login-desc {
+    margin: 10px 0 0;
+    color: #748891;
+    font-size: 12px;
+    line-height: 1.5;
+}
+
+/* 로그인 사용자 정보 */
+.global-service-profile {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    gap: 12px;
+}
+
+.global-service-profile-button {
+    display: flex;
+    align-items: center;
+    flex: 1;
+    min-width: 0;
+    padding: 0;
+
+    border: 0;
+    background: transparent;
+    font-family: inherit;
+    text-align: left;
+    cursor: pointer;
+}
+
+.global-service-avatar {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 46px;
+
+    width: 46px;
+    height: 46px;
+    border-radius: 50%;
+    background: #e8f7fd;
+
+    color: #1597c7;
+    font-size: 18px;
+    font-weight: 900;
+}
+
+.global-service-profile-text {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    margin-left: 12px;
+    gap: 4px;
+}
+
+.global-service-profile-text strong {
+    overflow: hidden;
+    color: #173847;
+    font-size: 16px;
+    font-weight: 900;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.global-service-profile-text span {
+    color: #7b8d95;
+    font-size: 11px;
+}
+
+.global-service-profile-arrow {
+    margin-left: auto;
+    color: #8b9aa1;
+    font-size: 25px;
+    line-height: 1;
+}
+
+.global-service-logout-button {
+    flex: 0 0 auto;
+    min-height: 34px;
+    padding: 0 11px;
+
+    border: 1px solid #d8e2e7;
+    border-radius: 7px;
+    background: #ffffff;
+
+    color: #687d87;
+    font-family: inherit;
+    font-size: 11px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.global-service-logout-button:hover {
+    border-color: #bcd6e1;
+    color: #087fac;
+}
+
+.global-service-panel-divider {
+    height: 1px;
+    background: #e8edef;
+}
+
+/* 바로가기 영역 */
+.global-service-shortcut-area {
+    padding: 20px 24px 24px;
+}
+
+.global-service-shortcut-area h2 {
+    margin: 0 0 17px;
+    color: #162d38;
+    font-size: 17px;
+    font-weight: 900;
+}
+
+.global-service-shortcuts {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+}
+
+.global-service-shortcut {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+
+    min-height: 104px;
+    padding: 14px 10px;
+    box-sizing: border-box;
+
+    border: 1px solid #e1e8eb;
+    border-radius: 12px;
+    background: #f8fbfc;
+
+    color: #294956;
+    font-size: 13px;
+    font-weight: 800;
+    text-decoration: none;
+
+    transition:
+            background 0.18s ease,
+            border-color 0.18s ease,
+            transform 0.18s ease,
+            box-shadow 0.18s ease;
+}
+
+.global-service-shortcut:hover {
+    border-color: #a9d9eb;
+    background: #eefaff;
+    box-shadow: 0 8px 18px rgba(42, 117, 148, 0.09);
+    transform: translateY(-2px);
+}
+
+.global-service-shortcut-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 46px;
+    height: 46px;
+    margin-bottom: 9px;
+
+    border-radius: 14px;
+    background: #ffffff;
+    box-shadow: 0 3px 10px rgba(42, 117, 148, 0.08);
+
+    font-size: 24px;
+}
+
+.global-service-menu.is-open
+.global-service-panel {
+    animation: globalServicePanelOpen 0.16s ease-out;
+}
+
+@keyframes globalServicePanelOpen {
+    from {
+        opacity: 0;
+        transform: translateY(-6px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+html[data-theme="dark"]
+.is-layout-edit-mode
+.dashboard-board > [data-layout-item] {
+    outline-color: rgba(111, 188, 220, 0.28);
+}
+
+html[data-theme="dark"]
+.is-layout-edit-mode
+.dashboard-board > [data-layout-item]:hover {
+    outline-color: rgba(111, 201, 240, 0.68);
+    box-shadow:
+            0 8px 20px rgba(0, 0, 0, 0.18);
+}
+
+html[data-theme="dark"]
+.widget-move-placeholder {
+    border-color: rgba(111, 201, 240, 0.46);
+    background: rgba(111, 201, 240, 0.06);
+}
+
 /* 지도 서비스 링크 */
 .global-service-link {
     display: inline-flex;
@@ -945,7 +1562,11 @@
     color: #087fac;
 }
 
-.global-service-link:focus-visible {
-    outline: 2px solid #1aa8df;
-    outline-offset: 3px;
+html[data-theme="dark"] .global-service-link {
+    color: #d0d0d0;
+}
+
+html[data-theme="dark"] .global-service-link:hover,
+html[data-theme="dark"] .global-service-link:focus-visible {
+    color: #8fd0ef;
 }

@@ -1,8 +1,71 @@
+// 공통 화면 테마 설정
+const PORTAL_THEME_STORAGE_KEY = "portalTheme";
+const PORTAL_THEME_VALUES = new Set([
+    "light",
+    "dark"
+]);
+
+function normalizePortalTheme(theme) {
+    return PORTAL_THEME_VALUES.has(theme)
+        ? theme
+        : "light";
+}
+
+function getStoredPortalTheme() {
+    try {
+        return normalizePortalTheme(
+            localStorage.getItem(
+                PORTAL_THEME_STORAGE_KEY
+            )
+        );
+    } catch (error) {
+        console.warn(
+            "화면 테마 불러오기 실패:",
+            error
+        );
+
+        return "light";
+    }
+}
+
+function applyPortalTheme(theme) {
+    const nextTheme = normalizePortalTheme(theme);
+
+    state.theme = nextTheme;
+
+    document.documentElement.dataset.theme =
+        nextTheme;
+
+    document.documentElement.style.colorScheme =
+        nextTheme;
+}
+
+function setPortalTheme(theme) {
+    const nextTheme = normalizePortalTheme(theme);
+
+    applyPortalTheme(nextTheme);
+
+    try {
+        localStorage.setItem(
+            PORTAL_THEME_STORAGE_KEY,
+            nextTheme
+        );
+    } catch (error) {
+        console.warn(
+            "화면 테마 저장 실패:",
+            error
+        );
+    }
+}
+
 
 // 메인 대시보드 상태
 const state = {
     isEditMode: false,
     isSettingsOpen: false,
+
+    // 메인, 캘린더, 지도에서 함께 사용할 화면 테마
+    theme: getStoredPortalTheme(),
 
     // 현재시간 위젯은 상단 헤더에 표시
     headerWidgetId: 9,
@@ -340,3 +403,17 @@ const state = {
         }
     ]
 };
+
+// 첫 화면을 그리기 전에 저장된 테마를 적용한다.
+applyPortalTheme(state.theme);
+
+window.addEventListener(
+    "storage",
+    function (event) {
+        if (event.key !== PORTAL_THEME_STORAGE_KEY) {
+            return;
+        }
+
+        applyPortalTheme(event.newValue);
+    }
+);
