@@ -14,21 +14,33 @@
     <link rel="stylesheet"
           th:href="@{/css/main.css}">
 
-    <!-- 게시판 전용 CSS -->
+    <!-- 공통 헤더·푸터 디자인 -->
     <link rel="stylesheet"
-          th:href="@{/css/board.css}">
+          th:href="@{/css/index.css}">
+
+    <!-- 마이페이지 모달 -->
+    <link rel="stylesheet"
+          th:href="@{/css/mypage-modal.css}">
+
+    <!-- 쿠키 동의 CSS -->
+    <link rel="stylesheet"
+          th:href="@{/css/cookie-consent.css}">
 
     <!-- TOAST UI Editor CSS -->
     <link rel="stylesheet"
           href="https://uicdn.toast.com/editor/latest/toastui-editor.min.css">
 
-    <!-- TOAST UI Editor JS -->
-    <script src="https://uicdn.toast.com/editor/latest/toastui-editor-all.min.js"></script>
-    <script src="https://uicdn.toast.com/editor/latest/i18n/ko-kr.js"></script>
-    <link rel="stylesheet" th:href="@{/css/cookie-consent.css}">
+    <!-- 게시판 전용 CSS는 가장 마지막 -->
+    <link rel="stylesheet"
+          th:href="@{/css/board.css}">
 </head>
 
-<body>
+<body class="board-body">
+
+<!-- 공통 상단 헤더 -->
+<div class="global-banner-area">
+    <div data-global-banner></div>
+</div>
 
 <main class="board-page">
 
@@ -182,66 +194,135 @@
 
 </main>
 
+<!-- 공통 하단 푸터 -->
+<div data-global-footer></div>
+
+
+<!-- 공통 헤더·푸터 관련 JS -->
+
+<!-- banner.js에서 사용하는 상태와 공통 함수 -->
+<script th:src="@{/js/index/state.js}"></script>
+<script th:src="@{/js/index/utils.js}"></script>
+
+<!-- 공통 헤더와 푸터 -->
+<script th:src="@{/js/index/layout/banner.js}"></script>
+<script th:src="@{/js/index/layout/footer.js}"></script>
+
+<!-- 마이페이지 모달 -->
+<script th:src="@{/js/common/address-search.js}"></script>
+<script th:src="@{/js/mypage-modal.js}"></script>
+
+
+<!-- TOAST UI Editor -->
+
+<script src="https://uicdn.toast.com/editor/latest/toastui-editor-all.min.js"></script>
+<script src="https://uicdn.toast.com/editor/latest/i18n/ko-kr.js"></script>
+
+
+<!-- 게시글 수정 에디터 -->
+
 <script>
-    // 기존 게시글 본문 또는 Validation 실패 후 입력했던 본문
+    /*
+     * 기존 게시글 본문 또는
+     * Validation 실패 후 입력했던 본문
+     */
+    const contentInput =
+        document.querySelector("#content");
+
+    const editorElement =
+        document.querySelector("#editor");
+
+    const updateForm =
+        document.querySelector("#board-update-form");
+
     const savedContent =
-        document.querySelector("#content").value || "";
+        contentInput?.value || "";
 
-    const editor = new toastui.Editor({
-        el: document.querySelector("#editor"),
-        height: "560px",
-        initialEditType: "wysiwyg",
-        previewStyle: "vertical",
-        language: "ko-KR",
-        initialValue: savedContent,
+    if (
+        editorElement
+        && contentInput
+        && updateForm
+        && typeof toastui !== "undefined"
+    ) {
+        const editor = new toastui.Editor({
+            el: editorElement,
+            height: "560px",
+            initialEditType: "wysiwyg",
+            previewStyle: "vertical",
+            language: "ko-KR",
+            initialValue: savedContent,
 
-        hooks: {
-            addImageBlobHook: async function (
-                blob,
-                callback
-            ) {
-                const formData = new FormData();
-                formData.append("image", blob);
+            hooks: {
+                addImageBlobHook: async function (
+                    blob,
+                    callback
+                ) {
+                    const formData =
+                        new FormData();
 
-                try {
-                    const response = await fetch(
-                        "/board/image/upload",
-                        {
-                            method: "POST",
-                            body: formData
-                        }
+                    formData.append(
+                        "image",
+                        blob
                     );
 
-                    const result = await response.json();
+                    try {
+                        const response =
+                            await fetch(
+                                "/board/image/upload",
+                                {
+                                    method: "POST",
+                                    body: formData
+                                }
+                            );
 
-                    if (!response.ok) {
-                        throw new Error(
-                            result.message ||
-                            "이미지 업로드에 실패했습니다."
+                        const result =
+                            await response.json();
+
+                        if (!response.ok) {
+                            throw new Error(
+                                result.message
+                                || "이미지 업로드에 실패했습니다."
+                            );
+                        }
+
+                        callback(
+                            result.imageUrl,
+                            blob.name
+                            || "게시글 이미지"
+                        );
+
+                    } catch (error) {
+                        alert(
+                            error.message
+                            || "이미지 업로드 중 오류가 발생했습니다."
                         );
                     }
-
-                    callback(
-                        result.imageUrl,
-                        blob.name || "게시글 이미지"
-                    );
-
-                } catch (error) {
-                    alert(error.message);
                 }
             }
-        }
-    });
-
-    // 수정 버튼을 누르면
-    // TOAST UI HTML 내용을 hidden input에 저장
-    document.querySelector("form")
-        .addEventListener("submit", function () {
-            document.querySelector("#content").value =
-                editor.getHTML();
         });
+
+        /*
+         * 수정 버튼을 누르면
+         * 에디터 HTML을 hidden input에 저장
+         */
+        updateForm.addEventListener(
+            "submit",
+            function () {
+                contentInput.value =
+                    editor.getHTML();
+            }
+        );
+    }
 </script>
 
+
+<!-- 게시판 공통 레이아웃 실행 -->
+
+<script th:src="@{/js/board/board-common-layout.js}"></script>
+
+
+<!-- 쿠키 설정 -->
 <script th:src="@{/js/cookie-consent.js}"></script>
+
 </body>
 </html>

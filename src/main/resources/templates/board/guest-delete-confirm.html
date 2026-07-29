@@ -13,7 +13,12 @@
     <link rel="stylesheet" th:href="@{/css/board.css}">
 </head>
 
-<body>
+<body class="board-body">
+
+<!-- 공통 상단 헤더 -->
+<div class="global-banner-area">
+    <div data-global-banner></div>
+</div>
 
 <main class="guest-delete-page">
 
@@ -72,6 +77,9 @@
     </section>
 
 </main>
+
+<!-- 공통 하단 푸터 -->
+<div data-global-footer></div>
 
 </body>
 </html>
