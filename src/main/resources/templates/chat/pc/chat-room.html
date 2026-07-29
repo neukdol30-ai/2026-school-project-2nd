@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>1:1 상담 채팅</title>
     <link rel="stylesheet" th:href="@{/css/chat/pc/chat-room-pc.css}">
-    <link rel="stylesheet" href="/css/cookie-consent.css">
+    <link rel="stylesheet" th:href="@{/css/cookie-consent.css}">
 </head>
 <body>
 <div class="chat-page">
@@ -87,6 +87,6 @@
     const roomStatus = /*[[${chatRoom.status}]]*/ "OPEN";
 </script>
 <script th:src="@{/js/chat.js}"></script>
-    <script src="/js/cookie-consent.js"></script>
+<script th:src="@{/js/cookie-consent.js}"></script>
 </body>
 </html>

@@ -32,12 +32,6 @@ public interface ChatDao {
     ChatRoomDto findRoomByRoomNo(@Param("roomNo") Integer roomNo);
 
     /**
-     * 전체 상담방 조회
-     * Scheduler에서 Redis 메시지 저장 대상 방을 찾기 위해 사용한다.
-     */
-    List<ChatRoomDto> findAllRooms();
-
-    /**
      * 관리자 상담 목록 조회
      * 검색 조건과 페이징 조건을 적용한다.
      */
@@ -99,6 +93,11 @@ public interface ChatDao {
      * 메시지 Oracle DB 저장
      */
     int saveMessage(ChatMessageDto chatMessageDto);
+
+    /**
+     * 한 상담방의 메시지를 Oracle 익명 PL/SQL 블록으로 묶어 저장합니다.
+     */
+    void saveMessages(@Param("messages") List<ChatMessageDto> messages);
 
     /**
      * 특정 상담방 메시지 조회

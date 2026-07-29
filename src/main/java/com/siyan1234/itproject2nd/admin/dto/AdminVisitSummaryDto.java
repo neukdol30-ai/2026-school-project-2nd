@@ -16,7 +16,11 @@ public class AdminVisitSummaryDto {
     private String nickname;
     private String role;
     private String ipAddress;
+    /** 원본 로그 보관기간 안에서 방문한 날짜 수입니다. */
     private Long visitCount;
+
+    /** 원본 로그 보관기간 안에서 발생한 방문 대상 요청 수입니다. */
+    private Long requestCount;
     private LocalDateTime firstVisitDate;
     private LocalDateTime lastVisitDate;
     private String lastRequestUri;

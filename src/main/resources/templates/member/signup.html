@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
     <title>회원가입</title>
     <link rel="stylesheet" th:href="@{/css/signup.css}">
-    <link rel="stylesheet" href="/css/cookie-consent.css">
+    <link rel="stylesheet" th:href="@{/css/cookie-consent.css}">
 </head>
 
 <body>
@@ -119,8 +119,8 @@
                 <label class="form-label" for="birthDate">생년월일</label>
                 <!-- maxlength="10" : 하이픈 2개 포함해서 2000-03-06 = 정확히 10자 -->
                 <input id="birthDate" type="text" th:field="*{birthDate}" class="form-input"
-                maxlength="10"
-                placeholder="생년월일 8자리 (예: 20000306)">
+                       maxlength="10"
+                       placeholder="생년월일 8자리 (예: 20000306)">
                 <p class="error-message" th:errors="*{birthDate}"></p> <!-- 서버 검증(미래 날짜/14세 미만) 오류 표시 자리 -->
                 <span id="birthDateHint" class="check-msg"></span> <!-- 실시간 안내 메시지 자리(JS가 채움) -->
             </div>
@@ -138,8 +138,8 @@
                 <label class="form-label" for="postcode">우편번호</label>
                 <div class="postcode-wrap"> <!-- 입력칸과 버튼을 가로로 나란히 배치하기 위한 div -->
                     <!-- readonly : 사용자 직접 타이핑 X -> JS가 채워 넣은 값만 표시. -->
-                <input id="postcode" type="text" th:field="*{postcode}" class="form-input" readonly
-                placeholder="주소 검색 버튼을 눌러주세요">
+                    <input id="postcode" type="text" th:field="*{postcode}" class="form-input" readonly
+                           placeholder="주소 검색 버튼을 눌러주세요">
                     <button type="button" id="postcodeSearchBtn" class="postcode-btn">주소 검색</button>
                 </div>
             </div>
@@ -155,22 +155,66 @@
                 <input id="detailAddress" type="text" th:field="*{detailAddress}" class="form-input">
             </div>
 
-            <!-- 필수 7 : 이용약관 동의 (체크박스 required) / 바깥 div는 .check-group, 안쪽 label은 .check-label -->
+            <!-- 필수 7 : 이용약관 동의 영역 -->
             <div class="check-group">
-                <label class="check-label">
-                    <input type="checkbox" th:field="*{agreeTermsYn}" value="Y" class="check-input" required>
-                    <span>이용약관에 동의합니다. <span class="required">*</span></span>
-                </label>
-                <p class="error-message" th:errors="*{agreeTermsYn}"></p>
+
+                <div class="check-row">
+                    <label class="check-label">
+                        <input type="checkbox"
+                               th:field="*{agreeTermsYn}"
+                               value="Y"
+                               class="check-input"
+                               required>
+                        <span>
+                            이용약관에 동의합니다.
+                            <span class="required">*</span>
+                        </span>
+                    </label>
+
+                    <a th:href="@{/member/terms}"
+                       target="_blank"
+                       rel="noopener noreferrer"
+                       class="policy-link">
+                        내용 보기
+                    </a>
+                </div>
+
+                <p class="error-message"
+                   th:errors="*{agreeTermsYn}">
+                </p>
             </div>
 
-            <!-- 필수 8 : 개인정보 처리방침 동의 -->
+            <!-- 필수 8 : 개인정보 수집 및 이용 동의 영역 -->
             <div class="check-group">
-                <label class="check-label">
-                    <input type="checkbox" th:field="*{agreePrivacyYn}" value="Y" class="check-input" required>
-                    <span>개인정보 처리방침에 동의합니다. <span class="required">*</span></span>
-                </label>
-                <p class="error-message" th:errors="*{agreePrivacyYn}"></p>
+
+                <div class="check-row">
+
+                    <label class="check-label">
+
+                        <input type="checkbox"
+                               th:field="*{agreePrivacyYn}"
+                               value="Y"
+                               class="check-input"
+                               required>
+
+                        <!-- 개인정보 수집·이용 동의 문구입니다 -->
+                        <span>
+                            개인정보 수집 및 이용에 동의합니다.
+                            <span class="required">*</span>
+                        </span>
+                    </label>
+
+                    <a th:href="@{/member/privacy}"
+                       target="_blank"
+                       rel="noopener noreferrer"
+                       class="policy-link">
+                        내용 보기
+                    </a>
+                </div>
+
+                <p class="error-message"
+                   th:errors="*{agreePrivacyYn}">
+                </p>
             </div>
 
             <button type="submit" class="submit-button">회원가입</button>
@@ -184,6 +228,6 @@
 
 <script src="https://t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
 <script th:src="@{/js/signup.js}"></script>
-<script src="/js/cookie-consent.js"></script>
+<script th:src="@{/js/cookie-consent.js}"></script>
 </body>
 </html>

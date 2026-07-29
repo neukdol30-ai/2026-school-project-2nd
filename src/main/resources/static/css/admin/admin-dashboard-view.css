@@ -177,3 +177,8 @@
 .service-card.available span { color: #047857; background: #d1fae5; }
 .service-card.pending span { color: #b45309; background: #fef3c7; }
 
+
+/* 방문 기록 화면은 핵심 지표 4개를 한 줄에 배치합니다. */
+.visit-metric-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+}

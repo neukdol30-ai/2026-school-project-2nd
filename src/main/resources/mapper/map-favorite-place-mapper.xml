@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.siyan1234.itproject2nd.map.dao.MapFavoritePlaceDao">
+
+    <!-- 모든 조회·삭제 조건에 MEMBER_NO를 포함해 즐겨찾기 소유권을 SQL에서도 보장합니다. -->
+
+    <sql id="favoriteColumns">
+        favorite_no,
+        member_no,
+        place_key,
+        place_id,
+        place_name,
+        address_name,
+        category_name,
+        phone,
+        place_url,
+        longitude,
+        latitude,
+        source_type,
+        created_date
+    </sql>
+
+    <select id="findAllByMemberNo"
+            resultType="com.siyan1234.itproject2nd.map.dto.MapFavoritePlaceDto">
+        SELECT
+            <include refid="favoriteColumns"/>
+        FROM map_favorite_place
+        WHERE member_no = #{memberNo, jdbcType=NUMERIC}
+        ORDER BY created_date DESC, favorite_no DESC
+    </select>
+
+    <select id="findByMemberNoAndPlaceKey"
+            resultType="com.siyan1234.itproject2nd.map.dto.MapFavoritePlaceDto">
+        SELECT
+            <include refid="favoriteColumns"/>
+        FROM map_favorite_place
+        WHERE member_no = #{memberNo, jdbcType=NUMERIC}
+          AND place_key = #{placeKey, jdbcType=VARCHAR}
+        FETCH FIRST 1 ROW ONLY
+    </select>
+
+    <insert id="insert">
+        INSERT INTO map_favorite_place (
+            member_no,
+            place_key,
+            place_id,
+            place_name,
+            address_name,
+            category_name,
+            phone,
+            place_url,
+            longitude,
+            latitude,
+            source_type
+        ) VALUES (
+            #{memberNo, jdbcType=NUMERIC},
+            #{placeKey, jdbcType=VARCHAR},
+            #{placeId, jdbcType=VARCHAR},
+            #{placeName, jdbcType=VARCHAR},
+            #{addressName, jdbcType=VARCHAR},
+            #{categoryName, jdbcType=VARCHAR},
+            #{phone, jdbcType=VARCHAR},
+            #{placeUrl, jdbcType=VARCHAR},
+            #{longitude, jdbcType=NUMERIC},
+            #{latitude, jdbcType=NUMERIC},
+            #{sourceType, jdbcType=VARCHAR}
+        )
+    </insert>
+
+    <delete id="deleteByFavoriteNoAndMemberNo">
+        DELETE FROM map_favorite_place
+        WHERE favorite_no = #{favoriteNo, jdbcType=NUMERIC}
+          AND member_no = #{memberNo, jdbcType=NUMERIC}
+    </delete>
+
+</mapper>

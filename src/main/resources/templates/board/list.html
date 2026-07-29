@@ -9,7 +9,7 @@
           content="width=device-width, initial-scale=1.0">
 
     <title>게시글 목록</title>
-    <link rel="stylesheet" href="/css/cookie-consent.css">
+    <link rel="stylesheet" th:href="@{/css/cookie-consent.css}">
 
     <!-- 공통 CSS -->
     <link rel="stylesheet"
@@ -324,6 +324,7 @@
     </section>
 
 </main>
-    <script src="/js/cookie-consent.js"></script>
+
+<script th:src="@{/js/cookie-consent.js}"></script>
 </body>
 </html>

@@ -91,3 +91,11 @@ file:
 #logging:
 #  level:
 #    com.siyan1234.itproject2nd.member.service.OAuth2DetailsService: DEBUG
+app:
+  visit-log:
+    # IP, User-Agent 등 원본 방문 로그 보관 일수입니다.
+    # 기간이 지나면 일별 통계만 남기고 원본 로그는 자동 삭제합니다.
+    retention-days: ${VISIT_LOG_RETENTION_DAYS:30}
+    # 매일 새벽 3시 10분에 전날까지의 통계를 집계한 뒤 오래된 원본 로그를 삭제합니다.
+    cleanup-cron: ${VISIT_LOG_CLEANUP_CRON:0 10 3 * * *}
+    zone: ${VISIT_LOG_TIME_ZONE:Asia/Seoul}

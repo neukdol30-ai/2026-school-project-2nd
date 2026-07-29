@@ -6,46 +6,128 @@
 
 <mapper namespace="com.siyan1234.itproject2nd.cookie.dao.VisitLogDao">
 
-    <!-- 분석 쿠키 동의 사용자의 방문 기록 저장 -->
-    <insert id="insert"
+    <!--
+        같은 IP의 하루 첫 방문이면 INSERT합니다.
+        당일 재방문이면 created_date는 유지하고 최근 방문 정보만 갱신합니다.
+        이렇게 해야 "첫 방문"과 "최근 방문"을 동시에 정확히 표시할 수 있습니다.
+    -->
+    <insert id="upsertDailyVisit"
             parameterType="com.siyan1234.itproject2nd.cookie.dto.VisitLogDto">
-        INSERT INTO visit_log (
-            member_no,
-            session_id,
-            request_uri,
-            query_string,
-            request_method,
-            user_agent,
-            ip_address,
-            referer,
-            created_date
+        MERGE INTO visit_log target
+        USING (
+            SELECT
+                #{memberNo, jdbcType=NUMERIC} AS member_no,
+                #{sessionId, jdbcType=VARCHAR} AS session_id,
+                #{requestUri, jdbcType=VARCHAR} AS request_uri,
+                #{queryString, jdbcType=VARCHAR} AS query_string,
+                #{requestMethod, jdbcType=VARCHAR} AS request_method,
+                #{userAgent, jdbcType=VARCHAR} AS user_agent,
+                #{ipAddress, jdbcType=VARCHAR} AS ip_address,
+                #{referer, jdbcType=VARCHAR} AS referer,
+                SYSTIMESTAMP AS visited_date
+            FROM dual
+        ) source
+        ON (
+            target.ip_address = source.ip_address
+            AND TRUNC(CAST(target.created_date AS DATE))
+                = TRUNC(CAST(source.visited_date AS DATE))
         )
-        VALUES (
-            #{memberNo, jdbcType=NUMERIC},
-            #{sessionId, jdbcType=VARCHAR},
-            #{requestUri, jdbcType=VARCHAR},
-            #{queryString, jdbcType=VARCHAR},
-            #{requestMethod, jdbcType=VARCHAR},
-            #{userAgent, jdbcType=VARCHAR},
-            #{ipAddress, jdbcType=VARCHAR},
-            #{referer, jdbcType=VARCHAR},
-            SYSTIMESTAMP
-        )
+        WHEN MATCHED THEN
+            UPDATE SET
+                target.member_no = NVL(target.member_no, source.member_no),
+                target.session_id = source.session_id,
+                target.request_uri = source.request_uri,
+                target.query_string = source.query_string,
+                target.request_method = source.request_method,
+                target.user_agent = source.user_agent,
+                target.referer = source.referer,
+                target.last_visit_date = source.visited_date,
+                target.daily_request_count = NVL(target.daily_request_count, 1) + 1
+        WHEN NOT MATCHED THEN
+            INSERT (
+                member_no,
+                session_id,
+                request_uri,
+                query_string,
+                request_method,
+                user_agent,
+                ip_address,
+                referer,
+                created_date,
+                last_visit_date,
+                daily_request_count
+            )
+            VALUES (
+                source.member_no,
+                source.session_id,
+                source.request_uri,
+                source.query_string,
+                source.request_method,
+                source.user_agent,
+                source.ip_address,
+                source.referer,
+                source.visited_date,
+                source.visited_date,
+                1
+            )
     </insert>
 
+    <!--
+        오늘이 끝난 날짜만 개인정보 없는 일별 통계로 집계합니다.
+        MERGE이므로 같은 날짜를 다시 실행해도 중복 행이 생기지 않습니다.
+    -->
+    <update id="mergeCompletedDailyStats">
+        MERGE INTO visit_daily_stat target
+        USING (
+            SELECT
+                TRUNC(CAST(v.created_date AS DATE)) AS stat_date,
+                COUNT(*) AS unique_visitor_count,
+                SUM(CASE WHEN v.member_no IS NOT NULL THEN 1 ELSE 0 END) AS member_visitor_count,
+                SUM(CASE WHEN v.member_no IS NULL THEN 1 ELSE 0 END) AS guest_visitor_count,
+                SUM(NVL(v.daily_request_count, 1)) AS request_count
+            FROM visit_log v
+            WHERE v.created_date &lt; TRUNC(SYSDATE)
+            AND NOT EXISTS (
+                SELECT 1
+                FROM member admin_member
+                WHERE admin_member.no = v.member_no
+                AND admin_member.role = 'ADMIN'
+            )
+            GROUP BY TRUNC(CAST(v.created_date AS DATE))
+        ) source
+        ON (target.stat_date = source.stat_date)
+        WHEN MATCHED THEN
+            UPDATE SET
+                target.unique_visitor_count = source.unique_visitor_count,
+                target.member_visitor_count = source.member_visitor_count,
+                target.guest_visitor_count = source.guest_visitor_count,
+                target.request_count = source.request_count,
+                target.updated_date = SYSTIMESTAMP
+        WHEN NOT MATCHED THEN
+            INSERT (
+                stat_date,
+                unique_visitor_count,
+                member_visitor_count,
+                guest_visitor_count,
+                request_count,
+                created_date,
+                updated_date
+            )
+            VALUES (
+                source.stat_date,
+                source.unique_visitor_count,
+                source.member_visitor_count,
+                source.guest_visitor_count,
+                source.request_count,
+                SYSTIMESTAMP,
+                SYSTIMESTAMP
+            )
+    </update>
 
-    <!-- 오늘 같은 IP가 이미 방문 기록으로 저장되었는지 확인합니다. -->
-    <select id="countTodayByIp" resultType="int">
-        SELECT COUNT(*)
-        FROM visit_log v
-        WHERE v.ip_address = #{ipAddress, jdbcType=VARCHAR}
-        AND v.created_date &gt;= TRUNC(SYSDATE)
-        AND NOT EXISTS (
-            SELECT 1
-            FROM member m
-            WHERE m.no = v.member_no
-            AND m.role = 'ADMIN'
-        )
-    </select>
+    <!-- 보관기간보다 오래된 원본 IP·User-Agent 로그를 삭제합니다. -->
+    <delete id="deleteExpiredVisitLogs">
+        DELETE FROM visit_log
+        WHERE created_date &lt; TRUNC(SYSDATE) - #{retentionDays, jdbcType=NUMERIC}
+    </delete>
 
 </mapper>

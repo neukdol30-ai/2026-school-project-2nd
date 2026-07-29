@@ -1,5 +1,6 @@
 package com.siyan1234.itproject2nd.admin.dao;
 
+import com.siyan1234.itproject2nd.admin.dto.AdminVisitOverviewDto;
 import com.siyan1234.itproject2nd.admin.dto.AdminVisitSummaryDto;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
@@ -17,4 +18,7 @@ public interface AdminVisitDao {
     );
 
     Long countVisitSummaries(@Param("keyword") String keyword);
+
+    /** 장기 일별 통계와 오늘 원본 로그를 합쳐 방문 현황을 조회합니다. */
+    AdminVisitOverviewDto findVisitOverview();
 }

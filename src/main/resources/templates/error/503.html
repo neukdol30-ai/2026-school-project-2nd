@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org"
+      th:replace="~{error/fragments/error-layout :: layout(
+          '503',
+          'SERVICE UNAVAILABLE',
+          '서비스를 잠시 이용할 수 없습니다',
+          '점검 중이거나 요청이 일시적으로 집중되어 서비스를 연결하지 못했습니다.',
+          '잠시 후 다시 접속해 주세요.',
+          'server',
+          true
+      )}">
+</html>

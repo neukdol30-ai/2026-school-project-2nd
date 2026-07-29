@@ -4,6 +4,10 @@
  */
 (function (window, document) {
     const Admin = window.SecondProAdmin = window.SecondProAdmin || {};
+    const CHAT_WEBSOCKET_EVENT = Object.freeze({
+        ADMIN_LIST_JOIN: "ADMIN_LIST_JOIN",
+        ADMIN_ROOM_REFRESH: "ADMIN_ROOM_REFRESH"
+    });
     let adminListSocket = null;
     let refreshTimer = null;
 
@@ -26,7 +30,7 @@
 
         adminListSocket.onopen = function () {
             setChatLiveStatus("connected", "실시간 연결됨");
-            adminListSocket.send(JSON.stringify({ type: "ADMIN_LIST_JOIN" }));
+            adminListSocket.send(JSON.stringify({ type: CHAT_WEBSOCKET_EVENT.ADMIN_LIST_JOIN }));
         };
 
         adminListSocket.onmessage = function (event) {
@@ -38,7 +42,7 @@
                 return;
             }
 
-            if (data.type !== "ADMIN_ROOM_REFRESH") {
+            if (data.type !== CHAT_WEBSOCKET_EVENT.ADMIN_ROOM_REFRESH) {
                 return;
             }
 

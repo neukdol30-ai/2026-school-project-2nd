@@ -2,21 +2,28 @@ package com.siyan1234.itproject2nd.member.controller;
 
 import com.siyan1234.itproject2nd.config.handler.CustomLoginFailureHandler;
 import com.siyan1234.itproject2nd.config.security.PasswordPolicy;
+import com.siyan1234.itproject2nd.config.security.SecurityPaths;
 import com.siyan1234.itproject2nd.member.dto.CustomUserDetails;
 import com.siyan1234.itproject2nd.member.dto.MemberDto;
+import com.siyan1234.itproject2nd.member.dto.PendingSocialSignupDto;
 import com.siyan1234.itproject2nd.member.dto.SignupDto;
+import com.siyan1234.itproject2nd.member.service.KakaoUnlinkService;
 import com.siyan1234.itproject2nd.member.service.MailService;
 import com.siyan1234.itproject2nd.member.service.MemberService;
+import com.siyan1234.itproject2nd.member.service.PendingSocialSignupService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+
+import java.security.Security;
 
 
 @Slf4j
@@ -28,6 +35,12 @@ public class MemberController {
     private final MemberService memberService; // 회원가입 로직 처리 Service
 
     private final MailService mailService; // build.gradle mail 스타터 + RedisConfig가 만든 StringRedisTemplate 내부적으로 사용.
+
+    // Redis 소셜 가입 대기정보 조회, 삭제 담당 (동의 완료 후 정리용)
+    private final PendingSocialSignupService pendingSocialSignupService;
+
+    // 카카오 서버 쪽 연결(연동) 자체를 끊는 API 호출 담당
+    private final KakaoUnlinkService kakaoUnlinkService;
 
     // 아이디, 비밀번호 찾기 재작업
     private static final String FIND_ID_RESULT_SESSION_KEY = "findIdResultMemberId";
@@ -92,6 +105,176 @@ public class MemberController {
         } // 영준
 
         return "member/login";
+    }
+
+    // GET /member/terms 요청으로 이용약관 전문 화면 보여줌
+    @GetMapping("/terms")
+    public String termsPage() {
+
+        return "member/terms";
+    }
+
+    // GET /member/privacy 요청으로 개인정보 수집·이용 전문 화면 보여줌
+    @GetMapping("/privacy")
+    public String privacyPage() {
+
+        return "member/privacy";
+    }
+
+    // GET /member/terms-agree 요청 -> 신규 소셜 회원 약관 동의 화면 보여줌
+    @GetMapping("/terms-agree")
+    public String termsAgreeForm(
+            @AuthenticationPrincipal CustomUserDetails loginUser
+    ) {
+        // 1단계 : 로그인 자체가 안 된 경우만 우선 차단. 대기/정식 구분은 아직 하지 않음
+        if (loginUser == null || loginUser.getMemberDto() == null) {
+
+            return "redirect:" + SecurityPaths.MEMBER_LOGIN;
+        }
+
+        // 2단계 : 가입 대기 상태(소셜 인증만 끝나고 DB엔 없는 상태) -> no 없는 게 정상, no 검사보다 먼저 통과시켜 약관 화면 보여줌
+        if (loginUser.isPendingSocialSignup()) {
+
+            return "member/terms-agree";
+        }
+
+        // 3단계 : 여기부터는 대기 상태가 아닌 "정식으로 DB에 있는 회원". -> no 없으면 비정상
+        if (loginUser.getMemberDto().getNo() == null) {
+
+            return "redirect:" + SecurityPaths.MEMBER_LOGIN;
+        }
+
+        MemberDto memberDto = loginUser.getMemberDto();
+
+        // 4단계 : 두 약관에 이미 동의한 회원은 약관 화면 다시 볼 필요 X
+        if (isAgreementCompleted(memberDto)) {
+
+            return "redirect:" + SecurityPaths.HOME;
+        }
+
+        return "member/terms-agree";
+    }
+
+    // POST /member/terms-agree 요청으로 두 약관의 실제 동의 처리 수행
+    @PostMapping("/terms-agree")
+    public String termsAgreeProcess(@AuthenticationPrincipal CustomUserDetails loginUser,
+                                    @RequestParam(value = "agreeTermsYn", required = false) String agreeTermsYn,
+                                    @RequestParam(value = "agreePrivacyYn", required = false) String agreePrivacyYn,
+                                    HttpSession session,
+                                    RedirectAttributes redirectAttributes
+    ) {
+
+        // 1단계 : 로그인 자체 안 된 경우만 우선 차단
+        if (loginUser == null || loginUser.getMemberDto() == null) {
+
+            return "redirect:" + SecurityPaths.MEMBER_LOGIN;
+        }
+
+        // 2단계 : HTML의 required 속성을 우회한 직접 POST 요청까지 서버에서 다시 검증
+        if (!"Y".equals(agreeTermsYn)
+                || !"Y".equals(agreePrivacyYn)) {
+
+            redirectAttributes.addFlashAttribute(
+                    "agreementError",
+                    "이용약관과 개인정보 수집·이용에 모두 동의해야 합니다."
+            );
+
+            return "redirect:" + SecurityPaths.MEMBER_TERMS_AGREE;
+        }
+
+        // 3단계 : 가입 대기 상태면 이번이 진짜 회원가입을 확정하는 시점
+        if (loginUser.isPendingSocialSignup()) {
+
+            String pendingToken = loginUser.getPendingSocialToken();
+
+            MemberDto savedMember = memberService.completeSocialSignup(pendingToken);
+
+            if (savedMember == null) {
+
+                redirectAttributes.addFlashAttribute(
+                        "agreementError",
+                        "회원가입 처리에 실패했습니다. 소셜 로그인을 다시 시도해 주세요."
+                );
+
+                return "redirect:" + SecurityPaths.MEMBER_LOGIN;
+            }
+
+            // 저장 끝났으니 Redis 임시정보는 필요 없음 -> 즉시 삭제(TTL 10분 기다리지 않음)
+            pendingSocialSignupService.delete(pendingToken);
+
+            redirectAttributes.addFlashAttribute(
+                    "toastMessage",
+                    "회원가입이 완료되었습니다. 다시 로그인해 주세요."
+            );
+
+            SecurityContextHolder.clearContext(); // 이번 요청의 인증 정보 제거
+            session.invalidate(); // 세션 자체를 폐기
+
+            return "redirect:" + SecurityPaths.MEMBER_LOGIN;
+        }
+
+        // 4단계 : 여기부터는 대기 상태가 아닌 정식 회원. no가 없으면 비정상
+        if (loginUser.getMemberDto().getNo() == null) {
+
+            return "redirect:" + SecurityPaths.MEMBER_LOGIN;
+        }
+
+        MemberDto memberDto = loginUser.getMemberDto();
+
+        boolean updated = memberService.updateAgreement(memberDto.getNo());
+
+        if (!updated) {
+
+            redirectAttributes.addFlashAttribute(
+                    "agreementError",
+                    "약관 동의 정보를 저장하지 못했습니다. 잠시 후 다시 시도해 주세요."
+            );
+
+            return "redirect:" + SecurityPaths.MEMBER_TERMS_AGREE;
+        }
+
+        memberDto.setAgreeTermsYn("Y");
+
+        memberDto.setAgreePrivacyYn("Y");
+
+        return "redirect:" + SecurityPaths.HOME;
+    }
+
+    // POST /member/terms-agree/cancel : 신규 소셜 회원이 약관에 동의하지 않고 가입을 취소할 때 처리
+    // SecurityPaths.MEMBER_TERMS_AGREE_CANCEL 상수가 가리키는 실제 처리 지점
+    @PostMapping("/terms-agree/cancel")
+    public String termsAgreeCancel(@AuthenticationPrincipal CustomUserDetails loginUser,
+                                   HttpSession session) {
+
+        // 가입 대기 상태일 때만 Redis에 지울 개인정보가 있음
+        if (loginUser != null && loginUser.isPendingSocialSignup()) {
+
+            String pendingToken = loginUser.getPendingSocialToken();
+
+            // Redis를 지우기 전에 먼저 조회해서 provider, providerId 확보
+            PendingSocialSignupDto pendingInfo = pendingSocialSignupService.find(pendingToken);
+
+            // provider가 카카오면 카카오 서버 쪽 연결 자체도 끊음
+            if (pendingInfo != null && "kakao".equals(pendingInfo.getProvider())) {
+
+                boolean unlinked = kakaoUnlinkService.unlinkByAdminKey(pendingInfo.getProviderId());
+
+                // 카카오 서버 장애 등으로 실패해도 로그아웃 자체는 막지 않는다 (실패해도 계속 진행)
+                if (!unlinked) {
+
+                    log.warn("카카오 연결 해제 실패. 가입 취소는 계속 진행함. providerId={}",
+                            pendingInfo.getProviderId());
+                }
+            }
+            // 네이버는 로컬 DB만 정리 대상이라 여기서 API 호출 없음.
+            pendingSocialSignupService.delete(pendingToken);
+        }
+
+        SecurityContextHolder.clearContext(); // 이번 요청의 인증 정보 제거
+
+        session.invalidate(); // 세션 자체를 폐기
+
+        return "redirect:" + SecurityPaths.MEMBER_LOGIN;
     }
 
     // true/false(boolean) 그대로 브라우저 전달. JS가 이 값을 받아 메시지 띄움.
@@ -297,5 +480,15 @@ public class MemberController {
         // 회원가입(signupProcess)에서 이미 쓰던 것과 같은 패턴 -> login.html에서 토스트 메시지로 활용 가능
 
         return "redirect:/member/login";
+    }
+
+    // 현재 회원이 이용약관과 개인정보 수집·이용에 모두 동의했는지 확인
+    private boolean isAgreementCompleted(MemberDto memberDto) {
+
+        boolean termsAgreed = "Y".equalsIgnoreCase(memberDto.getAgreeTermsYn());
+
+        boolean privacyAgreed = "Y".equalsIgnoreCase(memberDto.getAgreePrivacyYn());
+
+        return termsAgreed && privacyAgreed;
     }
 }

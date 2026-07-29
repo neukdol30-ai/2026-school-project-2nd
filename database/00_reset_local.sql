@@ -18,7 +18,10 @@ DROP TABLE guest_author CASCADE CONSTRAINTS PURGE;
 
 -- ════════════════════════════════════════════════════════════
 -- [2] 방문 기록 테이블 삭제
+-- 일별 통계 테이블을 먼저 삭제한 뒤 원본 로그를 삭제
 -- ════════════════════════════════════════════════════════════
+DROP TABLE visit_daily_stat CASCADE CONSTRAINTS PURGE;
+
 DROP TABLE visit_log CASCADE CONSTRAINTS PURGE;
 
 

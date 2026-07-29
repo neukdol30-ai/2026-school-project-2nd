@@ -5,6 +5,8 @@
 
 <mapper namespace="com.siyan1234.itproject2nd.admin.dao.AdminBoardDao">
 
+    <!-- 관리자 목록/상세 조회는 일반 게시판 화면과 다른 통계 컬럼을 포함하므로 전용 Mapper로 분리합니다. -->
+
     <select id="findAdminBoards" resultType="AdminBoardDto">
         SELECT *
         FROM (

@@ -4,6 +4,7 @@ import com.siyan1234.itproject2nd.cookie.dao.VisitLogDao;
 import com.siyan1234.itproject2nd.cookie.dto.VisitLogDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
@@ -27,13 +28,12 @@ public class VisitLogService {
         }
 
         try {
-            if (visitLogDao.countTodayByIp(visitLogDto.getIpAddress()) > 0) {
-                return;
-            }
-
-            visitLogDao.insert(visitLogDto);
+            visitLogDao.upsertDailyVisit(visitLogDto);
+        } catch (DuplicateKeyException e) {
+            // 동시에 들어온 첫 요청끼리 경쟁해도 UNIQUE 인덱스가 하루 한 건만 보장합니다.
+            log.debug("같은 IP의 오늘 방문 기록이 동시에 처리되었습니다. ip={}", visitLogDto.getIpAddress());
         } catch (Exception e) {
-            log.warn("방문 기록 저장 실패. visit_log 테이블 생성 여부를 확인하세요.", e);
+            log.warn("방문 기록 저장 실패. visit_log 테이블과 V009·V010 마이그레이션 적용 여부를 확인하세요.", e);
         }
     }
 }

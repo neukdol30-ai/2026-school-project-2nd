@@ -27,14 +27,14 @@ public class ChatWebSocketBroadcaster {
 
     public void broadcastMessage(Integer roomNo, ChatMessageDto chatMessageDto) {
         broadcastToRoom(roomNo, Map.of(
-                "type", "MESSAGE",
+                "type", ChatWebSocketEventType.MESSAGE,
                 "message", chatMessageDto
         ));
     }
 
     public void broadcastRead(Integer roomNo, Integer viewerNo) {
         broadcastToRoom(roomNo, Map.of(
-                "type", "READ",
+                "type", ChatWebSocketEventType.READ,
                 "roomNo", roomNo,
                 "viewerNo", viewerNo
         ));
@@ -42,7 +42,7 @@ public class ChatWebSocketBroadcaster {
 
     public void broadcastClose(Integer roomNo, ChatMessageDto closeMessage) {
         broadcastToRoom(roomNo, Map.of(
-                "type", "CLOSE",
+                "type", ChatWebSocketEventType.CLOSE,
                 "roomNo", roomNo,
                 "message", closeMessage
         ));
@@ -50,7 +50,7 @@ public class ChatWebSocketBroadcaster {
 
     public void broadcastAdminListRefresh(Integer roomNo) {
         broadcastToAdminList(Map.of(
-                "type", "ADMIN_ROOM_REFRESH",
+                "type", ChatWebSocketEventType.ADMIN_ROOM_REFRESH,
                 "roomNo", roomNo
         ));
     }
