@@ -399,27 +399,27 @@ body {
 
 @media(max-width:960px) {
     .place-form,.static-map-form,.route-form {
-    grid-template-columns:repeat(2,minmax(0,1fr))
-}
+        grid-template-columns:repeat(2,minmax(0,1fr))
+    }
 
-.route-summary {
-    grid-template-columns:repeat(2,minmax(0,1fr))
-}
+    .route-summary {
+        grid-template-columns:repeat(2,minmax(0,1fr))
+    }
 
 }
 
 @media(max-width:860px) {
     .map-hero {
-    align-items:flex-start;
-    flex-direction:column
-}
+        align-items:flex-start;
+        flex-direction:column
+    }
 
-.map-grid,.map-form.two-column,.place-form,.static-map-form,.route-form,.route-summary {
-    grid-template-columns:1fr
-}
+    .map-grid,.map-form.two-column,.place-form,.static-map-form,.route-form,.route-summary {
+        grid-template-columns:1fr
+    }
 
-.home-link {
-    width:100%
-}
+    .home-link {
+        width:100%
+    }
 
 }

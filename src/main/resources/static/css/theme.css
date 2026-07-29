@@ -1,0 +1,1450 @@
+/*
+ * 공통 다크모드 디자인
+ * 메인, 전체 캘린더, 카카오 지도에서 사용합니다.
+ *
+ * 이 파일은 각 페이지 전용 CSS보다 뒤에 연결합니다.
+ * 기본 레이아웃과 라이트모드 디자인은 각 기존 CSS에 남겨둡니다.
+ */
+
+
+/* 카카오 지도 */
+
+/* 공통 다크모드 변수 */
+
+html[data-theme="dark"] {
+    color-scheme: dark;
+    background: #101010;
+
+    --map-bg: #101010;
+    --map-surface: #1e1e1e;
+    --map-surface-soft: #252525;
+    --map-surface-blue: #252525;
+    --map-surface-blue-strong: #2c2c2c;
+    --map-primary: #54bde8;
+    --map-primary-dark: #8fd0ef;
+    --map-primary-deep: #277ba5;
+    --map-accent: #63c9ef;
+    --map-accent-soft: #252525;
+    --map-text: #f1f1f1;
+    --map-muted: #aaaaaa;
+    --map-border: #383838;
+    --map-border-strong: #4a4a4a;
+    --map-shadow: 0 16px 38px rgba(0, 0, 0, 0.32);
+
+    --page-bg: #121212;
+    --topbar-bg: rgba(24, 24, 27, 0.96);
+    --sidebar-bg: #171717;
+    --surface: #1b1b1d;
+    --surface-soft: #202124;
+    --surface-muted: #161719;
+
+    --border: #2b2d31;
+    --border-strong: #3c4043;
+
+    --text: #f5f5f5;
+    --text-soft: #e5e7eb;
+    --muted: #a1a1aa;
+    --muted-2: #7c7f87;
+
+    --primary: #8ab4f8;
+    --primary-strong: #a8c7fa;
+    --primary-soft: #24354d;
+    --primary-soft-2: #1d2a3b;
+
+    --danger: #f28b82;
+    --danger-soft: rgba(242, 139, 130, 0.12);
+    --google: #34a853;
+    --holiday: #f28b82;
+    --saturday: #8ab4f8;
+
+    --shadow: 0 14px 34px rgba(0, 0, 0, 0.28);
+}
+
+html[data-theme="dark"] body.map-service-page,
+html[data-theme="dark"] .map-page-shell,
+html[data-theme="dark"] .map-layout {
+    background: var(--map-bg);
+    color: var(--map-text);
+}
+
+html[data-theme="dark"] .map-settings-layer.is-open .map-settings-backdrop {
+    background: rgba(0, 0, 0, 0.58);
+}
+
+html[data-theme="dark"] .map-settings-drawer {
+    background: #111a27;
+    color: #edf3fa;
+    box-shadow: -16px 0 38px rgba(0, 0, 0, 0.46);
+}
+
+html[data-theme="dark"] .map-settings-header {
+    border-bottom-color: #29374a;
+    background: #0f1621;
+}
+
+html[data-theme="dark"] .map-settings-header h2,
+html[data-theme="dark"] .map-theme-setting-box h2 {
+    color: #f2f6fb;
+}
+
+html[data-theme="dark"] .map-settings-close {
+    color: #9ba8b9;
+}
+
+html[data-theme="dark"] .map-settings-close:hover {
+    background: #1c2838;
+    color: #eef4fb;
+}
+
+html[data-theme="dark"] .map-theme-setting-label {
+    color: #9ba8b9;
+}
+
+html[data-theme="dark"] .map-theme-option-button {
+    border-color: #304057;
+    background: #182333;
+    color: #edf3fa;
+}
+
+html[data-theme="dark"] .map-theme-option-button:hover {
+    border-color: #587ba9;
+    background: #1e2c40;
+}
+
+html[data-theme="dark"] .map-theme-option-button.is-selected {
+    border-color: #76a8ff;
+    background: #233b5d;
+    box-shadow:
+            inset 0 0 0 1px rgba(118, 168, 255, 0.42),
+            0 8px 18px rgba(0, 0, 0, 0.14);
+}
+
+html[data-theme="dark"] .map-theme-option-icon {
+    background: #172231;
+    color: #9bc0ff;
+    box-shadow: none;
+}
+
+html[data-theme="dark"] .map-theme-option-text span {
+    color: #9ba8b9;
+}
+
+html[data-theme="dark"] .map-theme-option-check {
+    background: #4d83ed;
+}
+
+html[data-theme="dark"] .map-side-panel,
+html[data-theme="dark"] .map-canvas-panel,
+html[data-theme="dark"] .map-search-dock,
+html[data-theme="dark"] .map-panel-section,
+html[data-theme="dark"] .map-toolbar,
+html[data-theme="dark"] .search-result-card,
+html[data-theme="dark"] .favorite-card,
+html[data-theme="dark"] .route-point-box,
+html[data-theme="dark"] .route-candidate-card,
+html[data-theme="dark"] .empty-state,
+html[data-theme="dark"] .nearby-category-button {
+    border-color: var(--map-border);
+    background: var(--map-surface);
+    color: var(--map-text);
+}
+
+html[data-theme="dark"] .favorite-section {
+    background: var(--map-surface-soft);
+}
+
+html[data-theme="dark"] :is(
+    .search-input-wrap input,
+    .search-option-row select,
+    .route-form input,
+    .route-form select,
+    .option-toggle
+) {
+    border-color: var(--map-border);
+    background: #242424;
+    color: var(--map-text);
+}
+
+html[data-theme="dark"] :is(
+    .search-input-wrap input,
+    .route-form input
+)::placeholder {
+    color: #858585;
+}
+
+html[data-theme="dark"] :is(
+    .map-toolbar h2,
+    .section-title-row h2,
+    .map-search-dock h2,
+    .selected-title-row strong,
+    .result-content strong,
+    .favorite-card-content strong,
+    .route-point-box strong,
+    .route-result strong,
+    .route-candidate-content strong,
+    .route-step-content strong,
+    .empty-state strong
+) {
+    color: var(--map-text);
+}
+
+html[data-theme="dark"] :is(
+    .map-toolbar-guide,
+    .selected-title-row span:not(.result-rank),
+    .result-content span,
+    .result-content small,
+    .favorite-card-content span,
+    .favorite-card-content small,
+    .route-candidate-content small,
+    .route-step-content small,
+    .empty-state,
+    .empty-state p
+) {
+    color: var(--map-muted);
+}
+
+html[data-theme="dark"] .map-side-workspace,
+html[data-theme="dark"] .map-tab-panel,
+html[data-theme="dark"] .route-result,
+html[data-theme="dark"] .nearby-refresh-row {
+    background: transparent;
+    color: var(--map-muted);
+}
+
+html[data-theme="dark"] .location-status,
+html[data-theme="dark"] .result-count,
+html[data-theme="dark"] .selected-meta-row span,
+html[data-theme="dark"] .result-mode-badge,
+html[data-theme="dark"] .route-selected-guide {
+    border-color: var(--map-border);
+    background: #252525;
+    color: #a7ddf3;
+}
+
+html[data-theme="dark"] .search-result-card.active,
+html[data-theme="dark"] .route-candidate-card.active,
+html[data-theme="dark"] .route-point-box.selected {
+    border-color: var(--map-primary);
+    background: #2a2a2a;
+}
+
+html[data-theme="dark"] .map-toolbar-actions button {
+    border-color: var(--map-border);
+    background: #242424;
+    color: #a7ddf3;
+}
+
+html[data-theme="dark"] .global-footer {
+    border-top-color: #303030;
+    background: #111111;
+    color: #aaaaaa;
+}
+
+html[data-theme="dark"] :is(
+    .footer-notice,
+    .footer-links,
+    .footer-company
+) {
+    border-color: #303030;
+    color: #aaaaaa;
+}
+
+html[data-theme="dark"] .global-footer a {
+    color: #d0d0d0;
+}
+
+html[data-theme="dark"] #kakaoDynamicMap > div:first-child {
+    filter:
+            brightness(0.78)
+            saturate(0.85)
+            contrast(1.06);
+}
+
+html[data-theme="dark"] .map-side-tabs {
+    border-bottom-color: #343434;
+    background: #1b1b1b;
+}
+
+html[data-theme="dark"] .map-side-tab {
+    background: #1b1b1b;
+    color: #a9a9a9;
+}
+
+html[data-theme="dark"] .map-side-tab:hover {
+    background: #242424;
+    color: #8fd0ef;
+}
+
+html[data-theme="dark"] .map-side-tab.active {
+    background: #252525;
+    color: #8fd0ef;
+}
+
+html[data-theme="dark"] .map-side-tab-icon {
+    border-color: #3b3b3b;
+    background: #282828;
+    color: #8fd0ef;
+    box-shadow: none;
+}
+
+html[data-theme="dark"] .map-side-tab.active .map-side-tab-icon {
+    border-color: #55849a;
+    background: #303030;
+    color: #ffffff;
+}
+
+html[data-theme="dark"] .map-side-tab-badge {
+    border-color: #1b1b1b;
+}
+
+
+/* 전체 캘린더 */
+
+
+html[data-theme="dark"] .theme-toggle {
+    background: #3b3f46;
+}
+
+html[data-theme="dark"]
+.calendar-event-preview {
+    border-color:
+            color-mix(
+                    in srgb,
+                    var(--primary) 34%,
+                    var(--border)
+            );
+
+    background:
+            color-mix(
+                    in srgb,
+                    var(--primary) 13%,
+                    var(--surface)
+            );
+
+    color: var(--primary-strong);
+}
+
+html[data-theme="dark"] input[type="date"] {
+    color-scheme: dark;
+}
+
+html[data-theme="dark"] :is(.event-write-box, .write-form, .event-write-form) {
+    background: var(--surface);
+    border-color: var(--border-strong);
+    color: var(--text);
+    box-shadow: none;
+}
+
+html[data-theme="dark"] :is(.write-form, .event-write-form, .event-write-box) label {
+    color: var(--text-soft);
+}
+
+html[data-theme="dark"] :is(.write-form, .event-write-form, .event-write-box) :is(input, textarea),
+html[data-theme="dark"] .time-picker-button {
+    background: var(--surface-soft);
+    border-color: var(--border-strong);
+    color: var(--text);
+    box-shadow: none;
+}
+
+html[data-theme="dark"] :is(.write-form, .event-write-form, .event-write-box) :is(input, textarea)::placeholder {
+    color: var(--muted);
+}
+
+html[data-theme="dark"] :is(.write-form, .event-write-form, .event-write-box) :is(input, textarea):focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--primary) 16%, transparent);
+}
+
+html[data-theme="dark"] .time-picker-panel {
+    background: var(--surface-soft);
+    border-color: var(--border-strong);
+    color: var(--text);
+}
+
+html[data-theme="dark"] .time-option {
+    color: var(--text);
+    opacity: 1;
+}
+
+html[data-theme="dark"] .time-direct-apply {
+    background: #1a73e8;
+    color: #ffffff;
+}
+
+html[data-theme="dark"] :is(.time-option, .time-clear-button):hover {
+    background: #303134;
+    color: #ffffff;
+}
+
+html[data-theme="dark"] .time-option.is-selected {
+    background: #1a73e8;
+    color: #ffffff;
+    font-weight: 700;
+}
+
+html[data-theme="dark"] .time-direct-row {
+    border-top-color: var(--border-strong);
+}
+
+html[data-theme="dark"] .time-clear-button {
+    background: var(--surface-muted);
+    color: var(--text-soft);
+}
+
+html[data-theme="dark"] .time-picker-button:hover {
+    background: #292a2d;
+    border-color: var(--primary);
+    color: #ffffff;
+}
+
+html[data-theme="dark"] :is(.cancel-btn, .secondary-btn) {
+    background: var(--surface-soft);
+    border-color: var(--border-strong);
+    color: var(--text-soft);
+}
+
+html[data-theme="dark"] :is(.cancel-btn, .secondary-btn):hover {
+    background: #292a2d;
+    border-color: #5f6368;
+    color: #ffffff;
+}
+
+html[data-theme="dark"] :is(.wide-blue-btn, .primary-btn, .save-btn) {
+    border-color: #1a73e8;
+    background: #1a73e8;
+    color: #ffffff;
+}
+
+html[data-theme="dark"] :is(.wide-blue-btn, .primary-btn, .save-btn):hover {
+    border-color: #1967d2;
+    background: #1967d2;
+}
+
+html[data-theme="dark"] .google-calendar-btn {
+    background: var(--surface-soft);
+    border-color: var(--border-strong);
+    color: var(--text-soft);
+}
+
+html[data-theme="dark"] .google-calendar-btn:disabled {
+    color: var(--muted);
+    opacity: 1;
+    cursor: not-allowed;
+}
+
+html[data-theme="dark"]
+.calendar-global-banner {
+    border-bottom-color: #303030;
+    background: #101010;
+    box-shadow: none;
+}
+
+html[data-theme="dark"]
+.global-service-menu-button {
+    border-color: #303030;
+    background: #1d1d1d;
+}
+
+html[data-theme="dark"]
+.global-service-menu-button span {
+    background: #d4d4d4;
+}
+
+html[data-theme="dark"]
+.global-logo-text {
+    color: #8cd9f5;
+}
+
+html[data-theme="dark"]
+.calendar-banner-divider,
+html[data-theme="dark"]
+.global-menu-divider {
+    background: #3c3c3c;
+}
+
+html[data-theme="dark"]
+.calendar-page-heading strong,
+html[data-theme="dark"]
+.global-user-menu a,
+html[data-theme="dark"]
+.global-user-menu button,
+html[data-theme="dark"]
+.global-settings-menu button {
+    color: #eeeeee;
+}
+
+html[data-theme="dark"]
+.calendar-page-heading span {
+    color: #9a9a9a;
+}
+
+html[data-theme="dark"]
+.global-service-panel {
+    border-color: #373737;
+    background: #1a1a1a;
+    color: #eeeeee;
+    box-shadow: 0 18px 46px rgba(0, 0, 0, 0.46);
+}
+
+html[data-theme="dark"]
+.global-service-panel::before {
+    border-top-color: #373737;
+    border-left-color: #373737;
+    background: #1a1a1a;
+}
+
+html[data-theme="dark"]
+.global-service-panel-divider {
+    background: #333333;
+}
+
+html[data-theme="dark"]
+.global-service-login-link,
+html[data-theme="dark"]
+.global-service-profile-text strong,
+html[data-theme="dark"]
+.global-service-shortcut-area h2 {
+    color: #f2f2f2;
+}
+
+html[data-theme="dark"]
+.global-service-login-desc,
+html[data-theme="dark"]
+.global-service-profile-text span,
+html[data-theme="dark"]
+.global-service-profile-arrow {
+    color: #9a9a9a;
+}
+
+html[data-theme="dark"]
+.global-service-avatar,
+html[data-theme="dark"]
+.global-service-shortcut-icon {
+    background: #292929;
+    color: #8fd0ef;
+    box-shadow: none;
+}
+
+html[data-theme="dark"]
+.global-service-logout-button {
+    border-color: #3d3d3d;
+    background: #252525;
+    color: #d0d0d0;
+}
+
+html[data-theme="dark"]
+.global-service-shortcut {
+    border-color: #363636;
+    background: #242424;
+    color: #e7e7e7;
+}
+
+html[data-theme="dark"]
+.global-service-shortcut:hover,
+html[data-theme="dark"]
+.global-service-shortcut.is-current {
+    border-color: #5d8398;
+    background: #273640;
+}
+
+html[data-theme="dark"]
+.calendar-settings-layer.is-open
+.calendar-settings-backdrop {
+    background: rgba(0, 0, 0, 0.58);
+}
+
+html[data-theme="dark"]
+.calendar-settings-drawer {
+    background: #111a27;
+    color: #edf3fa;
+    box-shadow: -16px 0 38px rgba(0, 0, 0, 0.46);
+}
+
+html[data-theme="dark"]
+.calendar-settings-header {
+    border-bottom-color: #29374a;
+    background: #0f1621;
+}
+
+html[data-theme="dark"]
+.calendar-settings-header h2,
+html[data-theme="dark"]
+.theme-setting-box h2 {
+    color: #f2f6fb;
+}
+
+html[data-theme="dark"]
+.calendar-settings-close {
+    color: #9ba8b9;
+}
+
+html[data-theme="dark"]
+.calendar-settings-close:hover {
+    background: #1c2838;
+    color: #eef4fb;
+}
+
+
+/* 메인 배치 편집 상태 */
+
+html[data-theme="dark"]
+.is-layout-edit-mode
+.dashboard-board > [data-layout-item] {
+    outline-color: rgba(111, 188, 220, 0.28);
+}
+
+html[data-theme="dark"]
+.is-layout-edit-mode
+.dashboard-board > [data-layout-item]:hover {
+    outline-color: rgba(111, 201, 240, 0.68);
+    box-shadow:
+            0 8px 20px rgba(0, 0, 0, 0.18);
+}
+
+html[data-theme="dark"]
+.widget-move-placeholder {
+    border-color: rgba(111, 201, 240, 0.46);
+    background: rgba(111, 201, 240, 0.06);
+}
+
+html[data-theme="dark"] .global-service-link {
+    color: #d0d0d0;
+}
+
+html[data-theme="dark"] .global-service-link:hover,
+html[data-theme="dark"] .global-service-link:focus-visible {
+    color: #8fd0ef;
+}
+
+
+/* 공통 환경설정 */
+
+html[data-theme="dark"]
+.settings-layer.is-open
+.settings-backdrop {
+    background: rgba(0, 0, 0, 0.62);
+}
+
+html[data-theme="dark"]
+.settings-drawer {
+    border-left: 1px solid #343434;
+    background: #1e1e1e;
+    color: #edf4f7;
+    box-shadow: -16px 0 38px rgba(0, 0, 0, 0.46);
+    scrollbar-color: #4a4a4a #1e1e1e;
+}
+
+html[data-theme="dark"]
+.settings-drawer-header {
+    border-bottom-color: #383838;
+    background: #1e1e1e;
+}
+
+html[data-theme="dark"]
+.settings-drawer-header h2 {
+    color: #edf4f7;
+}
+
+html[data-theme="dark"]
+.settings-close-button {
+    background: transparent;
+    color: #9da5aa;
+}
+
+html[data-theme="dark"]
+.settings-close-button:hover {
+    background: #2b2b2b;
+    color: #ffffff;
+}
+
+html[data-theme="dark"]
+.settings-drawer .control-box,
+html[data-theme="dark"]
+.settings-drawer [data-control-box] .control-box {
+    padding: 18px;
+    border: 1px solid #3a3a3a;
+    border-radius: 12px;
+    background: #252525;
+    color: #edf4f7;
+    box-shadow: none;
+}
+
+html[data-theme="dark"]
+.control-box h2,
+html[data-theme="dark"]
+.theme-setting-box h2,
+html[data-theme="dark"]
+.settings-drawer .control-box h2 {
+    color: #edf4f7;
+}
+
+html[data-theme="dark"]
+.settings-layout-button {
+    border: 1px solid #4f83ed;
+    background: #4f83ed;
+    color: #ffffff;
+    box-shadow: none;
+}
+
+html[data-theme="dark"]
+.settings-layout-button:hover {
+    border-color: #6694f0;
+    background: #5c8bef;
+}
+
+html[data-theme="dark"]
+.control-buttons button {
+    border-color: #474747;
+    background: #2a2a2a;
+    color: #c5c9cc;
+}
+
+html[data-theme="dark"]
+.control-buttons button:hover {
+    border-color: #5b5b5b;
+    background: #303030;
+    color: #ffffff;
+}
+
+html[data-theme="dark"]
+.control-buttons button.active {
+    border-color: #6f9df3;
+    background: #303030;
+    color: #dbe8ff;
+}
+
+html[data-theme="dark"]
+.theme-setting-box {
+    border-top-color: #383838;
+}
+
+html[data-theme="dark"]
+.theme-setting-label {
+    color: #9da5aa;
+}
+
+html[data-theme="dark"]
+.theme-option-button {
+    border-color: #3b3b3b;
+    background: #252525;
+    color: #edf4f7;
+    box-shadow: none;
+}
+
+html[data-theme="dark"]
+.theme-option-button:hover {
+    border-color: #555555;
+    background: #2d2d2d;
+}
+
+html[data-theme="dark"]
+.theme-option-button.is-selected {
+    border-color: #6f9df3;
+    background: #2a2a2a;
+    box-shadow: inset 0 0 0 1px rgba(111, 157, 243, 0.34);
+}
+
+html[data-theme="dark"]
+.theme-option-icon {
+    background: #303030;
+    color: #9bcff0;
+    box-shadow: none;
+}
+
+html[data-theme="dark"]
+.theme-option-text strong {
+    color: #edf4f7;
+}
+
+html[data-theme="dark"]
+.theme-option-text span {
+    color: #9da5aa;
+}
+
+html[data-theme="dark"]
+.theme-option-check {
+    background: #4f83ed;
+    color: #ffffff;
+}
+
+html[data-theme="dark"]
+.settings-drawer::-webkit-scrollbar {
+    width: 10px;
+}
+
+html[data-theme="dark"]
+.settings-drawer::-webkit-scrollbar-track {
+    background: #1e1e1e;
+}
+
+html[data-theme="dark"]
+.settings-drawer::-webkit-scrollbar-thumb {
+    border: 2px solid #1e1e1e;
+    border-radius: 999px;
+    background: #4a4a4a;
+}
+
+html[data-theme="dark"]
+.settings-drawer::-webkit-scrollbar-thumb:hover {
+    background: #5b5b5b;
+}
+
+
+/* 메인 공통 배경과 위젯 */
+
+
+html[data-theme="dark"] body {
+    background: #101010;
+    color: #dfe9ed;
+}
+
+html[data-theme="dark"] .description {
+    color: #9db0ba;
+}
+
+html[data-theme="dark"] .widget,
+html[data-theme="dark"] .header-time-group,
+html[data-theme="dark"] .header-auth-slot .auth-widget {
+    border-color: #343434 !important;
+    background: #1e1e1e !important;
+    color: #dfe9ed;
+    box-shadow: none !important;
+}
+
+html[data-theme="dark"] .widget-header,
+html[data-theme="dark"] .header-time-group .widget-header {
+    border-bottom-color: #383838 !important;
+}
+
+html[data-theme="dark"] .widget-title,
+html[data-theme="dark"] .column-title,
+html[data-theme="dark"] .auth-user-name,
+html[data-theme="dark"] .header-time-group .current-time-clock,
+html[data-theme="dark"] .header-time-group .world-time-clock,
+html[data-theme="dark"] .header-time-group .world-time-place strong,
+html[data-theme="dark"] .header-time-group .sun-time-item strong {
+    color: #edf4f7 !important;
+}
+
+html[data-theme="dark"] .widget-desc,
+html[data-theme="dark"] .auth-message,
+html[data-theme="dark"] .auth-profile-desc,
+html[data-theme="dark"] .header-time-group .world-time-place span,
+html[data-theme="dark"] .header-time-group .world-time-zone {
+    color: #9db0ba !important;
+}
+
+html[data-theme="dark"] .header-time-group .current-time-date,
+html[data-theme="dark"] .header-time-group .sun-time-item,
+html[data-theme="dark"] .header-time-group .world-time-item,
+html[data-theme="dark"] .header-time-group .world-time-item:first-child,
+html[data-theme="dark"] .schedule-list li,
+html[data-theme="dark"] .schedule-item {
+    border-color: #383838 !important;
+    background: #252525 !important;
+    color: #c8d6dc !important;
+}
+
+html[data-theme="dark"] .header-time-group .world-time-item.is-selected {
+    border-color: #3fb7e2 !important;
+    background: #252525 !important;
+}
+
+html[data-theme="dark"] .header-world-time-slot::before,
+html[data-theme="dark"] .schedule-calendar-group:not(.is-single-group)
+> [data-widget-id="7"]::before {
+    background: #383838 !important;
+}
+
+html[data-theme="dark"] .widget input,
+html[data-theme="dark"] .widget textarea,
+html[data-theme="dark"] .widget select {
+    border-color: #3c3c3c !important;
+    background: #151515 !important;
+    color: #e7eff3 !important;
+}
+
+html[data-theme="dark"] .widget input::placeholder,
+html[data-theme="dark"] .widget textarea::placeholder {
+    color: #7e878d !important;
+}
+
+html[data-theme="dark"] .header-auth-slot .auth-role-badge {
+    background: #2a2a2a;
+    color: #b1c2ca;
+}
+
+html[data-theme="dark"] .header-auth-slot .auth-profile-avatar {
+    background: #26343c;
+    color: #5bc5ee;
+}
+
+html[data-theme="dark"] .header-auth-slot .auth-logout-button {
+    border-color: #3d3d3d;
+    background: #252525;
+    color: #cbd8de;
+}
+
+html[data-theme="dark"] .header-auth-slot .auth-profile-desc {
+    border-top-color: #383838;
+}
+
+html[data-theme="dark"] .header-auth-slot .auth-links a {
+    color: #9db0ba;
+}
+
+html[data-theme="dark"] .header-auth-slot .auth-links a + a::before {
+    background: #3b3b3b;
+}
+
+html[data-theme="dark"] .global-banner-area {
+    border-bottom-color: #303030 !important;
+    background: #101010 !important;
+    box-shadow: none !important;
+}
+
+html[data-theme="dark"] .global-logo-text {
+    color: #8cd9f5;
+}
+
+html[data-theme="dark"] .global-service-menu-button {
+    border-color: #363636;
+    background: #1d1d1d;
+}
+
+html[data-theme="dark"] .global-service-menu-button span {
+    background: #d3e0e6;
+}
+
+html[data-theme="dark"] .global-service-panel {
+    border-color: #383838;
+    background: #1e1e1e;
+    color: #e2ebef;
+    box-shadow: 0 18px 46px rgba(0, 0, 0, 0.4);
+}
+
+html[data-theme="dark"] .global-service-panel::before {
+    border-top-color: #383838;
+    border-left-color: #383838;
+    background: #1e1e1e;
+}
+
+html[data-theme="dark"] .global-service-panel-divider {
+    background: #383838;
+}
+
+html[data-theme="dark"] .global-service-login-link,
+html[data-theme="dark"] .global-service-profile-text strong,
+html[data-theme="dark"] .global-service-shortcut-area h2 {
+    color: #eef5f8;
+}
+
+html[data-theme="dark"] .global-service-login-desc,
+html[data-theme="dark"] .global-service-profile-text span {
+    color: #9db0ba;
+}
+
+html[data-theme="dark"] .global-service-shortcut {
+    border-color: #3b3b3b;
+    background: #252525;
+    color: #dce7eb;
+}
+
+html[data-theme="dark"] .global-service-shortcut:hover {
+    border-color: #397c96;
+    background: #2c2c2c;
+}
+
+html[data-theme="dark"] .global-service-shortcut-icon {
+    background: #303030;
+    box-shadow: none;
+}
+
+html[data-theme="dark"] .global-service-logout-button {
+    border-color: #3d3d3d;
+    background: #252525;
+    color: #cbd8de;
+}
+
+html[data-theme="dark"] .global-user-menu button,
+html[data-theme="dark"] .global-settings-menu button {
+    color: #cfe0e7;
+}
+
+html[data-theme="dark"] .global-menu-divider {
+    background: rgba(205, 223, 231, 0.3);
+}
+
+html[data-theme="dark"] .widget-content [class$="-card"],
+html[data-theme="dark"] .widget-content [class$="-item"],
+html[data-theme="dark"] .widget-content [class$="-panel"],
+html[data-theme="dark"] .widget-content [class$="-box"] {
+    border-color: #383838 !important;
+    background-color: #252525 !important;
+}
+
+html[data-theme="dark"] .widget-actions > button.danger {
+    border-color: #ef4444 !important;
+    background: #ef4444 !important;
+    color: #ffffff !important;
+}
+
+
+/* 미니 캘린더 */
+
+html[data-theme="dark"] .mini-calendar-title {
+    color: #f3f4f6;
+}
+
+html[data-theme="dark"] .mini-calendar-month-button {
+    border: 1px solid #3a3a3a;
+    background: #252525;
+    color: #dbe7ec;
+}
+
+html[data-theme="dark"] .mini-calendar-month-button:hover {
+    border-color: #52778a;
+    background: #2d2d2d;
+    color: #ffffff;
+}
+
+html[data-theme="dark"] .mini-calendar-message {
+    color: #9caab2;
+}
+
+html[data-theme="dark"] .mini-calendar-message.error {
+    color: #f28b82;
+}
+
+html[data-theme="dark"] .mini-calendar-week-name {
+    color: #aeb8be;
+}
+
+html[data-theme="dark"] .mini-calendar-week-name.sunday {
+    color: #ff7b72;
+}
+
+html[data-theme="dark"] .mini-calendar-week-name.saturday {
+    color: #78a9ff;
+}
+
+html[data-theme="dark"] .mini-calendar-day {
+    border-color: #383838;
+    background: #252525;
+    color: #e8edf0;
+}
+
+html[data-theme="dark"] .mini-calendar-day:hover {
+    border-color: #4d7184;
+    background: #2d2d2d;
+}
+
+html[data-theme="dark"] .mini-calendar-day.other-month {
+    border-color: #303030;
+    background: #1d1d1d;
+    color: #707b82;
+    opacity: 0.62;
+}
+
+html[data-theme="dark"]
+.mini-calendar-day.sunday:not(.today)
+.mini-calendar-day-number,
+html[data-theme="dark"]
+.mini-calendar-day.holiday:not(.today)
+.mini-calendar-day-number {
+    color: #ff7b72;
+}
+
+html[data-theme="dark"]
+.mini-calendar-day.saturday:not(.today):not(.holiday)
+.mini-calendar-day-number {
+    color: #78a9ff;
+}
+
+html[data-theme="dark"] .mini-calendar-day.today {
+    border-color: #6ea8ff;
+    background: #245ea8;
+    color: #ffffff;
+    box-shadow: 0 0 0 1px rgba(110, 168, 255, 0.24);
+}
+
+html[data-theme="dark"]
+.mini-calendar-day.today
+.mini-calendar-day-number {
+    color: #ffffff;
+}
+
+html[data-theme="dark"] .mini-calendar-event-dot {
+    background: #78a9ff;
+}
+
+html[data-theme="dark"]
+.mini-calendar-day.today
+.mini-calendar-event-dot {
+    background: #ffffff;
+}
+
+
+/* 메모 */
+
+html[data-theme="dark"]
+body
+[data-widget-id="8"]
+.memo-write-box {
+    border-color: #353535 !important;
+    background: transparent !important;
+}
+
+html[data-theme="dark"]
+body
+[data-widget-id="8"]
+.memo-input,
+html[data-theme="dark"]
+body
+[data-widget-id="8"]
+textarea.memo-input {
+    border-color: #3c3c3c !important;
+    background: #151515 !important;
+
+    color: #f2f2f2 !important;
+    caret-color: #7ec9ee;
+}
+
+html[data-theme="dark"]
+body
+[data-widget-id="8"]
+.memo-input::placeholder,
+html[data-theme="dark"]
+body
+[data-widget-id="8"]
+textarea.memo-input::placeholder {
+    color: #7e878d !important;
+    opacity: 1;
+}
+
+html[data-theme="dark"]
+body
+[data-widget-id="8"]
+.memo-input:focus {
+    border-color: #5b8faf !important;
+    box-shadow: 0 0 0 2px rgba(91, 143, 175, 0.18) !important;
+}
+
+html[data-theme="dark"]
+body
+[data-widget-id="8"]
+.memo-count {
+    color: #929a9f !important;
+}
+
+html[data-theme="dark"]
+body
+[data-widget-id="8"]
+.memo-save-button {
+    border: 1px solid #4f83ed !important;
+    background: #4f83ed !important;
+    color: #ffffff !important;
+}
+
+html[data-theme="dark"]
+body
+[data-widget-id="8"]
+.memo-save-button:hover {
+    border-color: #6694f0 !important;
+    background: #5c8bef !important;
+}
+
+html[data-theme="dark"]
+body
+[data-widget-id="8"]
+.memo-list {
+    max-height: 270px;
+    padding-right: 6px;
+
+    overflow-x: hidden;
+    overflow-y: auto;
+
+    scrollbar-color: #4a4a4a transparent;
+}
+
+html[data-theme="dark"]
+body
+[data-widget-id="8"]
+.memo-item {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+
+    min-width: 0 !important;
+    min-height: 0 !important;
+    padding: 13px 14px 11px !important;
+
+    border-color: #383838 !important;
+    background: #232323 !important;
+
+    color: #eeeeee !important;
+    box-shadow: none !important;
+}
+
+html[data-theme="dark"]
+body
+[data-widget-id="8"]
+.memo-item:hover {
+    border-color: #4a4a4a !important;
+    background: #282828 !important;
+}
+
+html[data-theme="dark"]
+body
+[data-widget-id="8"]
+.memo-item-content,
+html[data-theme="dark"]
+body
+[data-widget-id="8"]
+.memo-text {
+    display: block !important;
+    align-self: stretch !important;
+
+    width: 100% !important;
+    min-width: 0 !important;
+    margin: 0 !important;
+
+    color: #eeeeee !important;
+    font-size: 14px !important;
+    line-height: 1.6 !important;
+    text-align: left !important;
+
+    white-space: pre-wrap !important;
+    overflow-wrap: anywhere !important;
+    word-break: break-word !important;
+}
+
+html[data-theme="dark"]
+body
+[data-widget-id="8"]
+.memo-item-bottom {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+
+    width: 100% !important;
+    margin-top: 13px !important;
+}
+
+html[data-theme="dark"]
+body
+[data-widget-id="8"]
+.memo-created-at,
+html[data-theme="dark"]
+body
+[data-widget-id="8"]
+.memo-empty {
+    color: #929292 !important;
+}
+
+html[data-theme="dark"]
+body
+[data-widget-id="8"]
+.memo-delete-button {
+    border: 1px solid #5a3d43 !important;
+    background: #332427 !important;
+
+    color: #f39898 !important;
+}
+
+html[data-theme="dark"]
+body
+[data-widget-id="8"]
+.memo-delete-button:hover {
+    border-color: #765057 !important;
+    background: #422d31 !important;
+
+    color: #ffaaaa !important;
+}
+
+html[data-theme="dark"]
+body
+[data-widget-id="8"]
+.memo-list::-webkit-scrollbar {
+    width: 8px;
+}
+
+html[data-theme="dark"]
+body
+[data-widget-id="8"]
+.memo-list::-webkit-scrollbar-track {
+    background: transparent !important;
+}
+
+html[data-theme="dark"]
+body
+[data-widget-id="8"]
+.memo-list::-webkit-scrollbar-thumb {
+    border: 2px solid transparent !important;
+    border-radius: 999px;
+
+    background: #4a4a4a !important;
+    background-clip: padding-box !important;
+}
+
+html[data-theme="dark"]
+body
+[data-widget-id="8"]
+.memo-list::-webkit-scrollbar-thumb:hover {
+    background: #5b5b5b !important;
+    background-clip: padding-box !important;
+}
+
+
+/* 뉴스 */
+
+html[data-theme="dark"] .news-compact-link,
+html[data-theme="dark"] .news-compact-text {
+    color: #f3f3f3;
+}
+
+html[data-theme="dark"] .news-compact-title {
+    color: #f3f3f3;
+    font-weight: 600;
+    opacity: 1;
+}
+
+html[data-theme="dark"] .news-compact-meta {
+    color: #a3a3a3;
+    opacity: 1;
+}
+
+html[data-theme="dark"] .news-compact-link:hover .news-compact-title {
+    color: #8fd0ef;
+    text-decoration: underline;
+}
+
+html[data-theme="dark"] .news-compact-thumbnail {
+    background: #2b2b2b;
+}
+
+html[data-theme="dark"] .news-compact-thumbnail.placeholder {
+    background: #303030;
+    color: #a8a8a8;
+}
+
+html[data-theme="dark"] .news-result-area > .widget-desc {
+    color: #a8a8a8;
+}
+
+
+/* 주식 */
+
+html[data-theme="dark"] .stock-dashboard {
+    color: #f2f2f2;
+}
+
+html[data-theme="dark"] .stock-focus-slide {
+    background: #242424;
+    color: #f2f2f2;
+}
+
+html[data-theme="dark"] .stock-focus-name {
+    color: #f4f4f4;
+}
+
+html[data-theme="dark"] .stock-focus-symbol {
+    color: #a0a0a0;
+}
+
+html[data-theme="dark"] .stock-focus-price {
+    color: #f4f4f4;
+}
+
+html[data-theme="dark"] .stock-focus-price span {
+    color: #b0b0b0;
+}
+
+html[data-theme="dark"] .stock-chart-wrap {
+    background: #242424;
+}
+
+html[data-theme="dark"] .stock-chart-wrap canvas {
+    background: transparent;
+}
+
+html[data-theme="dark"] .stock-chart-period {
+    color: #a0a0a0;
+}
+
+html[data-theme="dark"] .stock-up {
+    color: #ff5c66;
+}
+
+html[data-theme="dark"] .stock-down {
+    color: #5aa2ff;
+}
+
+html[data-theme="dark"] .stock-flat {
+    color: #b8b8b8;
+}
+
+html[data-theme="dark"] .stock-quote-panel {
+    border-left-color: #3a3a3a;
+}
+
+html[data-theme="dark"] .stock-quote-item {
+    border-bottom-color: #393939;
+    background: #252525;
+    color: #e8e8e8;
+}
+
+html[data-theme="dark"] .stock-quote-item:hover {
+    background: #2d2d2d;
+}
+
+html[data-theme="dark"] .stock-quote-name {
+    color: #dddddd;
+}
+
+html[data-theme="dark"] .stock-quote-values span {
+    opacity: 1;
+}
+
+html[data-theme="dark"] .stock-quote-values strong {
+    color: #c4c4c4;
+    font-weight: 600;
+    opacity: 1;
+}
+
+html[data-theme="dark"] .stock-quote-item.active {
+    background: #2d2d2d;
+    box-shadow: inset 3px 0 0 #62b8e6;
+}
+
+html[data-theme="dark"] .stock-quote-item.active .stock-quote-name {
+    color: #ffffff;
+}
+
+html[data-theme="dark"] .stock-quote-item.active .stock-quote-values strong {
+    color: #e0e8ef;
+}
+
+html[data-theme="dark"] .stock-nav-button {
+    border-color: #4a4a4a;
+    background: rgba(38, 38, 38, 0.96);
+    color: #eeeeee;
+}
+
+html[data-theme="dark"] .stock-nav-button:hover {
+    border-color: #626262;
+    background: #303030;
+}
+
+html[data-theme="dark"] .stock-header-updated {
+    color: #a0a0a0;
+}
+
+html[data-theme="dark"] .stock-refresh-button {
+    color: #aaaaaa;
+}
+
+html[data-theme="dark"] .stock-refresh-button:hover {
+    color: #f0f0f0;
+}

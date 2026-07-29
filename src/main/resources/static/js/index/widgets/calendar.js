@@ -10,11 +10,7 @@
     - 월별 일정과 공휴일 API 조회
 */
 
-
-// =========================
 // 미니 캘린더 화면 출력
-// =========================
-
 function renderMiniCalendar() {
 
     const calendarDays =
@@ -333,10 +329,7 @@ function makeMiniCalendarDays() {
 }
 
 
-// =========================
 // 미니 캘린더 부분 갱신
-// =========================
-
 function refreshMiniCalendarWidget() {
 
     const miniCalendarContent =
@@ -357,10 +350,7 @@ function refreshMiniCalendarWidget() {
 }
 
 
-// =========================
 // 월별 일정과 공휴일 조회
-// =========================
-
 async function fetchMiniCalendarMonthData(
     showLoading = false
 ) {
@@ -533,11 +523,7 @@ async function fetchMiniCalendarMonthData(
     }
 }
 
-
-// =========================
 // 일정이 있는 날짜만 갱신
-// =========================
-
 async function fetchMiniCalendarEventDates() {
 
     // 로그인하지 않은 경우 일정 점 제거

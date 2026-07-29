@@ -15,16 +15,6 @@ window.mapPageState =
     state;
 
 
-const MAP_THEME_STORAGE_KEY =
-    "portalTheme";
-
-const MAP_THEME_VALUES =
-    new Set([
-        "light",
-        "dark"
-    ]);
-
-
 /*
  * mypage-modal.js의 공통 초기화 조건을 만족시키기 위한
  * 지도 페이지용 호환 함수입니다.
@@ -267,109 +257,6 @@ function updateGlobalBanner() {
 }
 
 
-function normalizeMapTheme(theme) {
-
-    return MAP_THEME_VALUES.has(theme)
-        ? theme
-        : "light";
-}
-
-
-function getStoredMapTheme() {
-
-    try {
-
-        return normalizeMapTheme(
-            localStorage.getItem(
-                MAP_THEME_STORAGE_KEY
-            )
-        );
-
-    } catch (error) {
-
-        console.warn(
-            "[지도 테마 불러오기 실패]",
-            error
-        );
-
-        return "light";
-    }
-}
-
-
-function updateMapThemeButtons(theme) {
-
-    document
-        .querySelectorAll(
-            "[data-map-theme-option]"
-        )
-        .forEach((button) => {
-
-            const isSelected =
-                button.dataset.mapThemeOption
-                === theme;
-
-
-            button.classList.toggle(
-                "is-selected",
-                isSelected
-            );
-
-            button.setAttribute(
-                "aria-pressed",
-                String(isSelected)
-            );
-        });
-}
-
-
-function applyMapTheme(theme) {
-
-    const nextTheme =
-        normalizeMapTheme(theme);
-
-
-    document.documentElement.dataset.theme =
-        nextTheme;
-
-    document.documentElement.style.colorScheme =
-        nextTheme;
-
-
-    updateMapThemeButtons(
-        nextTheme
-    );
-}
-
-
-function setMapTheme(theme) {
-
-    const nextTheme =
-        normalizeMapTheme(theme);
-
-
-    applyMapTheme(
-        nextTheme
-    );
-
-
-    try {
-
-        localStorage.setItem(
-            MAP_THEME_STORAGE_KEY,
-            nextTheme
-        );
-
-    } catch (error) {
-
-        console.warn(
-            "[지도 테마 저장 실패]",
-            error
-        );
-    }
-}
-
-
 function setMapServiceMenuOpen(isOpen) {
 
     const menu =
@@ -518,19 +405,6 @@ function handleMapPageClick(event) {
 
             return;
         }
-
-
-        if (
-            action
-            === "set-theme"
-        ) {
-
-            setMapTheme(
-                actionButton.dataset.value
-            );
-
-            return;
-        }
     }
 
 
@@ -610,13 +484,7 @@ function handleMapPageKeydown(event) {
 
 async function initializeMapPageLayout() {
 
-    applyMapTheme(
-        getStoredMapTheme()
-    );
-
-
     await loadMapLoginState();
-
 
     updateGlobalBanner();
 }
@@ -630,25 +498,6 @@ document.addEventListener(
 document.addEventListener(
     "keydown",
     handleMapPageKeydown
-);
-
-
-window.addEventListener(
-    "storage",
-    function (event) {
-
-        if (
-            event.key
-            !== MAP_THEME_STORAGE_KEY
-        ) {
-            return;
-        }
-
-
-        applyMapTheme(
-            event.newValue
-        );
-    }
 );
 
 
