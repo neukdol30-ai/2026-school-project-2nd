@@ -1,10 +1,13 @@
 package com.siyan1234.itproject2nd.chat.websocket;
 
+import com.siyan1234.itproject2nd.chat.support.ChatMessagePolicy;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.socket.config.annotation.EnableWebSocket;
 import org.springframework.web.socket.config.annotation.WebSocketConfigurer;
 import org.springframework.web.socket.config.annotation.WebSocketHandlerRegistry;
+import org.springframework.web.socket.server.standard.ServletServerContainerFactoryBean;
 
 /** 채팅 실시간 통신 endpoint와 개발 환경 허용 Origin을 등록합니다. */
 @Configuration
@@ -13,6 +16,17 @@ import org.springframework.web.socket.config.annotation.WebSocketHandlerRegistry
 public class WebSocketConfig implements WebSocketConfigurer {
 
     private final ChatHandler chatHandler;
+
+    /**
+     * 비정상적으로 큰 WebSocket 프레임이 애플리케이션 메모리를 점유하지 않도록
+     * 컨테이너 수준에서도 텍스트 메시지 크기를 제한합니다.
+     */
+    @Bean
+    public ServletServerContainerFactoryBean webSocketContainer() {
+        ServletServerContainerFactoryBean container = new ServletServerContainerFactoryBean();
+        container.setMaxTextMessageBufferSize(ChatMessagePolicy.MAX_WEBSOCKET_PAYLOAD_LENGTH);
+        return container;
+    }
 
     @Override
     public void registerWebSocketHandlers(WebSocketHandlerRegistry registry) {

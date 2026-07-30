@@ -87,7 +87,7 @@ public class AdminChatService {
 
         long totalCount = countRooms(cleanStatus, cleanCategory, cleanKeyword);
         int totalPages = AdminPagingHelper.calculateTotalPages(totalCount, size);
-        int safePage = Math.min(AdminPagingHelper.normalizePage(page), totalPages);
+        int safePage = AdminPagingHelper.clampPage(page, totalCount, size);
 
         List<RecentChatRoomDto> roomList = findRooms(
                 cleanStatus,

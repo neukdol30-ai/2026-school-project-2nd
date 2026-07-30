@@ -115,6 +115,7 @@
 
                 chatView.dataset.chatPage = String(data.chatPage || 1);
                 chatView.dataset.chatSize = String(data.chatSize || 10);
+                syncAdminChatUrl(data);
 
                 renderAdminChatRows(data.roomList || []);
                 renderAdminChatPagination(data);
@@ -232,8 +233,10 @@
             html += '<a href="' + buildAdminChatsUrl(currentPage - 1) + '" data-chat-page-link="' + (currentPage - 1) + '">이전</a>';
         }
 
-        for (let pageNo = 1; pageNo <= totalPages; pageNo++) {
-            html += '<a href="' + buildAdminChatsUrl(pageNo) + '" data-chat-page-link="' + pageNo + '" class="' + (pageNo === currentPage ? 'active' : '') + '">' + pageNo + '</a>';
+        const pageWindow = getPageWindow(currentPage, totalPages, 5);
+
+        for (let pageNo = pageWindow.startPage; pageNo <= pageWindow.endPage; pageNo++) {
+            html += createPageLink(pageNo, currentPage);
         }
 
         if (currentPage < totalPages) {
@@ -241,6 +244,35 @@
         }
 
         pagination.innerHTML = html;
+    }
+
+    function createPageLink(pageNo, currentPage) {
+        return '<a href="' + buildAdminChatsUrl(pageNo) + '" data-chat-page-link="' + pageNo + '" class="' + (pageNo === currentPage ? 'active' : '') + '">' + pageNo + '</a>';
+    }
+
+    function getPageWindow(currentPage, totalPages, windowSize) {
+        const safeWindowSize = Math.max(Number(windowSize) || 1, 1);
+        const halfWindow = Math.floor(safeWindowSize / 2);
+        let startPage = Math.max(1, currentPage - halfWindow);
+        let endPage = Math.min(totalPages, startPage + safeWindowSize - 1);
+        startPage = Math.max(1, endPage - safeWindowSize + 1);
+        return { startPage, endPage };
+    }
+
+    /** Ajax 페이징이나 실시간 갱신 후 주소창도 실제 유효 페이지와 동기화합니다. */
+    function syncAdminChatUrl(data) {
+        if (!window.history || typeof window.history.replaceState !== "function") {
+            return;
+        }
+
+        const params = new URLSearchParams();
+        params.set("view", "chats");
+        params.set("chatStatus", data.chatStatus || "");
+        params.set("chatCategory", data.chatCategory || "");
+        params.set("chatKeyword", data.chatKeyword || "");
+        params.set("chatPage", String(data.chatPage || 1));
+        params.set("chatSize", String(data.chatSize || 10));
+        window.history.replaceState({}, "", "/admin?" + params.toString());
     }
 
     function buildAdminChatsUrl(pageNo) {

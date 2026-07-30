@@ -29,12 +29,16 @@ const CHAT_WEBSOCKET_EVENT = Object.freeze({
     JOIN: "JOIN",
     READ: "READ",
     MESSAGE: "MESSAGE",
-    CLOSE: "CLOSE"
+    CLOSE: "CLOSE",
+    ERROR: "ERROR"
 });
 
 const chatBody = document.getElementById("chatBody");
 const messageInput = document.getElementById("messageInput");
 const sendBtn = document.getElementById("sendBtn");
+const messageLengthCounter = document.getElementById("messageLengthCounter");
+const messageInputStatus = document.getElementById("messageInputStatus");
+const chatMessageMaxLength = Number(messageInput?.dataset.maxLength || 1000);
 
 /*
     중복 렌더링 방지용 Set
@@ -69,7 +73,24 @@ function connectWebSocket() {
     };
 
     socket.onmessage = function (event) {
-        const data = JSON.parse(event.data);
+        let data;
+
+        try {
+            data = JSON.parse(event.data);
+        } catch (error) {
+            console.log("WebSocket 응답 해석 실패", error);
+            return;
+        }
+
+        if (data.type === CHAT_WEBSOCKET_EVENT.ERROR) {
+            setChatInputStatus(data.message || "메시지를 전송하지 못했습니다.", true);
+
+            if (data.code === "CHAT_CLOSED") {
+                isChatClosed = true;
+                disableChatInput();
+            }
+            return;
+        }
 
         if (data.type === CHAT_WEBSOCKET_EVENT.MESSAGE) {
             appendMessage(data.message);
@@ -150,19 +171,30 @@ function loadMessages() {
  * 실제 저장은 WebSocket 서버의 ChatHandler에서 Redis에 저장한다.
  */
 function sendMessage() {
+    if (!messageInput) {
+        return;
+    }
+
     if (isChatClosed) {
-        alert("상담이 종료되어 메시지를 보낼 수 없습니다.");
+        setChatInputStatus("상담이 종료되어 메시지를 보낼 수 없습니다.", true);
         return;
     }
 
     const content = messageInput.value.trim();
+    const contentLength = getCharacterCount(content);
 
     if (content === "") {
+        setChatInputStatus("메시지를 입력해 주세요.", true);
+        return;
+    }
+
+    if (contentLength > chatMessageMaxLength) {
+        setChatInputStatus(`메시지는 최대 ${chatMessageMaxLength.toLocaleString()}자까지 입력할 수 있습니다.`, true);
         return;
     }
 
     if (socket === null || socket.readyState !== WebSocket.OPEN) {
-        alert("채팅 서버와 연결 중입니다. 잠시 후 다시 시도해주세요.");
+        setChatInputStatus("채팅 서버와 연결 중입니다. 잠시 후 다시 시도해 주세요.", true);
         return;
     }
 
@@ -179,7 +211,66 @@ function sendMessage() {
     }));
 
     messageInput.value = "";
+    updateMessageLengthCounter();
+    setChatInputStatus("");
     messageInput.focus();
+}
+
+/**
+ * 사용자가 보는 글자 수와 서버의 Unicode 코드 포인트 계산 기준을 맞춥니다.
+ */
+function getCharacterCount(value) {
+    return Array.from(value || "").length;
+}
+
+function truncateToMaxLength(value, maxLength) {
+    const characters = Array.from(value || "");
+
+    if (characters.length <= maxLength) {
+        return value || "";
+    }
+
+    return characters.slice(0, maxLength).join("");
+}
+
+function updateMessageLengthCounter() {
+    if (!messageInput || !messageLengthCounter) {
+        return;
+    }
+
+    const currentLength = getCharacterCount(messageInput.value);
+    messageLengthCounter.textContent = `${currentLength.toLocaleString()} / ${chatMessageMaxLength.toLocaleString()}`;
+    messageLengthCounter.classList.toggle("limit-reached", currentLength >= chatMessageMaxLength);
+}
+
+function handleMessageInput() {
+    if (!messageInput) {
+        return;
+    }
+
+    const currentLength = getCharacterCount(messageInput.value);
+
+    if (currentLength > chatMessageMaxLength) {
+        messageInput.value = truncateToMaxLength(messageInput.value, chatMessageMaxLength);
+        setChatInputStatus(`메시지는 최대 ${chatMessageMaxLength.toLocaleString()}자까지 입력할 수 있습니다.`, true);
+    } else if (messageInputStatus?.dataset.validationError === "true") {
+        setChatInputStatus("");
+    }
+
+    updateMessageLengthCounter();
+}
+
+function setChatInputStatus(message, isError = false) {
+    if (!messageInputStatus) {
+        if (message && isError) {
+            alert(message);
+        }
+        return;
+    }
+
+    messageInputStatus.textContent = message || "";
+    messageInputStatus.classList.toggle("error", Boolean(message) && isError);
+    messageInputStatus.dataset.validationError = Boolean(message) && isError ? "true" : "false";
 }
 
 /**
@@ -413,11 +504,15 @@ if (sendBtn) {
 }
 
 if (messageInput) {
-    messageInput.addEventListener("keyup", function (event) {
-        if (event.key === "Enter") {
+    messageInput.addEventListener("input", handleMessageInput);
+    messageInput.addEventListener("keydown", function (event) {
+        // 한글 IME 조합 중 Enter가 전송으로 처리되는 문제를 방지합니다.
+        if (event.key === "Enter" && !event.isComposing) {
+            event.preventDefault();
             sendMessage();
         }
     });
+    updateMessageLengthCounter();
 }
 
 if (isChatClosed) {

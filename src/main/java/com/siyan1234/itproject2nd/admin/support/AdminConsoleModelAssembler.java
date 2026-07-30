@@ -14,6 +14,7 @@ import com.siyan1234.itproject2nd.admin.service.AdminVisitService;
 import com.siyan1234.itproject2nd.board.dto.BoardCommentDto;
 import com.siyan1234.itproject2nd.board.service.BoardCommentService;
 import com.siyan1234.itproject2nd.chat.dto.ChatRoomDto;
+import com.siyan1234.itproject2nd.chat.support.ChatMessagePolicy;
 import com.siyan1234.itproject2nd.member.dto.MemberDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
@@ -38,27 +39,78 @@ public class AdminConsoleModelAssembler {
     private final AdminVisitService adminVisitService;
     private final BoardCommentService boardCommentService;
 
-    public void populate(Model model, AdminConsoleQuery query, MemberDto loginAdmin) {
+    /**
+     * 관리자 화면 데이터를 조립합니다.
+     *
+     * @return 주소창의 화면·페이지 값이 유효 범위를 벗어나 정규 URL로
+     *         다시 이동해야 하면 {@code true}
+     */
+    public boolean populate(Model model, AdminConsoleQuery query, MemberDto loginAdmin) {
+        int requestedMemberPage = query.getMemberPage();
+        int requestedMemberSize = query.getMemberSize();
+        int requestedChatPage = query.getChatPage();
+        int requestedChatSize = query.getChatSize();
+        int requestedBoardPage = query.getBoardPage();
+        int requestedBoardSize = query.getBoardSize();
+        int requestedVisitPage = query.getVisitPage();
+        int requestedVisitSize = query.getVisitSize();
+
         query.normalize();
 
         AdminView activeView = AdminView.from(query.getView());
-        AdminDashboardDto dashboard = adminDashboardService.getDashboard();
+
+        // 존재하지 않는 view 값은 dashboard로 정규화하여 주소창과 실제 화면을 일치시킵니다.
+        if (!activeView.getCode().equals(query.getView())) {
+            query.setView(activeView.getCode());
+            return true;
+        }
 
         /* 현재 선택된 화면에 필요한 목록만 조회해 관리자 콘솔의 불필요한 DB 접근을 줄입니다. */
         List<MemberDto> adminMemberList = List.of();
         long memberTotalCount = 0L;
         if (activeView == AdminView.MEMBERS || activeView == AdminView.MEMBER_EDIT) {
+            memberTotalCount = adminMemberService.countMembers(query.getMemberKeyword());
+
+            if (activeView == AdminView.MEMBERS) {
+                int safePage = AdminPagingHelper.clampPage(
+                        query.getMemberPage(),
+                        memberTotalCount,
+                        query.getMemberSize()
+                );
+                if (safePage != requestedMemberPage || query.getMemberSize() != requestedMemberSize) {
+                    query.setMemberPage(safePage);
+                    return true;
+                }
+            }
+
             adminMemberList = adminMemberService.findMembers(
                     query.getMemberKeyword(),
                     query.getMemberPage(),
                     query.getMemberSize()
             );
-            memberTotalCount = adminMemberService.countMembers(query.getMemberKeyword());
         }
 
         List<RecentChatRoomDto> adminChatRoomList = List.of();
         long chatTotalCount = 0L;
         if (activeView == AdminView.CHATS || activeView == AdminView.CHAT_ROOM) {
+            chatTotalCount = adminChatService.countRooms(
+                    query.getChatStatus(),
+                    query.getChatCategory(),
+                    query.getChatKeyword()
+            );
+
+            if (activeView == AdminView.CHATS) {
+                int safePage = AdminPagingHelper.clampPage(
+                        query.getChatPage(),
+                        chatTotalCount,
+                        query.getChatSize()
+                );
+                if (safePage != requestedChatPage || query.getChatSize() != requestedChatSize) {
+                    query.setChatPage(safePage);
+                    return true;
+                }
+            }
+
             adminChatRoomList = adminChatService.findRooms(
                     query.getChatStatus(),
                     query.getChatCategory(),
@@ -67,25 +119,30 @@ public class AdminConsoleModelAssembler {
                     query.getChatPage(),
                     query.getChatSize()
             );
-            chatTotalCount = adminChatService.countRooms(
-                    query.getChatStatus(),
-                    query.getChatCategory(),
-                    query.getChatKeyword()
-            );
         }
 
         List<AdminBoardDto> adminBoardList = List.of();
         long boardTotalCount = 0L;
         if (activeView == AdminView.BOARDS) {
+            boardTotalCount = adminBoardService.countBoards(
+                    query.getBoardCategory(),
+                    query.getBoardKeyword()
+            );
+            int safePage = AdminPagingHelper.clampPage(
+                    query.getBoardPage(),
+                    boardTotalCount,
+                    query.getBoardSize()
+            );
+            if (safePage != requestedBoardPage || query.getBoardSize() != requestedBoardSize) {
+                query.setBoardPage(safePage);
+                return true;
+            }
+
             adminBoardList = adminBoardService.findBoards(
                     query.getBoardCategory(),
                     query.getBoardKeyword(),
                     query.getBoardPage(),
                     query.getBoardSize()
-            );
-            boardTotalCount = adminBoardService.countBoards(
-                    query.getBoardCategory(),
-                    query.getBoardKeyword()
             );
         }
 
@@ -93,28 +150,44 @@ public class AdminConsoleModelAssembler {
         AdminVisitOverviewDto adminVisitOverview = null;
         long visitTotalCount = 0L;
         if (activeView == AdminView.VISITS) {
+            visitTotalCount = adminVisitService.countVisitSummaries(query.getVisitKeyword());
+            int safePage = AdminPagingHelper.clampPage(
+                    query.getVisitPage(),
+                    visitTotalCount,
+                    query.getVisitSize()
+            );
+            if (safePage != requestedVisitPage || query.getVisitSize() != requestedVisitSize) {
+                query.setVisitPage(safePage);
+                return true;
+            }
+
             adminVisitSummaryList = adminVisitService.findVisitSummaries(
                     query.getVisitKeyword(),
                     query.getVisitPage(),
                     query.getVisitSize()
             );
-            visitTotalCount = adminVisitService.countVisitSummaries(query.getVisitKeyword());
             adminVisitOverview = adminVisitService.getVisitOverview();
         }
 
+        AdminDashboardDto dashboard = adminDashboardService.getDashboard();
         MemberDto editMember = resolveEditMember(activeView, query.getEditMemberNo());
         ChatRoomDto activeChatRoom = resolveActiveChatRoom(activeView, query.getRoomNo(), loginAdmin);
         AdminBoardDto activeBoard = resolveActiveBoard(activeView, query.getBoardNo());
         AdminBoardDto boardForm = resolveBoardForm(activeView, activeBoard);
         List<BoardCommentDto> activeBoardCommentList = resolveActiveBoardComments(activeView, activeBoard);
 
-        activeView = fallbackInvalidDetailView(activeView, editMember, activeChatRoom, activeBoard);
+        AdminView resolvedView = fallbackInvalidDetailView(activeView, editMember, activeChatRoom, activeBoard);
+        if (resolvedView != activeView) {
+            query.setView(resolvedView.getCode());
+            return true;
+        }
 
-        addCommonAttributes(model, dashboard, loginAdmin, activeView);
+        addCommonAttributes(model, dashboard, loginAdmin, resolvedView);
         addMemberAttributes(model, query, adminMemberList, memberTotalCount, editMember);
         addChatAttributes(model, query, adminChatRoomList, chatTotalCount, activeChatRoom);
         addBoardAttributes(model, query, adminBoardList, boardTotalCount, activeBoard, boardForm, activeBoardCommentList);
         addVisitAttributes(model, query, adminVisitSummaryList, visitTotalCount, adminVisitOverview);
+        return false;
     }
 
     private void addCommonAttributes(
@@ -129,6 +202,7 @@ public class AdminConsoleModelAssembler {
         model.addAttribute("activeView", activeView.getCode());
         model.addAttribute("activeViewEyebrow", activeView.getEyebrow());
         model.addAttribute("activeViewTitle", activeView.getTitle());
+        model.addAttribute("chatMessageMaxLength", ChatMessagePolicy.MAX_LENGTH);
     }
 
     private void addMemberAttributes(
@@ -142,8 +216,10 @@ public class AdminConsoleModelAssembler {
         model.addAttribute("memberKeyword", query.getMemberKeyword());
         model.addAttribute("memberPage", query.getMemberPage());
         model.addAttribute("memberSize", query.getMemberSize());
+        int totalPages = AdminPagingHelper.calculateTotalPages(totalCount, query.getMemberSize());
         model.addAttribute("memberTotalCount", totalCount);
-        model.addAttribute("memberTotalPages", AdminPagingHelper.calculateTotalPages(totalCount, query.getMemberSize()));
+        model.addAttribute("memberTotalPages", totalPages);
+        model.addAttribute("memberPageNumbers", AdminPagingHelper.buildPageNumbers(query.getMemberPage(), totalPages));
         model.addAttribute("editMember", editMember);
     }
 
@@ -160,8 +236,10 @@ public class AdminConsoleModelAssembler {
         model.addAttribute("chatKeyword", query.getChatKeyword());
         model.addAttribute("chatPage", query.getChatPage());
         model.addAttribute("chatSize", query.getChatSize());
+        int totalPages = AdminPagingHelper.calculateTotalPages(totalCount, query.getChatSize());
         model.addAttribute("chatTotalCount", totalCount);
-        model.addAttribute("chatTotalPages", AdminPagingHelper.calculateTotalPages(totalCount, query.getChatSize()));
+        model.addAttribute("chatTotalPages", totalPages);
+        model.addAttribute("chatPageNumbers", AdminPagingHelper.buildPageNumbers(query.getChatPage(), totalPages));
         model.addAttribute("chatRoom", activeChatRoom);
     }
 
@@ -179,8 +257,10 @@ public class AdminConsoleModelAssembler {
         model.addAttribute("boardKeyword", query.getBoardKeyword());
         model.addAttribute("boardPage", query.getBoardPage());
         model.addAttribute("boardSize", query.getBoardSize());
+        int totalPages = AdminPagingHelper.calculateTotalPages(totalCount, query.getBoardSize());
         model.addAttribute("boardTotalCount", totalCount);
-        model.addAttribute("boardTotalPages", AdminPagingHelper.calculateTotalPages(totalCount, query.getBoardSize()));
+        model.addAttribute("boardTotalPages", totalPages);
+        model.addAttribute("boardPageNumbers", AdminPagingHelper.buildPageNumbers(query.getBoardPage(), totalPages));
         model.addAttribute("boardDetail", activeBoard);
         model.addAttribute("boardForm", boardForm);
         model.addAttribute("boardCommentList", commentList);
@@ -197,8 +277,10 @@ public class AdminConsoleModelAssembler {
         model.addAttribute("visitKeyword", query.getVisitKeyword());
         model.addAttribute("visitPage", query.getVisitPage());
         model.addAttribute("visitSize", query.getVisitSize());
+        int totalPages = AdminPagingHelper.calculateTotalPages(totalCount, query.getVisitSize());
         model.addAttribute("visitTotalCount", totalCount);
-        model.addAttribute("visitTotalPages", AdminPagingHelper.calculateTotalPages(totalCount, query.getVisitSize()));
+        model.addAttribute("visitTotalPages", totalPages);
+        model.addAttribute("visitPageNumbers", AdminPagingHelper.buildPageNumbers(query.getVisitPage(), totalPages));
         model.addAttribute("visitOverview", visitOverview);
     }
 
