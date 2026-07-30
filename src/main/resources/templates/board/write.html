@@ -188,12 +188,34 @@
                            autocomplete="new-password"
                            placeholder="비밀번호를 4~20자로 입력해주세요.">
 
-                    <p class="board-form-description">
-                        비밀번호는 4자 이상 20자 이하로 입력해주세요.
-                        입력한 비밀번호는 문의글 수정과 삭제에 사용되며,
-                        분실하면 확인하기 어렵습니다.
-                        비회원 문의글은 답변 완료 후 30일이 지나면 자동으로 삭제됩니다.
-                    </p>
+                    <div class="guest-password-notice">
+
+                        <p class="guest-password-notice-title">
+                            비밀번호 사용 안내
+                        </p>
+
+                        <ul class="guest-password-notice-list">
+
+                            <li>
+                                비밀번호는 4자 이상 20자 이하로 입력해주세요.
+                            </li>
+
+                            <li>
+                                입력한 비밀번호는 문의글 수정과 삭제에 사용됩니다.
+                            </li>
+
+                            <li>
+                                비밀번호를 분실하면 확인하거나 복구하기 어렵습니다.
+                            </li>
+
+                            <li>
+                                비회원 문의글은 답변 완료 후 30일이 지나면
+                                자동으로 삭제됩니다.
+                            </li>
+
+                        </ul>
+
+                    </div>
 
                     <p th:if="${#fields.hasErrors('guestPassword')}"
                        th:errors="*{guestPassword}"
@@ -216,6 +238,7 @@
                        type="text"
                        th:field="*{title}"
                        class="board-form-input"
+                       maxlength="200"
                        placeholder="제목을 입력해주세요.">
 
                 <p th:if="${#fields.hasErrors('title')}"
