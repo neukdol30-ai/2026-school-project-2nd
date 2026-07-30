@@ -114,7 +114,6 @@
                 }
 
                 chatView.dataset.chatPage = String(data.chatPage || 1);
-                chatView.dataset.chatSize = String(data.chatSize || 10);
                 syncAdminChatUrl(data);
 
                 renderAdminChatRows(data.roomList || []);
@@ -143,7 +142,6 @@
         params.set("chatCategory", getFormValue(form, "chatCategory", chatView?.dataset.chatCategory || ""));
         params.set("chatKeyword", getFormValue(form, "chatKeyword", chatView?.dataset.chatKeyword || ""));
         params.set("chatPage", String(targetPage || chatView?.dataset.chatPage || 1));
-        params.set("chatSize", String(chatView?.dataset.chatSize || 10));
 
         return params;
     }
@@ -271,7 +269,6 @@
         params.set("chatCategory", data.chatCategory || "");
         params.set("chatKeyword", data.chatKeyword || "");
         params.set("chatPage", String(data.chatPage || 1));
-        params.set("chatSize", String(data.chatSize || 10));
         window.history.replaceState({}, "", "/admin?" + params.toString());
     }
 

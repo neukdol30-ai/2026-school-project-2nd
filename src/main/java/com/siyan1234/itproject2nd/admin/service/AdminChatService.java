@@ -37,16 +37,15 @@ public class AdminChatService {
             String category,
             String keyword,
             Integer viewerNo,
-            int page,
-            int size
+            int page
     ) {
-        int offset = AdminPagingHelper.calculateOffset(page, size);
+        int offset = AdminPagingHelper.calculateOffset(page);
         List<RecentChatRoomDto> roomList = adminChatDao.findAdminChatRooms(
                 AdminPagingHelper.cleanText(status),
                 AdminPagingHelper.cleanText(category),
                 AdminPagingHelper.cleanText(keyword),
                 offset,
-                size
+                AdminPagingHelper.PAGE_SIZE
         );
 
         if (viewerNo == null) {
@@ -78,24 +77,22 @@ public class AdminChatService {
             String category,
             String keyword,
             MemberDto loginAdmin,
-            int page,
-            int size
+            int page
     ) {
         String cleanStatus = AdminPagingHelper.cleanText(status);
         String cleanCategory = AdminPagingHelper.cleanText(category);
         String cleanKeyword = AdminPagingHelper.cleanText(keyword);
 
         long totalCount = countRooms(cleanStatus, cleanCategory, cleanKeyword);
-        int totalPages = AdminPagingHelper.calculateTotalPages(totalCount, size);
-        int safePage = AdminPagingHelper.clampPage(page, totalCount, size);
+        int totalPages = AdminPagingHelper.calculateTotalPages(totalCount);
+        int safePage = AdminPagingHelper.clampPage(page, totalCount);
 
         List<RecentChatRoomDto> roomList = findRooms(
                 cleanStatus,
                 cleanCategory,
                 cleanKeyword,
                 loginAdmin == null ? null : loginAdmin.getNo(),
-                safePage,
-                size
+                safePage
         );
         AdminDashboardDto dashboard = adminDashboardService.getDashboard();
 
@@ -106,7 +103,6 @@ public class AdminChatService {
         response.setChatCategory(cleanCategory);
         response.setChatKeyword(cleanKeyword);
         response.setChatPage(safePage);
-        response.setChatSize(size);
         response.setChatTotalCount(totalCount);
         response.setChatTotalPages(totalPages);
         response.setDashboard(dashboard);

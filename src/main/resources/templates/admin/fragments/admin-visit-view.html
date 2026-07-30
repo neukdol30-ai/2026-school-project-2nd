@@ -37,7 +37,6 @@
 
         <form class="admin-filter-form" th:action="@{/admin}" method="get">
             <input type="hidden" name="view" value="visits">
-            <input type="hidden" name="visitSize" th:value="${visitSize}">
             <input type="text" name="visitKeyword" th:value="${visitKeyword}" placeholder="아이디, 이름, 닉네임, 회원번호, IP 검색">
             <button type="submit">검색</button>
             <a th:href="@{/admin(view='visits')}" class="reset-link">초기화</a>
@@ -89,14 +88,14 @@
 
         <div class="pagination" th:if="${visitTotalPages > 1}">
             <a th:if="${visitPage > 1}"
-               th:href="@{/admin(view='visits', visitKeyword=${visitKeyword}, visitPage=${visitPage - 1}, visitSize=${visitSize})}">이전</a>
+               th:href="@{/admin(view='visits', visitKeyword=${visitKeyword}, visitPage=${visitPage - 1})}">이전</a>
             <span th:each="pageNo : ${visitPageNumbers}">
-                <a th:href="@{/admin(view='visits', visitKeyword=${visitKeyword}, visitPage=${pageNo}, visitSize=${visitSize})}"
+                <a th:href="@{/admin(view='visits', visitKeyword=${visitKeyword}, visitPage=${pageNo})}"
                    th:text="${pageNo}"
                    th:classappend="${pageNo == visitPage} ? ' active' : ''">1</a>
             </span>
             <a th:if="${visitPage < visitTotalPages}"
-               th:href="@{/admin(view='visits', visitKeyword=${visitKeyword}, visitPage=${visitPage + 1}, visitSize=${visitSize})}">다음</a>
+               th:href="@{/admin(view='visits', visitKeyword=${visitKeyword}, visitPage=${visitPage + 1})}">다음</a>
         </div>
     </article>
 </section>

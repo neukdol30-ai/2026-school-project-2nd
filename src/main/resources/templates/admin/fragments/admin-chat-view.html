@@ -9,8 +9,7 @@
                           data-chat-status=${chatStatus},
                           data-chat-category=${chatCategory},
                           data-chat-keyword=${chatKeyword},
-                          data-chat-page=${chatPage},
-                          data-chat-size=${chatSize}">
+                          data-chat-page=${chatPage}">
             <article class="panel full-panel">
                 <div class="panel-head with-actions">
                     <div>
@@ -30,7 +29,6 @@
 
                 <form class="admin-filter-form" th:action="@{/admin}" method="get">
                     <input type="hidden" name="view" value="chats">
-                    <input type="hidden" name="chatSize" th:value="${chatSize}">
                     <select name="chatStatus">
                         <option value="" th:selected="${#strings.isEmpty(chatStatus)}">전체 상태</option>
                         <option value="OPEN" th:selected="${chatStatus == 'OPEN'}">진행 중</option>
@@ -120,14 +118,14 @@
 
                 <div class="pagination" id="adminChatPagination" th:if="${chatTotalPages > 1}">
                     <a th:if="${chatPage > 1}"
-                       th:href="@{/admin(view='chats', chatStatus=${chatStatus}, chatCategory=${chatCategory}, chatKeyword=${chatKeyword}, chatPage=${chatPage - 1}, chatSize=${chatSize})}">이전</a>
+                       th:href="@{/admin(view='chats', chatStatus=${chatStatus}, chatCategory=${chatCategory}, chatKeyword=${chatKeyword}, chatPage=${chatPage - 1})}">이전</a>
                     <span th:each="pageNo : ${chatPageNumbers}">
-                        <a th:href="@{/admin(view='chats', chatStatus=${chatStatus}, chatCategory=${chatCategory}, chatKeyword=${chatKeyword}, chatPage=${pageNo}, chatSize=${chatSize})}"
+                        <a th:href="@{/admin(view='chats', chatStatus=${chatStatus}, chatCategory=${chatCategory}, chatKeyword=${chatKeyword}, chatPage=${pageNo})}"
                            th:text="${pageNo}"
                            th:classappend="${pageNo == chatPage} ? ' active' : ''">1</a>
                     </span>
                     <a th:if="${chatPage < chatTotalPages}"
-                       th:href="@{/admin(view='chats', chatStatus=${chatStatus}, chatCategory=${chatCategory}, chatKeyword=${chatKeyword}, chatPage=${chatPage + 1}, chatSize=${chatSize})}">다음</a>
+                       th:href="@{/admin(view='chats', chatStatus=${chatStatus}, chatCategory=${chatCategory}, chatKeyword=${chatKeyword}, chatPage=${chatPage + 1})}">다음</a>
                 </div>
             </article>
         </section>
