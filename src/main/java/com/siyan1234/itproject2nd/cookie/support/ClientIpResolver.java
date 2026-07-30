@@ -82,7 +82,15 @@ public class ClientIpResolver {
         }
 
         try {
-            return InetAddress.getByName(candidate).getHostAddress();
+            InetAddress address = InetAddress.getByName(candidate);
+
+            // localhost 접속 방식이 달라도 같은 방문자로 집계되도록
+            // IPv4/IPv6 루프백 주소를 127.0.0.1로 통일합니다.
+            if (address.isLoopbackAddress()) {
+                return "127.0.0.1";
+            }
+
+            return address.getHostAddress();
         } catch (UnknownHostException e) {
             return null;
         }

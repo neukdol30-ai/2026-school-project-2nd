@@ -221,6 +221,7 @@ body {
 /* 메시지 입력창과 전송 버튼을 감싸는 하단 영역입니다. */
 .chat-input-box {
     display: flex;
+    flex-wrap: wrap;
     gap: 10px;
     padding: 18px;
     border-top: 1px solid #e2e8f0;
@@ -260,6 +261,34 @@ body {
     cursor: not-allowed;
 }
 
+
+
+.chat-input-meta {
+    display: flex;
+    flex: 0 0 100%;
+    align-items: center;
+    justify-content: space-between;
+    min-height: 18px;
+    padding: 0 8px;
+    color: #64748b;
+    font-size: 12px;
+}
+
+.chat-input-status {
+    min-width: 0;
+    color: #64748b;
+}
+
+.chat-input-status.error,
+.message-length-counter.limit-reached {
+    color: #dc2626;
+    font-weight: 800;
+}
+
+.message-length-counter {
+    margin-left: auto;
+    white-space: nowrap;
+}
 
 /* 메시지 한 줄을 감싸는 행입니다. chat.js가 동적으로 생성합니다. */
 .message-row {

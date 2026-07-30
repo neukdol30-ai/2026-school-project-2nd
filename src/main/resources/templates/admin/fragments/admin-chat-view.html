@@ -9,8 +9,7 @@
                           data-chat-status=${chatStatus},
                           data-chat-category=${chatCategory},
                           data-chat-keyword=${chatKeyword},
-                          data-chat-page=${chatPage},
-                          data-chat-size=${chatSize}">
+                          data-chat-page=${chatPage}">
             <article class="panel full-panel">
                 <div class="panel-head with-actions">
                     <div>
@@ -120,7 +119,7 @@
                 <div class="pagination" id="adminChatPagination" th:if="${chatTotalPages > 1}">
                     <a th:if="${chatPage > 1}"
                        th:href="@{/admin(view='chats', chatStatus=${chatStatus}, chatCategory=${chatCategory}, chatKeyword=${chatKeyword}, chatPage=${chatPage - 1})}">이전</a>
-                    <span th:each="pageNo : ${#numbers.sequence(1, chatTotalPages)}">
+                    <span th:each="pageNo : ${chatPageNumbers}">
                         <a th:href="@{/admin(view='chats', chatStatus=${chatStatus}, chatCategory=${chatCategory}, chatKeyword=${chatKeyword}, chatPage=${pageNo})}"
                            th:text="${pageNo}"
                            th:classappend="${pageNo == chatPage} ? ' active' : ''">1</a>
