@@ -1,21 +1,24 @@
 document.addEventListener("DOMContentLoaded", function () {
 
     /*
-     * 한 페이지에 존재하는 모든 게시글·답변 폼을 가져온다.
+     * 현재 페이지의 게시글 작성·수정 폼
      */
     const boardForms =
-        document.querySelectorAll("[data-board-form]");
+        document.querySelectorAll(
+            "[data-board-form]"
+        );
 
     if (boardForms.length === 0) {
         return;
     }
 
     /*
-     * Toast UI 라이브러리 로드 확인
+     * Toast UI 라이브러리 확인
      */
-    if (typeof toastui === "undefined"
-        || typeof toastui.Editor === "undefined") {
-
+    if (
+        typeof toastui === "undefined"
+        || typeof toastui.Editor === "undefined"
+    ) {
         console.error(
             "Toast UI Editor 라이브러리가 로드되지 않았습니다."
         );
@@ -25,30 +28,177 @@ document.addEventListener("DOMContentLoaded", function () {
 
     boardForms.forEach(function (boardForm) {
 
-        /*
-         * 각 폼 내부의 에디터와 content 입력창을 찾는다.
-         */
         const editorElement =
-            boardForm.querySelector("[data-board-editor]");
+            boardForm.querySelector(
+                "[data-board-editor]"
+            );
 
         const contentInput =
-            boardForm.querySelector("[data-board-content]");
+            boardForm.querySelector(
+                "[data-board-content]"
+            );
+
+        const titleInput =
+            boardForm.querySelector(
+                "[data-board-title]"
+            );
+
+        const titleCountElement =
+            boardForm.querySelector(
+                "[data-board-title-count]"
+            );
+
+        const contentCountElement =
+            boardForm.querySelector(
+                "[data-board-content-count]"
+            );
 
         if (!editorElement || !contentInput) {
             return;
         }
 
+        /*
+         * HTML의 data 속성에서 제한값 가져오기
+         */
+        const titleMaxLength =
+            Number(
+                boardForm.dataset.titleMaxLength
+            ) || 200;
+
+        const contentMaxLength =
+            Number(
+                boardForm.dataset.contentMaxLength
+            ) || 10000;
+
+        const contentHtmlMaxLength =
+            Number(
+                boardForm.dataset.contentHtmlMaxLength
+            ) || 30000;
+
         let editor = null;
 
         /*
-         * 에디터 생성 메서드
-         *
-         * 답변 수정 영역은 details 안에 숨겨져 있으므로
-         * 열었을 때 에디터를 생성할 수 있도록 함수로 분리한다.
+         * HTML에서 화면에 보이는 글자 추출
+         */
+        function getPlainText(htmlContent) {
+
+            const temporaryElement =
+                document.createElement("div");
+
+            temporaryElement.innerHTML =
+                htmlContent || "";
+
+            return (
+                temporaryElement.textContent
+                || temporaryElement.innerText
+                || ""
+            )
+                .replace(/\u00A0/g, " ")
+                .trim();
+        }
+
+        /*
+         * 글자 수 표시 색상 변경
+         */
+        function updateCounterStyle(
+            countElement,
+            currentLength,
+            maxLength
+        ) {
+            if (!countElement) {
+                return;
+            }
+
+            const countArea =
+                countElement.closest(
+                    ".board-form-count"
+                );
+
+            if (!countArea) {
+                return;
+            }
+
+            countArea.classList.toggle(
+                "is-over",
+                currentLength > maxLength
+            );
+        }
+
+        /*
+         * 제목 글자 수 표시
+         */
+        function updateTitleCount() {
+
+            if (!titleInput
+                || !titleCountElement) {
+                return;
+            }
+
+            const currentLength =
+                titleInput.value.length;
+
+            titleCountElement.textContent =
+                currentLength.toLocaleString(
+                    "ko-KR"
+                );
+
+            updateCounterStyle(
+                titleCountElement,
+                currentLength,
+                titleMaxLength
+            );
+        }
+
+        /*
+         * 본문 글자 수 표시
+         */
+        function updateContentCount(
+            currentEditor
+        ) {
+            if (!currentEditor
+                || !contentCountElement) {
+                return;
+            }
+
+            const htmlContent =
+                currentEditor.getHTML();
+
+            const plainText =
+                getPlainText(htmlContent);
+
+            const currentLength =
+                plainText.length;
+
+            contentCountElement.textContent =
+                currentLength.toLocaleString(
+                    "ko-KR"
+                );
+
+            updateCounterStyle(
+                contentCountElement,
+                currentLength,
+                contentMaxLength
+            );
+        }
+
+        /*
+         * 제목 입력 이벤트
+         */
+        if (titleInput) {
+
+            titleInput.addEventListener(
+                "input",
+                updateTitleCount
+            );
+
+            updateTitleCount();
+        }
+
+        /*
+         * Toast UI Editor 생성
          */
         function createEditor() {
 
-            // 이미 생성된 경우 다시 생성하지 않는다.
             if (editor !== null) {
                 return editor;
             }
@@ -83,63 +233,62 @@ document.addEventListener("DOMContentLoaded", function () {
                 hooks: {
 
                     /*
-                     * 에디터 이미지 업로드
+                     * 이미지 업로드
                      */
-                    addImageBlobHook: async function (
-                        blob,
-                        callback
-                    ) {
+                    addImageBlobHook:
+                        async function (
+                            blob,
+                            callback
+                        ) {
 
-                        const formData =
-                            new FormData();
+                            const formData =
+                                new FormData();
 
-                        formData.append(
-                            "image",
-                            blob
-                        );
+                            formData.append(
+                                "image",
+                                blob
+                            );
 
-                        try {
+                            try {
 
-                            const response =
-                                await fetch(
-                                    "/board/image/upload",
-                                    {
-                                        method: "POST",
-                                        body: formData
-                                    }
+                                const response =
+                                    await fetch(
+                                        "/board/image/upload",
+                                        {
+                                            method: "POST",
+                                            body: formData
+                                        }
+                                    );
+
+                                const result =
+                                    await response.json();
+
+                                if (!response.ok) {
+                                    throw new Error(
+                                        result.message
+                                        || "이미지 업로드에 실패했습니다."
+                                    );
+                                }
+
+                                callback(
+                                    result.imageUrl,
+                                    blob.name
+                                    || "게시글 이미지"
                                 );
 
-                            const result =
-                                await response.json();
+                            } catch (error) {
 
-                            if (!response.ok) {
-
-                                throw new Error(
-                                    result.message
-                                    || "이미지 업로드에 실패했습니다."
+                                alert(
+                                    error.message
+                                    || "이미지 업로드 중 오류가 발생했습니다."
                                 );
                             }
-
-                            callback(
-                                result.imageUrl,
-                                blob.name || "게시글 이미지"
-                            );
-
-                        } catch (error) {
-
-                            alert(
-                                error.message
-                            );
                         }
-                    }
                 }
             });
 
             /*
-             * 기존 내용은 HTML로 저장되어 있으므로
-             * setHTML()을 사용해 에디터에 불러온다.
-             *
-             * <p>123</p>가 화면에는 123으로 표시된다.
+             * 수정 화면의 기존 내용 불러오기
              */
             if (savedContent.trim() !== "") {
 
@@ -149,28 +298,39 @@ document.addEventListener("DOMContentLoaded", function () {
                 );
             }
 
+            /*
+             * 에디터 내용이 바뀔 때마다
+             * 본문 글자 수 갱신
+             */
+            editor.on(
+                "change",
+                function () {
+                    updateContentCount(
+                        editor
+                    );
+                }
+            );
+
+            updateContentCount(editor);
+
             return editor;
         }
 
         /*
-         * 답변 수정 폼이 닫힌 details 안에 있으면
-         * details를 열 때 에디터를 생성한다.
-         *
-         * 숨겨진 상태에서 에디터를 만들면
-         * 너비가 잘못 계산되는 문제를 방지한다.
+         * 숨겨진 details 안에서 사용하는 경우
          */
         const detailsElement =
             boardForm.closest("details");
 
-        if (detailsElement
-            && !detailsElement.open) {
-
+        if (
+            detailsElement
+            && !detailsElement.open
+        ) {
             detailsElement.addEventListener(
                 "toggle",
                 function () {
 
                     if (detailsElement.open) {
-
                         requestAnimationFrame(
                             createEditor
                         );
@@ -179,12 +339,11 @@ document.addEventListener("DOMContentLoaded", function () {
             );
 
         } else {
-
             createEditor();
         }
 
         /*
-         * 폼 제출 처리
+         * 등록 또는 수정 버튼 클릭
          */
         boardForm.addEventListener(
             "submit",
@@ -198,52 +357,98 @@ document.addEventListener("DOMContentLoaded", function () {
                     return;
                 }
 
+                /*
+                 * 제목 200자 검사
+                 */
+                if (
+                    titleInput
+                    && titleInput.value.length
+                    > titleMaxLength
+                ) {
+                    event.preventDefault();
+
+                    alert(
+                        "제목은 "
+                        + titleMaxLength
+                        + "자 이하로 입력해주세요."
+                    );
+
+                    titleInput.focus();
+                    return;
+                }
+
                 const htmlContent =
                     currentEditor.getHTML();
 
-                /*
-                 * HTML 태그를 제외한 실제 글자 확인
-                 */
+                const plainText =
+                    getPlainText(htmlContent);
+
                 const temporaryElement =
                     document.createElement("div");
 
                 temporaryElement.innerHTML =
                     htmlContent;
 
-                const plainText =
-                    (
-                        temporaryElement.textContent
-                        || temporaryElement.innerText
-                        || ""
-                    )
-                        .replace(/\u00A0/g, " ")
-                        .trim();
+                const hasImage =
+                    temporaryElement.querySelector(
+                        "img"
+                    ) !== null;
 
                 /*
-                 * 이미지 포함 여부
+                 * 빈 본문 검사
                  */
-                const hasImage =
-                    temporaryElement.querySelector("img")
-                    !== null;
-
                 if (!plainText && !hasImage) {
 
                     event.preventDefault();
 
-                    const emptyMessage =
-                        boardForm.dataset.editorEmptyMessage
-                        || "내용을 입력해주세요.";
-
-                    alert(emptyMessage);
+                    alert(
+                        "내용을 입력해주세요."
+                    );
 
                     currentEditor.focus();
-
                     return;
                 }
 
                 /*
-                 * Toast UI에서 작성된 HTML을
-                 * 서버 전송용 textarea에 저장
+                 * 화면에 보이는 본문 10,000자 검사
+                 */
+                if (
+                    plainText.length
+                    > contentMaxLength
+                ) {
+                    event.preventDefault();
+
+                    alert(
+                        "본문은 "
+                        + contentMaxLength.toLocaleString(
+                            "ko-KR"
+                        )
+                        + "자 이하로 입력해주세요."
+                    );
+
+                    currentEditor.focus();
+                    return;
+                }
+
+                /*
+                 * HTML 전체 길이 검사
+                 */
+                if (
+                    htmlContent.length
+                    > contentHtmlMaxLength
+                ) {
+                    event.preventDefault();
+
+                    alert(
+                        "본문에 너무 많은 서식이 포함되어 있습니다."
+                    );
+
+                    currentEditor.focus();
+                    return;
+                }
+
+                /*
+                 * Toast UI HTML을 서버 전송값에 저장
                  */
                 contentInput.value =
                     htmlContent;

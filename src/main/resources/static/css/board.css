@@ -2474,3 +2474,24 @@ body.board-body-simple {
 .guest-password-notice-list li::marker {
     color: #4e91b5;
 }
+
+/* 게시글 글자 수 표시 */
+
+.board-form-count {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 4px;
+
+    margin: 7px 2px 0;
+
+    color: #718096;
+    font-size: 13px;
+    line-height: 1.4;
+    text-align: right;
+}
+
+.board-form-count.is-over {
+    color: #dc2626;
+    font-weight: 700;
+}

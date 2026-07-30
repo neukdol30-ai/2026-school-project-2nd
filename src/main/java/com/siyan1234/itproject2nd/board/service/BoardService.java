@@ -25,6 +25,15 @@ public class BoardService {
     // 게시글 한 페이지 표시 개수
     private static final int PAGE_SIZE = 10;
 
+    // 게시글 제목 최대 글자 수
+    private static final int BOARD_TITLE_MAX_LENGTH = 200;
+
+    // HTML 태그를 제외한 본문 실제 최대 글자 수
+    private static final int BOARD_CONTENT_TEXT_MAX_LENGTH = 10_000;
+
+    // HTML 태그를 포함한 본문 전체 최대 길이
+    private static final int BOARD_CONTENT_HTML_MAX_LENGTH = 30_000;
+
     // 게시글 목록
     public List<BoardDto> findAll() {
         return boardDao.findAll();
@@ -413,14 +422,29 @@ public class BoardService {
             );
         }
 
-        if (boardDto.getTitle() == null
-                || boardDto.getTitle().trim().isEmpty()) {
+        String title =
+                boardDto.getTitle() == null
+                        ? ""
+                        : boardDto.getTitle().trim();
 
+        // 제목 입력 여부
+        if (title.isEmpty()) {
             throw new IllegalArgumentException(
                     "게시글 제목을 입력해주세요."
             );
         }
 
+        // 제목 200자 제한
+        if (title.length() > BOARD_TITLE_MAX_LENGTH) {
+            throw new IllegalArgumentException(
+                    "제목은 200자 이하로 입력해주세요."
+            );
+        }
+
+        // 앞뒤 공백을 제거한 제목으로 다시 저장
+        boardDto.setTitle(title);
+
+        // 본문 검사
         validateContent(boardDto.getContent());
     }
 
@@ -516,6 +540,11 @@ public class BoardService {
             );
         }
 
+        /*
+         * 제목과 본문 길이 검사
+         */
+        validateBoard(boardDto);
+
         String title =
                 boardDto.getTitle() == null
                         ? ""
@@ -567,41 +596,83 @@ public class BoardService {
     // TOAST UI 게시글 본문 검사
     private void validateContent(String content) {
 
+        /*
+         * 전달된 값 자체가 없는 경우
+         */
         if (content == null || content.trim().isEmpty()) {
             throw new IllegalArgumentException(
                     "게시글 내용을 입력해주세요."
             );
         }
 
-        // 본문에 이미지가 있는지 확인
+        /*
+         * HTML 태그를 포함한 전체 문자열 제한
+         */
+        if (content.length()
+                > BOARD_CONTENT_HTML_MAX_LENGTH) {
+
+            throw new IllegalArgumentException(
+                    "게시글 내용에 너무 많은 서식이 포함되어 있습니다."
+            );
+        }
+
+        /*
+         * 본문에 이미지가 있는지 확인
+         */
         boolean hasImage =
                 content.matches(
                         "(?is).*<img\\s+[^>]*src=.*?>.*"
                 );
 
+        /*
+         * 화면에 실제로 표시되는 글자 추출
+         */
         String plainText = content
-                // script와 style 내용 제거
+
+                // script 내용 제거
                 .replaceAll(
                         "(?is)<script.*?>.*?</script>",
                         ""
                 )
+
+                // style 내용 제거
                 .replaceAll(
                         "(?is)<style.*?>.*?</style>",
                         ""
                 )
+
                 // 모든 HTML 태그 제거
-                .replaceAll("(?s)<[^>]*>", "")
-                // HTML 공백 문자 제거
-                .replace("&nbsp;", "")
-                .replace("&#160;", "")
-                .replace("\u00A0", "")
-                // 일반 공백 제거
+                .replaceAll(
+                        "(?s)<[^>]*>",
+                        ""
+                )
+
+                // HTML 공백 문자 변환
+                .replaceAll(
+                        "(?i)&nbsp;|&#160;|&#xA0;",
+                        " "
+                )
+
+                .replace("\u00A0", " ")
                 .trim();
 
-        // 글자도 없고 이미지도 없을 때만 빈 본문
+        /*
+         * 글자와 이미지가 모두 없는 경우
+         */
         if (plainText.isEmpty() && !hasImage) {
             throw new IllegalArgumentException(
                     "게시글 내용을 입력해주세요."
+            );
+        }
+
+        /*
+         * 화면에 보이는 실제 글자 수 제한
+         */
+        if (plainText.length()
+                > BOARD_CONTENT_TEXT_MAX_LENGTH) {
+
+            throw new IllegalArgumentException(
+                    "본문은 10,000자 이하로 입력해주세요."
             );
         }
     }
