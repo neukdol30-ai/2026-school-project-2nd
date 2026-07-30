@@ -12,11 +12,20 @@
         <h1 class="page-title">아이디 찾기 완료</h1>
         <p class="page-desc">인증이 확인되어 아래 아이디를 찾았습니다.</p>
 
-        <!-- 찾은 아이디를 강조해서 보여주는 회색 박스. -->
         <div class="result-box">
-            <p class="result-label">회원님의 아이디</p>
+            <!-- 일반 회원 : isSocialMember가 false일 때만 렌더링 -->
+            <div th:if="${!isSocialMember}">
+                <p class="result-label">회원님의 아이디</p>
+                <p class="result-id" th:text="${resultMemberId}">honggildong</p>
+            </div>
 
-            <p class="result-id" th:text="${resultMemberId}">honggildong</p>
+            <!-- 소셜 회원 : isSocialMember가 true일 때만 렌더링. 원본 memberId 대신 안내 문구 -->
+            <div th:if="${isSocialMember}">
+                <p class="result-label">가입 방법 안내</p>
+                <p class="result-id" th:text="|${socialProviderName} 로그인으로 가입되어 있습니다.|">
+                    카카오 로그인으로 가입되어 있습니다.
+                </p>
+            </div>
         </div>
 
         <p class="check-msg check-hint">
