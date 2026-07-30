@@ -9,7 +9,7 @@
     <meta name="viewport"
           content="width=device-width, initial-scale=1.0">
 
-    <title>글쓰기</title>
+    <title>문의글 작성</title>
 
     <!-- 공통 CSS -->
     <link rel="stylesheet"
@@ -31,9 +31,13 @@
     <link rel="stylesheet"
           href="https://uicdn.toast.com/editor/latest/toastui-editor.min.css">
 
-    <!-- 게시판 전용 CSS는 마지막 -->
+    <!-- 게시판 전용 CSS -->
     <link rel="stylesheet"
           th:href="@{/css/board.css}">
+
+    <!-- 테마 CSS는 마지막 -->
+    <link rel="stylesheet"
+          th:href="@{/css/theme.css}">
 
 
 </head>
@@ -51,24 +55,32 @@
     <section class="board-form-header">
 
         <div>
-            <h1 class="board-form-title">
-                게시글 작성
+
+            <h1 class="board-form-title"
+                data-board-write-title>
+                문의글 작성
             </h1>
 
+            <!-- 로그인 회원 안내 -->
             <p class="board-form-description"
+               data-board-write-description
                sec:authorize="isAuthenticated()">
-                새로운 게시글을 작성해주세요.
+                새로운 문의글을 작성해주세요.
             </p>
 
+            <!-- 비회원 안내 -->
             <p class="board-form-description"
+               data-board-write-description
                sec:authorize="isAnonymous()">
                 비회원 문의글을 작성하려면 이름과 비밀번호를 입력해주세요.
             </p>
+
         </div>
 
         <a th:href="@{/board/question}"
-           class="board-main-link">
-            목록으로
+           class="board-main-link"
+           data-board-write-list-link>
+            문의 목록으로
         </a>
 
     </section>
@@ -78,9 +90,23 @@
 
         <form id="board-write-form"
               data-board-form
+              data-title-max-length="200"
+              data-content-max-length="10000"
+              data-content-html-max-length="30000"
               th:action="@{/board/write}"
               method="post"
               th:object="${boardDto}">
+
+            <!-- 게시글 작성 횟수 제한 오류 -->
+            <div th:if="${#fields.hasGlobalErrors()}"
+                 class="board-alert board-alert-error">
+
+                <p th:each="error : ${#fields.globalErrors()}"
+                   th:text="${error}">
+                    게시글 작성 횟수를 초과했습니다.
+                </p>
+
+            </div>
 
             <!-- 로그인 회원용 카테고리 -->
             <div class="board-form-group"
@@ -238,8 +264,14 @@
                        type="text"
                        th:field="*{title}"
                        class="board-form-input"
+                       data-board-title
                        maxlength="200"
                        placeholder="제목을 입력해주세요.">
+
+                <p class="board-form-count">
+                    <span data-board-title-count>0</span>
+                    <span>/ 200자</span>
+                </p>
 
                 <p th:if="${#fields.hasErrors('title')}"
                    th:errors="*{title}"
@@ -260,6 +292,11 @@
                      class="board-editor"
                      data-board-editor>
                 </div>
+
+                <p class="board-form-count">
+                    <span data-board-content-count>0</span>
+                    <span>/ 10,000자</span>
+                </p>
 
                 <!-- 서버로 전송할 본문 HTML -->
                 <input type="hidden"
@@ -283,13 +320,15 @@
             <div class="board-form-actions">
 
                 <a th:href="@{/board/question}"
-                   class="board-button board-button-secondary">
+                   class="board-button board-button-secondary"
+                   data-board-write-cancel-link>
                     취소
                 </a>
 
                 <button type="submit"
-                        class="board-button board-button-primary">
-                    등록
+                        class="board-button board-button-primary"
+                        data-board-write-submit>
+                    문의글 등록
                 </button>
 
             </div>
@@ -304,35 +343,49 @@
 <div data-global-footer></div>
 
 
-<!-- =========================
-     공통 헤더·푸터 관련 JS
-========================= -->
+<!-- 공통 헤더·푸터 관련 JS -->
 
 <!-- banner.js에서 사용하는 상태와 공통 함수 -->
 <script th:src="@{/js/index/state.js}"></script>
 <script th:src="@{/js/index/utils.js}"></script>
+
+<!-- 공통 라이트·다크 모드 -->
+<script th:src="@{/js/theme.js}"></script>
+
+<!-- renderAuthWidget 함수 제공 -->
+<script th:src="@{/js/index/widgets/login.js}"></script>
 
 <!-- 공통 헤더와 푸터 -->
 <script th:src="@{/js/index/layout/banner.js}"></script>
 <script th:src="@{/js/index/layout/footer.js}"></script>
 
 <!-- 마이페이지 모달 -->
+<script th:src="@{/js/mypage/mypage-config.js}"></script>
+<script th:src="@{/js/mypage/mypage-utils.js}"></script>
+<script th:src="@{/js/mypage/mypage-api.js}"></script>
+<script th:src="@{/js/mypage/mypage-validation.js}"></script>
+<script th:src="@{/js/mypage/mypage-renderer.js}"></script>
+
+<!-- 주소 검색 -->
 <script th:src="@{/js/common/address-search.js}"></script>
+
+<!-- 위 모듈을 모두 불러온 다음 실행 -->
 <script th:src="@{/js/mypage-modal.js}"></script>
 
-<!-- 게시판 공통 헤더·푸터 실행 -->
+<!-- 게시판 공통 헤더·푸터·환경설정 실행 -->
 <script th:src="@{/js/board/board-common-layout.js}"></script>
 
 
-<!-- =========================
-     TOAST UI Editor
-========================= -->
+<!-- TOAST UI Editor -->
 
 <script src="https://uicdn.toast.com/editor/latest/toastui-editor-all.min.js"></script>
 <script src="https://uicdn.toast.com/editor/latest/i18n/ko-kr.js"></script>
 
 <!-- TOAST UI Editor 설정 및 폼 전송 -->
 <script th:src="@{/js/board/board-editor.js}"></script>
+
+<!-- 카테고리에 따른 작성 화면 문구 변경 -->
+<script th:src="@{/js/board/board-write-page.js}"></script>
 
 <!-- 쿠키 설정 -->
 <script th:src="@{/js/cookie-consent.js}"></script>

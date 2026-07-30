@@ -136,3 +136,138 @@
     color: #92400e !important;
     background: #fef3c7 !important;
 }
+
+
+/* =========================================
+   관리자 게시글 목록 답변 열 정렬
+========================================= */
+
+/* 답변 열 전체 */
+.admin-board-answer-cell {
+    min-width: 100px;
+    vertical-align: middle;
+    text-align: center;
+}
+
+/* 답변 상태와 개수를 세로로 정렬 */
+.admin-board-answer-box {
+    min-height: 54px;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+
+    gap: 6px;
+}
+
+/* 답변 대기 / 답변 완료 */
+.admin-board-answer-status {
+    min-width: 68px;
+    min-height: 27px;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    margin: 0;
+    line-height: 1;
+    white-space: nowrap;
+}
+
+/* 답변 0건 */
+.admin-board-answer-count {
+    display: block;
+
+    margin: 0;
+    padding: 0;
+
+    color: #64748b;
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 1.2;
+    white-space: nowrap;
+}
+
+/* =====================================================
+   관리자 게시글 목록 답변·조회수 강제 정렬
+===================================================== */
+
+/* 답변/조회수 헤더 */
+#boardManageView
+.admin-table
+th.admin-board-answer-head,
+
+#boardManageView
+.admin-table
+th.admin-board-view-head {
+    padding-left: 8px !important;
+    padding-right: 8px !important;
+
+    text-align: center !important;
+    vertical-align: middle !important;
+}
+
+/* 답변/조회수 데이터 칸 */
+#boardManageView
+.admin-table
+td.admin-board-answer-cell,
+
+#boardManageView
+.admin-table
+td.admin-board-view-cell {
+    padding-left: 8px !important;
+    padding-right: 8px !important;
+
+    text-align: center !important;
+    vertical-align: middle !important;
+}
+
+/* 답변 대기 + 답변 0건 */
+#boardManageView .admin-board-answer-box {
+    width: 100%;
+    min-height: 54px;
+    margin: 0 auto;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+
+    gap: 6px;
+    text-align: center;
+}
+
+/* 답변 대기/완료 */
+#boardManageView .admin-board-answer-status {
+    min-width: 68px;
+    margin: 0 auto !important;
+
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    line-height: 1.2;
+    text-align: center;
+    white-space: nowrap;
+}
+
+/* 답변 0건 */
+#boardManageView .admin-board-answer-count {
+    display: block;
+    width: 100%;
+    margin: 0 !important;
+    padding: 0 !important;
+
+    color: #64748b;
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 1.2;
+    text-align: center !important;
+    white-space: nowrap;
+}
+
+/* 조회수 */
+#boardManageView .admin-board-view-cell {
+    font-variant-numeric: tabular-nums;
+}

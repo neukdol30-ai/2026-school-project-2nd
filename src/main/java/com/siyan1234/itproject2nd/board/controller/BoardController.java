@@ -1,6 +1,7 @@
 package com.siyan1234.itproject2nd.board.controller;
 
 import com.siyan1234.itproject2nd.board.dto.BoardDto;
+import com.siyan1234.itproject2nd.board.exception.BoardRateLimitException;
 import com.siyan1234.itproject2nd.board.service.BoardService;
 
 import com.siyan1234.itproject2nd.member.dto.MemberDto;
@@ -47,7 +48,7 @@ public class BoardController {
     }
 
 
-    //게시글상세
+    // 게시글 상세
     @GetMapping("/detail/{no}")
     public String detail(
             @PathVariable Long no,
@@ -57,10 +58,10 @@ public class BoardController {
     ) {
 
         /*
-         * 게시글을 먼저 조회한다.
-         * 삭제됐거나 존재하지 않는 게시글이면 null이 반환된다.
+         * 게시글 존재 여부를 먼저 확인
          */
-        BoardDto board = boardService.findByNo(no);
+        BoardDto board =
+                boardService.findByNo(no);
 
         if (board == null) {
 
@@ -73,18 +74,33 @@ public class BoardController {
         }
 
         /*
-         * 존재하는 게시글일 때만 조회수를 증가시킨다.
+         * 같은 세션에서 같은 게시글은
+         * 한 번만 조회수 증가
          */
-        String viewKey = "viewed_board_" + no;
+        String viewKey =
+                "viewed_board_" + no;
 
         if (session.getAttribute(viewKey) == null) {
 
-            boardService.increaseViewCount(no);
+            int result =
+                    boardService.increaseViewCount(no);
 
-            session.setAttribute(
-                    viewKey,
-                    true
-            );
+            /*
+             * 조회수 증가에 성공한 경우에만
+             * 세션에 조회 기록 저장
+             */
+            if (result == 1) {
+                session.setAttribute(
+                        viewKey,
+                        true
+                );
+            }
+
+            /*
+             * 조회수 증가 후 최신 게시글 정보를 다시 조회
+             */
+            board =
+                    boardService.findByNo(no);
         }
 
         model.addAttribute(
@@ -261,8 +277,35 @@ public class BoardController {
 
             boardService.insert(boardDto);
 
+        } catch (BoardRateLimitException e) {
+
+            /*
+             * 회원이 너무 빠르게 또는 너무 많이
+             * 게시글을 작성했을 때 발생하는 오류
+             */
+            bindingResult.reject(
+                    "boardWriteLimit",
+                    e.getMessage()
+            );
+
+            model.addAttribute(
+                    "isLogin",
+                    loginMember != null
+            );
+
+            model.addAttribute(
+                    "isAdmin",
+                    loginMember != null
+                            && "ADMIN".equals(loginMember.getRole())
+            );
+
+            return "board/write";
+
         } catch (IllegalArgumentException e) {
 
+            /*
+             * 제목, 본문 길이 또는 입력값 오류
+             */
             model.addAttribute(
                     "contentError",
                     e.getMessage()
