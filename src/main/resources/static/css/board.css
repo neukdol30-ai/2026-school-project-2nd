@@ -2430,3 +2430,47 @@ body.board-body-simple {
                     #d8f7ff 100%
             );
 }
+
+
+/* =========================
+   비회원 비밀번호 안내
+========================= */
+
+.guest-password-notice {
+    margin-top: 12px;
+    padding: 14px 16px;
+
+    background-color: #f7fbff;
+    border: 1px solid #d7e7f0;
+    border-radius: 8px;
+
+    color: #536874;
+    text-align: left;
+}
+
+.guest-password-notice-title {
+    margin: 0 0 8px;
+
+    color: #334b59;
+    font-size: 14px;
+    font-weight: 700;
+}
+
+.guest-password-notice-list {
+    margin: 0;
+    padding-left: 20px;
+
+    list-style: disc;
+}
+
+.guest-password-notice-list li {
+    margin: 5px 0;
+
+    font-size: 13px;
+    line-height: 1.6;
+    text-align: left;
+}
+
+.guest-password-notice-list li::marker {
+    color: #4e91b5;
+}
