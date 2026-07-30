@@ -349,6 +349,18 @@ document.addEventListener("DOMContentLoaded", function () {
             "submit",
             function (event) {
 
+                /*
+                 * 이미 한 번 제출된 폼이면
+                 * 추가 제출을 차단한다.
+                 */
+                if (
+                    boardForm.dataset.submitting
+                    === "true"
+                ) {
+                    event.preventDefault();
+                    return;
+                }
+
                 const currentEditor =
                     createEditor();
 
@@ -452,6 +464,43 @@ document.addEventListener("DOMContentLoaded", function () {
                  */
                 contentInput.value =
                     htmlContent;
+
+
+                /*
+                 * 모든 입력 검사를 통과한 뒤
+                 * 중복 제출 방지를 시작한다.
+                 */
+                boardForm.dataset.submitting =
+                    "true";
+
+                const submitButton =
+                    boardForm.querySelector(
+                        'button[type="submit"]'
+                    );
+
+                if (submitButton) {
+
+                    /*
+                     * 등록 버튼을 비활성화하여
+                     * 연속 클릭을 막는다.
+                     */
+                    submitButton.disabled = true;
+
+                    /*
+                     * 글쓰기와 수정 화면에 따라
+                     * 버튼 문구를 다르게 표시한다.
+                     */
+                    if (
+                        boardForm.id
+                        === "board-update-form"
+                    ) {
+                        submitButton.textContent =
+                            "수정 중...";
+                    } else {
+                        submitButton.textContent =
+                            "등록 중...";
+                    }
+                }
             }
         );
     });

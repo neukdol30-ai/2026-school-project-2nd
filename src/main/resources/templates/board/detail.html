@@ -8,7 +8,11 @@
     <meta name="viewport"
           content="width=device-width, initial-scale=1.0">
 
-    <title>게시글 상세</title>
+    <title th:text="${board.category == 'NOTICE'
+        ? '공지사항 상세'
+        : '문의글 상세'}">
+        게시글 상세
+    </title>
 
     <!-- 공통 CSS -->
     <link rel="stylesheet"
@@ -30,9 +34,13 @@
     <link rel="stylesheet"
           href="https://uicdn.toast.com/editor/latest/toastui-editor.min.css">
 
-    <!-- 게시판 CSS는 반드시 마지막 -->
+    <!-- 게시판 전용 CSS -->
     <link rel="stylesheet"
           th:href="@{/css/board.css}">
+
+    <!-- 라이트·다크 모드 CSS는 마지막 -->
+    <link rel="stylesheet"
+          th:href="@{/css/theme.css}">
 </head>
 
 <body class="board-body">
@@ -79,7 +87,9 @@
                 </span>
 
                 <span class="board-detail-number"
-                      th:text="'게시글 #' + ${board.no}">
+                      th:text="${board.category == 'NOTICE'
+                        ? '공지사항 #' + board.no
+                        : '문의글 #' + board.no}">
                     게시글 #1
                 </span>
 
@@ -196,7 +206,7 @@
 
                     <button type="submit"
                             class="board-button board-button-delete"
-                            onclick="return confirm('게시글을 삭제하시겠습니까?');">
+                            onclick="return confirm('정말 삭제하시겠습니까?');">
                         삭제
                     </button>
 
@@ -242,7 +252,7 @@
 
     <!-- 답변 영역 -->
     <!-- 공지사항에서는 전체 영역 숨김 -->
-    <section th:if="${board.category != 'NOTICE'}"
+    <section th:if="${board.category == 'QUESTION'}"
              id="comments"
              class="board-comment-box">
 
@@ -425,7 +435,7 @@
                         </h3>
 
                         <p class="answer-form-description">
-                            질문에 도움이 되는 답변을 작성해주세요.
+                            문의 내용에 도움이 되는 답변을 작성해주세요.
                         </p>
                     </div>
 
@@ -493,6 +503,9 @@
 <script th:src="@{/js/index/state.js}"></script>
 <script th:src="@{/js/index/utils.js}"></script>
 
+<!-- 라이트·다크 모드 -->
+<script th:src="@{/js/theme.js}"></script>
+
 <!-- 마이페이지 모달이 확인하는 로그인 위젯 함수 -->
 <script th:src="@{/js/index/widgets/login.js}"></script>
 
@@ -500,7 +513,7 @@
 <script th:src="@{/js/index/layout/banner.js}"></script>
 <script th:src="@{/js/index/layout/footer.js}"></script>
 
-<!-- 마이페이지 -->
+<!-- 마이페이지 하위 모듈-->
 <script th:src="@{/js/mypage/mypage-config.js}"></script>
 <script th:src="@{/js/mypage/mypage-utils.js}"></script>
 <script th:src="@{/js/mypage/mypage-api.js}"></script>
@@ -511,6 +524,10 @@
 
 <!-- 위 모듈들이 모두 로드된 뒤 연결 -->
 <script th:src="@{/js/mypage-modal.js}"></script>
+
+<!-- 게시판 헤더·푸터·환경설정 -->
+<script th:src="@{/js/board/board-common-layout.js}"></script>
+
 
 <!-- Toast UI JS -->
 <script src="https://uicdn.toast.com/editor/latest/toastui-editor-all.min.js"></script>
@@ -807,9 +824,6 @@
     }
 
 </script>
-
-<!-- 공통 레이아웃 -->
-<script th:src="@{/js/board/board-common-layout.js}"></script>
 
 <script th:src="@{/js/cookie-consent.js}"></script>
 

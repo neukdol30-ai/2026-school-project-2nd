@@ -9,7 +9,7 @@
     <meta name="viewport"
           content="width=device-width, initial-scale=1.0">
 
-    <title>글쓰기</title>
+    <title>문의글 작성</title>
 
     <!-- 공통 CSS -->
     <link rel="stylesheet"
@@ -55,24 +55,32 @@
     <section class="board-form-header">
 
         <div>
-            <h1 class="board-form-title">
-                게시글 작성
+
+            <h1 class="board-form-title"
+                data-board-write-title>
+                문의글 작성
             </h1>
 
+            <!-- 로그인 회원 안내 -->
             <p class="board-form-description"
+               data-board-write-description
                sec:authorize="isAuthenticated()">
-                새로운 게시글을 작성해주세요.
+                새로운 문의글을 작성해주세요.
             </p>
 
+            <!-- 비회원 안내 -->
             <p class="board-form-description"
+               data-board-write-description
                sec:authorize="isAnonymous()">
                 비회원 문의글을 작성하려면 이름과 비밀번호를 입력해주세요.
             </p>
+
         </div>
 
         <a th:href="@{/board/question}"
-           class="board-main-link">
-            목록으로
+           class="board-main-link"
+           data-board-write-list-link>
+            문의 목록으로
         </a>
 
     </section>
@@ -88,6 +96,17 @@
               th:action="@{/board/write}"
               method="post"
               th:object="${boardDto}">
+
+            <!-- 게시글 작성 횟수 제한 오류 -->
+            <div th:if="${#fields.hasGlobalErrors()}"
+                 class="board-alert board-alert-error">
+
+                <p th:each="error : ${#fields.globalErrors()}"
+                   th:text="${error}">
+                    게시글 작성 횟수를 초과했습니다.
+                </p>
+
+            </div>
 
             <!-- 로그인 회원용 카테고리 -->
             <div class="board-form-group"
@@ -301,13 +320,15 @@
             <div class="board-form-actions">
 
                 <a th:href="@{/board/question}"
-                   class="board-button board-button-secondary">
+                   class="board-button board-button-secondary"
+                   data-board-write-cancel-link>
                     취소
                 </a>
 
                 <button type="submit"
-                        class="board-button board-button-primary">
-                    등록
+                        class="board-button board-button-primary"
+                        data-board-write-submit>
+                    문의글 등록
                 </button>
 
             </div>
@@ -362,6 +383,9 @@
 
 <!-- TOAST UI Editor 설정 및 폼 전송 -->
 <script th:src="@{/js/board/board-editor.js}"></script>
+
+<!-- 카테고리에 따른 작성 화면 문구 변경 -->
+<script th:src="@{/js/board/board-write-page.js}"></script>
 
 <!-- 쿠키 설정 -->
 <script th:src="@{/js/cookie-consent.js}"></script>

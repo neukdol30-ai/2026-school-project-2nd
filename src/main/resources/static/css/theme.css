@@ -1649,3 +1649,1158 @@ html[data-theme="dark"] body.auth-page .social-button-link {
 html[data-theme="dark"] body.auth-page .social-button-img {
     border-radius: 6px;
 }
+
+
+
+/* =====================================================
+   게시판 다크 모드
+===================================================== */
+
+html[data-theme="dark"] {
+    --board-dark-bg: #0f1115;
+    --board-dark-surface: #181c22;
+    --board-dark-surface-light: #20262b;
+    --board-dark-border: #343b45;
+    --board-dark-text: #f3f4f6;
+    --board-dark-muted: #a9b1bb;
+}
+
+/* 게시판 전체 배경 */
+html[data-theme="dark"] body.board-body,
+html[data-theme="dark"] .board-page {
+    background-color: var(--board-dark-bg);
+    color: var(--board-dark-text);
+}
+
+/* 게시판의 흰색 카드 영역 */
+html[data-theme="dark"] .guest-delete-card,
+html[data-theme="dark"] .guest-password-card,
+html[data-theme="dark"] .board-form-box,
+html[data-theme="dark"] .board-detail-box,
+html[data-theme="dark"] .board-comment-box,
+html[data-theme="dark"] .question-list-box,
+html[data-theme="dark"] .question-card,
+html[data-theme="dark"] .board-toolbar {
+    background-color: var(--board-dark-surface);
+    border-color: var(--board-dark-border);
+    color: var(--board-dark-text);
+}
+
+/* 비회원 삭제 확인 내부 정보 박스 */
+html[data-theme="dark"] .guest-delete-board,
+html[data-theme="dark"] .guest-password-board-info {
+    background-color: var(--board-dark-surface-light);
+    border-color: var(--board-dark-border);
+    color: var(--board-dark-text);
+}
+
+/* 주요 제목 */
+html[data-theme="dark"] .guest-delete-title,
+html[data-theme="dark"] .guest-password-title,
+html[data-theme="dark"] .board-title,
+html[data-theme="dark"] .board-form-title,
+html[data-theme="dark"] .board-detail-title,
+html[data-theme="dark"] .board-comment-title,
+html[data-theme="dark"] .question-card-title {
+    color: var(--board-dark-text);
+}
+
+/* 설명과 보조 문구 */
+html[data-theme="dark"] .guest-delete-description,
+html[data-theme="dark"] .guest-password-description,
+html[data-theme="dark"] .guest-password-help,
+html[data-theme="dark"] .board-description,
+html[data-theme="dark"] .board-form-description,
+html[data-theme="dark"] .board-detail-meta,
+html[data-theme="dark"] .question-card-meta,
+html[data-theme="dark"] .board-comment-description,
+html[data-theme="dark"] .board-form-count {
+    color: var(--board-dark-muted);
+}
+
+/* 삭제 대상 제목과 번호 */
+html[data-theme="dark"] .guest-delete-board strong,
+html[data-theme="dark"] .guest-password-board-title {
+    color: var(--board-dark-text);
+}
+
+html[data-theme="dark"] .guest-delete-board span,
+html[data-theme="dark"] .guest-password-info-label,
+html[data-theme="dark"] .guest-password-board-number {
+    color: var(--board-dark-muted);
+}
+
+/* 입력창과 선택창 */
+html[data-theme="dark"] .board-form-input,
+html[data-theme="dark"] .board-form-select,
+html[data-theme="dark"] .board-search-input,
+html[data-theme="dark"] .guest-password-input,
+html[data-theme="dark"] textarea {
+    background-color: var(--board-dark-surface-light);
+    border-color: var(--board-dark-border);
+    color: var(--board-dark-text);
+}
+
+/* 입력창 placeholder */
+html[data-theme="dark"] .board-form-input::placeholder,
+html[data-theme="dark"] .board-search-input::placeholder,
+html[data-theme="dark"] .guest-password-input::placeholder,
+html[data-theme="dark"] textarea::placeholder {
+    color: #7f8995;
+}
+
+/* 취소 버튼 */
+html[data-theme="dark"] .guest-delete-cancel,
+html[data-theme="dark"] .guest-password-button-cancel,
+html[data-theme="dark"] .board-button-secondary {
+    background-color: var(--board-dark-surface-light);
+    border-color: var(--board-dark-border);
+    color: var(--board-dark-text);
+}
+
+/* 취소 버튼 hover */
+html[data-theme="dark"] .guest-delete-cancel:hover,
+html[data-theme="dark"] .guest-password-button-cancel:hover,
+html[data-theme="dark"] .board-button-secondary:hover {
+    background-color: #2a313a;
+}
+
+/* 카드 및 답변 영역 구분선 */
+html[data-theme="dark"] .board-detail-header,
+html[data-theme="dark"] .board-detail-actions,
+html[data-theme="dark"] .board-comment-header,
+html[data-theme="dark"] .question-card {
+    border-color: var(--board-dark-border);
+}
+
+/* =====================================================
+   Toast UI Editor 다크 모드
+===================================================== */
+
+html[data-theme="dark"] .toastui-editor-defaultUI {
+    border-color: var(--board-dark-border);
+    background-color: var(--board-dark-surface);
+}
+
+/* 에디터 툴바 */
+html[data-theme="dark"] .toastui-editor-toolbar,
+html[data-theme="dark"] .toastui-editor-defaultUI-toolbar {
+    background-color: var(--board-dark-surface-light);
+    border-color: var(--board-dark-border);
+}
+
+/* 에디터 본문 */
+html[data-theme="dark"] .toastui-editor-main,
+html[data-theme="dark"] .toastui-editor-ww-container,
+html[data-theme="dark"] .toastui-editor-md-container,
+html[data-theme="dark"] .toastui-editor-md-preview {
+    background-color: var(--board-dark-surface);
+    color: var(--board-dark-text);
+}
+
+/* WYSIWYG 입력 영역 */
+html[data-theme="dark"] .toastui-editor-contents,
+html[data-theme="dark"] .toastui-editor-contents p,
+html[data-theme="dark"] .toastui-editor-contents li,
+html[data-theme="dark"] .ProseMirror {
+    color: var(--board-dark-text);
+}
+
+/* 에디터 구분선 */
+html[data-theme="dark"] .toastui-editor-md-splitter,
+html[data-theme="dark"] .toastui-editor-mode-switch {
+    border-color: var(--board-dark-border);
+    background-color: var(--board-dark-surface-light);
+}
+
+/* =====================================================
+   게시판 상세 페이지 다크모드
+   공지사항 상세 + 문의글 상세 공통
+===================================================== */
+
+:where(
+    html[data-theme="dark"],
+    body[data-theme="dark"],
+    body.dark-mode
+) {
+    --board-detail-dark-bg: #101318;
+    --board-detail-dark-card: #181d24;
+    --board-detail-dark-card-light: #20262f;
+    --board-detail-dark-border: #343c48;
+    --board-detail-dark-text: #f3f4f6;
+    --board-detail-dark-muted: #a7b0bd;
+}
+
+
+/* 상세 페이지 전체 카드 */
+:where(
+    html[data-theme="dark"],
+    body[data-theme="dark"],
+    body.dark-mode
+) .board-detail-box {
+    background: var(--board-detail-dark-card) !important;
+    border-color: var(--board-detail-dark-border) !important;
+    color: var(--board-detail-dark-text) !important;
+}
+
+
+/* 상세 카드 내부의 흰색 영역 전부 */
+:where(
+    html[data-theme="dark"],
+    body[data-theme="dark"],
+    body.dark-mode
+) .board-detail-header,
+
+:where(
+    html[data-theme="dark"],
+    body[data-theme="dark"],
+    body.dark-mode
+) .board-detail-content,
+
+:where(
+    html[data-theme="dark"],
+    body[data-theme="dark"],
+    body.dark-mode
+) .board-detail-actions {
+    background: var(--board-detail-dark-card) !important;
+    border-color: var(--board-detail-dark-border) !important;
+    color: var(--board-detail-dark-text) !important;
+}
+
+
+/* 상세 제목 */
+:where(
+    html[data-theme="dark"],
+    body[data-theme="dark"],
+    body.dark-mode
+) .board-detail-title {
+    color: var(--board-detail-dark-text) !important;
+}
+
+
+/* 상세 본문 */
+:where(
+    html[data-theme="dark"],
+    body[data-theme="dark"],
+    body.dark-mode
+) .board-detail-content {
+    color: var(--board-detail-dark-text) !important;
+}
+
+
+/*
+ * Toast UI에서 저장된 HTML 안에
+ * 검은색 글자 스타일이 포함된 경우까지 덮어쓰기
+ */
+:where(
+    html[data-theme="dark"],
+    body[data-theme="dark"],
+    body.dark-mode
+) .board-detail-content p,
+
+:where(
+    html[data-theme="dark"],
+    body[data-theme="dark"],
+    body.dark-mode
+) .board-detail-content span,
+
+:where(
+    html[data-theme="dark"],
+    body[data-theme="dark"],
+    body.dark-mode
+) .board-detail-content div,
+
+:where(
+    html[data-theme="dark"],
+    body[data-theme="dark"],
+    body.dark-mode
+) .board-detail-content li,
+
+:where(
+    html[data-theme="dark"],
+    body[data-theme="dark"],
+    body.dark-mode
+) .board-detail-content strong,
+
+:where(
+    html[data-theme="dark"],
+    body[data-theme="dark"],
+    body.dark-mode
+) .board-detail-content h1,
+
+:where(
+    html[data-theme="dark"],
+    body[data-theme="dark"],
+    body.dark-mode
+) .board-detail-content h2,
+
+:where(
+    html[data-theme="dark"],
+    body[data-theme="dark"],
+    body.dark-mode
+) .board-detail-content h3 {
+    color: var(--board-detail-dark-text) !important;
+}
+
+
+/* 작성자, 조회수, 날짜 등 보조 정보 */
+:where(
+    html[data-theme="dark"],
+    body[data-theme="dark"],
+    body.dark-mode
+) .board-detail-meta,
+
+:where(
+    html[data-theme="dark"],
+    body[data-theme="dark"],
+    body.dark-mode
+) .board-detail-meta-item,
+
+:where(
+    html[data-theme="dark"],
+    body[data-theme="dark"],
+    body.dark-mode
+) .board-meta-divider,
+
+:where(
+    html[data-theme="dark"],
+    body[data-theme="dark"],
+    body.dark-mode
+) .board-detail-number {
+    color: var(--board-detail-dark-muted) !important;
+}
+
+
+/* 작성자명, 조회수 숫자 */
+:where(
+    html[data-theme="dark"],
+    body[data-theme="dark"],
+    body.dark-mode
+) .board-detail-meta strong {
+    color: var(--board-detail-dark-text) !important;
+}
+
+
+/* 답변 전체 영역 */
+:where(
+    html[data-theme="dark"],
+    body[data-theme="dark"],
+    body.dark-mode
+) .board-comment-box {
+    background: var(--board-detail-dark-card) !important;
+    border-color: var(--board-detail-dark-border) !important;
+    color: var(--board-detail-dark-text) !important;
+}
+
+
+/* 답변 헤더 */
+:where(
+    html[data-theme="dark"],
+    body[data-theme="dark"],
+    body.dark-mode
+) .board-comment-header {
+    background: transparent !important;
+    border-color: var(--board-detail-dark-border) !important;
+}
+
+
+/* 답변이 없을 때 나타나는 흰색 상자 */
+:where(
+    html[data-theme="dark"],
+    body[data-theme="dark"],
+    body.dark-mode
+) .board-comment-empty {
+    background: var(--board-detail-dark-card-light) !important;
+    border-color: var(--board-detail-dark-border) !important;
+    color: var(--board-detail-dark-muted) !important;
+}
+
+
+/* 답변 각각의 카드 */
+:where(
+    html[data-theme="dark"],
+    body[data-theme="dark"],
+    body.dark-mode
+) .board-comment-item,
+
+:where(
+    html[data-theme="dark"],
+    body[data-theme="dark"],
+    body.dark-mode
+) .answer-body {
+    background: var(--board-detail-dark-card-light) !important;
+    border-color: var(--board-detail-dark-border) !important;
+    color: var(--board-detail-dark-text) !important;
+}
+
+
+/* 답변 내용 */
+:where(
+    html[data-theme="dark"],
+    body[data-theme="dark"],
+    body.dark-mode
+) .board-comment-content,
+
+:where(
+    html[data-theme="dark"],
+    body[data-theme="dark"],
+    body.dark-mode
+) .board-comment-content * {
+    color: var(--board-detail-dark-text) !important;
+}
+
+
+/* 답변 작성 영역 */
+:where(
+    html[data-theme="dark"],
+    body[data-theme="dark"],
+    body.dark-mode
+) .answer-write-area,
+
+:where(
+    html[data-theme="dark"],
+    body[data-theme="dark"],
+    body.dark-mode
+) .answer-form-box,
+
+:where(
+    html[data-theme="dark"],
+    body[data-theme="dark"],
+    body.dark-mode
+) .answer-form-header {
+    background: var(--board-detail-dark-card) !important;
+    border-color: var(--board-detail-dark-border) !important;
+    color: var(--board-detail-dark-text) !important;
+}
+
+
+/* 답변 수정 폼 */
+:where(
+    html[data-theme="dark"],
+    body[data-theme="dark"],
+    body.dark-mode
+) .board-comment-edit-form {
+    background: var(--board-detail-dark-card-light) !important;
+    border-color: var(--board-detail-dark-border) !important;
+}
+
+
+/* 답변 제목 및 설명 */
+:where(
+    html[data-theme="dark"],
+    body[data-theme="dark"],
+    body.dark-mode
+) .board-comment-title,
+
+:where(
+    html[data-theme="dark"],
+    body[data-theme="dark"],
+    body.dark-mode
+) .board-comment-write-title {
+    color: var(--board-detail-dark-text) !important;
+}
+
+:where(
+    html[data-theme="dark"],
+    body[data-theme="dark"],
+    body.dark-mode
+) .board-comment-description,
+
+:where(
+    html[data-theme="dark"],
+    body[data-theme="dark"],
+    body.dark-mode
+) .answer-form-description {
+    color: var(--board-detail-dark-muted) !important;
+}
+
+/* =====================================================
+   게시판 공통 카드 다크모드
+===================================================== */
+
+:where(
+    html[data-theme="dark"],
+    body[data-theme="dark"],
+    body.dark-mode
+) .board-form-box,
+
+:where(
+    html[data-theme="dark"],
+    body[data-theme="dark"],
+    body.dark-mode
+) .question-list-box,
+
+:where(
+    html[data-theme="dark"],
+    body[data-theme="dark"],
+    body.dark-mode
+) .question-card,
+
+:where(
+    html[data-theme="dark"],
+    body[data-theme="dark"],
+    body.dark-mode
+) .board-toolbar,
+
+:where(
+    html[data-theme="dark"],
+    body[data-theme="dark"],
+    body.dark-mode
+) .guest-password-card,
+
+:where(
+    html[data-theme="dark"],
+    body[data-theme="dark"],
+    body.dark-mode
+) .guest-delete-card {
+    background: var(--board-detail-dark-card) !important;
+    border-color: var(--board-detail-dark-border) !important;
+    color: var(--board-detail-dark-text) !important;
+}
+
+/* =====================================================
+   게시글 상세 페이지 버튼 다크모드
+===================================================== */
+
+/* 다크모드 공통 버튼 효과 */
+:where(
+    html[data-theme="dark"],
+    body[data-theme="dark"],
+    html.dark,
+    body.dark,
+    body.dark-mode
+) .board-detail-actions .board-button {
+    box-shadow: none !important;
+    transition:
+            background-color 0.2s ease,
+            border-color 0.2s ease,
+            color 0.2s ease,
+            transform 0.2s ease;
+}
+
+
+/* 목록·취소 버튼 */
+:where(
+    html[data-theme="dark"],
+    body[data-theme="dark"],
+    html.dark,
+    body.dark,
+    body.dark-mode
+) .board-button-secondary {
+    background-color: #222932 !important;
+    border: 1px solid #3b4653 !important;
+    color: #e5ebf2 !important;
+}
+
+:where(
+    html[data-theme="dark"],
+    body[data-theme="dark"],
+    html.dark,
+    body.dark,
+    body.dark-mode
+) .board-button-secondary:hover {
+    background-color: #2c3540 !important;
+    border-color: #536172 !important;
+    color: #ffffff !important;
+}
+
+
+/* 수정 버튼 */
+:where(
+    html[data-theme="dark"],
+    body[data-theme="dark"],
+    html.dark,
+    body.dark,
+    body.dark-mode
+) .board-button-edit {
+    background-color: #18283a !important;
+    border: 1px solid #326a9b !important;
+    color: #78baff !important;
+}
+
+:where(
+    html[data-theme="dark"],
+    body[data-theme="dark"],
+    html.dark,
+    body.dark,
+    body.dark-mode
+) .board-button-edit:hover {
+    background-color: #213a52 !important;
+    border-color: #4a92cc !important;
+    color: #b9ddff !important;
+}
+
+
+/* 삭제 버튼 */
+:where(
+    html[data-theme="dark"],
+    body[data-theme="dark"],
+    html.dark,
+    body.dark,
+    body.dark-mode
+) .board-button-delete {
+    background-color: #321d21 !important;
+    border: 1px solid #87414a !important;
+    color: #ff9da4 !important;
+}
+
+:where(
+    html[data-theme="dark"],
+    body[data-theme="dark"],
+    html.dark,
+    body.dark,
+    body.dark-mode
+) .board-button-delete:hover {
+    background-color: #48252b !important;
+    border-color: #b85a64 !important;
+    color: #ffd0d3 !important;
+}
+
+
+/* 버튼 클릭 효과 */
+:where(
+    html[data-theme="dark"],
+    body[data-theme="dark"],
+    html.dark,
+    body.dark,
+    body.dark-mode
+) .board-detail-actions .board-button:active {
+    transform: translateY(1px);
+}
+
+
+/* 키보드 접근 시 포커스 */
+:where(
+    html[data-theme="dark"],
+    body[data-theme="dark"],
+    html.dark,
+    body.dark,
+    body.dark-mode
+) .board-button-edit:focus-visible {
+    outline: 3px solid rgba(86, 171, 255, 0.3);
+    outline-offset: 2px;
+}
+
+:where(
+    html[data-theme="dark"],
+    body[data-theme="dark"],
+    html.dark,
+    body.dark,
+    body.dark-mode
+) .board-button-delete:focus-visible {
+    outline: 3px solid rgba(255, 105, 115, 0.3);
+    outline-offset: 2px;
+}
+
+/* =====================================================
+   답변 관련 버튼 다크모드
+===================================================== */
+
+/* 답변하기 버튼 */
+:where(
+    html[data-theme="dark"],
+    body[data-theme="dark"],
+    html.dark,
+    body.dark,
+    body.dark-mode
+) .question-answer-button,
+
+:where(
+    html[data-theme="dark"],
+    body[data-theme="dark"],
+    html.dark,
+    body.dark,
+    body.dark-mode
+) .answer-open-button {
+    background-color: #17314a !important;
+    border-color: #326a9b !important;
+    color: #8bc8ff !important;
+}
+
+:where(
+    html[data-theme="dark"],
+    body[data-theme="dark"],
+    html.dark,
+    body.dark,
+    body.dark-mode
+) .question-answer-button:hover,
+
+:where(
+    html[data-theme="dark"],
+    body[data-theme="dark"],
+    html.dark,
+    body.dark,
+    body.dark-mode
+) .answer-open-button:hover {
+    background-color: #214460 !important;
+    border-color: #4a92cc !important;
+    color: #d0eaff !important;
+}
+
+
+/* 답변 수정 버튼 */
+:where(
+    html[data-theme="dark"],
+    body[data-theme="dark"],
+    html.dark,
+    body.dark,
+    body.dark-mode
+) .board-comment-action-button {
+    background-color: #222932 !important;
+    border: 1px solid #3b4653 !important;
+    color: #cbd5e1 !important;
+}
+
+:where(
+    html[data-theme="dark"],
+    body[data-theme="dark"],
+    html.dark,
+    body.dark,
+    body.dark-mode
+) .board-comment-action-button:hover {
+    background-color: #2c3540 !important;
+    color: #ffffff !important;
+}
+
+
+/* 답변 삭제 버튼 */
+:where(
+    html[data-theme="dark"],
+    body[data-theme="dark"],
+    html.dark,
+    body.dark,
+    body.dark-mode
+) .board-comment-delete-button {
+    background-color: #321d21 !important;
+    border-color: #87414a !important;
+    color: #ff9da4 !important;
+}
+
+
+/* 답변 수정 저장 버튼 */
+:where(
+    html[data-theme="dark"],
+    body[data-theme="dark"],
+    html.dark,
+    body.dark,
+    body.dark-mode
+) .board-small-save {
+    background-color: #17314a !important;
+    border-color: #326a9b !important;
+    color: #8bc8ff !important;
+}
+
+
+/* 답변 수정 취소 버튼 */
+:where(
+    html[data-theme="dark"],
+    body[data-theme="dark"],
+    html.dark,
+    body.dark,
+    body.dark-mode
+) .board-small-cancel,
+
+:where(
+    html[data-theme="dark"],
+    body[data-theme="dark"],
+    html.dark,
+    body.dark,
+    body.dark-mode
+) .answer-close-button {
+    background-color: #222932 !important;
+    border-color: #3b4653 !important;
+    color: #cbd5e1 !important;
+}
+
+/* =====================================================
+   상세 페이지 배지 다크모드
+===================================================== */
+
+/* 문의 배지 */
+:where(
+    html[data-theme="dark"],
+    body[data-theme="dark"],
+    html.dark,
+    body.dark,
+    body.dark-mode
+) .board-badge-question {
+    background-color: #1c2636 !important;
+    border: 1px solid #3b4c68 !important;
+    color: #9db9ff !important;
+}
+
+
+/* 답변대기 배지 */
+:where(
+    html[data-theme="dark"],
+    body[data-theme="dark"],
+    html.dark,
+    body.dark,
+    body.dark-mode
+) .board-status-waiting {
+    background-color: #382719 !important;
+    border: 1px solid #73502b !important;
+    color: #f3b86a !important;
+}
+
+
+/* 상세 페이지 Q 원형 표시 */
+:where(
+    html[data-theme="dark"],
+    body[data-theme="dark"],
+    html.dark,
+    body.dark,
+    body.dark-mode
+) .question-detail-label {
+    background-color: #20283b !important;
+    border: 1px solid #42537a !important;
+    color: #a9bcff !important;
+}
+
+/* 답변완료 배지 */
+:where(
+    html[data-theme="dark"],
+    body[data-theme="dark"],
+    html.dark,
+    body.dark,
+    body.dark-mode
+) .board-status-answered {
+    background-color: #173329 !important;
+    border: 1px solid #32644f !important;
+    color: #75d7ad !important;
+}
+
+/* 공지 배지 */
+:where(
+    html[data-theme="dark"],
+    body[data-theme="dark"],
+    html.dark,
+    body.dark,
+    body.dark-mode
+) .board-badge-notice {
+    background-color: #371e24 !important;
+    border: 1px solid #73404a !important;
+    color: #ff9da8 !important;
+}
+
+/* =========================================
+   문의 목록 답변 개수 숫자 다크모드 가독성 개선
+========================================= */
+:where(
+    html[data-theme="dark"],
+    body[data-theme="dark"],
+    html.dark,
+    body.dark,
+    body.dark-mode
+) .question-answer-count {
+    color: #f5f7ff !important;
+}
+
+/* 아래 "답변" 글자도 같이 더 잘 보이게 */
+:where(
+    html[data-theme="dark"],
+    body[data-theme="dark"],
+    html.dark,
+    body.dark,
+    body.dark-mode
+) .question-answer-label {
+    color: #aebbd3 !important;
+}
+
+/* =====================================================
+   게시판 검색 영역 다크모드
+   검색창 바깥 긴 배경을 페이지 배경과 통일
+===================================================== */
+
+:where(
+    html[data-theme="dark"],
+    body[data-theme="dark"],
+    html.dark,
+    body.dark,
+    body.dark-mode
+) .board-toolbar {
+    background-color: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+}
+
+/* =========================
+   게시판 페이징 - 다크모드
+========================= */
+:where(
+    html[data-theme="dark"],
+    body[data-theme="dark"],
+    html.dark,
+    body.dark,
+    body.dark-mode
+) .board-pagination .board-page-link {
+    background-color: #1a2230;
+    color: #e5edf8;
+    border: 1px solid #334155;
+    box-shadow: none;
+}
+
+:where(
+    html[data-theme="dark"],
+    body[data-theme="dark"],
+    html.dark,
+    body.dark,
+    body.dark-mode
+) .board-pagination .board-page-link:hover {
+    background-color: #243044;
+    color: #ffffff;
+    border-color: #4b5f7a;
+}
+
+:where(
+    html[data-theme="dark"],
+    body[data-theme="dark"],
+    html.dark,
+    body.dark,
+    body.dark-mode
+) .board-pagination .board-page-link.active {
+    background-color: #2563eb;
+    color: #ffffff;
+    border-color: #2563eb;
+}
+
+/* =====================================================
+   비회원 비밀번호 사용 안내 - 다크모드
+===================================================== */
+
+/* 안내 상자 */
+:where(
+    html[data-theme="dark"],
+    body[data-theme="dark"],
+    html.dark,
+    body.dark,
+    body.dark-mode
+) .guest-password-notice {
+    background-color: #1b232d !important;
+    border: 1px solid #364352 !important;
+    color: #cbd5e1 !important;
+    box-shadow: none !important;
+}
+
+/* 안내 제목 */
+:where(
+    html[data-theme="dark"],
+    body[data-theme="dark"],
+    html.dark,
+    body.dark,
+    body.dark-mode
+) .guest-password-notice-title {
+    color: #f1f5f9 !important;
+}
+
+/* 안내 목록 */
+:where(
+    html[data-theme="dark"],
+    body[data-theme="dark"],
+    html.dark,
+    body.dark,
+    body.dark-mode
+) .guest-password-notice-list {
+    color: #aebccc !important;
+}
+
+/* 목록 각각의 문장 */
+:where(
+    html[data-theme="dark"],
+    body[data-theme="dark"],
+    html.dark,
+    body.dark,
+    body.dark-mode
+) .guest-password-notice-list li {
+    color: #aebccc !important;
+}
+
+/* 앞쪽 점 색상 */
+:where(
+    html[data-theme="dark"],
+    body[data-theme="dark"],
+    html.dark,
+    body.dark,
+    body.dark-mode
+) .guest-password-notice-list li::marker {
+    color: #61a9dc !important;
+}
+
+/* =====================================================
+   Toast UI 마크다운·위지윅 전환 버튼 다크모드
+===================================================== */
+
+/* 버튼이 들어 있는 아래쪽 영역 */
+:where(
+    html[data-theme="dark"],
+    body[data-theme="dark"],
+    html.dark,
+    body.dark,
+    body.dark-mode
+) .toastui-editor-mode-switch {
+    background-color: #181d24 !important;
+    border-top: 1px solid #343c48 !important;
+}
+
+/* 마크다운·위지윅 공통 버튼 */
+:where(
+    html[data-theme="dark"],
+    body[data-theme="dark"],
+    html.dark,
+    body.dark,
+    body.dark-mode
+) .toastui-editor-mode-switch .tab-item {
+    background-color: #20262f !important;
+    border-color: #343c48 !important;
+    color: #aeb8c6 !important;
+    box-shadow: none !important;
+}
+
+/* 마우스를 올렸을 때 */
+:where(
+    html[data-theme="dark"],
+    body[data-theme="dark"],
+    html.dark,
+    body.dark,
+    body.dark-mode
+) .toastui-editor-mode-switch .tab-item:hover {
+    background-color: #2a323d !important;
+    color: #ffffff !important;
+}
+
+/* 현재 선택된 모드 */
+:where(
+    html[data-theme="dark"],
+    body[data-theme="dark"],
+    html.dark,
+    body.dark,
+    body.dark-mode
+) .toastui-editor-mode-switch .tab-item.active {
+    background-color: #273548 !important;
+    border-color: #4a6685 !important;
+    color: #9dccff !important;
+    font-weight: 700;
+}
+
+
+/* =====================================================
+   상세 페이지 관리자 답변 다크모드
+===================================================== */
+
+/* 답변 한 줄 전체 */
+:where(
+    html[data-theme="dark"],
+    body[data-theme="dark"],
+    html.dark,
+    body.dark,
+    body.dark-mode
+) .board-comment-item.answer-item {
+    background-color: #1b222b !important;
+    border: 1px solid #333e4b !important;
+    color: #f1f5f9 !important;
+}
+
+/* A 오른쪽의 답변 내용 영역 */
+:where(
+    html[data-theme="dark"],
+    body[data-theme="dark"],
+    html.dark,
+    body.dark,
+    body.dark-mode
+) .board-comment-item .answer-body {
+    background-color: transparent !important;
+    color: #f1f5f9 !important;
+}
+
+/* A 원형 표시 */
+:where(
+    html[data-theme="dark"],
+    body[data-theme="dark"],
+    html.dark,
+    body.dark,
+    body.dark-mode
+) .board-comment-item .answer-label {
+    background-color: #17332d !important;
+    border: 1px solid #326c5b !important;
+    color: #76dfbb !important;
+
+    box-shadow: none !important;
+    font-weight: 800 !important;
+}
+
+/* 답변 작성자 이름 */
+:where(
+    html[data-theme="dark"],
+    body[data-theme="dark"],
+    html.dark,
+    body.dark,
+    body.dark-mode
+) .board-comment-info strong {
+    color: #ffffff !important;
+    font-weight: 700 !important;
+}
+
+/* 답변 작성 날짜 */
+:where(
+    html[data-theme="dark"],
+    body[data-theme="dark"],
+    html.dark,
+    body.dark,
+    body.dark-mode
+) .board-comment-info span {
+    color: #aab6c5 !important;
+}
+
+/* 답변 본문 */
+:where(
+    html[data-theme="dark"],
+    body[data-theme="dark"],
+    html.dark,
+    body.dark,
+    body.dark-mode
+) .board-comment-content {
+    color: #f1f5f9 !important;
+}
+
+/* 저장된 HTML 내부 글자까지 밝게 변경 */
+:where(
+    html[data-theme="dark"],
+    body[data-theme="dark"],
+    html.dark,
+    body.dark,
+    body.dark-mode
+) .board-comment-content p,
+
+:where(
+    html[data-theme="dark"],
+    body[data-theme="dark"],
+    html.dark,
+    body.dark,
+    body.dark-mode
+) .board-comment-content span,
+
+:where(
+    html[data-theme="dark"],
+    body[data-theme="dark"],
+    html.dark,
+    body.dark,
+    body.dark-mode
+) .board-comment-content div,
+
+:where(
+    html[data-theme="dark"],
+    body[data-theme="dark"],
+    html.dark,
+    body.dark,
+    body.dark-mode
+) .board-comment-content li,
+
+:where(
+    html[data-theme="dark"],
+    body[data-theme="dark"],
+    html.dark,
+    body.dark,
+    body.dark-mode
+) .board-comment-content strong {
+    color: #f1f5f9 !important;
+}

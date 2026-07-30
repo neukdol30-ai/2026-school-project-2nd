@@ -8,7 +8,11 @@
     <meta name="viewport"
           content="width=device-width, initial-scale=1.0">
 
-    <title>게시글 수정</title>
+    <title th:text="${board.category == 'NOTICE'
+        ? '공지사항 수정'
+        : '문의글 수정'}">
+        게시글 수정
+    </title>
 
     <!-- 공통 CSS -->
     <link rel="stylesheet"
@@ -30,17 +34,13 @@
     <link rel="stylesheet"
           href="https://uicdn.toast.com/editor/latest/toastui-editor.min.css">
 
-    <!-- TOAST UI Editor JS -->
-    <script src="https://uicdn.toast.com/editor/latest/toastui-editor-all.min.js"></script>
-    <script src="https://uicdn.toast.com/editor/latest/i18n/ko-kr.js"></script>
-    <link rel="stylesheet" th:href="@{/css/cookie-consent.css}">
-
-    <!-- 글쓰기와 수정에서 함께 사용하는 에디터 -->
-    <script th:src="@{/js/board/board-editor.js}"></script>
-
-    <!-- 게시판 전용 CSS는 가장 마지막 -->
+    <!-- 게시판 전용 CSS -->
     <link rel="stylesheet"
           th:href="@{/css/board.css}">
+
+    <!-- 라이트·다크 모드 CSS는 마지막 -->
+    <link rel="stylesheet"
+          th:href="@{/css/theme.css}">
 </head>
 
 <body class="board-body">
@@ -58,11 +58,17 @@
     <section class="board-form-header">
 
         <div>
-            <h1 class="board-form-title">
+            <h1 class="board-form-title"
+                th:text="${board.category == 'NOTICE'
+                    ? '공지사항 수정'
+                    : '문의글 수정'}">
                 게시글 수정
             </h1>
 
-            <p class="board-form-description">
+            <p class="board-form-description"
+               th:text="${board.category == 'NOTICE'
+                    ? '공지사항 내용을 수정한 뒤 저장해주세요.'
+                    : '문의 내용을 수정한 뒤 저장해주세요.'}">
                 게시글 내용을 수정한 뒤 저장해주세요.
             </p>
         </div>
@@ -224,22 +230,42 @@
 <div data-global-footer></div>
 
 
-<!-- 공통 헤더·푸터 관련 JS -->
+<!-- 공통 상태와 함수 -->
 
-<!-- banner.js에서 사용하는 상태와 공통 함수 -->
 <script th:src="@{/js/index/state.js}"></script>
 <script th:src="@{/js/index/utils.js}"></script>
 
-<!-- 공통 라이트·다크 모드 -->
+<!-- 라이트·다크 모드 -->
 <script th:src="@{/js/theme.js}"></script>
 
+<!-- renderAuthWidget 함수 제공 -->
+<script th:src="@{/js/index/widgets/login.js}"></script>
+
+
 <!-- 공통 헤더와 푸터 -->
+
 <script th:src="@{/js/index/layout/banner.js}"></script>
 <script th:src="@{/js/index/layout/footer.js}"></script>
 
-<!-- 마이페이지 모달 -->
+
+<!-- 마이페이지 모듈 -->
+
+<script th:src="@{/js/mypage/mypage-config.js}"></script>
+<script th:src="@{/js/mypage/mypage-utils.js}"></script>
+<script th:src="@{/js/mypage/mypage-api.js}"></script>
+<script th:src="@{/js/mypage/mypage-validation.js}"></script>
+<script th:src="@{/js/mypage/mypage-renderer.js}"></script>
+
+<!-- 주소 검색 -->
 <script th:src="@{/js/common/address-search.js}"></script>
+
+<!-- 마이페이지 실행 -->
 <script th:src="@{/js/mypage-modal.js}"></script>
+
+
+<!-- 게시판 공통 기능 -->
+
+<script th:src="@{/js/board/board-common-layout.js}"></script>
 
 
 <!-- TOAST UI Editor -->
@@ -247,17 +273,11 @@
 <script src="https://uicdn.toast.com/editor/latest/toastui-editor-all.min.js"></script>
 <script src="https://uicdn.toast.com/editor/latest/i18n/ko-kr.js"></script>
 
+<!-- 글쓰기와 수정에서 함께 사용하는 에디터 -->
+<script th:src="@{/js/board/board-editor.js}"></script>
 
 
-
-<script th:src="@{/js/cookie-consent.js}"></script>
-
-<!-- 게시판 공통 레이아웃 실행 -->
-
-<script th:src="@{/js/board/board-common-layout.js}"></script>
-
-
-<!-- 쿠키 설정 -->
+<!-- 쿠키 설정은 한 번만 -->
 <script th:src="@{/js/cookie-consent.js}"></script>
 
 </body>

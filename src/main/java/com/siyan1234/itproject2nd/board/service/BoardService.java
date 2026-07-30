@@ -19,6 +19,12 @@ public class BoardService {
     private final GuestAuthorDao guestAuthorDao;
     private final PasswordEncoder passwordEncoder;
 
+    /*
+     * 로그인 회원 게시글 작성 횟수 제한
+     */
+    private final BoardWriteRateLimitService
+            boardWriteRateLimitService;
+
     // 비회원 문의글 답변 완료 후 보관 기간
     private static final int GUEST_BOARD_RETENTION_DAYS = 30;
 
@@ -231,29 +237,60 @@ public class BoardService {
     @Transactional
     public int insert(BoardDto boardDto) {
 
+        /*
+         * 게시글 제목과 본문 검사
+         */
         validateBoard(boardDto);
 
-        // 문의글 답변 상태 기본값
+        /*
+         * 문의글 답변 상태 기본값
+         */
         if (boardDto.getAnswerStatus() == null
                 || boardDto.getAnswerStatus().isBlank()) {
 
             boardDto.setAnswerStatus("WAITING");
         }
 
-        // 로그인 회원이 작성한 게시글
+        /*
+         * 로그인 회원이 작성한 게시글
+         */
         if (boardDto.getWriterNo() != null) {
 
+            /*
+             * DB에 저장하기 전에
+             * 회원 번호 기준으로 작성 횟수 검사
+             */
+            boardWriteRateLimitService.validateWrite(
+                    boardDto.getWriterNo().longValue()
+            );
+
+            /*
+             * 로그인 회원 게시글에는
+             * 비회원 정보가 저장되지 않도록 초기화
+             */
             boardDto.setGuestAuthorNo(null);
             boardDto.setGuestName(null);
             boardDto.setGuestPassword(null);
 
-            return boardDao.insert(boardDto);
+            int boardResult =
+                    boardDao.insert(boardDto);
+
+            if (boardResult != 1) {
+                throw new IllegalStateException(
+                        "게시글을 저장하지 못했습니다."
+                );
+            }
+
+            return boardResult;
         }
 
-        // 로그인하지 않은 비회원 게시글
+        /*
+         * 로그인하지 않은 비회원 게시글
+         */
         validateGuestAuthor(boardDto);
 
-        GuestAuthorDto guestAuthorDto = new GuestAuthorDto();
+        GuestAuthorDto guestAuthorDto =
+                new GuestAuthorDto();
 
         guestAuthorDto.setGuestName(
                 boardDto.getGuestName().trim()
@@ -265,9 +302,13 @@ public class BoardService {
                 )
         );
 
-        // guest_author 테이블에 비회원 정보 저장
+        /*
+         * guest_author 테이블에 비회원 정보 저장
+         */
         int guestResult =
-                guestAuthorDao.insertGuestAuthor(guestAuthorDto);
+                guestAuthorDao.insertGuestAuthor(
+                        guestAuthorDto
+                );
 
         if (guestResult != 1) {
             throw new IllegalStateException(
@@ -276,8 +317,7 @@ public class BoardService {
         }
 
         /*
-         * GuestAuthorMapper에서 생성된 PK를
-         * guestAuthorDto.no에 넣어줘야 함
+         * 생성된 비회원 작성자 번호 확인
          */
         if (guestAuthorDto.getNo() == null) {
             throw new IllegalStateException(
@@ -285,12 +325,19 @@ public class BoardService {
             );
         }
 
-        // 비회원 작성자 번호를 게시글에 연결
+        /*
+         * 비회원 작성자 번호를 게시글에 연결
+         */
         boardDto.setWriterNo(null);
-        boardDto.setGuestAuthorNo(guestAuthorDto.getNo());
+        boardDto.setGuestAuthorNo(
+                guestAuthorDto.getNo()
+        );
 
-
-        int boardResult = boardDao.insert(boardDto);
+        /*
+         * 게시글 DB 저장
+         */
+        int boardResult =
+                boardDao.insert(boardDto);
 
         if (boardResult != 1) {
             throw new IllegalStateException(
