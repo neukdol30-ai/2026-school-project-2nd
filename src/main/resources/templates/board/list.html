@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html lang="ko"
-      xmlns:th="http://www.thymeleaf.org"
-      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+      xmlns:th="http://www.thymeleaf.org">
 
 <head>
     <meta charset="UTF-8">
@@ -11,16 +10,37 @@
     <title>게시글 목록</title>
     <link rel="stylesheet" th:href="@{/css/cookie-consent.css}">
 
-    <!-- 공통 CSS -->
+    <!-- 쿠키 동의창 CSS -->
+    <link rel="stylesheet"
+          th:href="@{/css/cookie-consent.css}">
+
+    <!-- 기본 공통 CSS -->
     <link rel="stylesheet"
           th:href="@{/css/main.css}">
 
-    <!-- 게시판 전용 CSS -->
+    <!-- 메인 화면의 배너·푸터 디자인 -->
+    <link rel="stylesheet"
+          th:href="@{/css/index.css}">
+
+    <!-- 마이페이지 모달 -->
+    <link rel="stylesheet"
+          th:href="@{/css/mypage-modal.css}">
+
+    <!-- 게시판 CSS는 가장 마지막 -->
     <link rel="stylesheet"
           th:href="@{/css/board.css}">
 </head>
 
-<body>
+<body class="board-body">
+
+<!-- 공통 상단 배너 전체 영역 -->
+<div class="global-banner-area">
+
+    <!-- banner.js가 실제 메뉴를 출력하는 위치 -->
+    <div data-global-banner></div>
+
+</div>
+
 <main class="board-page">
 
 
@@ -326,5 +346,171 @@
 </main>
 
 <script th:src="@{/js/cookie-consent.js}"></script>
+
+<!-- 공통 푸터 출력 위치 -->
+<div data-global-footer></div>
+
+
+<!-- =========================
+     공통 상태와 도구
+========================= -->
+
+<!-- banner.js가 state를 사용하므로 먼저 연결 -->
+<script th:src="@{/js/index/state.js}"></script>
+<script th:src="@{/js/index/utils.js}"></script>
+
+
+<!-- =========================
+     공통 헤더와 푸터
+========================= -->
+
+<script th:src="@{/js/index/layout/banner.js}"></script>
+<script th:src="@{/js/index/layout/footer.js}"></script>
+
+
+<!-- =========================
+     마이페이지 모달
+========================= -->
+
+<script th:src="@{/js/common/address-search.js}"></script>
+<script th:src="@{/js/mypage-modal.js}"></script>
+
+
+<!-- =========================
+     헤더와 푸터 화면 출력
+========================= -->
+
+<script>
+    document.addEventListener(
+        "DOMContentLoaded",
+        function () {
+
+            /*
+             * 상단 공통 헤더 출력
+             */
+            if (
+                typeof updateGlobalBanner
+                === "function"
+            ) {
+                updateGlobalBanner();
+            }
+
+
+            /*
+             * 하단 공통 푸터 출력
+             */
+            const globalFooter =
+                document.querySelector(
+                    "[data-global-footer]"
+                );
+
+            if (
+                globalFooter
+                && typeof renderGlobalFooter
+                === "function"
+            ) {
+                globalFooter.innerHTML =
+                    renderGlobalFooter();
+            }
+        }
+    );
+
+
+    /*
+     * 상단 서비스 메뉴 이벤트
+     */
+    document.addEventListener(
+        "click",
+        function (event) {
+
+            /*
+             * 서비스 메뉴 열기·닫기
+             */
+            const menuButton =
+                event.target.closest(
+                    '[data-action="toggle-service-menu"]'
+                );
+
+            if (menuButton) {
+                const servicePanel =
+                    document.querySelector(
+                        "[data-global-service-panel]"
+                    );
+
+                if (!servicePanel) {
+                    return;
+                }
+
+                const willOpen =
+                    servicePanel.hidden;
+
+                servicePanel.hidden =
+                    !willOpen;
+
+                menuButton.setAttribute(
+                    "aria-expanded",
+                    String(willOpen)
+                );
+
+                return;
+            }
+
+
+            /*
+             * 로그아웃
+             */
+            const logoutButton =
+                event.target.closest(
+                    '[data-action="logout"]'
+                );
+
+            if (logoutButton) {
+                window.location.href =
+                    "/member/logout";
+
+                return;
+            }
+
+
+            /*
+             * 서비스 메뉴 바깥을 누르면 닫기
+             */
+            const serviceMenu =
+                document.querySelector(
+                    "[data-global-service-menu]"
+                );
+
+            const servicePanel =
+                document.querySelector(
+                    "[data-global-service-panel]"
+                );
+
+            if (
+                serviceMenu
+                && servicePanel
+                && !serviceMenu.contains(event.target)
+            ) {
+                servicePanel.hidden = true;
+
+                const button =
+                    serviceMenu.querySelector(
+                        '[data-action="toggle-service-menu"]'
+                    );
+
+                if (button) {
+                    button.setAttribute(
+                        "aria-expanded",
+                        "false"
+                    );
+                }
+            }
+        }
+    );
+</script>
+
+
+<!-- 쿠키 동의창 -->
+<script th:src="@{/js/cookie-consent.js}"></script>
+
 </body>
 </html>
