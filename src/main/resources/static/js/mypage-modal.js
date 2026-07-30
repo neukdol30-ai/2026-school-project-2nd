@@ -712,7 +712,13 @@
         messageBox.textContent = safeResult.message || "";
         messageBox.className = "mypage-message " + (safeResult.success ? "success" : "error");
         messageBox.hidden = false;
-        messageBox.scrollIntoView({ block: "nearest", behavior: "smooth" });
+
+        // 메시지는 고정 영역에 표시하고, 실제 폼 영역만 맨 위로 이동합니다.
+        // scrollIntoView()로 모달 전체가 움직이거나 하단 버튼이 잘리는 현상을 방지합니다.
+        const panels = document.querySelector(".mypage-panels");
+        if (panels) {
+            panels.scrollTo({ top: 0, behavior: "smooth" });
+        }
 
         handleSessionExpiredRedirect(safeResult);
     }

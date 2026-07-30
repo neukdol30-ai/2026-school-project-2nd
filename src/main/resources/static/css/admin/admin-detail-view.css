@@ -286,6 +286,7 @@
 .chat-input-box {
     display: flex;
     flex: 0 0 auto;
+    flex-wrap: wrap;
     gap: 10px;
     padding: 0 20px 20px;
 }
@@ -317,6 +318,34 @@
 .chat-input-box button:disabled {
     opacity: 0.55;
     cursor: not-allowed;
+}
+
+
+.chat-input-meta {
+    display: flex;
+    flex: 0 0 100%;
+    align-items: center;
+    justify-content: space-between;
+    min-height: 18px;
+    padding: 0 4px;
+    color: var(--admin-muted);
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.chat-input-status {
+    min-width: 0;
+}
+
+.chat-input-status.error,
+.message-length-counter.limit-reached {
+    color: #dc2626;
+    font-weight: 900;
+}
+
+.message-length-counter {
+    margin-left: auto;
+    white-space: nowrap;
 }
 
 .message-row {

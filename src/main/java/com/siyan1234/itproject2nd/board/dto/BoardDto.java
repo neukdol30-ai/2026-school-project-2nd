@@ -29,6 +29,7 @@ public class BoardDto {
     private String title;
 
     @NotBlank(message = "내용을 입력해주세요.")
+    @Size(max = 30000, message = "게시글 내용이 너무 깁니다.")
     private String content;
 
     private Long viewCount;

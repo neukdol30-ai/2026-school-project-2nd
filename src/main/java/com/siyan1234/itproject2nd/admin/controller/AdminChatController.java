@@ -34,8 +34,6 @@ import java.util.List;
 @RequestMapping("/admin/chats")
 public class AdminChatController {
 
-    private static final int DEFAULT_CHAT_SIZE = 10;
-
     private final AdminChatService adminChatService;
     private final LoginMemberResolver loginMemberResolver;
 
@@ -51,14 +49,12 @@ public class AdminChatController {
             @RequestParam(value = "chatCategory", required = false) String chatCategory,
             @RequestParam(value = "chatKeyword", required = false) String chatKeyword,
             @RequestParam(value = "chatPage", defaultValue = "1") int chatPage,
-            @RequestParam(value = "chatSize", defaultValue = "10") int chatSize,
             @AuthenticationPrincipal CustomUserDetails customUserDetails
     ) {
         MemberDto loginAdmin = loginMemberResolver.fromPrincipal(customUserDetails);
-        int safeChatSize = AdminPagingHelper.normalizeSize(chatSize, DEFAULT_CHAT_SIZE);
 
         if (!loginMemberResolver.isAdmin(loginAdmin)) {
-            return AdminChatRoomListResponseDto.fail("관리자 권한이 필요합니다.", safeChatSize);
+            return AdminChatRoomListResponseDto.fail("관리자 권한이 필요합니다.");
         }
 
         return adminChatService.createRoomListResponse(
@@ -66,8 +62,7 @@ public class AdminChatController {
                 chatCategory,
                 chatKeyword,
                 loginAdmin,
-                AdminPagingHelper.normalizePage(chatPage),
-                safeChatSize
+                AdminPagingHelper.normalizePage(chatPage)
         );
     }
 

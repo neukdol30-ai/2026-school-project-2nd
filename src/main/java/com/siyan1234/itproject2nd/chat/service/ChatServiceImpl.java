@@ -4,6 +4,7 @@ import com.siyan1234.itproject2nd.chat.dao.ChatDao;
 import com.siyan1234.itproject2nd.chat.dto.ChatMessageDto;
 import com.siyan1234.itproject2nd.chat.dto.ChatRoomDto;
 import com.siyan1234.itproject2nd.chat.support.ChatCategory;
+import com.siyan1234.itproject2nd.chat.support.ChatMessagePolicy;
 import com.siyan1234.itproject2nd.chat.support.ChatReadStatus;
 import com.siyan1234.itproject2nd.chat.support.ChatRoomLockManager;
 import com.siyan1234.itproject2nd.chat.support.ChatRoomStatus;
@@ -327,8 +328,7 @@ public class ChatServiceImpl implements ChatService {
     private boolean isValidMessage(ChatMessageDto message) {
         return message != null
                 && message.getRoomNo() != null
-                && message.getMessageContent() != null
-                && !message.getMessageContent().isBlank();
+                && ChatMessagePolicy.isValid(message.getMessageContent());
     }
 
     private void normalizeMessage(ChatMessageDto message) {
@@ -336,7 +336,9 @@ public class ChatServiceImpl implements ChatService {
             message.setCreatedDate(LocalDateTime.now());
         }
 
-        message.setMessageContent(message.getMessageContent().trim());
+        message.setMessageContent(
+                ChatMessagePolicy.normalizeAndValidate(message.getMessageContent())
+        );
         message.setReadYn(ChatReadStatus.normalize(message.getReadYn()));
     }
 
