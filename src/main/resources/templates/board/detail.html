@@ -14,21 +14,33 @@
     <link rel="stylesheet"
           th:href="@{/css/main.css}">
 
-    <!-- 게시판 전용 CSS -->
+    <!-- 공통 헤더·푸터 디자인 -->
     <link rel="stylesheet"
-          th:href="@{/css/board.css}">
+          th:href="@{/css/index.css}">
+
+    <!-- 마이페이지 모달 -->
+    <link rel="stylesheet"
+          th:href="@{/css/mypage-modal.css}">
+
+    <!-- 쿠키 동의 CSS -->
+    <link rel="stylesheet"
+          th:href="@{/css/cookie-consent.css}">
 
     <!-- TOAST UI Editor CSS -->
     <link rel="stylesheet"
           href="https://uicdn.toast.com/editor/latest/toastui-editor.min.css">
 
-    <!-- TOAST UI Editor JS -->
-    <script src="https://uicdn.toast.com/editor/latest/toastui-editor-all.min.js"></script>
-    <script src="https://uicdn.toast.com/editor/latest/i18n/ko-kr.js"></script>
-    <link rel="stylesheet" th:href="@{/css/cookie-consent.css}">
+    <!-- 게시판 CSS는 반드시 마지막 -->
+    <link rel="stylesheet"
+          th:href="@{/css/board.css}">
 </head>
 
-<body>
+<body class="board-body">
+
+<!-- 공통 상단 헤더 -->
+<div class="global-banner-area">
+    <div data-global-banner></div>
+</div>
 
 <main class="board-page">
 
@@ -474,6 +486,25 @@
 
 </main>
 
+<!-- 하단 푸터 -->
+<div data-global-footer></div>
+
+<!-- 공통 상태 -->
+<script th:src="@{/js/index/state.js}"></script>
+<script th:src="@{/js/index/utils.js}"></script>
+
+<!-- 헤더·푸터 -->
+<script th:src="@{/js/index/layout/banner.js}"></script>
+<script th:src="@{/js/index/layout/footer.js}"></script>
+
+<!-- 마이페이지 -->
+<script th:src="@{/js/common/address-search.js}"></script>
+<script th:src="@{/js/mypage-modal.js}"></script>
+
+<!-- Toast UI JS -->
+<script src="https://uicdn.toast.com/editor/latest/toastui-editor-all.min.js"></script>
+<script src="https://uicdn.toast.com/editor/latest/i18n/ko-kr.js"></script>
+
 <script>
     // 댓글 번호별 TOAST UI 수정 에디터 보관
     const commentEditEditors = {};
@@ -766,6 +797,10 @@
 
 </script>
 
+<!-- 공통 레이아웃 -->
+<script th:src="@{/js/board/board-common-layout.js}"></script>
+
 <script th:src="@{/js/cookie-consent.js}"></script>
+
 </body>
 </html>

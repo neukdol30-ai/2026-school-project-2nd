@@ -4,22 +4,48 @@
 
 <head>
     <meta charset="UTF-8">
+
     <meta name="viewport"
           content="width=device-width, initial-scale=1.0">
 
     <title>게시글 삭제 확인</title>
 
-    <link rel="stylesheet" th:href="@{/css/main.css}">
-    <link rel="stylesheet" th:href="@{/css/board.css}">
+    <!-- 기본 공통 CSS -->
+    <link rel="stylesheet"
+          th:href="@{/css/main.css}">
+
+    <!-- 공통 헤더·푸터 디자인 -->
+    <link rel="stylesheet"
+          th:href="@{/css/index.css}">
+
+    <!-- 마이페이지 모달 -->
+    <link rel="stylesheet"
+          th:href="@{/css/mypage-modal.css}">
+
+    <!-- 쿠키 동의창 -->
+    <link rel="stylesheet"
+          th:href="@{/css/cookie-consent.css}">
+
+    <!-- 게시판 CSS는 반드시 마지막 -->
+    <link rel="stylesheet"
+          th:href="@{/css/board.css}">
 </head>
 
-<body>
+<body class="board-body">
 
-<main class="guest-delete-page">
+<!-- 공통 상단 헤더 -->
+<div class="global-banner-area">
+    <div data-global-banner></div>
+</div>
+
+
+<!-- 비회원 게시글 삭제 확인 -->
+<main class="board-page guest-delete-page">
 
     <section class="guest-delete-card">
 
-        <div class="guest-delete-icon">
+        <div class="guest-delete-icon"
+             aria-hidden="true">
             🗑️
         </div>
 
@@ -33,36 +59,39 @@
             정말 삭제하시겠습니까?
         </p>
 
+
+        <!-- 삭제 대상 게시글 -->
         <div class="guest-delete-board">
 
-            <span>삭제 대상</span>
+            <span>
+                삭제 대상
+            </span>
 
             <strong th:text="${board.title}">
                 게시글 제목
             </strong>
 
+            <span th:text="'게시글 #' + ${board.no}">
+                게시글 #1
+            </span>
+
         </div>
 
-        <form
-                th:action="@{/board/guest/delete/{no}(no=${board.no})}"
-                method="post">
+
+        <!-- 최종 삭제 폼 -->
+        <form th:action="@{/board/guest/delete/{no}(no=${board.no})}"
+              method="post">
 
             <div class="guest-delete-buttons">
 
-                <a
-                        th:href="@{/board/detail/{no}(no=${board.no})}"
-                        class="guest-delete-cancel">
-
+                <a th:href="@{/board/detail/{no}(no=${board.no})}"
+                   class="guest-delete-cancel">
                     취소
-
                 </a>
 
-                <button
-                        type="submit"
+                <button type="submit"
                         class="guest-delete-submit">
-
                     삭제하기
-
                 </button>
 
             </div>
@@ -72,6 +101,31 @@
     </section>
 
 </main>
+
+
+<!-- 공통 하단 푸터 -->
+<div data-global-footer></div>
+
+
+<!-- 공통 헤더·푸터 관련 JS -->
+
+<!-- banner.js에서 사용하는 상태와 공통 함수 -->
+<script th:src="@{/js/index/state.js}"></script>
+<script th:src="@{/js/index/utils.js}"></script>
+
+<!-- 공통 헤더와 푸터 -->
+<script th:src="@{/js/index/layout/banner.js}"></script>
+<script th:src="@{/js/index/layout/footer.js}"></script>
+
+<!-- 마이페이지 모달 -->
+<script th:src="@{/js/common/address-search.js}"></script>
+<script th:src="@{/js/mypage-modal.js}"></script>
+
+<!-- 게시판 공통 헤더·푸터 출력 -->
+<script th:src="@{/js/board/board-common-layout.js}"></script>
+
+<!-- 쿠키 동의창 -->
+<script th:src="@{/js/cookie-consent.js}"></script>
 
 </body>
 </html>

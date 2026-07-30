@@ -15,9 +15,13 @@
     <link rel="stylesheet"
           th:href="@{/css/main.css}">
 
-    <!-- 게시판 전용 CSS -->
+    <!-- 공통 헤더·푸터 디자인 -->
     <link rel="stylesheet"
-          th:href="@{/css/board.css}">
+          th:href="@{/css/index.css}">
+
+    <!-- 마이페이지 모달 -->
+    <link rel="stylesheet"
+          th:href="@{/css/mypage-modal.css}">
 
     <!-- 쿠키 동의 CSS -->
     <link rel="stylesheet"
@@ -27,12 +31,19 @@
     <link rel="stylesheet"
           href="https://uicdn.toast.com/editor/latest/toastui-editor.min.css">
 
-    <!-- TOAST UI Editor JS -->
-    <script src="https://uicdn.toast.com/editor/latest/toastui-editor-all.min.js"></script>
-    <script src="https://uicdn.toast.com/editor/latest/i18n/ko-kr.js"></script>
+    <!-- 게시판 전용 CSS는 마지막 -->
+    <link rel="stylesheet"
+          th:href="@{/css/board.css}">
+
+
 </head>
 
-<body>
+<body class="board-body">
+
+<!-- 공통 헤더 -->
+<div class="global-banner-area">
+    <div data-global-banner></div>
+</div>
 
 <main class="board-page">
 
@@ -177,12 +188,34 @@
                            autocomplete="new-password"
                            placeholder="비밀번호를 4~20자로 입력해주세요.">
 
-                    <p class="board-form-description">
-                        비밀번호는 4자 이상 20자 이하로 입력해주세요.
-                        입력한 비밀번호는 문의글 수정과 삭제에 사용되며,
-                        분실하면 확인하기 어렵습니다.
-                        비회원 문의글은 답변 완료 후 30일이 지나면 자동으로 삭제됩니다.
-                    </p>
+                    <div class="guest-password-notice">
+
+                        <p class="guest-password-notice-title">
+                            비밀번호 사용 안내
+                        </p>
+
+                        <ul class="guest-password-notice-list">
+
+                            <li>
+                                비밀번호는 4자 이상 20자 이하로 입력해주세요.
+                            </li>
+
+                            <li>
+                                입력한 비밀번호는 문의글 수정과 삭제에 사용됩니다.
+                            </li>
+
+                            <li>
+                                비밀번호를 분실하면 확인하거나 복구하기 어렵습니다.
+                            </li>
+
+                            <li>
+                                비회원 문의글은 답변 완료 후 30일이 지나면
+                                자동으로 삭제됩니다.
+                            </li>
+
+                        </ul>
+
+                    </div>
 
                     <p th:if="${#fields.hasErrors('guestPassword')}"
                        th:errors="*{guestPassword}"
@@ -205,6 +238,7 @@
                        type="text"
                        th:field="*{title}"
                        class="board-form-input"
+                       maxlength="200"
                        placeholder="제목을 입력해주세요.">
 
                 <p th:if="${#fields.hasErrors('title')}"
@@ -266,7 +300,41 @@
 
 </main>
 
+<!-- 공통 푸터 -->
+<div data-global-footer></div>
+
+
+<!-- =========================
+     공통 헤더·푸터 관련 JS
+========================= -->
+
+<!-- banner.js에서 사용하는 상태와 공통 함수 -->
+<script th:src="@{/js/index/state.js}"></script>
+<script th:src="@{/js/index/utils.js}"></script>
+
+<!-- 공통 헤더와 푸터 -->
+<script th:src="@{/js/index/layout/banner.js}"></script>
+<script th:src="@{/js/index/layout/footer.js}"></script>
+
+<!-- 마이페이지 모달 -->
+<script th:src="@{/js/common/address-search.js}"></script>
+<script th:src="@{/js/mypage-modal.js}"></script>
+
+<!-- 게시판 공통 헤더·푸터 실행 -->
+<script th:src="@{/js/board/board-common-layout.js}"></script>
+
+
+<!-- =========================
+     TOAST UI Editor
+========================= -->
+
+<script src="https://uicdn.toast.com/editor/latest/toastui-editor-all.min.js"></script>
+<script src="https://uicdn.toast.com/editor/latest/i18n/ko-kr.js"></script>
+
+<!-- TOAST UI Editor 설정 및 폼 전송 -->
 <script th:src="@{/js/board/board-editor.js}"></script>
+
+<!-- 쿠키 설정 -->
 <script th:src="@{/js/cookie-consent.js}"></script>
 
 </body>
