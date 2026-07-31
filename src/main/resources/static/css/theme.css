@@ -1677,9 +1677,16 @@ html[data-theme="dark"] {
 
 /* 게시판 전체 배경 */
 html[data-theme="dark"] body.board-body,
-html[data-theme="dark"] .board-page {
-    background-color: var(--board-dark-bg);
+html[data-theme="dark"] body.board-body-simple {
+    background: var(--board-dark-bg) !important;
     color: var(--board-dark-text);
+}
+
+html[data-theme="dark"] .board-page {
+    border-color: var(--board-dark-border);
+    background: var(--board-dark-surface) !important;
+    color: var(--board-dark-text);
+    box-shadow: 0 18px 44px rgba(0, 0, 0, 0.22);
 }
 
 /* 게시판의 흰색 카드 영역 */

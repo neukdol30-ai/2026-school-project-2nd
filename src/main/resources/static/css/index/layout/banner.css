@@ -790,3 +790,56 @@ html[data-theme="dark"] .map-service-page .global-service-shortcut.is-current {
         display: none;
     }
 }
+
+/* 서비스별 페이지명 */
+.map-service-page .global-left-menu::after,
+.board-body .global-left-menu::after {
+    display: inline-flex;
+    align-items: center;
+    min-height: 30px;
+    margin-left: 4px;
+    padding-left: 20px;
+    border-left: 1px solid rgba(36, 77, 96, 0.24);
+    color: #173f52;
+    font-size: 20px;
+    font-weight: 900;
+    line-height: 1;
+    white-space: nowrap;
+}
+
+.map-service-page .global-left-menu::after {
+    content: "지도";
+}
+
+.board-body .global-left-menu::after {
+    content: "게시판";
+}
+
+.board-body:has(input[name="category"][value="NOTICE"])
+.global-left-menu::after {
+    content: "공지사항";
+}
+
+.board-body:has(input[name="category"][value="QUESTION"])
+.global-left-menu::after {
+    content: "문의 게시판";
+}
+
+.board-body:has(.board-form-title) .global-left-menu::after {
+    content: "문의글 작성";
+}
+
+html[data-theme="dark"] .map-service-page .global-left-menu::after,
+html[data-theme="dark"] .board-body .global-left-menu::after,
+body.dark-mode.map-service-page .global-left-menu::after,
+body.dark-mode.board-body .global-left-menu::after {
+    border-left-color: #3c3c3c;
+    color: #eeeeee;
+}
+
+@media (max-width: 640px) {
+    .map-service-page .global-left-menu::after,
+    .board-body .global-left-menu::after {
+        display: none;
+    }
+}
