@@ -20,18 +20,16 @@ public class AdminChatRoomListResponseDto {
     private String chatKeyword;
 
     private int chatPage;
-    private int chatSize;
     private long chatTotalCount;
     private int chatTotalPages;
 
     private AdminDashboardDto dashboard;
 
-    public static AdminChatRoomListResponseDto fail(String message, int chatSize) {
+    public static AdminChatRoomListResponseDto fail(String message) {
         AdminChatRoomListResponseDto response = new AdminChatRoomListResponseDto();
         response.setSuccess(false);
         response.setMessage(message);
         response.setChatPage(1);
-        response.setChatSize(chatSize);
         response.setChatTotalCount(0L);
         response.setChatTotalPages(1);
         return response;

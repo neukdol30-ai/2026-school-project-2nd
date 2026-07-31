@@ -73,8 +73,16 @@
             <input type="text"
                    id="messageInput"
                    th:placeholder="${chatRoom.status == 'CLOSED'} ? '상담이 종료되었습니다.' : '메시지를 입력하세요'"
+                   th:attr="data-max-length=${chatMessageMaxLength}"
+                   aria-describedby="messageInputStatus messageLengthCounter"
                    th:disabled="${chatRoom.status == 'CLOSED'}">
             <button type="button" id="sendBtn" th:disabled="${chatRoom.status == 'CLOSED'}">전송</button>
+            <div class="chat-input-meta">
+                <span id="messageInputStatus" class="chat-input-status" role="status" aria-live="polite"></span>
+                <span id="messageLengthCounter" class="message-length-counter">
+                    0 / <b th:text="${chatMessageMaxLength}">1000</b>
+                </span>
+            </div>
         </div>
     </section>
 </div>

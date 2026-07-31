@@ -115,6 +115,7 @@
     grid-template-columns: minmax(0, 1fr) auto !important;
     align-items: center;
     width: 100%;
+    min-width: 0;
     height: 100%;
     min-height: 0;
     padding: 0;
@@ -165,12 +166,11 @@
     gap: 6px;
     border: 1px solid transparent;
     border-radius: 50%;
-    background: #edf2f4;
+    background: transparent;
     cursor: pointer;
     transition:
             background-color 0.18s ease,
-            border-color 0.18s ease,
-            transform 0.18s ease;
+            border-color 0.18s ease;
 }
 
 .map-service-page .global-service-menu-button span {
@@ -188,7 +188,7 @@
 }
 
 .map-service-page .global-service-menu-button:hover {
-    transform: translateY(-1px);
+    transform: none;
 }
 
 .map-service-page .global-service-menu-button:focus-visible,
@@ -609,12 +609,18 @@ html[data-theme="dark"] .map-service-page .map-global-banner-area {
 }
 
 html[data-theme="dark"] .map-service-page .global-service-menu-button {
-    border-color: #303030;
-    background: #1d1d1d;
+    border-color: transparent;
+    background: transparent;
 }
 
 html[data-theme="dark"] .map-service-page .global-service-menu-button span {
     background: #d4d4d4;
+}
+
+html[data-theme="dark"] .map-service-page .global-service-menu-button:hover,
+html[data-theme="dark"] .map-service-page .global-service-menu.is-open .global-service-menu-button {
+    border-color: #3a3a3a;
+    background: #242424;
 }
 
 html[data-theme="dark"] .map-service-page .global-logo-text {

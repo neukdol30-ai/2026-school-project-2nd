@@ -28,13 +28,13 @@ public class AdminBoardService {
     private final BoardCommentService boardCommentService;
 
     @Transactional(readOnly = true)
-    public List<AdminBoardDto> findBoards(String category, String keyword, int page, int size) {
-        int offset = AdminPagingHelper.calculateOffset(page, size);
+    public List<AdminBoardDto> findBoards(String category, String keyword, int page) {
+        int offset = AdminPagingHelper.calculateOffset(page);
         return adminBoardDao.findAdminBoards(
                 AdminPagingHelper.cleanText(category),
                 AdminPagingHelper.cleanText(keyword),
                 offset,
-                size
+                AdminPagingHelper.PAGE_SIZE
         );
     }
 

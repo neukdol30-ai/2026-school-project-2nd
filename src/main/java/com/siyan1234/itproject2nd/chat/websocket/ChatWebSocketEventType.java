@@ -13,6 +13,7 @@ public final class ChatWebSocketEventType {
     public static final String READ = "READ";
     public static final String MESSAGE = "MESSAGE";
     public static final String CLOSE = "CLOSE";
+    public static final String ERROR = "ERROR";
     public static final String ADMIN_ROOM_REFRESH = "ADMIN_ROOM_REFRESH";
 
     private ChatWebSocketEventType() {

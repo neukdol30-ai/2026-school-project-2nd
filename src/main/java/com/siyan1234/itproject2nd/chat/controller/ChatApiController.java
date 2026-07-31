@@ -5,10 +5,13 @@ import com.siyan1234.itproject2nd.chat.dto.ChatRoomDto;
 import com.siyan1234.itproject2nd.chat.service.ChatAccessService;
 import com.siyan1234.itproject2nd.chat.service.ChatRedisService;
 import com.siyan1234.itproject2nd.chat.service.ChatService;
+import com.siyan1234.itproject2nd.chat.support.ChatMessagePolicy;
 import com.siyan1234.itproject2nd.chat.support.ChatRoomStatus;
 import com.siyan1234.itproject2nd.member.dto.MemberDto;
 import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -69,28 +72,41 @@ public class ChatApiController {
 
     /** 초기 테스트용 HTTP 메시지 저장 API. 실제 실시간 메시지는 WebSocket이 담당합니다. */
     @PostMapping("/message")
-    public String sendMessage(
+    public ResponseEntity<String> sendMessage(
             @RequestBody ChatMessageDto chatMessageDto,
             HttpSession session
     ) {
         MemberDto loginUser = chatAccessService.getLoginUser(session);
 
         if (loginUser == null) {
-            return "login-required";
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("login-required");
+        }
+
+        if (chatMessageDto == null || chatMessageDto.getRoomNo() == null) {
+            return ResponseEntity.badRequest().body("invalid-message");
+        }
+
+        String messageContent = ChatMessagePolicy.normalize(chatMessageDto.getMessageContent());
+        if (ChatMessagePolicy.isBlank(messageContent)) {
+            return ResponseEntity.badRequest().body("message-required");
+        }
+        if (ChatMessagePolicy.exceedsMaxLength(messageContent)) {
+            return ResponseEntity.badRequest().body("message-too-long");
         }
 
         ChatRoomDto chatRoom = chatService.findRoomByRoomNo(chatMessageDto.getRoomNo());
 
         if (!chatAccessService.canAccessRoom(loginUser, chatRoom)) {
-            return "forbidden";
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body("forbidden");
         }
 
         if (!ChatRoomStatus.isOpen(chatRoom.getStatus())) {
-            return "closed";
+            return ResponseEntity.status(HttpStatus.CONFLICT).body("closed");
         }
 
         chatMessageDto.setSenderNo(loginUser.getNo());
+        chatMessageDto.setMessageContent(messageContent);
         chatService.saveMessage(chatMessageDto);
-        return "ok";
+        return ResponseEntity.ok("ok");
     }
 }

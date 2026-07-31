@@ -114,8 +114,11 @@ body.mypage-open {
 
 .mypage-modal {
     position: relative;
+    display: flex;
+    flex-direction: column;
     width: min(920px, 100%);
-    max-height: 86vh;
+    max-height: min(86vh, calc(100dvh - 48px));
+    min-height: 0;
     overflow: hidden;
     border-radius: 28px;
     background: #ffffff;
@@ -182,6 +185,7 @@ body.mypage-open {
 .mypage-profile-header {
     position: relative;
     z-index: 1;
+    flex: 0 0 auto;
     display: flex;
     gap: 18px;
     align-items: center;
@@ -247,6 +251,7 @@ body.mypage-open {
 .mypage-tabs {
     position: relative;
     z-index: 1;
+    flex: 0 0 auto;
     display: flex;
     flex-wrap: nowrap;
     align-items: center;
@@ -297,6 +302,7 @@ body.mypage-open {
    5. 메시지 / 패널
    -------------------------------------------------------------------------- */
 .mypage-message {
+    flex: 0 0 auto;
     margin: 18px 28px 0;
     padding: 12px 14px;
     border-radius: 12px;
@@ -315,8 +321,12 @@ body.mypage-open {
 }
 
 .mypage-panels {
-    max-height: calc(86vh - 180px);
+    flex: 1 1 auto;
+    min-height: 0;
+    max-height: none;
     overflow-y: auto;
+    overscroll-behavior: contain;
+    scrollbar-gutter: stable;
     padding: 26px 28px 30px;
 }
 
@@ -1157,7 +1167,7 @@ body.mypage-open {
 
     .mypage-modal {
         width: 100%;
-        max-height: 92vh;
+        max-height: min(92vh, 92dvh);
         border-radius: 24px 24px 0 0;
     }
 
@@ -1174,7 +1184,7 @@ body.mypage-open {
     }
 
     .mypage-panels {
-        max-height: calc(92vh - 180px);
+        max-height: none;
         padding: 22px 18px 26px;
     }
 

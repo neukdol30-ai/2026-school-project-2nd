@@ -260,6 +260,16 @@ html[data-theme="dark"] #kakaoDynamicMap > div:first-child {
             contrast(1.06);
 }
 
+/* 지도 정보창 글자 */
+html[data-theme="dark"] .map-info-window strong {
+    color: #1f2937;
+}
+
+html[data-theme="dark"] .map-info-window span,
+html[data-theme="dark"] .map-info-window small {
+    color: #4b5563;
+}
+
 html[data-theme="dark"] .map-side-tabs {
     border-bottom-color: #343434;
     background: #1b1b1b;

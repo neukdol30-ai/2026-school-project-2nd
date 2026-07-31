@@ -4,6 +4,7 @@ import com.siyan1234.itproject2nd.chat.dto.ChatMessageDto;
 import com.siyan1234.itproject2nd.chat.dto.ChatRoomDto;
 import com.siyan1234.itproject2nd.chat.service.ChatRedisService;
 import com.siyan1234.itproject2nd.chat.service.ChatService;
+import com.siyan1234.itproject2nd.chat.support.ChatMessagePolicy;
 import com.siyan1234.itproject2nd.chat.support.ChatReadStatus;
 import com.siyan1234.itproject2nd.chat.support.ChatRoomStatus;
 import com.siyan1234.itproject2nd.member.dto.MemberDto;
@@ -54,15 +55,53 @@ public class ChatHandler extends TextWebSocketHandler {
             return;
         }
 
-        JsonNode root = payloadParser.readTree(message.getPayload());
+        if (message.getPayloadLength() > ChatMessagePolicy.MAX_WEBSOCKET_PAYLOAD_LENGTH) {
+            broadcaster.sendError(
+                    session,
+                    ChatMessagePolicy.MESSAGE_TOO_LONG_CODE,
+                    ChatMessagePolicy.MESSAGE_TOO_LONG_TEXT
+            );
+            return;
+        }
+
+        JsonNode root;
+
+        try {
+            root = payloadParser.readTree(message.getPayload());
+        } catch (Exception e) {
+            log.debug("올바르지 않은 WebSocket JSON payload sessionId={}", session.getId());
+            broadcaster.sendError(
+                    session,
+                    ChatMessagePolicy.INVALID_PAYLOAD_CODE,
+                    ChatMessagePolicy.INVALID_PAYLOAD_TEXT
+            );
+            return;
+        }
+
         String type = payloadParser.getType(root);
+
+        if (type == null || type.isBlank()) {
+            broadcaster.sendError(
+                    session,
+                    ChatMessagePolicy.INVALID_PAYLOAD_CODE,
+                    ChatMessagePolicy.INVALID_PAYLOAD_TEXT
+            );
+            return;
+        }
 
         switch (type) {
             case ChatWebSocketEventType.ADMIN_LIST_JOIN -> handleAdminListJoin(session, loginUser);
             case ChatWebSocketEventType.JOIN -> handleJoin(session, root, loginUser);
             case ChatWebSocketEventType.READ -> handleRead(session, root, loginUser);
             case ChatWebSocketEventType.MESSAGE -> handleMessage(session, root, loginUser);
-            default -> log.debug("지원하지 않는 WebSocket 이벤트 type={}", type);
+            default -> {
+                log.debug("지원하지 않는 WebSocket 이벤트 type={}", type);
+                broadcaster.sendError(
+                        session,
+                        ChatMessagePolicy.INVALID_PAYLOAD_CODE,
+                        ChatMessagePolicy.INVALID_PAYLOAD_TEXT
+                );
+            }
         }
     }
 
@@ -114,12 +153,29 @@ public class ChatHandler extends TextWebSocketHandler {
     }
 
     private void handleMessage(WebSocketSession session, JsonNode root, MemberDto loginUser) throws Exception {
-        ChatMessageDto chatMessageDto = payloadParser.parseChatMessage(root);
-        Integer roomNo = chatMessageDto.getRoomNo();
+        ChatMessageDto chatMessageDto;
 
-        if (roomNo == null) {
+        try {
+            chatMessageDto = payloadParser.parseChatMessage(root);
+        } catch (Exception e) {
+            broadcaster.sendError(
+                    session,
+                    ChatMessagePolicy.INVALID_PAYLOAD_CODE,
+                    ChatMessagePolicy.INVALID_PAYLOAD_TEXT
+            );
             return;
         }
+
+        if (chatMessageDto == null || chatMessageDto.getRoomNo() == null) {
+            broadcaster.sendError(
+                    session,
+                    ChatMessagePolicy.INVALID_PAYLOAD_CODE,
+                    ChatMessagePolicy.INVALID_PAYLOAD_TEXT
+            );
+            return;
+        }
+
+        Integer roomNo = chatMessageDto.getRoomNo();
 
         ChatRoomDto chatRoom = chatService.findRoomByRoomNo(roomNo);
 
@@ -129,12 +185,31 @@ public class ChatHandler extends TextWebSocketHandler {
         }
 
         if (!ChatRoomStatus.isOpen(chatRoom.getStatus())) {
+            broadcaster.sendError(
+                    session,
+                    ChatMessagePolicy.CHAT_CLOSED_CODE,
+                    ChatMessagePolicy.CHAT_CLOSED_TEXT
+            );
             return;
         }
 
-        String messageContent = chatMessageDto.getMessageContent();
+        String messageContent = ChatMessagePolicy.normalize(chatMessageDto.getMessageContent());
 
-        if (messageContent == null || messageContent.trim().isEmpty()) {
+        if (ChatMessagePolicy.isBlank(messageContent)) {
+            broadcaster.sendError(
+                    session,
+                    ChatMessagePolicy.EMPTY_MESSAGE_CODE,
+                    ChatMessagePolicy.EMPTY_MESSAGE_TEXT
+            );
+            return;
+        }
+
+        if (ChatMessagePolicy.exceedsMaxLength(messageContent)) {
+            broadcaster.sendError(
+                    session,
+                    ChatMessagePolicy.MESSAGE_TOO_LONG_CODE,
+                    ChatMessagePolicy.MESSAGE_TOO_LONG_TEXT
+            );
             return;
         }
 
@@ -157,7 +232,7 @@ public class ChatHandler extends TextWebSocketHandler {
 
     private void prepareMessage(ChatMessageDto chatMessageDto, Integer senderNo, String messageContent) {
         chatMessageDto.setSenderNo(senderNo);
-        chatMessageDto.setMessageContent(messageContent.trim());
+        chatMessageDto.setMessageContent(messageContent);
         chatMessageDto.setReadYn(ChatReadStatus.UNREAD);
         chatMessageDto.setCreatedDate(LocalDateTime.now());
     }

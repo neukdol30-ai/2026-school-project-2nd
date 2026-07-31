@@ -2,6 +2,7 @@ package com.siyan1234.itproject2nd.chat.service;
 
 import com.siyan1234.itproject2nd.chat.dto.ChatRoomDto;
 import com.siyan1234.itproject2nd.chat.kakao.service.KakaoNotifyService;
+import com.siyan1234.itproject2nd.chat.support.ChatMessagePolicy;
 import com.siyan1234.itproject2nd.chat.support.ChatRoomStatus;
 import com.siyan1234.itproject2nd.chat.websocket.ChatWebSocketBroadcaster;
 import com.siyan1234.itproject2nd.member.dto.MemberDto;
@@ -102,6 +103,7 @@ public class ChatUserPageService {
         model.addAttribute("chatRoom", chatRoom);
         model.addAttribute("loginUser", loginUser);
         model.addAttribute("isMobile", mobile);
+        model.addAttribute("chatMessageMaxLength", ChatMessagePolicy.MAX_LENGTH);
 
         return mobile ? "chat/mobile/chat-room" : "chat/pc/chat-room";
     }
@@ -113,14 +115,28 @@ public class ChatUserPageService {
             return redirectToUserLogin();
         }
 
-        List<ChatRoomDto> roomList = chatService.findUserRooms(loginUser.getNo(), page, HISTORY_PAGE_SIZE);
         int totalCount = chatService.countUserRooms(loginUser.getNo());
+        int totalPages = Math.max(1, (totalCount + HISTORY_PAGE_SIZE - 1) / HISTORY_PAGE_SIZE);
+        int safePage = Math.min(Math.max(page, 1), totalPages);
+
+        if (safePage != page) {
+            return mobile
+                    ? "redirect:/chat/mobile/history?page=" + safePage
+                    : "redirect:/chat/history?page=" + safePage;
+        }
+
+        List<ChatRoomDto> roomList = chatService.findUserRooms(
+                loginUser.getNo(),
+                safePage,
+                HISTORY_PAGE_SIZE
+        );
 
         model.addAttribute("loginUser", loginUser);
         model.addAttribute("roomList", roomList);
-        model.addAttribute("page", page);
+        model.addAttribute("page", safePage);
         model.addAttribute("size", HISTORY_PAGE_SIZE);
         model.addAttribute("totalCount", totalCount);
+        model.addAttribute("totalPages", totalPages);
 
         return mobile ? "chat/mobile/chat-history" : "chat/pc/chat-history";
     }

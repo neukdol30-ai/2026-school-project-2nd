@@ -3,10 +3,7 @@ package com.siyan1234.itproject2nd.member.controller;
 import com.siyan1234.itproject2nd.config.handler.CustomLoginFailureHandler;
 import com.siyan1234.itproject2nd.config.security.PasswordPolicy;
 import com.siyan1234.itproject2nd.config.security.SecurityPaths;
-import com.siyan1234.itproject2nd.member.dto.CustomUserDetails;
-import com.siyan1234.itproject2nd.member.dto.MemberDto;
-import com.siyan1234.itproject2nd.member.dto.PendingSocialSignupDto;
-import com.siyan1234.itproject2nd.member.dto.SignupDto;
+import com.siyan1234.itproject2nd.member.dto.*;
 import com.siyan1234.itproject2nd.member.service.KakaoUnlinkService;
 import com.siyan1234.itproject2nd.member.service.MailService;
 import com.siyan1234.itproject2nd.member.service.MemberService;
@@ -391,13 +388,27 @@ public class MemberController {
     public String findIdResult(HttpSession session, Model model) {
 
         Object resultMemberId = session.getAttribute(FIND_ID_RESULT_SESSION_KEY);
-        // 반환 타입 Object : 세션에는 어떤 타입이든 저장 할 수 있어서.
+        // 반환 타입 Object : 세션엔 어떤 타입이든 저장 가능
 
-        if (resultMemberId == null) { // 인증 절차 없이 이 주소로 바로 왔다
-            return "redirect:/member/find-id"; // 처음부터 다시 하도록 돌려보냄.(직접 접근 차단)
+        if (resultMemberId == null) {
+            return "redirect:/member/find-id";
+        }
+
+        String memberId = (String) resultMemberId; // Object -> String 형변환
+
+        boolean isSocialMember = memberId.startsWith("kakao_") || memberId.startsWith("naver_");
+
+        String socialProviderName = null; // 일반 회원이면 null 유지
+
+        if (memberId.startsWith("kakao_")) {
+            socialProviderName = "카카오";
+        } else if (memberId.startsWith("naver_")) {
+            socialProviderName = "네이버";
         }
 
         model.addAttribute("resultMemberId", resultMemberId); // find-id-result.html에서 ${resultMemberId}로 사용
+        model.addAttribute("isSocialMember", isSocialMember); // 신규 : 화면 분기용
+        model.addAttribute("socialProviderName", socialProviderName); // 신규 : "카카오"/"네이버"/null
 
         session.removeAttribute(FIND_ID_RESULT_SESSION_KEY);
         // 1회성 처리 : 결과 화면을 새로고침하거나 뒤로가기로 재방문해도 값이 다시 안 보이게 즉시 삭제
@@ -475,8 +486,8 @@ public class MemberController {
 
     // POST /member/reset-password : 실제 비밀번호 변경 처리
     @PostMapping("/reset-password")
-    public String resetPasswordProcess(@RequestParam("newPassword") String newPassword,
-                                       @RequestParam("newPasswordCheck") String newPasswordCheck,
+    public String resetPasswordProcess(@Valid @ModelAttribute("resetPasswordDto") ResetPasswordDto resetPasswordDto,
+                                       BindingResult bindingResult,
                                        HttpSession session,
                                        RedirectAttributes redirectAttributes,
                                        Model model) {
@@ -487,17 +498,21 @@ public class MemberController {
             return "redirect:/member/find-password";
         }
 
-        String verifiedEmail = (String) verifiedEmailObj;
-        // 형변환. session.getAttribute()가 Object로 돌려주는 값을, String이라는 걸 알고 있으므로 원래 타입으로 되돌려 꺼냄.
+        String verifiedEmail = (String) verifiedEmailObj; // 형변환
 
-        if (!newPassword.equals(newPasswordCheck)) { // 새 비밀번호와 확인값이 다르다.
-            model.addAttribute("resetPasswordError", "비밀번호가 일치하지 않습니다.");
-            return "member/reset-password"; // 같은 화면에 오류만 띄우고 다시 입력 받음.
+        if (bindingResult.hasErrors()) {
+            model.addAttribute("resetPasswordError", bindingResult.getFieldError().getDefaultMessage());
+            // getFieldError() : 여러 오류 중 첫 번째 하나 / getDefaultMessage() : DTO의 @Pattern(message=...) 문구
+            return "member/reset-password";
         }
 
-        boolean updated = memberService.updatePasswordByEmail(verifiedEmail, newPassword);
-        // updatePasswordByEmail 내부에서 isPasswordValid()로 규칙(8~20자, 대소문자, 숫자)까지 검사한 뒤
-        // 통과해야만 실제 UPDATE 실행. 규칙 위반이면 DB 접근 없이 false만 반환
+        if (!resetPasswordDto.getNewPassword().equals(resetPasswordDto.getNewPasswordCheck())) {
+            model.addAttribute("resetPasswordError", "비밀번호가 일치하지 않습니다.");
+            return "member/reset-password";
+        }
+
+        boolean updated = memberService.updatePasswordByEmail(verifiedEmail, resetPasswordDto.getNewPassword());
+        // updatePasswordByEmail 내부의 isPasswordValid() 재검사는 그대로 둔다.
 
         if (!updated) {
             model.addAttribute("resetPasswordError", PasswordPolicy.PASSWORD_MESSAGE);
@@ -509,8 +524,6 @@ public class MemberController {
         session.removeAttribute(RESET_PW_EMAIL_SESSION_KEY); // 세션 쪽 인증 표시도 함께 제거
 
         redirectAttributes.addFlashAttribute("toastMessage", "비밀번호가 변경되었습니다. 다시 로그인해 주세요.");
-        // addFlashAttribute : redirect 이동 한 번에만 살아있는 임시 값.
-        // 회원가입(signupProcess)에서 이미 쓰던 것과 같은 패턴 -> login.html에서 토스트 메시지로 활용 가능
 
         return "redirect:/member/login";
     }

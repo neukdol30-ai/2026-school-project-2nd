@@ -20,9 +20,13 @@ public class AdminVisitService {
     private final VisitLogProperties visitLogProperties;
 
     @Transactional(readOnly = true)
-    public List<AdminVisitSummaryDto> findVisitSummaries(String keyword, int page, int size) {
-        int offset = AdminPagingHelper.calculateOffset(page, size);
-        return adminVisitDao.findVisitSummaries(AdminPagingHelper.cleanText(keyword), offset, size);
+    public List<AdminVisitSummaryDto> findVisitSummaries(String keyword, int page) {
+        int offset = AdminPagingHelper.calculateOffset(page);
+        return adminVisitDao.findVisitSummaries(
+                AdminPagingHelper.cleanText(keyword),
+                offset,
+                AdminPagingHelper.PAGE_SIZE
+        );
     }
 
     @Transactional(readOnly = true)

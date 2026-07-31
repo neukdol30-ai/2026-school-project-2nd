@@ -48,6 +48,25 @@ public class ChatWebSocketBroadcaster {
         ));
     }
 
+
+    /** 현재 요청을 보낸 WebSocket 세션에만 입력 오류를 전달합니다. */
+    public void sendError(WebSocketSession session, String code, String message) {
+        if (session == null || !session.isOpen()) {
+            return;
+        }
+
+        try {
+            String json = objectMapper.writeValueAsString(Map.of(
+                    "type", ChatWebSocketEventType.ERROR,
+                    "code", code,
+                    "message", message
+            ));
+            session.sendMessage(new TextMessage(json));
+        } catch (Exception e) {
+            log.debug("WebSocket 입력 오류 응답 전송 실패 sessionId={}", session.getId(), e);
+        }
+    }
+
     public void broadcastAdminListRefresh(Integer roomNo) {
         broadcastToAdminList(Map.of(
                 "type", ChatWebSocketEventType.ADMIN_ROOM_REFRESH,

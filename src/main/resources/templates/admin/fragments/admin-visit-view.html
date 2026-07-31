@@ -89,7 +89,7 @@
         <div class="pagination" th:if="${visitTotalPages > 1}">
             <a th:if="${visitPage > 1}"
                th:href="@{/admin(view='visits', visitKeyword=${visitKeyword}, visitPage=${visitPage - 1})}">이전</a>
-            <span th:each="pageNo : ${#numbers.sequence(1, visitTotalPages)}">
+            <span th:each="pageNo : ${visitPageNumbers}">
                 <a th:href="@{/admin(view='visits', visitKeyword=${visitKeyword}, visitPage=${pageNo})}"
                    th:text="${pageNo}"
                    th:classappend="${pageNo == visitPage} ? ' active' : ''">1</a>

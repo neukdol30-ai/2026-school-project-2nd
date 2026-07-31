@@ -149,6 +149,7 @@ body {
 /* 하단 메시지 입력 영역입니다. */
 .chat-input-box {
     display: flex;
+    flex-wrap: wrap;
     gap: 8px;
     padding: 10px;
     border-top: 1px solid #e2e8f0;
@@ -185,6 +186,33 @@ body {
     background: #94a3b8;
 }
 
+
+
+.chat-input-meta {
+    display: flex;
+    flex: 0 0 100%;
+    align-items: center;
+    justify-content: space-between;
+    min-height: 16px;
+    padding: 0 4px;
+    color: #64748b;
+    font-size: 11px;
+}
+
+.chat-input-status {
+    min-width: 0;
+}
+
+.chat-input-status.error,
+.message-length-counter.limit-reached {
+    color: #dc2626;
+    font-weight: 800;
+}
+
+.message-length-counter {
+    margin-left: auto;
+    white-space: nowrap;
+}
 
 /* 메시지 한 줄입니다. chat.js에서 동적으로 생성합니다. */
 .message-row {
