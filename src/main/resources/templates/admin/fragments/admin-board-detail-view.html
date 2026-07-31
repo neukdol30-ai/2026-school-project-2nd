@@ -56,6 +56,9 @@
                   class="admin-answer-form"
                   method="post"
                   data-board-form
+                  data-content-max-length="1000"
+                  data-content-html-max-length="30000"
+                  data-editor-placeholder="답변을 입력해주세요."
                   th:action="@{/admin/boards/{no}/answers(no=${boardDetail.no})}">
 
                 <div class="answer-form-head">
@@ -79,6 +82,12 @@
                 <div class="admin-answer-editor"
                      data-board-editor>
                 </div>
+
+                <!-- 답변 글자 수 -->
+                <p class="board-form-count admin-answer-count">
+                    <span data-board-content-count>0</span>
+                    <span>/ 1,000자</span>
+                </p>
 
                 <!-- Toast UI에서 작성한 HTML을 서버로 전송 -->
                 <textarea name="content"
@@ -113,18 +122,26 @@
                                 <form method="post"
                                       class="admin-answer-edit-form"
                                       data-board-form
+                                      data-content-max-length="1000"
+                                      data-content-html-max-length="30000"
                                       data-editor-placeholder="답변 내용을 수정해주세요."
                                       data-editor-empty-message="답변 내용을 입력해주세요."
                                       th:action="@{/admin/boards/{boardNo}/answers/{answerNo}/edit(
                                         boardNo=${boardDetail.no},
                                         answerNo=${comment.no}
-                                      )}">
+                                    )}">
 
                                     <!-- 답변 수정용 Toast UI Editor -->
                                     <div class="admin-answer-edit-editor"
                                          data-board-editor
                                          data-editor-height="300px">
                                     </div>
+
+                                    <!-- 수정 답변 글자 수 -->
+                                    <p class="board-form-count admin-answer-count">
+                                        <span data-board-content-count>0</span>
+                                        <span>/ 1,000자</span>
+                                    </p>
 
                                     <!-- 기존 답변 HTML과 수정된 HTML을 서버로 전송 -->
                                     <textarea name="content"

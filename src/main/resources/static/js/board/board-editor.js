@@ -53,6 +53,16 @@ document.addEventListener("DOMContentLoaded", function () {
                 "[data-board-content-count]"
             );
 
+        const contentLimitTextElement =
+            boardForm.querySelector(
+                "[data-board-content-limit-text]"
+            );
+
+        const categorySelect =
+            boardForm.querySelector(
+                '[name="category"]'
+            );
+
         if (!editorElement || !contentInput) {
             return;
         }
@@ -65,17 +75,49 @@ document.addEventListener("DOMContentLoaded", function () {
                 boardForm.dataset.titleMaxLength
             ) || 200;
 
-        const contentMaxLength =
+        /*
+         * 카테고리별 실제 표시 글자 수 제한
+        */
+        const QUESTION_CONTENT_MAX_LENGTH =
+            1000;
+
+        const NOTICE_CONTENT_MAX_LENGTH =
+            10000;
+
+        /*
+         * 현재 적용할 본문 제한
+         */
+        let contentMaxLength =
             Number(
                 boardForm.dataset.contentMaxLength
-            ) || 10000;
+            ) || QUESTION_CONTENT_MAX_LENGTH;
 
+        /*
+         * 태그와 이미지 주소를 포함한
+         * HTML 전체 길이 제한
+         */
         const contentHtmlMaxLength =
             Number(
                 boardForm.dataset.contentHtmlMaxLength
             ) || 30000;
 
         let editor = null;
+
+        /*
+         * 글자 수 제한을 넘기기 전
+         * 마지막 정상 HTML 내용
+         */
+        let lastValidHtml = "";
+
+        /*
+         * 직전 실제 글자 수
+         */
+        let previousTextLength = 0;
+
+        /*
+         * 내용 복구 중 change 이벤트 중복 실행 방지
+         */
+        let isRestoringContent = false;
 
         /*
          * HTML에서 화면에 보이는 글자 추출
@@ -182,6 +224,64 @@ document.addEventListener("DOMContentLoaded", function () {
         }
 
         /*
+        * 카테고리에 따라 본문 제한 변경
+        *
+        * 문의게시글: 1,000자
+        * 공지사항: 10,000자
+        */
+        function updateContentLimitByCategory() {
+
+            /*
+             * 카테고리 입력 요소가 없는 화면은
+             * HTML data 속성의 제한값을 그대로 사용
+             */
+            if (!categorySelect) {
+                return;
+            }
+
+            if (
+                categorySelect.value
+                === "NOTICE"
+            ) {
+                contentMaxLength =
+                    NOTICE_CONTENT_MAX_LENGTH;
+            } else {
+                contentMaxLength =
+                    QUESTION_CONTENT_MAX_LENGTH;
+            }
+
+            /*
+             * 현재 제한값을 폼 data 속성에도 반영
+             */
+            boardForm.dataset.contentMaxLength =
+                String(contentMaxLength);
+
+            /*
+             * 화면의 / 1,000자 또는
+             * / 10,000자 문구 변경
+             */
+            if (contentLimitTextElement) {
+
+                contentLimitTextElement.textContent =
+                    "/ "
+                    + contentMaxLength
+                        .toLocaleString("ko-KR")
+                    + "자";
+            }
+
+            /*
+             * 수정 화면처럼 기존 내용이 있는 경우
+             * 변경된 제한 기준으로 다시 표시
+             */
+            if (editor) {
+                updateContentCount(editor);
+            }
+        }
+
+
+
+
+        /*
          * 제목 입력 이벤트
          */
         if (titleInput) {
@@ -192,6 +292,24 @@ document.addEventListener("DOMContentLoaded", function () {
             );
 
             updateTitleCount();
+        }
+
+        /*
+        * 문의게시글과 공지사항의
+        * 본문 제한을 다르게 적용
+        */
+        if (categorySelect) {
+
+            categorySelect.addEventListener(
+                "change",
+                updateContentLimitByCategory
+            );
+
+            /*
+             * 신규 작성 화면과 기존 수정 화면에서
+             * 현재 선택된 카테고리 기준으로 초기화
+             */
+            updateContentLimitByCategory();
         }
 
         /*
@@ -299,14 +417,119 @@ document.addEventListener("DOMContentLoaded", function () {
             }
 
             /*
-             * 에디터 내용이 바뀔 때마다
-             * 본문 글자 수 갱신
-             */
+            * 최초 내용을 정상 내용으로 저장
+            */
+            lastValidHtml =
+                editor.getHTML();
+
+            previousTextLength =
+                getPlainText(
+                    lastValidHtml
+                ).length;
+
+            /*
+            * 에디터 내용이 바뀔 때마다
+            * 글자 수 검사 및 표시 갱신
+            */
             editor.on(
                 "change",
                 function () {
-                    updateContentCount(
-                        editor
+
+                    /*
+                     * 제한 초과 내용을 복구하면서 발생한
+                     * change 이벤트는 무시한다.
+                     */
+                    if (isRestoringContent) {
+                        return;
+                    }
+
+                    const currentHtml =
+                        editor.getHTML();
+
+                    const currentPlainText =
+                        getPlainText(
+                            currentHtml
+                        );
+
+                    const currentTextLength =
+                        currentPlainText.length;
+
+                    /*
+                     * 현재 제한 안에 있는 경우
+                     * 정상 내용으로 저장한다.
+                     */
+                    if (
+                        currentTextLength
+                        <= contentMaxLength
+                    ) {
+                        lastValidHtml =
+                            currentHtml;
+
+                        previousTextLength =
+                            currentTextLength;
+
+                        updateContentCount(
+                            editor
+                        );
+
+                        return;
+                    }
+
+                    /*
+                     * 기존 데이터가 제한보다 긴 경우에는
+                     * 사용자가 내용을 삭제하는 동작을 허용한다.
+                     *
+                     * 예:
+                     * 기존 공지사항 5,000자를 문의글로 변경한 경우
+                     * 1,000자까지 줄일 수 있어야 한다.
+                     */
+                    if (
+                        previousTextLength
+                        > contentMaxLength
+                        && currentTextLength
+                        < previousTextLength
+                    ) {
+                        lastValidHtml =
+                            currentHtml;
+
+                        previousTextLength =
+                            currentTextLength;
+
+                        updateContentCount(
+                            editor
+                        );
+
+                        return;
+                    }
+
+                    /*
+                     * 제한을 초과한 입력은
+                     * 마지막 정상 내용으로 되돌린다.
+                     */
+                    isRestoringContent = true;
+
+                    editor.setHTML(
+                        lastValidHtml,
+                        false
+                    );
+
+                    previousTextLength =
+                        getPlainText(
+                            lastValidHtml
+                        ).length;
+
+                    requestAnimationFrame(
+                        function () {
+
+                            isRestoringContent =
+                                false;
+
+                            updateContentCount(
+                                editor
+                            );
+
+                            editor.focus();
+                        }
                     );
                 }
             );
@@ -422,7 +645,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 }
 
                 /*
-                 * 화면에 보이는 본문 10,000자 검사
+                 * 카테고리별 본문 글자 수 검사
                  */
                 if (
                     plainText.length
