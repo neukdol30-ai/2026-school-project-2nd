@@ -8,7 +8,11 @@
     <meta name="viewport"
           content="width=device-width, initial-scale=1.0">
 
-    <title>게시글 수정</title>
+    <title th:text="${board.category == 'NOTICE'
+        ? '공지사항 수정'
+        : '문의글 수정'}">
+        게시글 수정
+    </title>
 
     <!-- 공통 CSS -->
     <link rel="stylesheet"
@@ -30,13 +34,13 @@
     <link rel="stylesheet"
           href="https://uicdn.toast.com/editor/latest/toastui-editor.min.css">
 
-    <!-- TOAST UI Editor JS -->
-    <script src="https://uicdn.toast.com/editor/latest/toastui-editor-all.min.js"></script>
-    <script src="https://uicdn.toast.com/editor/latest/i18n/ko-kr.js"></script>
-    <link rel="stylesheet" th:href="@{/css/cookie-consent.css}">
-    <!-- 게시판 전용 CSS는 가장 마지막 -->
+    <!-- 게시판 전용 CSS -->
     <link rel="stylesheet"
           th:href="@{/css/board.css}">
+
+    <!-- 라이트·다크 모드 CSS는 마지막 -->
+    <link rel="stylesheet"
+          th:href="@{/css/theme.css}">
 </head>
 
 <body class="board-body">
@@ -54,11 +58,17 @@
     <section class="board-form-header">
 
         <div>
-            <h1 class="board-form-title">
+            <h1 class="board-form-title"
+                th:text="${board.category == 'NOTICE'
+                    ? '공지사항 수정'
+                    : '문의글 수정'}">
                 게시글 수정
             </h1>
 
-            <p class="board-form-description">
+            <p class="board-form-description"
+               th:text="${board.category == 'NOTICE'
+                    ? '공지사항 내용을 수정한 뒤 저장해주세요.'
+                    : '문의 내용을 수정한 뒤 저장해주세요.'}">
                 게시글 내용을 수정한 뒤 저장해주세요.
             </p>
         </div>
@@ -76,6 +86,10 @@
     <section class="board-form-box">
 
         <form id="board-update-form"
+              data-board-form
+              data-title-max-length="200"
+              data-content-max-length="10000"
+              data-content-html-max-length="30000"
               th:action="${formAction}"
               method="post"
               th:object="${board}">
@@ -136,7 +150,14 @@
                        type="text"
                        th:field="*{title}"
                        class="board-form-input"
+                       data-board-title
+                       maxlength="200"
                        placeholder="제목을 입력해주세요.">
+
+                <p class="board-form-count">
+                    <span data-board-title-count>0</span>
+                    <span>/ 200자</span>
+                </p>
 
                 <!-- 제목 Validation 오류 -->
                 <p th:if="${#fields.hasErrors('title')}"
@@ -155,12 +176,19 @@
 
                 <!-- TOAST UI Editor 영역 -->
                 <div id="editor"
-                     class="board-editor">
+                     class="board-editor"
+                     data-board-editor>
                 </div>
+
+                <p class="board-form-count">
+                    <span data-board-content-count>0</span>
+                    <span>/ 10,000자</span>
+                </p>
 
                 <!-- 서버로 전송할 HTML 본문 -->
                 <input type="hidden"
                        id="content"
+                       data-board-content
                        th:field="*{content}">
 
                 <!-- DTO Validation 오류 -->
@@ -202,19 +230,42 @@
 <div data-global-footer></div>
 
 
-<!-- 공통 헤더·푸터 관련 JS -->
+<!-- 공통 상태와 함수 -->
 
-<!-- banner.js에서 사용하는 상태와 공통 함수 -->
 <script th:src="@{/js/index/state.js}"></script>
 <script th:src="@{/js/index/utils.js}"></script>
 
+<!-- 라이트·다크 모드 -->
+<script th:src="@{/js/theme.js}"></script>
+
+<!-- renderAuthWidget 함수 제공 -->
+<script th:src="@{/js/index/widgets/login.js}"></script>
+
+
 <!-- 공통 헤더와 푸터 -->
+
 <script th:src="@{/js/index/layout/banner.js}"></script>
 <script th:src="@{/js/index/layout/footer.js}"></script>
 
-<!-- 마이페이지 모달 -->
+
+<!-- 마이페이지 모듈 -->
+
+<script th:src="@{/js/mypage/mypage-config.js}"></script>
+<script th:src="@{/js/mypage/mypage-utils.js}"></script>
+<script th:src="@{/js/mypage/mypage-api.js}"></script>
+<script th:src="@{/js/mypage/mypage-validation.js}"></script>
+<script th:src="@{/js/mypage/mypage-renderer.js}"></script>
+
+<!-- 주소 검색 -->
 <script th:src="@{/js/common/address-search.js}"></script>
+
+<!-- 마이페이지 실행 -->
 <script th:src="@{/js/mypage-modal.js}"></script>
+
+
+<!-- 게시판 공통 기능 -->
+
+<script th:src="@{/js/board/board-common-layout.js}"></script>
 
 
 <!-- TOAST UI Editor -->
@@ -222,111 +273,11 @@
 <script src="https://uicdn.toast.com/editor/latest/toastui-editor-all.min.js"></script>
 <script src="https://uicdn.toast.com/editor/latest/i18n/ko-kr.js"></script>
 
-
-<!-- 게시글 수정 에디터 -->
-
-<script>
-    /*
-     * 기존 게시글 본문 또는
-     * Validation 실패 후 입력했던 본문
-     */
-    const contentInput =
-        document.querySelector("#content");
-
-    const editorElement =
-        document.querySelector("#editor");
-
-    const updateForm =
-        document.querySelector("#board-update-form");
-
-    const savedContent =
-        contentInput?.value || "";
-
-    if (
-        editorElement
-        && contentInput
-        && updateForm
-        && typeof toastui !== "undefined"
-    ) {
-        const editor = new toastui.Editor({
-            el: editorElement,
-            height: "560px",
-            initialEditType: "wysiwyg",
-            previewStyle: "vertical",
-            language: "ko-KR",
-            initialValue: savedContent,
-
-            hooks: {
-                addImageBlobHook: async function (
-                    blob,
-                    callback
-                ) {
-                    const formData =
-                        new FormData();
-
-                    formData.append(
-                        "image",
-                        blob
-                    );
-
-                    try {
-                        const response =
-                            await fetch(
-                                "/board/image/upload",
-                                {
-                                    method: "POST",
-                                    body: formData
-                                }
-                            );
-
-                        const result =
-                            await response.json();
-
-                        if (!response.ok) {
-                            throw new Error(
-                                result.message
-                                || "이미지 업로드에 실패했습니다."
-                            );
-                        }
-
-                        callback(
-                            result.imageUrl,
-                            blob.name
-                            || "게시글 이미지"
-                        );
-
-                    } catch (error) {
-                        alert(
-                            error.message
-                            || "이미지 업로드 중 오류가 발생했습니다."
-                        );
-                    }
-                }
-            }
-        });
-
-        /*
-         * 수정 버튼을 누르면
-         * 에디터 HTML을 hidden input에 저장
-         */
-        updateForm.addEventListener(
-            "submit",
-            function () {
-                contentInput.value =
-                    editor.getHTML();
-            }
-        );
-    }
-</script>
-
-<script th:src="@{/js/cookie-consent.js}"></script>
-
-<!-- 게시판 공통 레이아웃 실행 -->
-
-<script th:src="@{/js/board/board-common-layout.js}"></script>
+<!-- 글쓰기와 수정에서 함께 사용하는 에디터 -->
+<script th:src="@{/js/board/board-editor.js}"></script>
 
 
-<!-- 쿠키 설정 -->
+<!-- 쿠키 설정은 한 번만 -->
 <script th:src="@{/js/cookie-consent.js}"></script>
 
 </body>

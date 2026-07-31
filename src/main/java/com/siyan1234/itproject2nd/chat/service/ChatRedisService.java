@@ -1,6 +1,7 @@
 package com.siyan1234.itproject2nd.chat.service;
 
 import com.siyan1234.itproject2nd.chat.dto.ChatMessageDto;
+import com.siyan1234.itproject2nd.chat.support.ChatMessagePolicy;
 import com.siyan1234.itproject2nd.chat.support.ChatReadStatus;
 import com.siyan1234.itproject2nd.chat.support.ChatRoomLockManager;
 import com.siyan1234.itproject2nd.chat.support.ChatUnreadSummary;
@@ -122,6 +123,9 @@ public class ChatRedisService {
             return;
         }
 
+        messageDto.setMessageContent(
+                ChatMessagePolicy.normalizeAndValidate(messageDto.getMessageContent())
+        );
         roomLockManager.execute(messageDto.getRoomNo(), () -> saveMessageLocked(messageDto));
     }
 

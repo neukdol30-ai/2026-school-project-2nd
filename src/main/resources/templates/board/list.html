@@ -8,7 +8,6 @@
           content="width=device-width, initial-scale=1.0">
 
     <title>게시글 목록</title>
-    <link rel="stylesheet" th:href="@{/css/cookie-consent.css}">
 
     <!-- 쿠키 동의창 CSS -->
     <link rel="stylesheet"
@@ -26,9 +25,13 @@
     <link rel="stylesheet"
           th:href="@{/css/mypage-modal.css}">
 
-    <!-- 게시판 CSS는 가장 마지막 -->
+    <!-- 게시판 전용 CSS -->
     <link rel="stylesheet"
           th:href="@{/css/board.css}">
+
+    <!-- 라이트·다크 모드 CSS는 반드시 마지막 -->
+    <link rel="stylesheet"
+          th:href="@{/css/theme.css}">
 </head>
 
 <body class="board-body">
@@ -345,168 +348,50 @@
 
 </main>
 
-<script th:src="@{/js/cookie-consent.js}"></script>
-
 <!-- 공통 푸터 출력 위치 -->
 <div data-global-footer></div>
 
 
-<!-- =========================
-     공통 상태와 도구
-========================= -->
+<!-- 공통 상태와 함수 -->
 
-<!-- banner.js가 state를 사용하므로 먼저 연결 -->
+<!-- banner.js에서 사용하는 state -->
 <script th:src="@{/js/index/state.js}"></script>
+
+<!-- escapeHtml 등 공통 함수 -->
 <script th:src="@{/js/index/utils.js}"></script>
 
+<!-- 라이트·다크 모드 -->
+<script th:src="@{/js/theme.js}"></script>
 
-<!-- =========================
-     공통 헤더와 푸터
-========================= -->
+<!-- 마이페이지 초기화에 필요한 renderAuthWidget -->
+<script th:src="@{/js/index/widgets/login.js}"></script>
+
+
+<!-- 공통 헤더와 푸터 -->
 
 <script th:src="@{/js/index/layout/banner.js}"></script>
 <script th:src="@{/js/index/layout/footer.js}"></script>
 
 
-<!-- =========================
-     마이페이지 모달
-========================= -->
+<!-- 마이페이지 모듈 -->
 
+<!-- 주소 검색 -->
 <script th:src="@{/js/common/address-search.js}"></script>
+
+<!-- 마이페이지 하위 모듈 -->
+<script th:src="@{/js/mypage/mypage-config.js}"></script>
+<script th:src="@{/js/mypage/mypage-utils.js}"></script>
+<script th:src="@{/js/mypage/mypage-api.js}"></script>
+<script th:src="@{/js/mypage/mypage-validation.js}"></script>
+<script th:src="@{/js/mypage/mypage-renderer.js}"></script>
+
+<!-- 위 모듈들을 모두 불러온 뒤 실행 -->
 <script th:src="@{/js/mypage-modal.js}"></script>
 
 
-<!-- =========================
-     헤더와 푸터 화면 출력
-========================= -->
+<!-- 게시판 공통 배너·푸터 실행 -->
 
-<script>
-    document.addEventListener(
-        "DOMContentLoaded",
-        function () {
-
-            /*
-             * 상단 공통 헤더 출력
-             */
-            if (
-                typeof updateGlobalBanner
-                === "function"
-            ) {
-                updateGlobalBanner();
-            }
-
-
-            /*
-             * 하단 공통 푸터 출력
-             */
-            const globalFooter =
-                document.querySelector(
-                    "[data-global-footer]"
-                );
-
-            if (
-                globalFooter
-                && typeof renderGlobalFooter
-                === "function"
-            ) {
-                globalFooter.innerHTML =
-                    renderGlobalFooter();
-            }
-        }
-    );
-
-
-    /*
-     * 상단 서비스 메뉴 이벤트
-     */
-    document.addEventListener(
-        "click",
-        function (event) {
-
-            /*
-             * 서비스 메뉴 열기·닫기
-             */
-            const menuButton =
-                event.target.closest(
-                    '[data-action="toggle-service-menu"]'
-                );
-
-            if (menuButton) {
-                const servicePanel =
-                    document.querySelector(
-                        "[data-global-service-panel]"
-                    );
-
-                if (!servicePanel) {
-                    return;
-                }
-
-                const willOpen =
-                    servicePanel.hidden;
-
-                servicePanel.hidden =
-                    !willOpen;
-
-                menuButton.setAttribute(
-                    "aria-expanded",
-                    String(willOpen)
-                );
-
-                return;
-            }
-
-
-            /*
-             * 로그아웃
-             */
-            const logoutButton =
-                event.target.closest(
-                    '[data-action="logout"]'
-                );
-
-            if (logoutButton) {
-                window.location.href =
-                    "/member/logout";
-
-                return;
-            }
-
-
-            /*
-             * 서비스 메뉴 바깥을 누르면 닫기
-             */
-            const serviceMenu =
-                document.querySelector(
-                    "[data-global-service-menu]"
-                );
-
-            const servicePanel =
-                document.querySelector(
-                    "[data-global-service-panel]"
-                );
-
-            if (
-                serviceMenu
-                && servicePanel
-                && !serviceMenu.contains(event.target)
-            ) {
-                servicePanel.hidden = true;
-
-                const button =
-                    serviceMenu.querySelector(
-                        '[data-action="toggle-service-menu"]'
-                    );
-
-                if (button) {
-                    button.setAttribute(
-                        "aria-expanded",
-                        "false"
-                    );
-                }
-            }
-        }
-    );
-</script>
+<script th:src="@{/js/board/board-common-layout.js}"></script>
 
 
 <!-- 쿠키 동의창 -->

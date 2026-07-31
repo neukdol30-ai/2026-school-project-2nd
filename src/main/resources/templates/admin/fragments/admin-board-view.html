@@ -41,6 +41,18 @@
 
         <div class="admin-table-wrap">
             <table class="admin-table selectable-table">
+                <!-- 관리자 게시글 목록의 열 너비 고정 -->
+                <colgroup>
+                    <col class="admin-board-col-check">
+                    <col class="admin-board-col-no">
+                    <col class="admin-board-col-category">
+                    <col class="admin-board-col-title">
+                    <col class="admin-board-col-writer">
+                    <col class="admin-board-col-answer">
+                    <col class="admin-board-col-view">
+                    <col class="admin-board-col-date">
+                    <col class="admin-board-col-manage">
+                </colgroup>
                 <thead>
                 <tr>
                     <th><input type="checkbox" id="boardSelectAllCheckbox" aria-label="게시글 전체 선택"></th>
@@ -48,8 +60,12 @@
                     <th>카테고리</th>
                     <th>제목</th>
                     <th>작성자</th>
-                    <th>답변</th>
-                    <th>조회수</th>
+                    <th class="admin-board-answer-head">
+                        답변
+                    </th>
+                    <th class="admin-board-view-head">
+                        조회수
+                    </th>
                     <th>작성일</th>
                     <th>관리</th>
                 </tr>
@@ -63,11 +79,36 @@
                         <strong th:text="${board.title}">제목</strong>
                     </td>
                     <td th:text="${board.displayWriter}">작성자</td>
-                    <td>
-                        <span class="status-tag" th:classappend="${board.answerStatus == 'ANSWERED'} ? ' active' : ''" th:text="${board.answerStatusName}">답변 대기</span>
-                        <small th:text="'답변 ' + ${board.answerCount != null ? board.answerCount : 0} + '건'">답변 0건</small>
+                    <td class="admin-board-answer-cell">
+
+                        <div class="admin-board-answer-box">
+
+                            <!-- 답변 상태 -->
+                            <span class="status-tag admin-board-answer-status"
+                                  th:classappend="${board.answerStatus == 'ANSWERED'}
+                                    ? ' active'
+                                    : ''"
+                                  th:text="${board.answerStatusName}">
+                                답변 대기
+                            </span>
+
+                            <!-- 답변 개수 -->
+                            <small class="admin-board-answer-count"
+                                   th:text="'답변 '
+                                   + ${board.answerCount != null
+                                        ? board.answerCount
+                                        : 0}
+                                   + '건'">
+                                답변 0건
+                            </small>
+
+                        </div>
+
                     </td>
-                    <td th:text="${board.viewCount}">0</td>
+                    <td class="admin-board-view-cell"
+                        th:text="${board.viewCount}">
+                        0
+                    </td>
                     <td th:text="${board.createdDate != null ? #temporals.format(board.createdDate, 'yyyy-MM-dd') : '-'}">2026-07-16</td>
                     <td>
                         <div class="table-actions-inline">
@@ -90,7 +131,7 @@
         <div class="pagination" th:if="${boardTotalPages > 1}">
             <a th:if="${boardPage > 1}"
                th:href="@{/admin(view='boards', boardCategory=${boardCategory}, boardKeyword=${boardKeyword}, boardPage=${boardPage - 1})}">이전</a>
-            <span th:each="pageNo : ${#numbers.sequence(1, boardTotalPages)}">
+            <span th:each="pageNo : ${boardPageNumbers}">
                 <a th:href="@{/admin(view='boards', boardCategory=${boardCategory}, boardKeyword=${boardKeyword}, boardPage=${pageNo})}"
                    th:text="${pageNo}"
                    th:classappend="${pageNo == boardPage} ? ' active' : ''">1</a>

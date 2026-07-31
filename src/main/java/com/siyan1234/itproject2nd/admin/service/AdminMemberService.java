@@ -25,9 +25,13 @@ public class AdminMemberService {
     private final MemberService memberService;
 
     @Transactional(readOnly = true)
-    public List<MemberDto> findMembers(String keyword, int page, int size) {
-        int offset = AdminPagingHelper.calculateOffset(page, size);
-        return adminMemberDao.findAdminMembers(AdminPagingHelper.cleanText(keyword), offset, size);
+    public List<MemberDto> findMembers(String keyword, int page) {
+        int offset = AdminPagingHelper.calculateOffset(page);
+        return adminMemberDao.findAdminMembers(
+                AdminPagingHelper.cleanText(keyword),
+                offset,
+                AdminPagingHelper.PAGE_SIZE
+        );
     }
 
     @Transactional(readOnly = true)
