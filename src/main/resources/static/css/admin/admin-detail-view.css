@@ -950,3 +950,28 @@
     font-size: 12px;
     line-height: 1.5;
 }
+
+/* =====================================================
+   관리자 답변 글자 수
+===================================================== */
+
+#boardDetailView .admin-answer-count {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 4px;
+
+    margin: 8px 2px 0;
+    padding: 0;
+
+    color: #64748b;
+    font-size: 13px;
+    font-weight: 600;
+    line-height: 1.4;
+}
+
+/* 1,000자 초과 */
+#boardDetailView .admin-answer-count.is-over {
+    color: #dc2626;
+    font-weight: 800;
+}

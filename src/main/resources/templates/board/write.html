@@ -91,7 +91,7 @@
         <form id="board-write-form"
               data-board-form
               data-title-max-length="200"
-              data-content-max-length="10000"
+              data-content-max-length="1000"
               data-content-html-max-length="30000"
               th:action="@{/board/write}"
               method="post"
@@ -295,7 +295,10 @@
 
                 <p class="board-form-count">
                     <span data-board-content-count>0</span>
-                    <span>/ 10,000자</span>
+
+                    <span data-board-content-limit-text>
+                        / 1,000자
+                    </span>
                 </p>
 
                 <!-- 서버로 전송할 본문 HTML -->

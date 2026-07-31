@@ -53,6 +53,16 @@ document.addEventListener("DOMContentLoaded", function () {
                 "[data-board-content-count]"
             );
 
+        const contentLimitTextElement =
+            boardForm.querySelector(
+                "[data-board-content-limit-text]"
+            );
+
+        const categorySelect =
+            boardForm.querySelector(
+                '[name="category"]'
+            );
+
         if (!editorElement || !contentInput) {
             return;
         }
@@ -65,11 +75,27 @@ document.addEventListener("DOMContentLoaded", function () {
                 boardForm.dataset.titleMaxLength
             ) || 200;
 
-        const contentMaxLength =
+        /*
+         * 카테고리별 실제 표시 글자 수 제한
+        */
+        const QUESTION_CONTENT_MAX_LENGTH =
+            1000;
+
+        const NOTICE_CONTENT_MAX_LENGTH =
+            10000;
+
+        /*
+         * 현재 적용할 본문 제한
+         */
+        let contentMaxLength =
             Number(
                 boardForm.dataset.contentMaxLength
-            ) || 10000;
+            ) || QUESTION_CONTENT_MAX_LENGTH;
 
+        /*
+         * 태그와 이미지 주소를 포함한
+         * HTML 전체 길이 제한
+         */
         const contentHtmlMaxLength =
             Number(
                 boardForm.dataset.contentHtmlMaxLength
@@ -182,6 +208,64 @@ document.addEventListener("DOMContentLoaded", function () {
         }
 
         /*
+        * 카테고리에 따라 본문 제한 변경
+        *
+        * 문의게시글: 1,000자
+        * 공지사항: 10,000자
+        */
+        function updateContentLimitByCategory() {
+
+            /*
+             * 카테고리 입력 요소가 없는 화면은
+             * HTML data 속성의 제한값을 그대로 사용
+             */
+            if (!categorySelect) {
+                return;
+            }
+
+            if (
+                categorySelect.value
+                === "NOTICE"
+            ) {
+                contentMaxLength =
+                    NOTICE_CONTENT_MAX_LENGTH;
+            } else {
+                contentMaxLength =
+                    QUESTION_CONTENT_MAX_LENGTH;
+            }
+
+            /*
+             * 현재 제한값을 폼 data 속성에도 반영
+             */
+            boardForm.dataset.contentMaxLength =
+                String(contentMaxLength);
+
+            /*
+             * 화면의 / 1,000자 또는
+             * / 10,000자 문구 변경
+             */
+            if (contentLimitTextElement) {
+
+                contentLimitTextElement.textContent =
+                    "/ "
+                    + contentMaxLength
+                        .toLocaleString("ko-KR")
+                    + "자";
+            }
+
+            /*
+             * 수정 화면처럼 기존 내용이 있는 경우
+             * 변경된 제한 기준으로 다시 표시
+             */
+            if (editor) {
+                updateContentCount(editor);
+            }
+        }
+
+
+
+
+        /*
          * 제목 입력 이벤트
          */
         if (titleInput) {
@@ -192,6 +276,24 @@ document.addEventListener("DOMContentLoaded", function () {
             );
 
             updateTitleCount();
+        }
+
+        /*
+        * 문의게시글과 공지사항의
+        * 본문 제한을 다르게 적용
+        */
+        if (categorySelect) {
+
+            categorySelect.addEventListener(
+                "change",
+                updateContentLimitByCategory
+            );
+
+            /*
+             * 신규 작성 화면과 기존 수정 화면에서
+             * 현재 선택된 카테고리 기준으로 초기화
+             */
+            updateContentLimitByCategory();
         }
 
         /*
@@ -422,7 +524,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 }
 
                 /*
-                 * 화면에 보이는 본문 10,000자 검사
+                 * 카테고리별 본문 글자 수 검사
                  */
                 if (
                     plainText.length

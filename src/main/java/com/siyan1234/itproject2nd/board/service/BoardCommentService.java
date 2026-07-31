@@ -5,6 +5,7 @@ import com.siyan1234.itproject2nd.board.dto.BoardCommentDto;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.util.HtmlUtils;
 
 import com.siyan1234.itproject2nd.board.dao.BoardDao;
 import java.util.List;
@@ -17,9 +18,15 @@ public class BoardCommentService {
     private final BoardDao boardDao;
 
 
-    // 답변 HTML의 최대 저장 길이
-    // DB 컬럼은 CLOB이지만 지나치게 큰 입력을 제한하기 위한 값
-    private static final int MAX_CONTENT_LENGTH = 50_000;
+    /*
+     * 답변에 실제로 표시되는 글자 수 제한
+     */
+    private static final int MAX_TEXT_LENGTH = 1_000;
+
+    /*
+     * Toast UI가 생성하는 HTML 전체 길이 제한
+     */
+    private static final int MAX_HTML_LENGTH = 30_000;
 
 
     // 특정 문의글의 답변 목록 조회
@@ -179,49 +186,107 @@ public class BoardCommentService {
     }
 
 
-    // 답변 내용 유효성 검사
+    /*
+     * 답변 내용 유효성 검사
+     */
     private void validateContent(String content) {
 
-        if (content == null || content.isBlank()) {
+        /*
+         * null 또는 완전히 빈 문자열 검사
+         */
+        if (content == null
+                || content.isBlank()) {
+
             throw new IllegalArgumentException(
                     "답변 내용을 입력해주세요."
             );
         }
 
-        // 이미지 태그 존재 여부
+        /*
+         * 지나치게 큰 HTML 요청을 먼저 차단한다.
+         *
+         * CLOB 컬럼이어도 무제한으로 입력받으면
+         * 서버와 DB에 부담이 생길 수 있다.
+         */
+        if (
+                content.length()
+                        > MAX_HTML_LENGTH
+        ) {
+            throw new IllegalArgumentException(
+                    "답변에 너무 많은 서식이 포함되어 있습니다."
+            );
+        }
+
+        /*
+         * 이미지 태그 존재 여부
+         *
+         * 글자는 없어도 이미지만 등록된 답변은
+         * 유효한 답변으로 허용한다.
+         */
         boolean hasImage =
                 content.matches(
                         "(?is).*<img\\s+[^>]*src\\s*=\\s*['\"][^'\"]+['\"][^>]*>.*"
                 );
 
-        // HTML 태그를 제거하여 실제 글자 내용만 추출
-        String plainText = content
-                .replaceAll(
-                        "(?is)<script\\b[^>]*>.*?</script>",
-                        ""
-                )
-                .replaceAll(
-                        "(?is)<style\\b[^>]*>.*?</style>",
-                        ""
-                )
-                .replaceAll("(?is)<br\\s*/?>", "")
-                .replaceAll("(?is)<[^>]+>", "")
-                .replace("&nbsp;", "")
-                .replace("&#160;", "")
-                .replace("\u00A0", "")
-                .trim();
+        /*
+         * 저장된 HTML에서 script와 style 제거
+         */
+        String plainText =
+                content
+                        .replaceAll(
+                                "(?is)<script\\b[^>]*>.*?</script>",
+                                ""
+                        )
+                        .replaceAll(
+                                "(?is)<style\\b[^>]*>.*?</style>",
+                                ""
+                        )
+                        .replaceAll(
+                                "(?is)<br\\s*/?>",
+                                ""
+                        )
+                        .replaceAll(
+                                "(?is)<[^>]+>",
+                                ""
+                        );
 
-        // 글자와 이미지가 모두 없으면 빈 답변
-        if (plainText.isEmpty() && !hasImage) {
+        /*
+         * &amp;, &lt;, &nbsp; 등의 HTML 문자를
+         * 실제 화면에 표시되는 문자로 변환한다.
+         */
+        plainText =
+                HtmlUtils
+                        .htmlUnescape(plainText)
+                        .replace(
+                                '\u00A0',
+                                ' '
+                        )
+                        .trim();
+
+        /*
+         * 실제 글자와 이미지가 모두 없으면
+         * 빈 답변으로 처리한다.
+         */
+        if (
+                plainText.isEmpty()
+                        && !hasImage
+        ) {
             throw new IllegalArgumentException(
                     "답변 내용을 입력해주세요."
             );
         }
 
-        // CLOB이더라도 지나치게 큰 요청 방지
-        if (content.length() > MAX_CONTENT_LENGTH) {
+        /*
+         * 화면에 표시되는 실제 답변 글자 수 검사
+         */
+        if (
+                plainText.length()
+                        > MAX_TEXT_LENGTH
+        ) {
             throw new IllegalArgumentException(
-                    "답변 내용은 50,000자 이하로 입력해주세요."
+                    "답변은 "
+                            + MAX_TEXT_LENGTH
+                            + "자 이하로 입력해주세요."
             );
         }
     }

@@ -34,11 +34,17 @@ public class BoardService {
     // 게시글 제목 최대 글자 수
     private static final int BOARD_TITLE_MAX_LENGTH = 200;
 
-    // HTML 태그를 제외한 본문 실제 최대 글자 수
-    private static final int BOARD_CONTENT_TEXT_MAX_LENGTH = 10_000;
+    // 문의글의 실제 표시 글자 수 제한
+    private static final int QUESTION_CONTENT_TEXT_MAX_LENGTH =
+            1_000;
+
+    // 공지사항의 실제 표시 글자 수 제한
+    private static final int NOTICE_CONTENT_TEXT_MAX_LENGTH =
+            10_000;
 
     // HTML 태그를 포함한 본문 전체 최대 길이
-    private static final int BOARD_CONTENT_HTML_MAX_LENGTH = 30_000;
+    private static final int BOARD_CONTENT_HTML_MAX_LENGTH =
+            30_000;
 
     // 게시글 목록
     public List<BoardDto> findAll() {
@@ -482,7 +488,10 @@ public class BoardService {
         }
 
         // 제목 200자 제한
-        if (title.length() > BOARD_TITLE_MAX_LENGTH) {
+        if (
+                title.length()
+                        > BOARD_TITLE_MAX_LENGTH
+        ) {
             throw new IllegalArgumentException(
                     "제목은 200자 이하로 입력해주세요."
             );
@@ -491,8 +500,14 @@ public class BoardService {
         // 앞뒤 공백을 제거한 제목으로 다시 저장
         boardDto.setTitle(title);
 
-        // 본문 검사
-        validateContent(boardDto.getContent());
+        /*
+         * 문의글인지 공지사항인지에 따라
+         * 본문 글자 수를 다르게 검사
+         */
+        validateContent(
+                boardDto.getContent(),
+                boardDto.getCategory()
+        );
     }
 
     // 비회원 작성자 정보 검사
@@ -640,31 +655,65 @@ public class BoardService {
 
 
 
-    // TOAST UI 게시글 본문 검사
-    private void validateContent(String content) {
+    /*
+     * Toast UI 게시글 본문 검사
+     *
+     * 문의글: 1,000자
+     * 공지사항: 10,000자
+     */
+    private void validateContent(
+            String content,
+            String category
+    ) {
 
         /*
-         * 전달된 값 자체가 없는 경우
+         * 내용이 없는 경우
          */
-        if (content == null || content.trim().isEmpty()) {
+        if (
+                content == null
+                        || content.trim().isEmpty()
+        ) {
             throw new IllegalArgumentException(
                     "게시글 내용을 입력해주세요."
             );
         }
 
         /*
-         * HTML 태그를 포함한 전체 문자열 제한
+         * 카테고리 정리
          */
-        if (content.length()
-                > BOARD_CONTENT_HTML_MAX_LENGTH) {
+        String cleanCategory =
+                category == null
+                        ? ""
+                        : category
+                          .trim()
+                          .toUpperCase();
 
+        /*
+         * 카테고리 검사
+         */
+        if (
+                !"QUESTION".equals(cleanCategory)
+                        && !"NOTICE".equals(cleanCategory)
+        ) {
+            throw new IllegalArgumentException(
+                    "게시글 카테고리가 올바르지 않습니다."
+            );
+        }
+
+        /*
+         * HTML 전체 길이 검사
+         */
+        if (
+                content.length()
+                        > BOARD_CONTENT_HTML_MAX_LENGTH
+        ) {
             throw new IllegalArgumentException(
                     "게시글 내용에 너무 많은 서식이 포함되어 있습니다."
             );
         }
 
         /*
-         * 본문에 이미지가 있는지 확인
+         * 이미지 존재 여부
          */
         boolean hasImage =
                 content.matches(
@@ -672,54 +721,65 @@ public class BoardService {
                 );
 
         /*
-         * 화면에 실제로 표시되는 글자 추출
+         * HTML 태그를 제외한 실제 표시 글자 추출
          */
-        String plainText = content
-
-                // script 내용 제거
-                .replaceAll(
-                        "(?is)<script.*?>.*?</script>",
-                        ""
-                )
-
-                // style 내용 제거
-                .replaceAll(
-                        "(?is)<style.*?>.*?</style>",
-                        ""
-                )
-
-                // 모든 HTML 태그 제거
-                .replaceAll(
-                        "(?s)<[^>]*>",
-                        ""
-                )
-
-                // HTML 공백 문자 변환
-                .replaceAll(
-                        "(?i)&nbsp;|&#160;|&#xA0;",
-                        " "
-                )
-
-                .replace("\u00A0", " ")
-                .trim();
+        String plainText =
+                content
+                        .replaceAll(
+                                "(?is)<script.*?>.*?</script>",
+                                ""
+                        )
+                        .replaceAll(
+                                "(?is)<style.*?>.*?</style>",
+                                ""
+                        )
+                        .replaceAll(
+                                "(?s)<[^>]*>",
+                                ""
+                        )
+                        .replaceAll(
+                                "(?i)&nbsp;|&#160;|&#xA0;",
+                                " "
+                        )
+                        .replace(
+                                "\u00A0",
+                                " "
+                        )
+                        .trim();
 
         /*
          * 글자와 이미지가 모두 없는 경우
          */
-        if (plainText.isEmpty() && !hasImage) {
+        if (
+                plainText.isEmpty()
+                        && !hasImage
+        ) {
             throw new IllegalArgumentException(
                     "게시글 내용을 입력해주세요."
             );
         }
 
         /*
-         * 화면에 보이는 실제 글자 수 제한
+         * 카테고리별 최대 글자 수
          */
-        if (plainText.length()
-                > BOARD_CONTENT_TEXT_MAX_LENGTH) {
+        int textMaxLength =
+                "NOTICE".equals(cleanCategory)
+                        ? NOTICE_CONTENT_TEXT_MAX_LENGTH
+                        : QUESTION_CONTENT_TEXT_MAX_LENGTH;
+
+        /*
+         * 실제 표시 글자 수 검사
+         */
+        if (plainText.length() > textMaxLength) {
+
+            if ("NOTICE".equals(cleanCategory)) {
+                throw new IllegalArgumentException(
+                        "공지사항은 10,000자 이하로 입력해주세요."
+                );
+            }
 
             throw new IllegalArgumentException(
-                    "본문은 10,000자 이하로 입력해주세요."
+                    "문의글은 1,000자 이하로 입력해주세요."
             );
         }
     }

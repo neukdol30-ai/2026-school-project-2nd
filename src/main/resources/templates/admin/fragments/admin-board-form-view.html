@@ -22,6 +22,9 @@
 
         <form id="admin-board-form"
               data-board-form
+              data-title-max-length="200"
+              data-content-max-length="1000"
+              data-content-html-max-length="30000"
               class="admin-edit-form admin-board-form"
               method="post"
               th:action="@{/admin/boards/save}">
@@ -37,7 +40,8 @@
             <div class="admin-form-grid">
                 <label>
                     <span>카테고리</span>
-                    <select name="category">
+                    <select id="admin-board-category"
+                            name="category">
                         <option value="QUESTION" th:selected="${boardForm == null or boardForm.category == null or boardForm.category == 'QUESTION'}">문의게시글</option>
                         <option value="NOTICE" th:selected="${boardForm != null and boardForm.category == 'NOTICE'}">공지사항</option>
                     </select>
@@ -55,10 +59,16 @@
                     <span>제목</span>
                     <input type="text"
                            name="title"
+                           data-board-title
                            maxlength="200"
                            required
                            th:value="${boardForm != null ? boardForm.title : ''}"
                            placeholder="게시글 제목을 입력해 주세요.">
+
+                    <p class="board-form-count">
+                        <span data-board-title-count>0</span>
+                        <span>/ 200자</span>
+                    </p>
                 </label>
 
                 <div class="wide-field board-content-field">
@@ -67,6 +77,14 @@
                     <div id="admin-board-editor"
                          data-board-editor>
                     </div>
+
+                    <!-- 본문 글자 수 -->
+                    <p class="board-form-count">
+                        <span data-board-content-count>0</span>
+                        <span data-board-content-limit-text>
+                            / 1,000자
+                        </span>
+                    </p>
 
                     <textarea id="admin-board-content"
                               name="content"
