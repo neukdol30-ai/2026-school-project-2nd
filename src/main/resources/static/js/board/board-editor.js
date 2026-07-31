@@ -104,6 +104,22 @@ document.addEventListener("DOMContentLoaded", function () {
         let editor = null;
 
         /*
+         * 글자 수 제한을 넘기기 전
+         * 마지막 정상 HTML 내용
+         */
+        let lastValidHtml = "";
+
+        /*
+         * 직전 실제 글자 수
+         */
+        let previousTextLength = 0;
+
+        /*
+         * 내용 복구 중 change 이벤트 중복 실행 방지
+         */
+        let isRestoringContent = false;
+
+        /*
          * HTML에서 화면에 보이는 글자 추출
          */
         function getPlainText(htmlContent) {
@@ -401,14 +417,119 @@ document.addEventListener("DOMContentLoaded", function () {
             }
 
             /*
-             * 에디터 내용이 바뀔 때마다
-             * 본문 글자 수 갱신
-             */
+            * 최초 내용을 정상 내용으로 저장
+            */
+            lastValidHtml =
+                editor.getHTML();
+
+            previousTextLength =
+                getPlainText(
+                    lastValidHtml
+                ).length;
+
+            /*
+            * 에디터 내용이 바뀔 때마다
+            * 글자 수 검사 및 표시 갱신
+            */
             editor.on(
                 "change",
                 function () {
-                    updateContentCount(
-                        editor
+
+                    /*
+                     * 제한 초과 내용을 복구하면서 발생한
+                     * change 이벤트는 무시한다.
+                     */
+                    if (isRestoringContent) {
+                        return;
+                    }
+
+                    const currentHtml =
+                        editor.getHTML();
+
+                    const currentPlainText =
+                        getPlainText(
+                            currentHtml
+                        );
+
+                    const currentTextLength =
+                        currentPlainText.length;
+
+                    /*
+                     * 현재 제한 안에 있는 경우
+                     * 정상 내용으로 저장한다.
+                     */
+                    if (
+                        currentTextLength
+                        <= contentMaxLength
+                    ) {
+                        lastValidHtml =
+                            currentHtml;
+
+                        previousTextLength =
+                            currentTextLength;
+
+                        updateContentCount(
+                            editor
+                        );
+
+                        return;
+                    }
+
+                    /*
+                     * 기존 데이터가 제한보다 긴 경우에는
+                     * 사용자가 내용을 삭제하는 동작을 허용한다.
+                     *
+                     * 예:
+                     * 기존 공지사항 5,000자를 문의글로 변경한 경우
+                     * 1,000자까지 줄일 수 있어야 한다.
+                     */
+                    if (
+                        previousTextLength
+                        > contentMaxLength
+                        && currentTextLength
+                        < previousTextLength
+                    ) {
+                        lastValidHtml =
+                            currentHtml;
+
+                        previousTextLength =
+                            currentTextLength;
+
+                        updateContentCount(
+                            editor
+                        );
+
+                        return;
+                    }
+
+                    /*
+                     * 제한을 초과한 입력은
+                     * 마지막 정상 내용으로 되돌린다.
+                     */
+                    isRestoringContent = true;
+
+                    editor.setHTML(
+                        lastValidHtml,
+                        false
+                    );
+
+                    previousTextLength =
+                        getPlainText(
+                            lastValidHtml
+                        ).length;
+
+                    requestAnimationFrame(
+                        function () {
+
+                            isRestoringContent =
+                                false;
+
+                            updateContentCount(
+                                editor
+                            );
+
+                            editor.focus();
+                        }
                     );
                 }
             );
